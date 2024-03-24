@@ -12,6 +12,7 @@ import { useState, useTransition } from "react";
 import ToolTip from "@/components/homepage/ToolTip";
 import Loader from "@/components/Loader";
 import Error from "@/components/Error";
+import { revalidatePath } from "next/cache";
 
 function ProfileUpdateForm({ id }) {
   //  Form Validation
@@ -37,6 +38,7 @@ function ProfileUpdateForm({ id }) {
     error,
     isValidating,
     isLoading,
+    mutate,
   } = useSWR(id ? ["getUserProfile", id] : null, fetcher, {
     revalidateOnFocus: false, // Revalidate data when window gets focused
     onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
@@ -53,14 +55,13 @@ function ProfileUpdateForm({ id }) {
   if (!user && !isValidating) return <Error message="No user profile found" />;
   if (!user || isValidating || isLoading) return <Loader />;
 
-  //FIXME: delete previous profile image before uploading new one.
-
   async function updateUser(prevState, formData) {
     // TODO: server validation goes here.
     try {
-      await updateCurrentUserProfile(formData);
+      await updateCurrentUserProfile(formData, user.id);
+      mutate();
     } catch (error) {
-    } finally {
+      console.log(error);
     }
   }
 
@@ -68,44 +69,6 @@ function ProfileUpdateForm({ id }) {
     <form action={(formData) => startTransaction(() => formAction(formData))}>
       {/* Grid */}
       <div className="grid sm:grid-cols-12 gap-2 sm:gap-6">
-        <div className="sm:col-span-3">
-          <label className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200">
-            Profile Photo
-          </label>
-          <ToolTip />
-        </div>
-        {/* End Col */}
-        <div className="sm:col-span-9">
-          <div className="flex items-center gap-5">
-            <Image
-              className="inline-block h-16 w-16 rounded-full ring-2 ring-white dark:ring-gray-800"
-              src={user?.avatar ? user.avatar : "/default-user.jpg"}
-              alt="avatar"
-              height={256}
-              width={256}
-            />
-            <div className="flex gap-x-2">
-              <div>
-                <label className="block">
-                  <span className="sr-only">Choose profile photo</span>
-                  <input
-                    type="file"
-                    name="avatar"
-                    accept="image/*"
-                    className="block w-full text-sm text-gray-500 file:me-4 file:py-2 file:px-4 file:rounded-lg file:border-0
-file:text-sm file:font-semibold
-file:bg-blue-600 file:text-white
-hover:file:bg-blue-700
-file:disabled:opacity-50 file:disabled:pointer-events-none
-dark:file:bg-blue-500
-dark:hover:file:bg-blue-400
-    "
-                  />
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
         {/* FullName Start */}
         <div className="sm:col-span-3">
           <label
@@ -121,7 +84,7 @@ dark:hover:file:bg-blue-400
             <input
               id="f_name"
               type="text"
-              className="py-2 px-3 pe-11 block w-full border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
               placeholder="First name"
               name="f_name"
               defaultValue={user?.f_name}
@@ -129,7 +92,7 @@ dark:hover:file:bg-blue-400
             <input
               id="l_name"
               type="text"
-              className="py-2 px-3 pe-11 block w-full border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
               placeholder="Last name"
               name="l_name"
               defaultValue={user?.l_name}
@@ -153,7 +116,7 @@ dark:hover:file:bg-blue-400
             <input
               id="company"
               type="text"
-              className="py-2 px-3 pe-11 block w-full border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
               placeholder="Acme Corporation"
               name="company"
               defaultValue={user?.company}
@@ -161,7 +124,7 @@ dark:hover:file:bg-blue-400
             <input
               id="position"
               type="text"
-              className="py-2 px-3 pe-11 block w-full border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
               placeholder="CEO & Founder"
               name="position"
               defaultValue={user?.position}
@@ -184,7 +147,7 @@ dark:hover:file:bg-blue-400
           <input
             id="website"
             type="text"
-            className="py-2 px-3 pe-11 block w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
             placeholder="acme.org"
             name="website"
             defaultValue={user?.website}
@@ -203,7 +166,7 @@ dark:hover:file:bg-blue-400
           <input
             id="email"
             type="email"
-            className="py-2 px-3 pe-11 block w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
             placeholder={user?.email}
             name="email"
             disabled
@@ -225,7 +188,7 @@ dark:hover:file:bg-blue-400
           <input
             id="x_username"
             type="text"
-            className="py-2 px-3 pe-11 block w-full border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
             placeholder="@elonmusk"
             name="x_username"
             defaultValue={user?.x_username}
@@ -253,7 +216,7 @@ dark:hover:file:bg-blue-400
                   id="permission"
                   name="permission"
                   type="checkbox"
-                  className="border-gray-200 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                  className="border-2 border-gray-200 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                   aria-describedby="permission-description"
                   defaultChecked={user?.permission}
                 />
@@ -283,7 +246,7 @@ dark:hover:file:bg-blue-400
       <div className="mt-5 flex justify-end gap-x-2">
         {/* <button
           type="button"
-          className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+          className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-2 border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
         >
           Reset
         </button> */}

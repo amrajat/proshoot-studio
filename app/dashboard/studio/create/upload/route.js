@@ -7,10 +7,9 @@ import { v4 as uuidv4 } from "uuid";
 
 export async function POST(req, res) {
   const cookieStore = cookies();
-  // FIXME: NO NEED TO PASS SUPABASE SECRET KEY HERE.
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SECRET_KEY,
+    process.env.SUPABASE_ANON_PUBLIC,
     {
       cookies: {
         get(name) {
@@ -26,17 +25,17 @@ export async function POST(req, res) {
     }
   );
 
-  const formData = await req.formData();
-  const formDataEntryValues = Array.from(formData.values());
-  console.log(JSON.stringify(formDataEntryValues));
+  const oldFormData = await req.formData();
+  const formDataEntryValues = Array.from(oldFormData.values());
   let image_urls = [];
   const studioID = uuidv4();
-  const age = formData.get("age");
-  const gender = formData.get("gender");
-  const eye = formData.get("eye");
-  const hair = formData.get("hair");
-  const name = formData.get("name");
-  const ethnicity = formData.get("ethnicity");
+  const age = oldFormData.get("age");
+  const gender = oldFormData.get("gender");
+  const eye = oldFormData.get("eye");
+  const hair = oldFormData.get("hair");
+  const name = oldFormData.get("name");
+  const ethnicity = oldFormData.get("ethnicity");
+  const formData = new FormData();
 
   console.log(age, gender, eye, hair, name, ethnicity);
 
@@ -46,51 +45,80 @@ export async function POST(req, res) {
       "arrayBuffer" in formDataEntryValue
     ) {
       const file = formDataEntryValue;
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const fileName = `${"dfac2d1a-50c9-4285-af42-8befbeac0dcf"}/uploaded/${studioID}/${
-        uuidv4() + "." + file.type.split("/")[1]
-      }`;
-      const { error: storageError } = await supabase.storage
-        .from("studios")
-        .upload(fileName, file);
-      console.log(storageError);
-      // FIXME: NEED TO GENARATE A SEPARATE UUID FOR EACH STUDIO CREATION USED IN SUPABASE STORAGE UPLOAD AND FILEPATH TOO.
-      let imagePath = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/studios/${fileName}`;
-      image_urls.push(imagePath);
-      console.log("image_urls", image_urls);
+      formData.append("tune[images][]", file);
+      console.log("looping ");
+      // const buffer = Buffer.from(await file.arrayBuffer());
+      // const fileName = `${"dfac2d1a-50c9-4285-af42-8befbeac0dcf"}/uploaded/${studioID}/${
+      //   uuidv4() + "." + file.type.split("/")[1]
+      // }`;
+      // const { error: storageError } = await supabase.storage
+      //   .from("studios")
+      //   .upload(fileName, file);
+      // console.log(storageError);
+      // // FIXME: NEED TO GENARATE A SEPARATE UUID FOR EACH STUDIO CREATION USED IN SUPABASE STORAGE UPLOAD AND FILEPATH TOO.
+      // let imagePath = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/studios/${fileName}`;
+      // image_urls.push(imagePath);
+      // console.log("image_urls", image_urls);
     }
   }
   // for loop code just above this line.
 
-  // await createTune(image_urls);
-  // console.log(result);
+  // New approach 👇
+  formData.append("tune[title]", "Doe - UUID - 1234-6789-1234-56789");
+  formData.append("tune[branch]", "fast");
+  // Hard coded tune id of Realistic Vision v5.1 from the gallery - https://www.astria.ai/gallery/tunes
+  // https://www.astria.ai/gallery/tunes/690204/prompts
+  formData.append("tune[base_tune_id]", 690204);
+  formData.append("tune[name]", "man");
+  // Iterate through the uploaded files and append them to FormData
+  // Array.from(data.images).forEach((file) => {
+  //   formData.append("tune[images][]", file);
+  // });
 
-  const response2 = await fetch("https://api.astria.ai/tunes", {
+  let options = {
     method: "POST",
     headers: {
       Authorization: "Bearer " + `${process.env.ASTRIA_API_KEY}`,
-      "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      tune: {
-        title: name + "/" + studioID,
-        // Hard coded tune id of Realistic Vision v5.1 from the gallery - https://www.astria.ai/gallery/tunes
-        // https://www.astria.ai/gallery/tunes/690204/prompts
-        base_tune_id: 690204,
-        name: "man",
-        branch: "sd15",
-        image_urls: image_urls,
-      },
-    }),
-  });
+    body: formData,
+  };
+  const response = await fetch("https://api.astria.ai/tunes", options);
+  // console.log(response);
+  const data = await response.json();
+  console.log(data);
+
+  // New approach ends here 👆
+
+  // await createTune(image_urls);
+  // console.log(result);
+
+  // const response2 = await fetch("https://api.astria.ai/tunes", {
+  //   method: "POST",
+  //   headers: {
+  //     Authorization: "Bearer " + `${process.env.ASTRIA_API_KEY}`,
+  //     "Content-Type": "application/json",
+  //   },
+  //   body: JSON.stringify({
+  //     tune: {
+  //       title: name + "/" + studioID,
+  //       // Hard coded tune id of Realistic Vision v5.1 from the gallery - https://www.astria.ai/gallery/tunes
+  //       // https://www.astria.ai/gallery/tunes/690204/prompts
+  //       base_tune_id: 690204,
+  //       name: "man",
+  //       branch: "fast",
+  //       // image_urls: image_urls,
+  //       images: imageformData,
+  //     },
+  //   }),
+  // });
   // TODO: TO VALIDATE THE ASTRIA SUCCESS WE SHOULD CHECK FOR TUNE ID BY result.id if this exists means OK
-  const result = await response2.json();
-  console.log(result);
-  result["poster-image"] = image_urls[0];
-  let { data, error } = await supabase.rpc("add_new_studio", {
-    new_studio: result,
-    user_id: "dfac2d1a-50c9-4285-af42-8befbeac0dcf",
-  });
+  // const result = await response2.json();
+  // console.log(result);
+  // result["poster-image"] = image_urls[0];
+  // let { data, error } = await supabase.rpc("add_new_studio", {
+  //   new_studio: result,
+  //   user_id: "dfac2d1a-50c9-4285-af42-8befbeac0dcf",
+  // });
 
   return NextResponse.json({ success: true });
 

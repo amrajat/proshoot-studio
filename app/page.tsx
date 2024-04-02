@@ -6,6 +6,7 @@ import ComparisonTable from "@/components/homepage/ComparisonTable";
 import Testimonials from "@/components/homepage/Testimonials";
 
 export default function Home() {
+  return <p>error: forbidden access.</p>;
   return (
     <>
       <main id="content" role="main">

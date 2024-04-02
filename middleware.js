@@ -6,6 +6,11 @@ export async function middleware(request) {
   const { session } = await getCurrentSession();
   const { pathname } = request.nextUrl;
 
+  if (pathname.startsWith(`/dashboard/stripe/webhook`)) {
+    // Allow access to the requested path
+    return NextResponse.next();
+  }
+
   // Check if the user is authenticated and trying to access a protected path
   if (pathname.startsWith(`/dashboard`) && !session) {
     // Redirect the user to the /auth page if not authenticated
@@ -30,5 +35,9 @@ export async function middleware(request) {
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/dashboard/:path*", "/auth"],
+  matcher: [
+    // "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/dashboard/:path*",
+    "/auth",
+  ],
 };

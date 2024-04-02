@@ -2,49 +2,20 @@ import Stripe from "stripe";
 
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/supabase/actions/server";
+import { PLANS } from "@/lib/data";
 
 const stripe = new Stripe(`${process.env.STRIPE_SECRET_KEY}`, {
   apiVersion: "2023-10-16",
 });
-const PLANS = [
-  {
-    planName: "Basic",
-    planPrice: 21,
-    headshots: 20,
-    features: ["f11", "f12", "f13"],
-    description:
-      "this is going to be an brief explanation of the plan and product.",
-  },
-  {
-    planName: "Standard",
-    planPrice: 39,
-    headshots: 40,
-    features: ["f21", "f22", "f23"],
-    description:
-      "this is going to be an brief explanation of the plan and product.",
-  },
-  {
-    planName: "Premium",
-    planPrice: 59,
-    headshots: 100,
-    features: ["f31", "f32", "f33"],
-    description:
-      "this is going to be an brief explanation of the plan and product.",
-  },
-];
 
 export async function POST(req, res) {
-  const { plan, planType, quantity } = await req.json();
-  console.log(plan, planType, quantity);
+  const { plan, quantity } = await req.json();
 
-  if (planType !== "Individual" && planType !== "Team") {
-    console.log(planType !== "Individual", planType !== "Team");
-    return new NextResponse("planType: Please all fields are required", {
-      status: 400,
-    });
-  }
-
-  if (plan < 0 || !planType || !quantity || plan.planPrice < 0) {
+  if (
+    !Object.keys(PLANS).includes(plan) ||
+    !quantity ||
+    PLANS[plan]["planPrice"] <= 0
+  ) {
     return new NextResponse("Please all fields are required", { status: 400 });
   }
 
@@ -65,11 +36,7 @@ export async function POST(req, res) {
           price_data: {
             currency: "usd",
             product_data: {
-              name: PLANS[plan].planName,
-              // FIXME: Need to update the image
-              // images: [
-              //   "https://fpczpgjfyejjuezbiqjq.supabase.co/storage/v1/object/public/avatars/avatar--0.060672491453946265-Jeeja@2x.png",
-              // ],
+              name: plan,
             },
             unit_amount: parseInt((PLANS[plan].planPrice * 100).toString()),
           },
@@ -81,8 +48,7 @@ export async function POST(req, res) {
       success_url: `${origin}/dashboard/studio/create`,
       metadata: {
         user: session.user.id,
-        plan: JSON.stringify(PLANS[plan]),
-        planType: planType.toString(),
+        plan: plan,
         quantity: quantity.toString(),
       },
     });

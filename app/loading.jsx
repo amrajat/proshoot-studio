@@ -1,9 +1,11 @@
 import Container from "@/components/dashboard/Container";
-import Loader from "@/components/Loader";
+import Spinner from "@/components/homepage/Spinner";
+
 export default function Loading() {
+  // FIXME: THIS NEEDS A CHANGE
   return (
     <Container>
-      <Loader />
+      <Spinner />
     </Container>
   );
 }

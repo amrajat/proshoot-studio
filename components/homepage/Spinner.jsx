@@ -1,11 +1,14 @@
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+
 function Spinner() {
   return (
     <div
-      className="animate-spin inline-block w-4 h-4 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500"
+      className="animate-spin inline-block"
       role="status"
       aria-label="loading"
     >
       <span className="sr-only">Loading...</span>
+      <AiOutlineLoading3Quarters />
     </div>
   );
 }

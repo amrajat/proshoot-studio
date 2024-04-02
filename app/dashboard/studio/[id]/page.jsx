@@ -9,6 +9,7 @@ async function ViewStudio({ params }) {
     }
   );
   const prompts = await response.json();
+  console.log(prompts);
 
   return (
     // male has 90 prompts, and female has

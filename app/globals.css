@@ -8,10 +8,6 @@
   --background-end-rgb: 255, 255, 255;
 }
 
-html {
-  font-family: var(--font-inter);
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;

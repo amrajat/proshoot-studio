@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 function Testimonials() {
   return (
     <div className="relative overflow-hidden">
@@ -10,10 +12,12 @@ function Testimonials() {
         {/* Grid */}
         <div className="lg:grid lg:grid-cols-6 lg:gap-8 lg:items-center">
           <div className="hidden lg:block lg:col-span-2">
-            <img
+            <Image
               className="rounded-xl"
-              src="https://images.unsplash.com/photo-1671726203390-cdc4354ee2eb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
+              src="/default-user.jpg"
               alt="Image Description"
+              height={512}
+              width={512}
             />
           </div>
           {/* End Col */}
@@ -39,10 +43,12 @@ function Testimonials() {
               <footer className="mt-6">
                 <div className="flex items-center">
                   <div className="lg:hidden flex-shrink-0">
-                    <img
+                    <Image
                       className="h-12 w-12 rounded-full"
-                      src="https://images.unsplash.com/photo-1671726203390-cdc4354ee2eb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80"
+                      src="/default-user.jpg"
                       alt="Image Description"
+                      height={512}
+                      width={512}
                     />
                   </div>
                   <div className="ms-4 lg:ms-0">

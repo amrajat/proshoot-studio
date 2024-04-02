@@ -1,14 +1,14 @@
 "use client";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import * as yup from "yup";
 import {
   signInWithEmailOTP,
   verifyEmailOTP,
-} from "@/lib/supabase/actions/server";
+} from "@/lib/supabase/actions/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { z } from "zod";
 // FIXME: REPLACE YUP WITH ZOD VALIDATION and import supabase from client not server.
 function AuthForm() {
   const [displayError, setDisplayError] = useState(null);
@@ -17,20 +17,20 @@ function AuthForm() {
 
   const router = useRouter();
 
-  const emailSchema = yup.object().shape({
-    email: yup
+  const emailSchema = z.object({
+    email: z
       .string()
       .email("Please use valid email.")
-      .required("Email is required."),
+      .min(1, "Email is required."),
   });
 
-  const tokenSchema = yup.object().shape({
-    token1: yup.string().required("OTP is required."),
-    token2: yup.string().required("OTP is required."),
-    token3: yup.string().required("OTP is required."),
-    token4: yup.string().required("OTP is required."),
-    token5: yup.string().required("OTP is required."),
-    token6: yup.string().required("OTP is required."),
+  const tokenSchema = z.object({
+    token1: z.string().min(1).max(1, { message: "OTP is required." }),
+    token2: z.string().min(1).max(1, { message: "OTP is required." }),
+    token3: z.string().min(1).max(1, { message: "OTP is required." }),
+    token4: z.string().min(1).max(1, { message: "OTP is required." }),
+    token5: z.string().min(1).max(1, { message: "OTP is required." }),
+    token6: z.string().min(1).max(1, { message: "OTP is required." }),
   });
 
   const {
@@ -38,7 +38,7 @@ function AuthForm() {
     handleSubmit: handleSubmitEmail,
     formState: { errors: errorsEmail },
   } = useForm({
-    resolver: yupResolver(emailSchema),
+    resolver: zodResolver(emailSchema),
   });
 
   const {
@@ -46,7 +46,7 @@ function AuthForm() {
     handleSubmit: handleSubmitToken,
     formState: { errors: errorsToken },
   } = useForm({
-    resolver: yupResolver(tokenSchema),
+    resolver: zodResolver(tokenSchema),
   });
 
   async function signInWithEmail({ email }) {

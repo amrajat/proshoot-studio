@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import Stripe from "stripe";
-// stripe trigger checkout.session.completed
 const checkout_session_completed = "checkout.session.completed";
+// FOR WEBHOOK TESTING ON STRIPE TERMINAL
+// stripe trigger checkout.session.completed
 // stripe listen --forward-to localhost:3000/dashboard/stripe/webhook --skip-verify
 // const checkout_session_completed = "product.created";
 
@@ -45,32 +46,40 @@ export async function POST(req, res) {
     return new NextResponse(`Webhook Error: ${error.message}`, { status: 500 });
   }
 
-  // load our event
-  console.log(event.type);
   switch (event.type) {
     case checkout_session_completed:
       const session = event.data.object;
 
       const {
         // @ts-ignore
-        metadata: { user, plan, planType, quantity },
+        metadata: { user, plan, quantity },
       } = session;
       const transaction_data = {
-        plan: plan,
-        planType,
+        plan,
         qty: Number(quantity),
         timestamp: new Date().toISOString(),
-        session: [session.id, session.payment_intent],
+        session: session.id,
       };
+
       let { data, error } = await supabase.rpc("add_purchase_history", {
         transaction_data: transaction_data,
         user_id: user,
       });
 
-      if (error) console.error(error);
-      else console.log(data);
+      if (!error) {
+        const {
+          data: [{ credits }],
+          error: creditsError,
+        } = await supabase.from("users").select("credits").eq("id", user);
 
-      // FIXME: update the credits of the users.table from supabase accordingly
+        if (!creditsError) {
+          credits[plan] = credits[plan] + Number(quantity);
+          const { data: updatedData, error: updateError } = await supabase
+            .from("users")
+            .update({ credits: credits })
+            .eq("id", user);
+        }
+      }
 
       return NextResponse.json("Booking successful", {
         status: 200,
@@ -78,7 +87,6 @@ export async function POST(req, res) {
       });
 
     default:
-      console.log(`Unhandled event type ${event.type}`);
   }
 
   return NextResponse.json("Event Received", {

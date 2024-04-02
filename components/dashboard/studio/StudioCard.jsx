@@ -5,11 +5,17 @@ async function StudioCard({ studio }) {
     <div className="group flex flex-col h-full bg-white border border-gray-200 shadow-sm rounded-xl dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
       <div className="h-auto rounded-t-xl">
         <Image
-          src={`${studio.orig_images[0]}`}
+          src={
+            studio?.coverImage
+              ? `/${studio["coverImage"]}`
+              : "/studio-card-placeholder.jpg"
+          }
+          // /studio-card-placeholder
           alt="ai generated image"
           width={"393"}
           height={"491"}
           className="overflow-hidden rounded-xl w-auto"
+          // placeholder="blur"
         />
       </div>
       <div className="p-4 md:p-6">

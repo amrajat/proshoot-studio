@@ -1,13 +1,18 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import PreviewThumbnail from "@/components/dashboard/studio/PreviewThumbnail";
 import ImageUploadingGuideLines from "@/components/dashboard/studio/ImageUploadingGuideLines";
-import Container from "@/components/dashboard/Container";
+import CoverPage from "@/components/dashboard/CoverPage";
 import { IoTrashBin } from "react-icons/io5";
+import Error from "@/components/Error";
+import Loader from "@/components/Loader";
+import useSWR from "swr";
+import { getCredits } from "@/lib/supabase/actions/client";
+import { HiCheck } from "react-icons/hi2";
 
 // TODO: ADD IMAGE VALIDATION LATER, WITH ALL THE CHECKS SUCH AS NUM. OF MIN/MAX IMAGES. REDO UPLOAD, DELETE IMAGE...MAX SIZE
 // FIXME: FORMS SHOULD NOT BE FILLED IF KEY PRESS IS ENTER ON CURRENT STEP, WITHOUT COMPLETING STEP 2.
@@ -16,20 +21,21 @@ import { IoTrashBin } from "react-icons/io5";
 
 const FormDataSchema = z.object({
   gender: z.string().min(2, "Please select a gender."),
-  age: z.string().refine((data) => Number(data) >= 12, {
-    message: "Age must be 12 or older",
-  }),
-  eye: z.string().min(1, "Please select eye color."),
-  hair: z.string().min(1, "Please select hair color."),
+  // age: z.string().refine((data) => Number(data) >= 12, {
+  //   message: "Age must be 12 or older",
+  // }),
+  // eye: z.string().min(1, "Please select eye color."),
+  // hair: z.string().min(1, "Please select hair color."),
   name: z.string().min(1, "Please enter name."),
-  ethnicity: z.string().min(1, "Please choose your ethnicity."),
+  plan: z.union([z.enum(["Basic", "Standard", "Premium", "Pro"])]),
+  // ethnicity: z.string().min(1, "Please choose your ethnicity."),
 });
 
 const steps = [
   {
     id: "Step 1",
     name: "Studio Information",
-    fields: ["gender", "age", "eye", "hair", "ethnicity", "name"],
+    fields: ["gender", "name", "plan"], // Add more form fields if you have
   },
   {
     id: "Step 2",
@@ -39,17 +45,18 @@ const steps = [
   { id: "Step 3", name: "Studio Completion" },
 ];
 
-export default function Form() {
+export default function CreateStudio() {
   const [previousStep, setPreviousStep] = useState(0);
-  const [currentStep, setCurrentStep] = useState(0); //FIXME: UPDATE TO 0
+  const [currentStep, setCurrentStep] = useState(0);
+  const [studioSuccess, setStudioSuccess] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const delta = currentStep - previousStep;
   const [images, setImages] = useState([]);
-  // FIXME: THE IMAGE ERRORS HAS BE INDEX WISE OTHERWISE IT WON'T WORK.
   const [imageError, setImageError] = useState([false, false]);
   const MIN_NUMBER_IMAGE_UPLOAD = 3;
   const MAX_NUMBER_IMAGE_UPLOAD = 50;
-  const MAX_IMAGE_SIZE = 1024 * 1024 * 50; // 1GB
+  const MAX_IMAGE_SIZE = 1024 * 1024 * 5; // 5MB
 
   const {
     register,
@@ -62,11 +69,55 @@ export default function Form() {
     resolver: zodResolver(FormDataSchema),
   });
 
+  // Fetch Credits and User Id before allow customer to create studio.
+
+  async function fetcher() {
+    try {
+      const [{ credits }] = await getCredits();
+      return credits;
+    } catch (error) {
+      throw new Error(error.message || "Unable to fetch credits");
+    }
+  }
+
+  let {
+    data: credits,
+    error: creditsError,
+    isLoading,
+  } = useSWR("credits", fetcher);
+  if (isLoading) return <Loader />;
+
+  if (!Object.values(credits).some((count) => count > 0))
+    return (
+      <CoverPage
+        title={"Zero Studio Credits."}
+        buttonLink={"/studio/buy"}
+        buttonText={"Buy Studio"}
+      >
+        You don&apos;t have any credits to create studio please purchase any
+        plan first.
+      </CoverPage>
+    );
+  const order = ["Basic", "Standard", "Premium", "Pro"];
+
+  const sortedCredits = Object.entries(credits).sort(
+    ([aKey], [bKey]) => order.indexOf(aKey) - order.indexOf(bKey)
+  );
+
+  // if (sessionError) return <Error message="Failed to fetch session" />;
+  // if (isLoadingSession) return <Loader />;
+
+  // if (creditsError) return <Error message="Failed to fetch user profile" />;
+  // if (!credits || isLoadingCredits) return <Loader />;
+
+  // Fetching credits and user id ends here.
+
+  // fetch data for credits above.
+
   const handleFileSelected = (e) => {
     if (e.target.files) {
       //convert `FileList` to `File[]`
       const _files = Array.from(e.target.files);
-      console.log(_files);
       setImages((prevImages) => [...prevImages, ..._files]);
     }
   };
@@ -80,28 +131,33 @@ export default function Form() {
   };
 
   const processForm = async (data) => {
-    // e.preventDefault();
-    console.log(data instanceof FormData);
-    // console.log(images);
-    const formData = new FormData();
-    images.forEach((image, i) => {
-      formData.append("", image);
+    console.log(data);
+    startTransition(async () => {
+      const formData = new FormData();
+      images.forEach((file, i) => {
+        formData.append("tune[images][]", file);
+      });
+
+      formData.append("tune[branch]", "fast");
+      formData.append("tune[base_tune_id]", 690204);
+      formData.append("tune[name]", data.gender);
+      formData.append("tune[token]", "ohwx");
+      formData.append("name", data.name);
+      formData.append("credits", JSON.stringify(credits));
+      formData.append("plan", data.plan);
+      // A webhook URL to be called when the tune is finished training.
+      // The webhook will receive a POST request with the tune object.
+      // formData.append('tune[callback]', 'https://optional-callback-url.com/to-your-service-when-ready?user_id=1&tune_id=1');
+
+      // ADD TRY AND CATCH HERE.
+
+      const response = await axios.post(
+        "/dashboard/studio/create/upload",
+        formData
+      );
+      // FIXME: below line produces stale state, which don't work
+      setStudioSuccess(response.data.success); // response.data.success => true / false
     });
-
-    formData.append("age", data.age);
-    formData.append("hair", data.hair);
-    formData.append("eye", data.eye);
-    formData.append("ethnicity", data.ethnicity);
-    formData.append("gender", data.gender);
-    formData.append("name", data.name);
-
-    // ADD TRY AND CATCH HERE.
-    const response = await axios.post(
-      "/dashboard/studio/create/upload",
-      formData
-    );
-    console.log(response);
-    reset();
   };
 
   const next = async () => {
@@ -127,380 +183,472 @@ export default function Form() {
   };
 
   return (
-    <section className="inset-0 flex flex-col justify-between">
-      {/* steps */}
-      <nav aria-label="Progress">
-        <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0">
-          {steps.map((step, index) => (
-            <li key={step.name} className="md:flex-1">
-              {currentStep > index ? (
-                <div className="group flex w-full flex-col border-l-4 border-sky-600 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4">
-                  <span className="text-sm font-medium text-sky-600 transition-colors ">
-                    {step.id}
-                  </span>
-                  <span className="text-sm font-medium">{step.name}</span>
-                </div>
-              ) : currentStep === index ? (
-                <div
-                  className="flex w-full flex-col border-l-4 border-sky-600 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
-                  aria-current="step"
-                >
-                  <span className="text-sm font-medium text-sky-600">
-                    {step.id}
-                  </span>
-                  <span className="text-sm font-medium">{step.name}</span>
-                </div>
-              ) : (
-                <div className="group flex w-full flex-col border-l-4 border-gray-200 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4">
-                  <span className="text-sm font-medium text-gray-500 transition-colors">
-                    {step.id}
-                  </span>
-                  <span className="text-sm font-medium">{step.name}</span>
-                </div>
-              )}
-            </li>
-          ))}
-        </ol>
-      </nav>
+    <>
+      <h2 class={`text-3xl dark:text-white ${isPending ? "" : "hidden"}`}>
+        Please wait! your Studio is being created...
+      </h2>
 
-      {/* Form */}
-      <form
-        className="mt-12 py-12"
-        onSubmit={handleSubmit(processForm)}
-        encType="multipart/form-data"
+      <section
+        className={`inset-0 flex flex-col justify-between} ${
+          isPending ? "hidden" : ""
+        }`}
       >
-        {currentStep === 0 && (
-          <div>
-            <h2 className="text-base font-semibold leading-7 text-gray-900">
-              Personal Information
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-gray-600">
-              Provide your personal details. this will help us better fine
-              tuning the model for best results.
-            </p>
-            <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-              <div className="sm:col-span-3">
-                {/* Select */}
-                <div className="relative">
-                  <select
-                    className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
-                    {...register("gender")}
-                    id="gender"
+        {/* steps */}
+        <nav aria-label="Progress">
+          <ol
+            role="list"
+            className="space-y-4 md:flex md:space-x-8 md:space-y-0"
+          >
+            {steps.map((step, index) => (
+              <li key={step.name} className="md:flex-1">
+                {currentStep > index ? (
+                  <div className="group flex w-full flex-col border-l-4 border-sky-600 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4">
+                    <span className="text-sm font-medium text-sky-600 transition-colors ">
+                      {step.id}
+                    </span>
+                    <span className="text-sm font-medium">{step.name}</span>
+                  </div>
+                ) : currentStep === index ? (
+                  <div
+                    className="flex w-full flex-col border-l-4 border-sky-600 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
+                    aria-current="step"
                   >
-                    <option value="">Choose gender</option>
-                    <option value="women">Women</option>
-                    <option value="man">Man</option>
-                    <option value="non-binary">Non - Binary</option>
-                  </select>
-                </div>
-                {/* End Select */}
+                    <span className="text-sm font-medium text-sky-600">
+                      {step.id}
+                    </span>
+                    <span className="text-sm font-medium">{step.name}</span>
+                  </div>
+                ) : (
+                  <div className="group flex w-full flex-col border-l-4 border-gray-200 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4">
+                    <span className="text-sm font-medium text-gray-500 transition-colors">
+                      {step.id}
+                    </span>
+                    <span className="text-sm font-medium">{step.name}</span>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
 
-                <div className="mt-2">
-                  {errors.gender?.message && (
-                    <p className="mt-2 text-sm text-red-400">
-                      {errors.gender.message}
-                    </p>
-                  )}
-                </div>
-              </div>
+        {/* Form */}
+        <form
+          className="mt-12 py-12"
+          onSubmit={handleSubmit(processForm)}
+          encType="multipart/form-data"
+          disabled={true}
+        >
+          {currentStep === 0 && (
+            <fieldset disabled={isPending}>
+              <div>
+                <h2 className="text-base font-semibold leading-7 text-gray-900">
+                  Personal Information
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-gray-600">
+                  Provide your personal details. this will help us better fine
+                  tuning the model for best results.
+                </p>
+                <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                  {/* Select Plan Starts Here */}
+                  <div className="col-span-full">
+                    <div className="grid grid-cols-4 gap-3">
+                      {sortedCredits.map(([PlanName, RemainingCredits]) => (
+                        <label
+                          key={PlanName}
+                          htmlFor={PlanName}
+                          className="relative py-3 px-4 flex border-2 border-transparent rounded-lg cursor-pointer focus:outline-none"
+                        >
+                          <input
+                            disabled={Number(RemainingCredits) <= 0}
+                            type="radio"
+                            id={PlanName}
+                            value={PlanName}
+                            checked={RemainingCredits > 0}
+                            {...register("plan")}
+                            className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded-lg cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none dark:border-neutral-700 dark:checked:border-blue-500 dark:focus:ring-neutral-800 dark:focus:ring-offset-neutral-800
 
-              <div className="sm:col-span-3">
-                <input
-                  type="number"
-                  id="age"
-                  {...register("age")}
-                  className="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600 placeholder-current"
-                  placeholder="Please enter your age"
-                />
+                            before:content-[''] before:top-3.5 before:start-3.5  before:border-blue-600 before:h-5 before:rounded-full dark:before:border-neutral-700"
+                            name="credits"
+                          />
+                          <span className="peer-checked:flex hidden absolute top-4 end-4">
+                            <span className="block w-5 h-5 flex justify-center items-center rounded-full bg-blue-600">
+                              <HiCheck
+                                className="flex-shrink-0 w-3 h-3 text-white"
+                                width={24}
+                                height={24}
+                              />
+                            </span>
+                          </span>
+                          <span className="w-full">
+                            <span className="block font-normal text-blue-600 dark:text-neutral-200">
+                              {PlanName}
+                            </span>
 
-                <div className="mt-2">
-                  {errors.age?.message && (
-                    <p className="mt-2 text-sm text-red-400">
-                      {errors.age.message}
-                    </p>
-                  )}
-                </div>
-              </div>
+                            <span className="block text-sm leading-relaxed text-blue-600 dark:text-neutral-500 mt-1">
+                              {RemainingCredits} available.
+                            </span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    <div className="mt-2">
+                      {errors.plan?.message && (
+                        <p className="mt-2 text-sm text-red-400">
+                          {errors.plan.message}
+                        </p>
+                      )}
+                    </div>
+                    {/* {Object.entries(credits).map(([creditType, creditCount]) => (
+                    <div key={creditType}>
+                      <input
+                        type="radio"
+                        id={creditType}
+                        name="creditType"
+                        value={creditType}
+                        // checked={selectedCredit === creditType}
+                        // onChange={() => onCreditChange(creditType)}
+                      />
+                      <label htmlFor={creditType}>
+                        {creditType} ({creditCount})
+                      </label>
+                    </div>
+                  ))} */}
+                  </div>
+                  {/* Select Plan Ends Here */}
+                  <div className="sm:col-span-3">
+                    {/* Select */}
+                    <div className="relative">
+                      <select
+                        className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                        {...register("gender")}
+                        id="gender"
+                      >
+                        <option value="">Choose gender</option>
+                        <option value="women">Women</option>
+                        <option value="man">Man</option>
+                        <option value="non-binary">Non - Binary</option>
+                      </select>
+                    </div>
+                    {/* End Select */}
 
-              <div className="sm:col-span-3">
-                {/* Select */}
-                <div className="relative">
-                  <select
-                    className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
-                    {...register("eye")}
-                    id="eye-color"
-                  >
-                    <option value="">Choose eye color</option>
-                    <option value="brown">Brown</option>
-                    <option value="blue">Blue</option>
-                    <option value="green">Green</option>
-                    <option value="hazel">Hazel</option>
-                    <option value="gray">Gray</option>
-                    <option value="amber">Amber</option>
-                    <option value="heterochromia">Heterochromia</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                {/* End Select */}
+                    <div className="mt-2">
+                      {errors.gender?.message && (
+                        <p className="mt-2 text-sm text-red-400">
+                          {errors.gender.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
 
-                <div className="mt-2">
-                  {errors.eye?.message && (
-                    <p className="mt-2 text-sm text-red-400">
-                      {errors.eye.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="sm:col-span-3">
-                {/* Select */}
-                <div className="relative">
-                  <select
-                    className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
-                    {...register("hair")}
-                    id="hair-color"
-                  >
-                    <option value="">Choose hair color</option>
-                    <option value="black">Black</option>
-                    <option value="brown">Brown</option>
-                    <option value="dark-brown">Dark Brown</option>
-                    <option value="light-brown">Light Brown</option>
-                    <option value="blonde">Blonde</option>
-                    <option value="golden-blonde">Golden Blonde</option>
-                    <option value="strawberry-blonde">Strawberry Blonde</option>
-                    <option value="red">Red</option>
-                    <option value="auburn">Auburn</option>
-                    <option value="chestnut">Chestnut</option>
-                    <option value="gray">Gray</option>
-                    <option value="white">White</option>
-                    <option value="salt-and-pepper">Salt and Pepper</option>
-                    <option value="blue-gray">Blue/Gray</option>
-                    <option value="ash-brown">Ash Brown</option>
-                    <option value="dark-red">Dark Red</option>
-                    <option value="caramel-brown">Caramel Brown</option>
-                    <option value="honey-blonde">Honey Blonde</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                {/* End Select */}
-
-                <div className="mt-2">
-                  {errors.hair?.message && (
-                    <p className="mt-2 text-sm text-red-400">
-                      {errors.hair.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="sm:col-span-3">
-                {/* Select */}
-                <div className="relative">
-                  <select
-                    className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
-                    {...register("ethnicity")}
-                    id="ethnicity"
-                  >
-                    <option value="">Choose ethnicity</option>
-                    <option value="caucasian">
-                      Caucasian (United States, United Kingdom)
-                    </option>
-                    <option value="african-american">
-                      African American (United States)
-                    </option>
-                    <option value="hispanic-latino">
-                      Hispanic/Latino (Mexico, Brazil)
-                    </option>
-                    <option value="asian">Asian (China, Japan)</option>
-                    <option value="middle-eastern">
-                      Middle Eastern (Saudi Arabia, Iran, and more)
-                    </option>
-                    <option value="south-asian">
-                      South Asian (India, Pakistan)
-                    </option>
-                    <option value="native-american">
-                      Native American (United States, Canada, and more)
-                    </option>
-                    <option value="pacific-islander">
-                      Pacific Islander (Fiji, Samoa, and more)
-                    </option>
-                    <option value="black-caribbean">
-                      Black Caribbean (Jamaica, Haiti, and more)
-                    </option>
-                    <option value="european">
-                      European (France, Germany, and more)
-                    </option>
-                    <option value="east-african">
-                      East African (Kenya, Ethiopia, and more)
-                    </option>
-                    <option value="west-african">
-                      West African (Nigeria, Ghana, and more)
-                    </option>
-                    <option value="caribbean">
-                      Caribbean (Trinidad and Tobago, Barbados, and more)
-                    </option>
-                    <option value="latin-american">
-                      Latin American (Argentina, Colombia, and more)
-                    </option>
-                    <option value="central-asian">
-                      Central Asian (Kazakhstan, Uzbekistan, and more)
-                    </option>
-                    <option value="southeast-asian">
-                      Southeast Asian (Thailand, Vietnam, and more)
-                    </option>
-                    <option value="polynesian">
-                      Polynesian (Hawaii, Tonga, and more)
-                    </option>
-                    <option value="maori">Maori (New Zealand, and more)</option>
-                    <option value="inuit">
-                      Inuit (Canada, Greenland, and more)
-                    </option>
-                    <option value="melanesian">
-                      Melanesian (Papua New Guinea, Vanuatu, and more)
-                    </option>
-                    <option value="arab">Arab (Lebanon, Iraq, and more)</option>
-                    <option value="jewish">Jewish (Israel, and more)</option>
-                    <option value="roma">
-                      Roma (Spain, Romania, and more)
-                    </option>
-                    <option value="afro-latinx">
-                      Afro-Latinx (Dominican Republic, Cuba, and more)
-                    </option>
-                    <option value="biracial">Biracial</option>
-                    <option value="multiracial">Multiracial</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                {/* End Select */}
-
-                <div className="mt-2">
-                  {errors.ethnicity?.message && (
-                    <p className="mt-2 text-sm text-red-400">
-                      {errors.ethnicity.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="sm:col-span-3">
-                {/* Select */}
-                <div className="relative">
+                  {/* <div className="sm:col-span-3">
                   <input
-                    type="text"
-                    id="name"
-                    className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600 placeholder-current"
-                    {...register("name")}
-                    placeholder="Name your studio anything."
+                    type="number"
+                    id="age"
+                    {...register("age")}
+                    className="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600 placeholder-current"
+                    placeholder="Please enter your age"
                   />
-                </div>
-                {/* End Select */}
 
-                <div className="mt-2">
-                  {errors.name?.message && (
-                    <p className="mt-2 text-sm text-red-400">
-                      {errors.name.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+                  <div className="mt-2">
+                    {errors.age?.message && (
+                      <p className="mt-2 text-sm text-red-400">
+                        {errors.age.message}
+                      </p>
+                    )}
+                  </div>
+                </div> */}
 
-        {currentStep === 1 && (
-          <div>
-            <h2 className="text-base font-semibold leading-7 text-gray-900">
-              Upload Images
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-gray-600">
-              Provide your high quality images.
-            </p>
+                  {/* <div className="sm:col-span-3">
+                  <div className="relative">
+                    <select
+                      className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                      {...register("eye")}
+                      id="eye-color"
+                    >
+                      <option value="">Choose eye color</option>
+                      <option value="brown">Brown</option>
+                      <option value="blue">Blue</option>
+                      <option value="green">Green</option>
+                      <option value="hazel">Hazel</option>
+                      <option value="gray">Gray</option>
+                      <option value="amber">Amber</option>
+                      <option value="heterochromia">Heterochromia</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
 
-            <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-              <div className="sm:col-span-full">
-                To produce good results, please follow the image uploading
-                guidelines carefully.
-              </div>
-              <div className="sm:col-span-full">
-                <ImageUploadingGuideLines />
-              </div>
-              <div className="sm:col-span-full">
-                {/* ImageUploading here. */}
-                <div className="flex justify-between items-center">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/png, image/jpeg"
-                    onChange={handleFileSelected}
-                    className="file:bg-violet-50 file:text-violet-500 hover:file:bg-violet-100
-                      file:rounded-lg file:rounded-tr-none file:rounded-br-none
-                      file:px-4 file:py-2 file:mr-4 file:border-none hover:cursor-pointer border rounded-lg text-gray-400"
-                  />
-                  <div>
-                    <button type="button" onClick={() => setImages([])}>
-                      <span className="inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-500">
-                        <IoTrashBin />
-                        All Images
-                      </span>
-                    </button>
+                  <div className="mt-2">
+                    {errors.eye?.message && (
+                      <p className="mt-2 text-sm text-red-400">
+                        {errors.eye.message}
+                      </p>
+                    )}
+                  </div>
+                </div> */}
+
+                  {/* <div className="sm:col-span-3">
+                  <div className="relative">
+                    <select
+                      className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                      {...register("hair")}
+                      id="hair-color"
+                    >
+                      <option value="">Choose hair color</option>
+                      <option value="black">Black</option>
+                      <option value="brown">Brown</option>
+                      <option value="dark-brown">Dark Brown</option>
+                      <option value="light-brown">Light Brown</option>
+                      <option value="blonde">Blonde</option>
+                      <option value="golden-blonde">Golden Blonde</option>
+                      <option value="strawberry-blonde">
+                        Strawberry Blonde
+                      </option>
+                      <option value="red">Red</option>
+                      <option value="auburn">Auburn</option>
+                      <option value="chestnut">Chestnut</option>
+                      <option value="gray">Gray</option>
+                      <option value="white">White</option>
+                      <option value="salt-and-pepper">Salt and Pepper</option>
+                      <option value="blue-gray">Blue/Gray</option>
+                      <option value="ash-brown">Ash Brown</option>
+                      <option value="dark-red">Dark Red</option>
+                      <option value="caramel-brown">Caramel Brown</option>
+                      <option value="honey-blonde">Honey Blonde</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div className="mt-2">
+                    {errors.hair?.message && (
+                      <p className="mt-2 text-sm text-red-400">
+                        {errors.hair.message}
+                      </p>
+                    )}
+                  </div>
+                </div> */}
+
+                  {/* <div className="sm:col-span-3">
+                  <div className="relative">
+                    <select
+                      className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                      {...register("ethnicity")}
+                      id="ethnicity"
+                    >
+                      <option value="">Choose ethnicity</option>
+                      <option value="caucasian">
+                        Caucasian (United States, United Kingdom)
+                      </option>
+                      <option value="african-american">
+                        African American (United States)
+                      </option>
+                      <option value="hispanic-latino">
+                        Hispanic/Latino (Mexico, Brazil)
+                      </option>
+                      <option value="asian">Asian (China, Japan)</option>
+                      <option value="middle-eastern">
+                        Middle Eastern (Saudi Arabia, Iran, and more)
+                      </option>
+                      <option value="south-asian">
+                        South Asian (India, Pakistan)
+                      </option>
+                      <option value="native-american">
+                        Native American (United States, Canada, and more)
+                      </option>
+                      <option value="pacific-islander">
+                        Pacific Islander (Fiji, Samoa, and more)
+                      </option>
+                      <option value="black-caribbean">
+                        Black Caribbean (Jamaica, Haiti, and more)
+                      </option>
+                      <option value="european">
+                        European (France, Germany, and more)
+                      </option>
+                      <option value="east-african">
+                        East African (Kenya, Ethiopia, and more)
+                      </option>
+                      <option value="west-african">
+                        West African (Nigeria, Ghana, and more)
+                      </option>
+                      <option value="caribbean">
+                        Caribbean (Trinidad and Tobago, Barbados, and more)
+                      </option>
+                      <option value="latin-american">
+                        Latin American (Argentina, Colombia, and more)
+                      </option>
+                      <option value="central-asian">
+                        Central Asian (Kazakhstan, Uzbekistan, and more)
+                      </option>
+                      <option value="southeast-asian">
+                        Southeast Asian (Thailand, Vietnam, and more)
+                      </option>
+                      <option value="polynesian">
+                        Polynesian (Hawaii, Tonga, and more)
+                      </option>
+                      <option value="maori">
+                        Maori (New Zealand, and more)
+                      </option>
+                      <option value="inuit">
+                        Inuit (Canada, Greenland, and more)
+                      </option>
+                      <option value="melanesian">
+                        Melanesian (Papua New Guinea, Vanuatu, and more)
+                      </option>
+                      <option value="arab">
+                        Arab (Lebanon, Iraq, and more)
+                      </option>
+                      <option value="jewish">Jewish (Israel, and more)</option>
+                      <option value="roma">
+                        Roma (Spain, Romania, and more)
+                      </option>
+                      <option value="afro-latinx">
+                        Afro-Latinx (Dominican Republic, Cuba, and more)
+                      </option>
+                      <option value="biracial">Biracial</option>
+                      <option value="multiracial">Multiracial</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div className="mt-2">
+                    {errors.ethnicity?.message && (
+                      <p className="mt-2 text-sm text-red-400">
+                        {errors.ethnicity.message}
+                      </p>
+                    )}
+                  </div>
+                </div> */}
+
+                  <div className="sm:col-span-3">
+                    {/* Select */}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        id="name"
+                        className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600 placeholder-current"
+                        {...register("name")}
+                        placeholder="Name your studio anything."
+                      />
+                    </div>
+                    {/* End Select */}
+
+                    <div className="mt-2">
+                      {errors.name?.message && (
+                        <p className="mt-2 text-sm text-red-400">
+                          {errors.name.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-
-                <PreviewThumbnail
-                  images={images}
-                  onRemoveImage={onRemoveImage}
-                  imageError={imageError}
-                  setImageError={setImageError}
-                  MAX_IMAGE_SIZE={MAX_IMAGE_SIZE}
-                />
               </div>
+            </fieldset>
+          )}
+
+          {currentStep === 1 && (
+            <fieldset disabled={isPending}>
+              <div>
+                <h2 className="text-base font-semibold leading-7 text-gray-900">
+                  Upload Images
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-gray-600">
+                  Provide your high quality images.
+                </p>
+
+                <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                  <div className="sm:col-span-full">
+                    To produce good results, please follow the image uploading
+                    guidelines carefully.
+                  </div>
+                  <div className="sm:col-span-full">
+                    <ImageUploadingGuideLines />
+                  </div>
+                  <div className="sm:col-span-full">
+                    {/* ImageUploading here. */}
+                    <div className="flex justify-between items-center">
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/png, image/jpeg"
+                        onChange={handleFileSelected}
+                        className="file:bg-violet-50 file:text-violet-500 hover:file:bg-violet-100
+                      file:rounded-lg file:rounded-tr-none file:rounded-br-none
+                      file:px-4 file:py-2 file:mr-4 file:border-none hover:cursor-pointer border rounded-lg text-gray-400"
+                      />
+                      <div>
+                        <button type="button" onClick={() => setImages([])}>
+                          <span className="inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-500">
+                            <IoTrashBin />
+                            All Images
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <PreviewThumbnail
+                      images={images}
+                      onRemoveImage={onRemoveImage}
+                      imageError={imageError}
+                      setImageError={setImageError}
+                      MAX_IMAGE_SIZE={MAX_IMAGE_SIZE}
+                    />
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+          )}
+
+          {currentStep === 2 && (
+            <>
+              <h2 className="text-base font-semibold leading-7 text-gray-900">
+                Complete
+              </h2>
+              <p
+                className={`mt-1 text-sm leading-6 ${
+                  studioSuccess ? "text-gray-600" : "text-red-500"
+                }`}
+              >
+                {studioSuccess
+                  ? "Thank you!, Your studio has been created"
+                  : "We could not create studio for you, please try again or contact us for support."}
+              </p>
+            </>
+          )}
+        </form>
+
+        {/* Navigation */}
+        <div className="mt-8 pt-5">
+          <fieldset disabled={isPending}>
+            <div className="flex justify-between">
+              <button
+                type="button"
+                onClick={prev}
+                disabled={currentStep === 0}
+                className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-normal rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={next}
+                disabled={
+                  currentStep === steps.length - 1 ||
+                  (currentStep === 1 &&
+                    (images.length < MIN_NUMBER_IMAGE_UPLOAD ||
+                      images.length > MAX_NUMBER_IMAGE_UPLOAD)) ||
+                  images.some(
+                    (image) =>
+                      image.size > MAX_IMAGE_SIZE ||
+                      !image.type.startsWith("image/")
+                  )
+                }
+                className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-normal rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+              >
+                {isPending ? "Creating" : currentStep === 1 ? "Create" : "Next"}
+              </button>
             </div>
-          </div>
-        )}
-
-        {currentStep === 2 && (
-          <>
-            <h2 className="text-base font-semibold leading-7 text-gray-900">
-              Complete
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-gray-600">
-              Thank you for your submission.
-            </p>
-          </>
-        )}
-      </form>
-
-      {/* Navigation */}
-      <div className="mt-8 pt-5">
-        <div className="flex justify-between">
-          <button
-            type="button"
-            onClick={prev}
-            disabled={currentStep === 0}
-            className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-normal rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-          >
-            Back
-          </button>
-          <button
-            type="button"
-            onClick={next}
-            disabled={
-              currentStep === steps.length - 1 ||
-              (currentStep === 1 &&
-                (images.length < MIN_NUMBER_IMAGE_UPLOAD ||
-                  images.length > MAX_NUMBER_IMAGE_UPLOAD)) ||
-              images.some(
-                (image) =>
-                  image.size > MAX_IMAGE_SIZE ||
-                  !image.type.startsWith("image/")
-              )
-            }
-            className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-normal rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-          >
-            {currentStep === 1 ? "Create" : "Next"}
-          </button>
+          </fieldset>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

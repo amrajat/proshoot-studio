@@ -12,7 +12,6 @@ import { useState, useTransition } from "react";
 import ToolTip from "@/components/homepage/ToolTip";
 import Loader from "@/components/Loader";
 import Error from "@/components/Error";
-import { revalidatePath } from "next/cache";
 
 function ProfileUpdateForm({ id }) {
   //  Form Validation
@@ -77,7 +76,7 @@ function ProfileUpdateForm({ id }) {
           >
             Full Name
           </label>
-          <ToolTip />
+          <ToolTip type="public" />
         </div>
         <div className="sm:col-span-9">
           <div className="sm:flex">
@@ -109,7 +108,7 @@ function ProfileUpdateForm({ id }) {
           >
             Company / Position
           </label>
-          <ToolTip />
+          <ToolTip type="public" />
         </div>
         <div className="sm:col-span-9">
           <div className="sm:flex">
@@ -141,7 +140,7 @@ function ProfileUpdateForm({ id }) {
           >
             Website
           </label>
-          <ToolTip />
+          <ToolTip type={"public"} />
         </div>
         <div className="sm:col-span-9">
           <input
@@ -206,7 +205,7 @@ function ProfileUpdateForm({ id }) {
           >
             Permission
           </label>
-          <ToolTip />
+          <ToolTip type="public" />
         </div>
         <div className="sm:col-span-9">
           <div className="grid space-y-3">

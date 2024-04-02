@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 function Header() {
@@ -339,10 +340,12 @@ function Header() {
                           className="mt-4 group flex gap-x-5 items-center dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                           href="#"
                         >
-                          <img
+                          <Image
                             className="w-32 h-32 rounded-lg"
-                            src="https://images.unsplash.com/photo-1648737967328-690548aec14f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=320&h=320&q=80"
+                            src="/default-user.jpg"
                             alt="Image Description"
+                            width={512}
+                            height={512}
                           />
                           <div className="grow">
                             <p className="text-gray-800 dark:text-gray-200">

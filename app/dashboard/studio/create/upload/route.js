@@ -36,18 +36,23 @@ export async function POST(req, res) {
   const name = formData.get("name");
 
   // Prepare formData prompt attributes based on plan selected.
-  const finalPrompts = generateFinalPromptArray(formData.get("gender")).slice(
-    0,
-    PLANS.plan.headshots
-  );
+  const finalPrompts = generateFinalPromptArray(
+    formData.get("tune[name]")
+  ).slice(0, PLANS[plan].headshots);
+  console.log("num_headshot", PLANS[plan].headshots);
 
   finalPrompts.forEach((promptObject, index) => {
     Object.entries(promptObject).forEach(([key, value]) => {
+      console.log(key, value);
       formData.append(`tune[prompts_attributes][0][${key}]`, value);
     });
   });
 
   formData.append("tune[title]", `${name}/${studioID}`);
+  formData.append(
+    "tune[callback]",
+    `https://www.headsshot.com/dashboard/webhooks/studio?user_id=${session.user.id}&user_email=${session.user.email}`
+  );
   // Delete the extra FormData attributes before calling astria api.
   formData.delete("credits");
   formData.delete("plan");
@@ -74,6 +79,7 @@ export async function POST(req, res) {
   };
   const response = await fetch("https://api.astria.ai/tunes", options);
   const result = await response.json();
+  console.log(result);
   result.coverImage = coverImageURL;
 
   let updateStudioError;
@@ -82,6 +88,8 @@ export async function POST(req, res) {
       new_studio: result,
       user_id: session.user.id,
     });
+    console.log(updateStudioError);
+
     updateStudioError = error;
   }
 
@@ -91,6 +99,8 @@ export async function POST(req, res) {
       .from("users")
       .update({ credits: credits })
       .eq("id", session.user.id);
+    console.log(error);
+
     if (!error) return NextResponse.json({ success: false });
   }
 

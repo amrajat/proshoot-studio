@@ -138,7 +138,7 @@ export default function CreateStudio() {
         formData.append("tune[images][]", file);
       });
 
-      formData.append("tune[branch]", "fast");
+      formData.append("tune[branch]", "sd15");
       formData.append("tune[base_tune_id]", 690204);
       formData.append("tune[name]", data.gender);
       formData.append("tune[token]", "ohwx");

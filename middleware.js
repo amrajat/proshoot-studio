@@ -6,7 +6,10 @@ export async function middleware(request) {
   const { session } = await getCurrentSession();
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith(`/dashboard/stripe/webhook`)) {
+  if (
+    pathname.startsWith(`/dashboard/stripe/webhook`) ||
+    pathname.startsWith(`/dashboard/webhooks`)
+  ) {
     // Allow access to the requested path
     return NextResponse.next();
   }

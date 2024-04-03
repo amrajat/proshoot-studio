@@ -8,10 +8,6 @@ const checkout_session_completed = "checkout.session.completed";
 // stripe listen --forward-to localhost:3000/dashboard/stripe/webhook --skip-verify
 // const checkout_session_completed = "product.created";
 
-const stripe = new Stripe(`${process.env.STRIPE_SECRET_KEY}`, {
-  apiVersion: "2023-10-16",
-});
-
 export async function POST(req, res) {
   const cookieStore = cookies();
 
@@ -32,10 +28,14 @@ export async function POST(req, res) {
       },
     }
   );
+  const stripe = new Stripe(`${process.env.STRIPE_SECRET_KEY}`, {
+    apiVersion: "2023-10-16",
+  });
+  const webhookSecret = `${process.env.STRIPE_WEBHOOK_SECRET}`;
+  const sig = req.headers.get("stripe-signature");
 
   const reqBody = await req.text();
-  const sig = req.headers.get("stripe-signature");
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  // const reqBody = await buffer(req);
 
   let event;
 

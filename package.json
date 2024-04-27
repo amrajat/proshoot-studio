@@ -1,5 +1,5 @@
 {
-  "name": "headsshot.com",
+  "name": "Proshoot",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -32,7 +32,6 @@
     "swr": "^2.2.5",
     "tailwind-merge": "^2.2.2",
     "uuid": "^9.0.1",
-    "yup": "^1.4.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

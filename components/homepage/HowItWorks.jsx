@@ -1,11 +1,4 @@
 import Image from "next/image";
-import {
-  HiCloudArrowUp,
-  HiOutlineSparkles,
-  HiPaintBrush,
-} from "react-icons/hi2";
-import ButtonMovingBorder from "./ButtonMovingBorder";
-import { CldImage } from "next-cloudinary";
 
 function HowItWorks() {
   return (
@@ -24,10 +17,14 @@ function HowItWorks() {
       {/* Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 lg:items-center">
         <div className="aspect-w-16 aspect-h-9 lg:aspect-none">
-          <img
-            className="w-full object-cover rounded-xl"
-            src="/another.png"
-            alt="Image Description"
+          <Image
+            className="w-full h-auto object-cover rounded-xl"
+            src="/examples/ai-portrait-1.jpg"
+            alt="ai generate headshot"
+            width={0}
+            height={0}
+            sizes="100vw"
+            quality={100}
           />
         </div>
         {/* End Col */}

@@ -10,7 +10,7 @@ export const metadata = {
   },
 };
 
-export async function Layout({ children }) {
+async function DashboardLayout({ children }) {
   return (
     <>
       <main id="content" role="main" className="min-h-screen">
@@ -22,4 +22,4 @@ export async function Layout({ children }) {
   );
 }
 
-export default Layout;
+export default DashboardLayout;

@@ -13,6 +13,7 @@ import Loader from "@/components/Loader";
 import useSWR from "swr";
 import { getCredits } from "@/lib/supabase/actions/client";
 import { HiCheck } from "react-icons/hi2";
+import { redirect } from "next/navigation";
 
 // TODO: ADD IMAGE VALIDATION LATER, WITH ALL THE CHECKS SUCH AS NUM. OF MIN/MAX IMAGES. REDO UPLOAD, DELETE IMAGE...MAX SIZE
 // FIXME: FORMS SHOULD NOT BE FILLED IF KEY PRESS IS ENTER ON CURRENT STEP, WITHOUT COMPLETING STEP 2.
@@ -138,25 +139,26 @@ export default function CreateStudio() {
         formData.append("tune[images][]", file);
       });
 
-      formData.append("tune[branch]", "sd15");
-      formData.append("tune[base_tune_id]", 690204);
       formData.append("tune[name]", data.gender);
-      formData.append("tune[token]", "ohwx");
       formData.append("name", data.name);
       formData.append("credits", JSON.stringify(credits));
       formData.append("plan", data.plan);
-      // A webhook URL to be called when the tune is finished training.
-      // The webhook will receive a POST request with the tune object.
-      // formData.append('tune[callback]', 'https://optional-callback-url.com/to-your-service-when-ready?user_id=1&tune_id=1');
 
       // ADD TRY AND CATCH HERE.
 
-      const response = await axios.post(
-        "/dashboard/studio/create/upload",
-        formData
-      );
-      // FIXME: below line produces stale state, which don't work
-      setStudioSuccess(response.data.success); // response.data.success => true / false
+      // const response = await axios.post(
+      //   "/dashboard/studio/create/upload",
+      //   formData
+      // );
+      const response = await fetch("/dashboard/studio/create/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.data.success) {
+      } // response.data.success => true / false
+      setStudioSuccess(response.data.success);
+      redirect("/dashboard/studio");
     });
   };
 
@@ -326,7 +328,6 @@ export default function CreateStudio() {
                         <option value="">Choose gender</option>
                         <option value="women">Women</option>
                         <option value="man">Man</option>
-                        <option value="non-binary">Non - Binary</option>
                       </select>
                     </div>
                     {/* End Select */}

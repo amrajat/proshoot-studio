@@ -76,7 +76,7 @@ function ProfileUpdateForm({ id }) {
           >
             Full Name
           </label>
-          <ToolTip type="public" />
+          <ToolTip>Public</ToolTip>
         </div>
         <div className="sm:col-span-9">
           <div className="sm:flex">

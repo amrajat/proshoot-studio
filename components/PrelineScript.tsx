@@ -3,21 +3,24 @@
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
-declare var HSStaticMethods: {
-  autoInit(collection?: string | string[]): void;
-};
+import { IStaticMethods } from "preline/preline";
+declare global {
+  interface Window {
+    HSStaticMethods: IStaticMethods;
+  }
+}
 
 export default function PrelineScript() {
   const path = usePathname();
 
   useEffect(() => {
-    import("preline/preline");
-  }, []);
+    const loadPreline = async () => {
+      await import("preline/preline");
 
-  useEffect(() => {
-    setTimeout(() => {
-      HSStaticMethods.autoInit();
-    }, 200);
+      window.HSStaticMethods.autoInit();
+    };
+
+    loadPreline();
   }, [path]);
 
   return null;

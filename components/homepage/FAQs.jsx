@@ -1,7 +1,92 @@
+import { HiMiniPlus, HiMiniMinus } from "react-icons/hi2";
+
+const faqsList = [
+  {
+    q: "Do you display all the images created on your platform?",
+    a: "No, we will always ask for your permission before displaying your images on our website. You can manage your consent settings on your account's profile page.",
+  },
+  {
+    q: "Do your special plans for bulk using.",
+    a: "Yes we do! Please email us at support@proshoot.co",
+  },
+  {
+    q: "Could you please provide me with an invoice?",
+    a: "Certainly, you can obtain an invoice for your purchase. You will get email with invoice.pdf from our payment partner Stripe.",
+  },
+  {
+    q: "Why do you require a large number of photos?",
+    a: "We require a large number of photos to train our AI model and produce the best possible headshot for you. Uploading more photos will result in a better outcome.",
+  },
+  {
+    q: "What kind of photos should I upload?",
+    a: "Please ensure to upload both portrait and full-body shots of the person. It is recommended to use 26 pictures of your subject, ideally cropped to a 1:1 aspect ratio. Out of these, 6 photos should showcase the full body or entire object, while 10 medium shot photos from the chest up and 10 close-ups should also be included. Variation is key in creating a comprehensive collection, so make sure to change body poses for every picture, and use pictures from different days, backgrounds, and lighting. Every picture of your subject should introduce new information about them. To prevent the model from learning unnecessary features, avoid uploading pictures taken at the same hour or day. For example, using multiple pictures with the same shirt will make the model learn the shirt as well as part of the subject. It is also important to always use a new background. Please do not upload pictures mixed with other people or funny faces.",
+  },
+  {
+    q: "Is it possible for me to delete my data?",
+    a: "After 30 days from the date of creating your studio, we will delete it along with any images from our database. You can also request deletion of your studio at any time by emailing us manually.",
+  },
+  {
+    q: "Could you please inform me about the location of my data storage?",
+    a: "Data is stored securely on servers in the United States by highly secure third-party partners who undergo a thorough vetting process.",
+  },
+  {
+    q: "What happens to my photos after they are used for training purposes?",
+    a: "We use input photos to train our AI model, create headshots, and delete all data within 30 days of studio creation. You can email us anytime to have your data deleted.",
+  },
+  {
+    q: "Is the payment process secure?",
+    a: "Our payment gateway is Stripe, ensuring secure transactions. We do not store any financial information.",
+  },
+  {
+    q: "How many high-quality and realistic photos I can expect?",
+    a: "Our photography service strives to provide you with the best possible experience, however, just like a real photo shoot, not every photo will turn out perfect. You may come across some photos with distortions. Nonetheless, we guarantee to deliver 4-10 exceptional profile-worthy headshots per order.",
+  },
+  {
+    q: "Who has the ownership of the generated images?",
+    a: "We grant you full ownership and a commercial license for your photos.",
+  },
+  {
+    q: "Do you offer refunds?",
+    a: "Yes, we do. Please read our refund policy.",
+  },
+  {
+    q: "Will the training be completed within 2 hours or might it take longer?",
+    a: "Training time for the model varies depending on input images and usually takes around 30 minutes.",
+  },
+  {
+    q: "What formats of photos can I upload to your platform?",
+    a: "We only support the following image formats: JPG, JPEG, PNG, HEIC, and WebP. If needed, you can easily convert your images to these formats using free online tools.",
+  },
+  {
+    q: "My question is not listed above.",
+    a: "You can always email us. support@proshoot.co",
+  },
+];
+const NUMBERS = [
+  "one",
+  "two",
+  "three",
+  "four",
+  "five",
+  "six",
+  "seven",
+  "eight",
+  "nine",
+  "ten",
+  "eleven",
+  "twelve",
+  "thirteen",
+  "fourteen",
+  "fifteen",
+];
+
 function FAQs() {
   return (
     <>
-      <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
+      <div
+        id="faqs"
+        className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto"
+      >
         {/* <!-- Grid --> */}
         <div className="grid md:grid-cols-6 gap-6">
           <div className="md:col-span-2">
@@ -21,314 +106,46 @@ function FAQs() {
           <div className="md:col-span-4">
             {/* <!-- Accordion --> */}
             <div className="hs-accordion-group divide-y divide-gray-200 dark:divide-gray-700">
-              <div
-                className="hs-accordion pb-3 active"
-                id="hs-basic-with-title-and-arrow-stretched-heading-one"
-              >
-                <button
-                  className="hs-accordion-toggle group pb-3 inline-flex items-center justify-between gap-x-3 w-full md:text-lg font-semibold text-start text-gray-800 rounded-lg transition hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                  aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-one"
-                >
-                  Can I cancel at anytime?
-                  <svg
-                    className="hs-accordion-active:hidden block flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+              {faqsList.map((faq, index) => {
+                return (
+                  <div
+                    key={index}
+                    className={`hs-accordion pb-3 ${
+                      index === 0 ? "active" : "pt-6"
+                    }`}
+                    id={`hs-basic-with-title-and-arrow-stretched-heading-${NUMBERS[index]}`}
                   >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                  <svg
-                    className="hs-accordion-active:block hidden flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m18 15-6-6-6 6" />
-                  </svg>
-                </button>
-                <div
-                  id="hs-basic-with-title-and-arrow-stretched-collapse-one"
-                  className="hs-accordion-content w-full overflow-hidden transition-[height] duration-300"
-                  aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-one"
-                >
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Yes, you can cancel anytime no questions are asked while you
-                    cancel but we would highly appreciate if you will give us
-                    some feedback.
-                  </p>
-                </div>
-              </div>
+                    <button
+                      className="hs-accordion-toggle group pb-3 inline-flex items-center justify-between gap-x-3 w-full md:text-lg font-semibold text-start text-gray-800 rounded-lg transition hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                      aria-controls={`hs-basic-with-title-and-arrow-stretched-collapse-${NUMBERS[index]}`}
+                    >
+                      {faq.q}
+                      <HiMiniPlus
+                        width={24}
+                        height={24}
+                        className="hs-accordion-active:hidden block flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
+                      />
 
-              <div
-                className="hs-accordion pt-6 pb-3"
-                id="hs-basic-with-title-and-arrow-stretched-heading-two"
-              >
-                <button
-                  className="hs-accordion-toggle group pb-3 inline-flex items-center justify-between gap-x-3 w-full md:text-lg font-semibold text-start text-gray-800 rounded-lg transition hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                  aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-two"
-                >
-                  My team has credits. How do we use them?
-                  <svg
-                    className="hs-accordion-active:hidden block flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                  <svg
-                    className="hs-accordion-active:block hidden flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m18 15-6-6-6 6" />
-                  </svg>
-                </button>
-                <div
-                  id="hs-basic-with-title-and-arrow-stretched-collapse-two"
-                  className="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300"
-                  aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-two"
-                >
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Once your team signs up for a subscription plan. This is
-                    where we sit down, grab a cup of coffee and dial in the
-                    details.
-                  </p>
-                </div>
-              </div>
-
-              <div
-                className="hs-accordion pt-6 pb-3"
-                id="hs-basic-with-title-and-arrow-stretched-heading-three"
-              >
-                <button
-                  className="hs-accordion-toggle group pb-3 inline-flex items-center justify-between gap-x-3 w-full md:text-lg font-semibold text-start text-gray-800 rounded-lg transition hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                  aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-three"
-                >
-                  How does Preline's pricing work?
-                  <svg
-                    className="hs-accordion-active:hidden block flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                  <svg
-                    className="hs-accordion-active:block hidden flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m18 15-6-6-6 6" />
-                  </svg>
-                </button>
-                <div
-                  id="hs-basic-with-title-and-arrow-stretched-collapse-three"
-                  className="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300"
-                  aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-three"
-                >
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Our subscriptions are tiered. Understanding the task at hand
-                    and ironing out the wrinkles is key.
-                  </p>
-                </div>
-              </div>
-
-              <div
-                className="hs-accordion pt-6 pb-3"
-                id="hs-basic-with-title-and-arrow-stretched-heading-four"
-              >
-                <button
-                  className="hs-accordion-toggle group pb-3 inline-flex items-center justify-between gap-x-3 w-full md:text-lg font-semibold text-start text-gray-800 rounded-lg transition hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                  aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-four"
-                >
-                  How secure is Preline?
-                  <svg
-                    className="hs-accordion-active:hidden block flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                  <svg
-                    className="hs-accordion-active:block hidden flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m18 15-6-6-6 6" />
-                  </svg>
-                </button>
-                <div
-                  id="hs-basic-with-title-and-arrow-stretched-collapse-four"
-                  className="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300"
-                  aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-four"
-                >
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Protecting the data you trust to Preline is our first
-                    priority. This part is really crucial in keeping the project
-                    in line to completion.
-                  </p>
-                </div>
-              </div>
-
-              <div
-                className="hs-accordion pt-6 pb-3"
-                id="hs-basic-with-title-and-arrow-stretched-heading-five"
-              >
-                <button
-                  className="hs-accordion-toggle group pb-3 inline-flex items-center justify-between gap-x-3 w-full md:text-lg font-semibold text-start text-gray-800 rounded-lg transition hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                  aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-five"
-                >
-                  How do I get access to a theme I purchased?
-                  <svg
-                    className="hs-accordion-active:hidden block flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                  <svg
-                    className="hs-accordion-active:block hidden flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m18 15-6-6-6 6" />
-                  </svg>
-                </button>
-                <div
-                  id="hs-basic-with-title-and-arrow-stretched-collapse-five"
-                  className="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300"
-                  aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-five"
-                >
-                  <p className="text-gray-600 dark:text-gray-400">
-                    If you lose the link for a theme you purchased, don't panic!
-                    We've got you covered. You can login to your account, tap
-                    your avatar in the upper right corner, and tap Purchases. If
-                    you didn't create a login or can't remember the information,
-                    you can use our handy Redownload page, just remember to use
-                    the same email you originally made your purchases with.
-                  </p>
-                </div>
-              </div>
-
-              <div
-                className="hs-accordion pt-6 pb-3"
-                id="hs-basic-with-title-and-arrow-stretched-heading-six"
-              >
-                <button
-                  className="hs-accordion-toggle group pb-3 inline-flex items-center justify-between gap-x-3 w-full md:text-lg font-semibold text-start text-gray-800 rounded-lg transition hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                  aria-controls="hs-basic-with-title-and-arrow-stretched-collapse-six"
-                >
-                  Upgrade License Type
-                  <svg
-                    className="hs-accordion-active:hidden block flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                  <svg
-                    className="hs-accordion-active:block hidden flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m18 15-6-6-6 6" />
-                  </svg>
-                </button>
-                <div
-                  id="hs-basic-with-title-and-arrow-stretched-collapse-six"
-                  className="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300"
-                  aria-labelledby="hs-basic-with-title-and-arrow-stretched-heading-six"
-                >
-                  <p className="text-gray-600 dark:text-gray-400">
-                    There may be times when you need to upgrade your license
-                    from the original type you purchased and we have a solution
-                    that ensures you can apply your original purchase cost to
-                    the new license purchase.
-                  </p>
-                </div>
-              </div>
+                      <HiMiniMinus
+                        className="hs-accordion-active:block hidden flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
+                        width={24}
+                        height={24}
+                      />
+                    </button>
+                    <div
+                      id={`hs-basic-with-title-and-arrow-stretched-collapse-${NUMBERS[index]}`}
+                      className={`hs-accordion-content ${
+                        index === 0 ? "" : "hidden"
+                      } w-full overflow-hidden transition-[height] duration-300`}
+                      aria-labelledby={`hs-basic-with-title-and-arrow-stretched-heading-${NUMBERS[index]}`}
+                    >
+                      <p className="text-gray-600 dark:text-gray-400">
+                        {faq.a}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             {/* <!-- End Accordion --> */}
           </div>

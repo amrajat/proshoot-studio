@@ -1,6 +1,6 @@
 import { IoHelpCircle } from "react-icons/io5";
 
-function ToolTip({ children, type }) {
+function ToolTip({ children }) {
   return (
     <div className="hs-tooltip inline-block align-middle before:content-['\00a0']">
       <button
@@ -12,7 +12,7 @@ function ToolTip({ children, type }) {
           className="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-gray-900 text-xs font-medium text-white rounded shadow-sm dark:bg-slate-700"
           role="tooltip"
         >
-          {type === "public" ? "this is premade" : children}
+          {children}
         </span>
       </button>
     </div>

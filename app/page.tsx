@@ -1,21 +1,32 @@
-import Footer from "@/components/homepage/Footer";
 import Header from "@/components/homepage/Header";
+import Footer from "@/components/homepage/Footer";
 import FAQs from "@/components/homepage/FAQs";
 import Pricing from "@/components/homepage/Pricing";
-import ComparisonTable from "@/components/homepage/ComparisonTable";
 import Testimonials from "@/components/homepage/Testimonials";
+import HeroParallax from "@/components/homepage/Hero";
+import HowItWorks from "@/components/homepage/HowItWorks";
+import Detailed from "@/components/homepage/Detailed";
+import Compare from "@/components/homepage/Compare";
+import PhotographyCompare from "@/components/homepage/PhotographyCompare";
+import CardSlider from "@/components/homepage/CardSlider";
+import Teams from "@/components/homepage/Teams";
 
 export default function Home() {
-  return <p>error: forbidden access.</p>;
   return (
     <>
       <main id="content" role="main">
-        <div className="overflow-hidden">
-          <Header />
-          <Pricing />
-        </div>
-        <ComparisonTable />
+        <Header />
+        <HeroParallax />
+        <PhotographyCompare />
+        <HowItWorks />
+        {/* <ComparisonTable /> */}
+        <Detailed />
+        <Compare />
         <Testimonials />
+        <Pricing />
+        <CardSlider />
+        {/* <MediaPublications /> */}
+        <Teams />
         <FAQs />
       </main>
       <Footer />

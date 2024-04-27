@@ -3,6 +3,7 @@ import Error from "@/components/Error";
 
 import { getCredits, getPurchaseHistory } from "@/lib/supabase/actions/server";
 import { MdErrorOutline } from "react-icons/md";
+import ShowLocalTimeStamp from "@/components/dashboard/ShowLocalTimeStamp";
 
 import Link from "next/link";
 
@@ -10,9 +11,12 @@ async function Credits() {
   let purchase_history;
   let credits;
   try {
-    [{ purchase_history }] = await getPurchaseHistory();
-    [{ credits }] = await getCredits();
+    [{ purchase_history = [] } = {}] = await getPurchaseHistory();
+    [{ credits = [] } = {}] = await getCredits();
+    console.log(purchase_history, credits);
   } catch (error) {
+    console.log(purchase_history, credits);
+
     return (
       <Container>
         <Error message="Something went wrong." />
@@ -197,19 +201,11 @@ async function Credits() {
                                 {transaction.session}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-end font-medium text-gray-800 dark:text-gray-200">
-                                {new Date(transaction.timestamp).toLocaleString(
-                                  undefined,
-                                  {
-                                    weekday: "short", // e.g., "Monday"
-                                    year: "numeric", // e.g., "2024"
-                                    month: "short", // e.g., "January"
-                                    day: "numeric", // e.g., "1"
-                                    hour: "numeric", // e.g., "12"
-                                    minute: "numeric", // e.g., "30"
-                                    second: "numeric", // e.g., "15"
-                                    timeZoneName: "short", // e.g., "PST"
-                                  }
-                                )}
+                                {
+                                  <ShowLocalTimeStamp
+                                    ts={transaction.timestamp}
+                                  />
+                                }
                               </td>
                             </tr>
                           </tbody>

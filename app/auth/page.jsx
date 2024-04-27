@@ -1,7 +1,13 @@
 import Header from "@/components/homepage/Header";
 import Logo from "@/components/homepage/Logo";
 import AuthForm from "@/components/auth/AuthForm";
-// If session already exists then redirect user to dashboard.
+
+export const metadata = {
+  title: { absolute: "Login" },
+  description:
+    "Access your Proshoot.co account & generate stunning AI headshots in seconds. Login or sign up for free today!",
+};
+
 function AuthPage() {
   return (
     <>
@@ -10,7 +16,9 @@ function AuthPage() {
         <div className="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
           <div className="p-4 sm:p-7">
             <div className="text-center">
-              <Logo />
+              <div className="text-center flex justify-center">
+                <Logo />
+              </div>
 
               <h1 className="block text-2xl font-bold text-gray-800 dark:text-white mt-6">
                 Login
@@ -25,7 +33,7 @@ function AuthPage() {
                 disabled={true}
                 className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
               >
-                Sign in with
+                Login in with
                 <svg
                   className="w-4 h-auto"
                   width={46}

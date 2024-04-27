@@ -33,33 +33,88 @@ export async function POST(req, res) {
   const formData = await req.formData();
   const credits = JSON.parse(formData.get("credits"));
   const plan = formData.get("plan");
+  const gender = formData.get("tune[name]");
   const name = formData.get("name");
 
-  // Prepare formData prompt attributes based on plan selected.
-  const finalPrompts = generateFinalPromptArray(
-    formData.get("tune[name]")
-  ).slice(0, PLANS[plan].headshots);
-  console.log("num_headshot", PLANS[plan].headshots);
-
-  finalPrompts.forEach((promptObject, index) => {
-    Object.entries(promptObject).forEach(([key, value]) => {
-      console.log(key, value);
-      formData.append(`tune[prompts_attributes][0][${key}]`, value);
-    });
-  });
-
+  // Prepare the formData for Tuning
+  formData.append("tune[branch]", "fast"); //sd15 for stable diffusion.
+  formData.append("tune[base_tune_id]", 690204);
+  formData.append("tune[token]", "ohwx");
   formData.append("tune[title]", `${name}/${studioID}`);
   formData.append(
     "tune[callback]",
-    `https://www.headsshot.com/dashboard/webhooks/studio?user_id=${session.user.id}&user_email=${session.user.email}`
+    `${process.env.URL}/dashboard/webhooks/studio?user_id=${session.user.id}&user_email=${session.user.email}&event=tune&studio_id=${studioID}&secret=${process.env.WEBHOOK_SECRET}`
   );
-  // Delete the extra FormData attributes before calling astria api.
+
+  // Prepare formData prompt attributes based on plan selected.
+  // const finalPrompts = generateFinalPromptArray(
+  //   formData.get("tune[name]")
+  // ).slice(0, PLANS[plan].headshots);
+
+  // finalPrompts.forEach((promptObject, index) => {
+  //   Object.entries(promptObject).forEach(([key, value]) => {
+  //     formData.append(`tune[prompts_attributes][${index}][${key}]`, value);
+  //     formData.append(
+  //       `tune[prompts_attributes][${index}][callback]`,
+  //       `${process.env.URL}/dashboard/webhooks/studio?user_id=${session.user.id}&user_email=${session.user.email}&event=prompt&studio_id=${studioID}&secret=${process.env.WEBHOOK_SECRET}`
+  //     );
+  //   });
+  // });
+
+  // New ControlNet Approach
+  const controlnetImagesUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/private/controlnet/`;
+  const numPrompts = PLANS[plan].headshots;
+  function promptObject(gender, index) {
+    formData.append(
+      `tune[prompts_attributes][${index}][text]`,
+      `${
+        gender === "male" ? "handsome" : "beautiful"
+      }ohwx ${gender} --tiled_upscale`
+    );
+    formData.append(
+      `tune[prompts_attributes][${index}][super_resolution]`,
+      true
+    );
+    formData.append(`tune[prompts_attributes][${index}][inpaint_faces]`, true);
+    formData.append(`tune[prompts_attributes][${index}][hires_fix]`, true);
+    formData.append(`tune[prompts_attributes][${index}][face_correct]`, true);
+    formData.append(`tune[prompts_attributes][${index}][face_swap]`, true);
+    formData.append(
+      `tune[prompts_attributes][${index}][input_image_url]`,
+      `${controlnetImagesUrl}${index + 1}-${gender}.jpg`
+    );
+    formData.append(
+      `tune[prompts_attributes][${index}][controlnet_conditioning_scale]`,
+      0.4
+    );
+    formData.append(
+      `tune[prompts_attributes][${index}][denoising_strength]`,
+      0.5
+    );
+    formData.append(
+      `tune[prompts_attributes][${index}][controlnet_txt2img]`,
+      false
+    );
+    formData.append(`tune[prompts_attributes][${index}][controlnet]`, "pose");
+    formData.append(
+      `tune[prompts_attributes][${index}][callback]`,
+      `${process.env.URL}/dashboard/webhooks/studio?user_id=${session.user.id}&user_email=${session.user.email}&event=prompt&studio_id=${studioID}&secret=${process.env.WEBHOOK_SECRET}`
+    );
+  }
+
+  for (let step = 0; step < numPrompts; step++) {
+    promptObject(gender, step);
+  }
+
+  // End New ControlNet Approach
+
+  // Delete the extra FormData attributes
   formData.delete("credits");
   formData.delete("plan");
   formData.delete("name");
 
   const studioCoverImage = formData.getAll("tune[images][]")[0];
-  const fileName = `${session.user.id}/cover/${studioID}/${
+  const fileName = `${session.user.id + "/" + studioID}/covers/${
     uuidv4() + "." + studioCoverImage.type.split("/")[1]
   }`;
   const coverImageURL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/studios/${fileName}`;
@@ -79,16 +134,23 @@ export async function POST(req, res) {
   };
   const response = await fetch("https://api.astria.ai/tunes", options);
   const result = await response.json();
-  console.log(result);
+
   result.coverImage = coverImageURL;
 
   let updateStudioError;
+  const { id, title, name: studioGender } = result;
   if (result.id) {
     let { data, error } = await supabase.rpc("add_new_studio", {
-      new_studio: result,
+      new_studio: {
+        id,
+        title,
+        gender: studioGender,
+        coverImage: coverImageURL,
+        created_at,
+        downloaded: false,
+      },
       user_id: session.user.id,
     });
-    console.log(updateStudioError);
 
     updateStudioError = error;
   }
@@ -99,33 +161,9 @@ export async function POST(req, res) {
       .from("users")
       .update({ credits: credits })
       .eq("id", session.user.id);
-    console.log(error);
 
-    if (!error) return NextResponse.json({ success: false });
+    if (error) return NextResponse.json({ success: false });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: false });
 }
-
-// import { createClient } from '@supabase/supabase-js'
-
-// const supabaseUrl = 'https://your-project-url.supabase.co'
-// const supabaseKey = 'your-anon-key'
-// const bucketName = 'your-bucket-name'
-
-// const supabase = createClient(supabaseUrl, supabaseKey)
-
-// async function uploadFromUrl(url, fileName) {
-//   const response = await fetch(url)
-//   const buffer = await response.buffer()
-//   const { data, error } = await supabase.storage
-//     .from(bucketName)
-//     .upload(fileName, buffer)
-//   if (error) {
-//     console.log(error)
-//   } else {
-//     console.log(data.Key)
-//   }
-// }
-
-// uploadFromUrl('https://sdbooth2-production.s3.amazonaws.com/6apk82jxhctwt86tnbljc30j9iyk', 'my-image.jpg')

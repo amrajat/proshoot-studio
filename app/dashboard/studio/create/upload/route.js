@@ -72,17 +72,17 @@ export async function POST(req, res) {
         gender === "man" ? "handsome" : "beautiful"
       }ohwx ${gender} --tiled_upscale`
     );
-    // formData.append(
-    //   `tune[prompts_attributes][${index}][super_resolution]`,
-    //   true
-    // );
+    formData.append(
+      `tune[prompts_attributes][${index}][super_resolution]`,
+      true
+    );
     formData.append(`tune[prompts_attributes][${index}][inpaint_faces]`, true);
     // formData.append(`tune[prompts_attributes][${index}][hires_fix]`, false);
     formData.append(`tune[prompts_attributes][${index}][face_correct]`, true);
     formData.append(`tune[prompts_attributes][${index}][face_swap]`, true);
     formData.append(
       `tune[prompts_attributes][${index}][input_image_url]`,
-      `${controlnetImagesUrl}${index + 1}-${gender}.jpg`
+      `${controlnetImagesUrl}${gender}-${index + 1}.png`
     );
     formData.append(
       `tune[prompts_attributes][${index}][controlnet_conditioning_scale]`,

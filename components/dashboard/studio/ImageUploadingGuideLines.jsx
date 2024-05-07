@@ -23,8 +23,8 @@ function ImageUploadingGuideLines() {
               className="marker:text-blue-600 list-disc ps-4 space-y-2 text-sm text-gray-600 dark:text-gray-400"
             >
               <li>
-                Please upload at least 15 photos of your subject. We require 5
-                full-body shots, 5 medium shots, and 5 close-ups to produce
+                Please upload at least 20 photos of person. We require 5
+                full-body shots, 5 medium shots, and 10 close-ups to produce
                 realistic images. However, you may submit at least 3 images to
                 fine-tune the model.
               </li>

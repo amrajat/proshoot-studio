@@ -20,7 +20,7 @@ async function Studio() {
       <CoverPage
         title="No Studio Found."
         buttonText="Buy Studio"
-        buttonLink="/studio/buy"
+        buttonLink="/dashboard/studio/buy"
       >
         It appears that you have not made any purchases for a studio or have not
         yet created a studio.

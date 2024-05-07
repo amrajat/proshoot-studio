@@ -104,7 +104,7 @@ function AuthForm() {
               {...registerEmail("email")}
               type="email"
               id="hs-hero-signup-form-floating-input-email"
-              className="peer p-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm placeholder:text-transparent focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:focus:ring-neutral-600
+              className="peer p-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm placeholder:text-transparent focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:focus:ring-neutral-600
               focus:pt-6
               focus:pb-2
               [&:not(:placeholder-shown)]:pt-6
@@ -167,7 +167,7 @@ function AuthForm() {
           <input
             {...registerToken("token1")}
             type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
             data-hs-pin-input-item=""
             autoFocus={false}
             disabled={isLoading || !userEmail}
@@ -175,35 +175,35 @@ function AuthForm() {
           <input
             {...registerToken("token2")}
             type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
             data-hs-pin-input-item=""
             disabled={isLoading || !userEmail}
           />
           <input
             {...registerToken("token3")}
             type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
             data-hs-pin-input-item=""
             disabled={isLoading || !userEmail}
           />
           <input
             {...registerToken("token4")}
             type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
             data-hs-pin-input-item=""
             disabled={isLoading || !userEmail}
           />
           <input
             {...registerToken("token5")}
             type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
             data-hs-pin-input-item=""
             disabled={isLoading || !userEmail}
           />
           <input
             {...registerToken("token6")}
             type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
             data-hs-pin-input-item=""
             disabled={isLoading || !userEmail}
           />

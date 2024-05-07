@@ -36,7 +36,7 @@ function About() {
             Proshoot.co is driven by a team of experts in artificial
             intelligence, design, and technology. Our team members are
             passionate about creating innovative solutions that make a real
-            difference in people's lives. Join Us!
+            difference in people's lives. <br></br>Join Us!
             <br></br>
             Are you excited about the future of AI and its potential to
             revolutionize creative industries? If so, we encourage you to join

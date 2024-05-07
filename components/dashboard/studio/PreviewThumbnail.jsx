@@ -6,6 +6,7 @@ import {
   IoTrashBin,
   IoRefreshCircle,
 } from "react-icons/io5";
+import Link from "next/link";
 
 const PreviewThumbnail = ({
   images,
@@ -24,15 +25,17 @@ const PreviewThumbnail = ({
             {/* Uploading File Content */}
             <div className="mb-2 flex justify-between items-center">
               <div className="flex items-center gap-x-3">
-                <span className="size-8 overflow-hidden flex justify-center items-center border border-gray-200 text-gray-500 rounded-lg dark:border-neutral-700">
-                  <Image
-                    src={src}
-                    alt={image.name}
-                    width={100}
-                    height={100}
-                    style={{ objectFit: "contain" }}
-                  />
-                </span>
+                <Link href={src} target="_blank">
+                  <span className="size-20 object-cover overflow-hidden flex justify-center items-center border border-gray-200 text-gray-500 rounded-md dark:border-neutral-700">
+                    <Image
+                      src={src}
+                      alt={image.name}
+                      width={100}
+                      height={100}
+                      style={{ objectFit: "contain" }}
+                    />
+                  </span>
+                </Link>
                 <div>
                   <p className="text-sm font-medium text-gray-800 dark:text-white">
                     {image.name}
@@ -63,7 +66,7 @@ const PreviewThumbnail = ({
 
                 <button
                   className="text-red-500"
-                  onClick={() => onRemoveImage(index)}
+                  onClick={(e) => onRemoveImage(index, e)}
                 >
                   <IoTrashBin />
                 </button>

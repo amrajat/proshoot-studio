@@ -301,8 +301,8 @@ function Legal() {
               available if the following criteria are met:
               <br></br>
               <blockquote className="relative mt-2">
-                <div class="relative z-10">
-                  <p class="text-gray-800 sm:text-lg dark:text-white">
+                <div className="relative z-10">
+                  <p className="text-gray-800 sm:text-lg dark:text-white">
                     <em>
                       If you see Downloaded: False on Studio page, then your are
                       eligible for refund. This means your have not downloaded
@@ -324,6 +324,9 @@ function Legal() {
               seven (7) days of Studio Creation Date not the placing the order
               for your ease. Refund Process:
               <br></br>
+              You're not eligible for for refund if you redo the studio, or
+              upload less than 20 images(5 full-body shots, 5 medium shots, and
+              10 close-ups) as shown on studio creation page on your dashboard.
               <br></br>
               To request a refund, please email us support@proshoot.co
               <br></br>
@@ -391,7 +394,7 @@ function Legal() {
           </div>
           {/* Fair Usage Policy Ends Here */}
           <p className="text-lg text-gray-800 dark:text-neutral-200">
-            Page Last Updated: Thursday, April 25, 2024
+            Page Last Updated: Saturday, May 05, 2024
           </p>
         </div>
         {/* End Content */}

@@ -3,20 +3,16 @@ import { useState, useTransition } from "react";
 import { getStripe } from "@/lib/stripe/stripe";
 import ToolTip from "@/components/homepage/ToolTip";
 import Container from "@/components/dashboard/Container";
-import Spinner from "@/components/homepage/Spinner";
 import { HiMiniPlus, HiMiniMinus } from "react-icons/hi2";
 import { PLANS } from "@/lib/data";
 
 function BuyStudio() {
   const [plan, setPlan] = useState("Premium");
   const [quantity, setQuantity] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
   const [pending, startTransaction] = useTransition();
 
   const handleOptionChange = (event) => {
-    console.log(plan);
     setPlan(event.target.value);
-    console.log(plan);
   };
 
   function decrementNumber() {
@@ -142,7 +138,7 @@ function BuyStudio() {
                             </span>
                             <span className="block text-sm leading-relaxed text-blue-600 dark:text-neutral-500">
                               {/* FIXME: UPDATE ALL THESE DESCRIPTIONS */}
-                              Forever free.
+                              {PLANS["Basic"]["headshots"]} Headshots
                             </span>
                           </span>
                         </label>
@@ -214,7 +210,7 @@ function BuyStudio() {
                               $ {PLANS["Standard"]["planPrice"]}
                             </span>
                             <span className="block text-sm leading-relaxed text-blue-600 dark:text-neutral-500">
-                              All the basics for starting a new business.
+                              {PLANS["Standard"]["headshots"]} Headshots
                             </span>
                           </span>
                         </label>
@@ -313,7 +309,7 @@ function BuyStudio() {
                               $ {PLANS["Premium"]["planPrice"]}
                             </span>
                             <span className="block text-sm leading-relaxed text-blue-600 dark:text-neutral-500">
-                              Everything you need for a growing business.
+                              {PLANS["Premium"]["headshots"]} Headshots
                             </span>
                           </span>
                         </label>
@@ -401,7 +397,7 @@ function BuyStudio() {
                             </span>
 
                             <span className="block text-sm leading-relaxed text-blue-600 dark:text-neutral-500">
-                              Advanced features for scaling your business.
+                              {PLANS["Pro"]["headshots"]} Headshots
                             </span>
                           </span>
                         </label>
@@ -468,7 +464,7 @@ function BuyStudio() {
                     >
                       {pending
                         ? "Redirecting"
-                        : `Pay ${Math.trunc(
+                        : `Pay $${Math.trunc(
                             quantity * PLANS[plan]["planPrice"]
                           )}`}
                     </button>

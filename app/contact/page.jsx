@@ -27,9 +27,9 @@ function Contact() {
             we're here and ready to chat.<br></br>
             <br></br>
             How to Reach Us<br></br>
-            You can reach out to us via support@ We value your feedback and
-            strive to respond to all inquiries promptly. Thank you for reaching
-            out!
+            You can reach out to us via support@proshoot.co We value your
+            feedback and strive to respond to all inquiries promptly. Thank you
+            for reaching out!
           </p>
           {/* </div> */}
         </div>

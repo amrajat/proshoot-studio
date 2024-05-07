@@ -191,9 +191,9 @@ function Header() {
 
                   <Link
                     className="font-medium text-gray-600 hover:text-gray-500 py-3 md:py-6 dark:text-gray-400 dark:hover:text-gray-500 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                    href="/blog"
+                    href="/contact"
                   >
-                    Blog
+                    Contact
                   </Link>
 
                   <Link

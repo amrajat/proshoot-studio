@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { getCurrentSession } from "@/lib/supabase/actions/server";
 import { PLANS } from "@/lib/data";
-import { generateFinalPromptArray } from "@/lib/prompts";
 
 export async function POST(req, res) {
   const cookieStore = cookies();
@@ -31,13 +30,14 @@ export async function POST(req, res) {
   );
 
   const formData = await req.formData();
+
   const credits = JSON.parse(formData.get("credits"));
   const plan = formData.get("plan");
   const gender = formData.get("tune[name]");
   const name = formData.get("name");
 
   // Prepare the formData for Tuning
-  formData.append("tune[branch]", "fast"); //sd15 for stable diffusion.
+  formData.append("tune[branch]", `${process.env.TUNE_BRANCH}`);
   formData.append("tune[base_tune_id]", 690204);
   formData.append("tune[token]", "ohwx");
   formData.append("tune[title]", `${name}/${studioID}`);
@@ -62,21 +62,22 @@ export async function POST(req, res) {
   // });
 
   // New ControlNet Approach
-  const controlnetImagesUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/private/controlnet/`;
-  const numPrompts = PLANS[plan].headshots;
+  const controlnetImagesUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/private/controlnet/${gender}/`;
+  const numPrompts = Math.trunc(PLANS[plan].headshots / 4);
+
   function promptObject(gender, index) {
     formData.append(
       `tune[prompts_attributes][${index}][text]`,
       `${
-        gender === "male" ? "handsome" : "beautiful"
+        gender === "man" ? "handsome" : "beautiful"
       }ohwx ${gender} --tiled_upscale`
     );
-    formData.append(
-      `tune[prompts_attributes][${index}][super_resolution]`,
-      true
-    );
+    // formData.append(
+    //   `tune[prompts_attributes][${index}][super_resolution]`,
+    //   true
+    // );
     formData.append(`tune[prompts_attributes][${index}][inpaint_faces]`, true);
-    formData.append(`tune[prompts_attributes][${index}][hires_fix]`, true);
+    // formData.append(`tune[prompts_attributes][${index}][hires_fix]`, false);
     formData.append(`tune[prompts_attributes][${index}][face_correct]`, true);
     formData.append(`tune[prompts_attributes][${index}][face_swap]`, true);
     formData.append(
@@ -134,11 +135,12 @@ export async function POST(req, res) {
   };
   const response = await fetch("https://api.astria.ai/tunes", options);
   const result = await response.json();
+  console.log(result);
 
   result.coverImage = coverImageURL;
 
   let updateStudioError;
-  const { id, title, name: studioGender } = result;
+  const { id, title, name: studioGender, created_at } = result;
   if (result.id) {
     let { data, error } = await supabase.rpc("add_new_studio", {
       new_studio: {
@@ -162,8 +164,8 @@ export async function POST(req, res) {
       .update({ credits: credits })
       .eq("id", session.user.id);
 
-    if (error) return NextResponse.json({ success: false });
+    if (error) return NextResponse.json({ success: false }, { status: 200 });
   }
 
-  return NextResponse.json({ success: false });
+  return NextResponse.json({ success: true, tune_id: id }, { status: 200 });
 }

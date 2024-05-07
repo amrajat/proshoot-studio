@@ -23,9 +23,9 @@ function FreeHeadshot() {
           </h1>
           <p className="text-lg text-gray-800 dark:text-neutral-200 pb-[4.5rem]">
             If you fall under these special categores of NGOs, Education,
-            Influencer, Reviewer SaaS/AI/Other. Please email us and we&apos;ll
-            arrange AI studio for free/or at discounted price to generate free
-            ai headshots.
+            Influencer, Reviewer SaaS/AI/Other. Please email us at
+            support@proshoot.co and we&apos;ll arrange AI studio for free/or at
+            discounted price to generate free ai headshots.
           </p>
           {/* </div> */}
         </div>

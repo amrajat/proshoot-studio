@@ -14,10 +14,7 @@ async function StudioCard({ studio }) {
     // Check if today's date is after the modified target date
     const isPassed = isAfter(today, targetDate);
 
-    console.log(targetDate, today);
-
     if (isPassed) {
-      console.log("date passed");
       await updateStudioDownloadStatus(Number(studio.id));
     }
   }

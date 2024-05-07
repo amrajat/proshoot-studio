@@ -1,11 +1,6 @@
 "use client";
 import { updateStudioDownloadStatus } from "@/lib/supabase/actions/server";
 import Image from "next/image";
-import {
-  HiArrowTopRightOnSquare,
-  HiArrowUpRight,
-  HiInboxArrowDown,
-} from "react-icons/hi2";
 
 function ViewGeneratedImage({ image, tune_id, alreadyDownloaded }) {
   async function downloadImage() {

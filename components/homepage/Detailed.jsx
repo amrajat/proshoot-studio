@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 function Detailed() {
   return (
     <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
@@ -12,10 +14,14 @@ function Detailed() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
         <div className="text-center">
           <div className="overflow-hidden">
-            <img
-              className="rounded-xl sm:size-48 lg:size-60 mx-auto"
+            <Image
+              quality={100}
+              width={"0"}
+              height={"0"}
+              sizes="100vw"
+              className="rounded-xl sm:size-48 lg:size-60 mx-auto w-full h-auto"
               src="/amazon-employee.png"
-              alt="Image Description"
+              alt="ai generated portrait"
             />
           </div>
           <div className="mt-2 sm:mt-4">
@@ -26,32 +32,39 @@ function Detailed() {
         </div>
         {/* End Col */}
         <div className="text-center">
-          <div className="relative overflow-hidden rounded-xl sm:size-48 lg:size-60 mx-auto">
-            <img
-              className="absolute top-0 right-0 transform translate-x-1 -translate-y-[-30%] rounded-xl sm:size-48 lg:size-60 scale-[2.5]"
-              src="/amazon-employee.png"
-              alt="Image Description"
+          <div className="overflow-hidden">
+            <Image
+              quality={100}
+              width={"0"}
+              height={"0"}
+              sizes="100vw"
+              className="rounded-xl sm:size-48 lg:size-60 mx-auto w-full h-auto"
+              src="/amazon-employee-2x.png"
+              alt="ai generated portrait"
             />
           </div>
-
           <div className="mt-2 sm:mt-4">
             <h3 className="text-sm font-medium text-gray-800 sm:text-base lg:text-lg dark:text-gray-200">
-              Image Scale 2.5X
+              Image Scale 2X
             </h3>
           </div>
         </div>
         {/* End Col */}
         <div className="text-center">
-          <div className="relative overflow-hidden rounded-xl sm:size-48 lg:size-60 mx-auto">
-            <img
-              className="absolute top-0 right-0 transform translate-x-1 -translate-y-[-60%] rounded-xl sm:size-48 lg:size-60 scale-[5]"
-              src="/amazon-employee.png"
-              alt="Image Description"
+          <div className="overflow-hidden">
+            <Image
+              quality={100}
+              width={"0"}
+              height={"0"}
+              sizes="100vw"
+              className="rounded-xl sm:size-48 lg:size-60 mx-auto w-full h-auto"
+              src="/amazon-employee-3x.png"
+              alt="ai generated portrait"
             />
           </div>
           <div className="mt-2 sm:mt-4">
             <h3 className="text-sm font-medium text-gray-800 sm:text-base lg:text-lg dark:text-gray-200">
-              Image Scale 5X
+              Image Scale 3X
             </h3>
           </div>
         </div>

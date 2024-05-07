@@ -23,6 +23,8 @@ export async function POST(req, res) {
     return NextResponse.json({ success: false }, { status: 200 });
   }
 
+  const resend = new Resend(`${process.env.RESEND_EMAIL_API_KEY}`);
+
   const supabase = createServerClient(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}`,
     `${process.env.SUPABASE_SECRET_KEY}`,
@@ -96,7 +98,7 @@ export async function POST(req, res) {
         .padStart(2, "0")}-${new Date().getFullYear()}`;
 
       const tune_id = body.tune_id;
-      const studio_id = query.get("studio_id");
+      // const studio_id = query.get("studio_id");
       const prompt_id = body.id;
       // Change the size of logo and convert this into base64 for less server request.
       const logo = await fetch(`${process.env.URL}/logo/watermark.png`);
@@ -208,7 +210,7 @@ export async function POST(req, res) {
 
       // Finally update the table of results.
       // Can use resend to inform user about completion of tune and prompt.
-      console.log("We are updaing", results);
+      console.log("We are updating", results);
       const { data, error } = await supabase
         .from("users")
         .update({ results: results })
@@ -216,6 +218,14 @@ export async function POST(req, res) {
         .select();
       console.log(data, error);
       if (error) throw new Error(error.message);
+
+      // Send the email to the customer.
+      await resend.emails.send({
+        from: "Support <support@proshoot.co>",
+        to: [user_email],
+        subject: "Your Studio is Ready! 🎉",
+        html: `<p>Your Studio is Ready!nbsp;<a href="https://www.proshoot.co/dashboard/studio/${tune_id}" >Click here.</a></p>`,
+      });
 
       return NextResponse.json({ success: true }, { status: 200 });
 

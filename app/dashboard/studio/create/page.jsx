@@ -12,31 +12,37 @@ import Error from "@/components/Error";
 import Loader from "@/components/Loader";
 import useSWR from "swr";
 import { getCredits } from "@/lib/supabase/actions/client";
-import { HiCheck } from "react-icons/hi2";
 import { redirect } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
+// import fetch from "node-fetch";
 
 // TODO: ADD IMAGE VALIDATION LATER, WITH ALL THE CHECKS SUCH AS NUM. OF MIN/MAX IMAGES. REDO UPLOAD, DELETE IMAGE...MAX SIZE
 // FIXME: FORMS SHOULD NOT BE FILLED IF KEY PRESS IS ENTER ON CURRENT STEP, WITHOUT COMPLETING STEP 2.
 
-// FIXME: FIRST FETCH CREDITS DATA FROM USERS AND THEN ONLY ALLOW USERS TO CREATE STUDIO AFTER SUCCESSFUL SUBMISSION OF STUDIO THE CREDITS SHOULD BE UPDATED ACCORDINGLY
-
 const FormDataSchema = z.object({
   gender: z.string().min(2, "Please select a gender."),
-  // age: z.string().refine((data) => Number(data) >= 12, {
-  //   message: "Age must be 12 or older",
-  // }),
-  // eye: z.string().min(1, "Please select eye color."),
-  // hair: z.string().min(1, "Please select hair color."),
   name: z.string().min(1, "Please enter name."),
+  profession: z.union([
+    z.enum([
+      "Legal",
+      "Medical",
+      "Financial",
+      "Tech",
+      "Education",
+      "Creative",
+      "Business",
+      "Health-Wellness",
+      "Others",
+    ]),
+  ]),
   plan: z.union([z.enum(["Basic", "Standard", "Premium", "Pro"])]),
-  // ethnicity: z.string().min(1, "Please choose your ethnicity."),
 });
 
 const steps = [
   {
     id: "Step 1",
     name: "Studio Information",
-    fields: ["gender", "name", "plan"], // Add more form fields if you have
+    fields: ["gender", "name", "plan", "profession"], // Add more form fields if you have
   },
   {
     id: "Step 2",
@@ -58,6 +64,10 @@ export default function CreateStudio() {
   const MIN_NUMBER_IMAGE_UPLOAD = 3;
   const MAX_NUMBER_IMAGE_UPLOAD = 50;
   const MAX_IMAGE_SIZE = 1024 * 1024 * 5; // 5MB
+
+  useEffect(() => {
+    // setStudioSuccess(true);
+  }, [studioSuccess]);
 
   const {
     register,
@@ -87,12 +97,23 @@ export default function CreateStudio() {
     isLoading,
   } = useSWR("credits", fetcher);
   if (isLoading) return <Loader />;
+  if (!credits)
+    return (
+      <CoverPage
+        title={"Zero Studio Credits."}
+        buttonLink={"/dashboard/studio/buy"}
+        buttonText={"Buy Studio"}
+      >
+        You don&apos;t have any credits to create studio please purchase any
+        plan first.
+      </CoverPage>
+    );
 
   if (!Object.values(credits).some((count) => count > 0))
     return (
       <CoverPage
         title={"Zero Studio Credits."}
-        buttonLink={"/studio/buy"}
+        buttonLink={"/dashboard/studio/buy"}
         buttonText={"Buy Studio"}
       >
         You don&apos;t have any credits to create studio please purchase any
@@ -123,7 +144,8 @@ export default function CreateStudio() {
     }
   };
 
-  const onRemoveImage = (index) => {
+  const onRemoveImage = (index, e) => {
+    event.preventDefault();
     setImages((prevImages) => {
       const updatedImages = [...prevImages];
       updatedImages.splice(index, 1);
@@ -132,7 +154,6 @@ export default function CreateStudio() {
   };
 
   const processForm = async (data) => {
-    console.log(data);
     startTransition(async () => {
       const formData = new FormData();
       images.forEach((file, i) => {
@@ -146,19 +167,20 @@ export default function CreateStudio() {
 
       // ADD TRY AND CATCH HERE.
 
-      // const response = await axios.post(
-      //   "/dashboard/studio/create/upload",
-      //   formData
-      // );
-      const response = await fetch("/dashboard/studio/create/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await axios.post(
+        "/dashboard/studio/create/upload",
+        formData
+      );
 
-      if (response.data.success) {
-      } // response.data.success => true / false
-      setStudioSuccess(response.data.success);
-      redirect("/dashboard/studio");
+      console.log(response.data);
+
+      if (response?.data?.success) {
+        setStudioSuccess(true);
+        redirect("/dashboard/studio/" + response?.data?.tune_id);
+      }
+      if (!response?.data?.success) {
+        setStudioSuccess(false);
+      }
     });
   };
 
@@ -186,9 +208,10 @@ export default function CreateStudio() {
 
   return (
     <>
-      <h2 class={`text-3xl dark:text-white ${isPending ? "" : "hidden"}`}>
+      <h2 class={`text-2xl dark:text-white ${isPending ? "" : "hidden"}`}>
         Please wait! your Studio is being created...
       </h2>
+      {}
 
       <section
         className={`inset-0 flex flex-col justify-between} ${
@@ -238,7 +261,11 @@ export default function CreateStudio() {
           className="mt-12 py-12"
           onSubmit={handleSubmit(processForm)}
           encType="multipart/form-data"
-          disabled={true}
+          onKeyPress={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+            }
+          }}
         >
           {currentStep === 0 && (
             <fieldset disabled={isPending}>
@@ -254,44 +281,47 @@ export default function CreateStudio() {
                   {/* Select Plan Starts Here */}
                   <div className="col-span-full">
                     <div className="grid grid-cols-4 gap-3">
-                      {sortedCredits.map(([PlanName, RemainingCredits]) => (
-                        <label
-                          key={PlanName}
-                          htmlFor={PlanName}
-                          className="relative py-3 px-4 flex border-2 border-transparent rounded-lg cursor-pointer focus:outline-none"
-                        >
-                          <input
-                            disabled={Number(RemainingCredits) <= 0}
-                            type="radio"
-                            id={PlanName}
-                            value={PlanName}
-                            checked={RemainingCredits > 0}
-                            {...register("plan")}
-                            className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded-lg cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none dark:border-neutral-700 dark:checked:border-blue-500 dark:focus:ring-neutral-800 dark:focus:ring-offset-neutral-800
+                      {sortedCredits.map(([PlanName, RemainingCredits]) => {
+                        return (
+                          <label
+                            key={uuidv4()}
+                            htmlFor={PlanName}
+                            className="relative py-3 px-4 flex border-2 border-transparent rounded-lg cursor-pointer focus:outline-none"
+                          >
+                            <input
+                              disabled={Number(RemainingCredits) <= 0}
+                              type="radio"
+                              id={PlanName}
+                              value={PlanName}
+                              // checked={Number(RemainingCredits > 0)}
+                              defaultChecked={Number(RemainingCredits > 0)}
+                              {...register("plan")}
+                              className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded-lg cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none dark:border-neutral-700 dark:checked:border-blue-500 dark:focus:ring-neutral-800 dark:focus:ring-offset-neutral-800
 
                             before:content-[''] before:top-3.5 before:start-3.5  before:border-blue-600 before:h-5 before:rounded-full dark:before:border-neutral-700"
-                            name="credits"
-                          />
-                          <span className="peer-checked:flex hidden absolute top-4 end-4">
-                            <span className="block w-5 h-5 flex justify-center items-center rounded-full bg-blue-600">
-                              <HiCheck
-                                className="flex-shrink-0 w-3 h-3 text-white"
-                                width={24}
-                                height={24}
-                              />
-                            </span>
-                          </span>
-                          <span className="w-full">
-                            <span className="block font-normal text-blue-600 dark:text-neutral-200">
-                              {PlanName}
-                            </span>
+                              name="credits"
+                            />
+                            {/* <span className="peer-checked:flex hidden absolute top-4 end-4">
+                              <span className="block w-5 h-5 flex justify-center items-center rounded-full bg-blue-600">
+                                <HiCheck
+                                  className="flex-shrink-0 w-3 h-3 text-white"
+                                  width={24}
+                                  height={24}
+                                />
+                              </span>
+                            </span> */}
+                            <span className="w-full">
+                              <span className="block font-normal text-blue-600 dark:text-neutral-200">
+                                {PlanName}
+                              </span>
 
-                            <span className="block text-sm leading-relaxed text-blue-600 dark:text-neutral-500 mt-1">
-                              {RemainingCredits} available.
+                              <span className="block text-xs leading-relaxed text-blue-600 dark:text-neutral-500 mt-1">
+                                {RemainingCredits} available.
+                              </span>
                             </span>
-                          </span>
-                        </label>
-                      ))}
+                          </label>
+                        );
+                      })}
                     </div>
                     <div className="mt-2">
                       {errors.plan?.message && (
@@ -326,7 +356,7 @@ export default function CreateStudio() {
                         id="gender"
                       >
                         <option value="">Choose gender</option>
-                        <option value="women">Women</option>
+                        <option value="woman">Woman</option>
                         <option value="man">Man</option>
                       </select>
                     </div>
@@ -359,33 +389,37 @@ export default function CreateStudio() {
                   </div>
                 </div> */}
 
-                  {/* <div className="sm:col-span-3">
-                  <div className="relative">
-                    <select
-                      className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
-                      {...register("eye")}
-                      id="eye-color"
-                    >
-                      <option value="">Choose eye color</option>
-                      <option value="brown">Brown</option>
-                      <option value="blue">Blue</option>
-                      <option value="green">Green</option>
-                      <option value="hazel">Hazel</option>
-                      <option value="gray">Gray</option>
-                      <option value="amber">Amber</option>
-                      <option value="heterochromia">Heterochromia</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
+                  <div className="sm:col-span-3">
+                    <div className="relative">
+                      <select
+                        className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                        {...register("profession")}
+                        id="profession"
+                      >
+                        <option value="">Choose your profession.</option>
+                        <option value="Legal">Legal</option>
+                        <option value="Medical">Medical</option>
+                        <option value="Financial">Financial</option>
+                        <option value="Tech">Tech</option>
+                        <option value="Education">Education</option>
+                        <option value="Creative">Creative</option>
+                        <option value="Business">Business</option>
+                        <option value="Health-Wellness">
+                          Health & Wellness
+                        </option>
+                        <option value="Social-Service">Social-Service</option>
+                        <option value="Others">Others</option>
+                      </select>
+                    </div>
 
-                  <div className="mt-2">
-                    {errors.eye?.message && (
-                      <p className="mt-2 text-sm text-red-400">
-                        {errors.eye.message}
-                      </p>
-                    )}
+                    <div className="mt-2">
+                      {errors.profession?.message && (
+                        <p className="mt-2 text-sm text-red-400">
+                          {errors.profession.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div> */}
 
                   {/* <div className="sm:col-span-3">
                   <div className="relative">
@@ -527,7 +561,7 @@ export default function CreateStudio() {
                         id="name"
                         className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600 placeholder-current"
                         {...register("name")}
-                        placeholder="Name your studio anything."
+                        placeholder="Name"
                       />
                     </div>
                     {/* End Select */}
@@ -539,6 +573,13 @@ export default function CreateStudio() {
                         </p>
                       )}
                     </div>
+                  </div>
+
+                  <div className="text-xs sm:col-span-3 flex justify-start items-center">
+                    <p>
+                      You can name your studio anything.for simplicity just use
+                      your name.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -576,7 +617,13 @@ export default function CreateStudio() {
                       file:px-4 file:py-2 file:mr-4 file:border-none hover:cursor-pointer border rounded-lg text-gray-400"
                       />
                       <div>
-                        <button type="button" onClick={() => setImages([])}>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setImages([]);
+                          }}
+                        >
                           <span className="inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-500">
                             <IoTrashBin />
                             All Images

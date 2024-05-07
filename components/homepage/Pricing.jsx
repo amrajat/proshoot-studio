@@ -98,9 +98,7 @@ function Pricing() {
                 <span className="text-gray-800 dark:text-gray-400">
                   Consists 1 Studio
                   <ToolTip>
-                    One Studio can generate image for one person. If you want to
-                    generate images for multiple person you need to create
-                    multiple Studios.
+                    Each studio generates images for one single person.
                   </ToolTip>
                 </span>
               </li>
@@ -206,9 +204,7 @@ function Pricing() {
                 <span className="text-gray-800 dark:text-gray-400">
                   Consists 1 Studio
                   <ToolTip>
-                    One Studio can generate image for one person. If you want to
-                    generate images for multiple person you need to create
-                    multiple Studios.
+                    Each studio generates images for one single person.
                   </ToolTip>
                 </span>
               </li>
@@ -309,9 +305,7 @@ function Pricing() {
                 <span className="text-gray-800 dark:text-gray-400">
                   Consists 1 Studio
                   <ToolTip>
-                    One Studio can generate image for one person. If you want to
-                    generate images for multiple person you need to create
-                    multiple Studios.
+                    Each studio generates images for one single person.
                   </ToolTip>
                 </span>
               </li>
@@ -412,9 +406,7 @@ function Pricing() {
                 <span className="text-gray-800 dark:text-gray-400">
                   Consists 1 Studio
                   <ToolTip>
-                    One Studio can generate image for one person. If you want to
-                    generate images for multiple person you need to create
-                    multiple Studios.
+                    Each studio generates images for one single person.
                   </ToolTip>
                 </span>
               </li>

@@ -1,14 +1,26 @@
 "use server";
+import CoverPage from "@/components/dashboard/CoverPage";
 import ViewGeneratedImage from "@/components/dashboard/studio/ViewGeneratedImage";
 import {
   getStudioImages,
   isStudioDownloaded,
   updateStudioDownloadStatus,
 } from "@/lib/supabase/actions/server";
+import { redirect } from "next/navigation";
 
 async function ViewStudio({ params }) {
   const alreadyDownloaded = await isStudioDownloaded(Number(params.id));
   const images = await getStudioImages(params.id);
+  if (!images)
+    return (
+      <CoverPage
+        title="Generating Images"
+        buttonLink={"/contact"}
+        buttonText={"Contact Support"}
+      >
+        Please wait! Your images are being generated.
+      </CoverPage>
+    );
 
   return (
     <div className="max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">

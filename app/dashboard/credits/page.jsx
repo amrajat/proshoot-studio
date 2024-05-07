@@ -13,10 +13,7 @@ async function Credits() {
   try {
     [{ purchase_history = [] } = {}] = await getPurchaseHistory();
     [{ credits = [] } = {}] = await getCredits();
-    console.log(purchase_history, credits);
   } catch (error) {
-    console.log(purchase_history, credits);
-
     return (
       <Container>
         <Error message="Something went wrong." />

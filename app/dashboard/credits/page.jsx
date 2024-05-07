@@ -20,6 +20,7 @@ async function Credits() {
       </Container>
     );
   }
+  console.log(JSON.stringify(purchase_history), JSON.stringify(credits));
   if (purchase_history.length < 1)
     return (
       <Container>

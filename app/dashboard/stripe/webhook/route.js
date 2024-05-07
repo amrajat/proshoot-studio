@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import Stripe from "stripe";
+import { streamToString } from "@/lib/utils";
 const checkout_session_completed = "checkout.session.completed";
 // FOR WEBHOOK TESTING ON STRIPE TERMINAL
 // stripe trigger checkout.session.completed
 // stripe listen --forward-to localhost:3000/dashboard/stripe/webhook --skip-verify
 // const checkout_session_completed = "product.created";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req, res) {
   const cookieStore = cookies();
@@ -34,15 +37,20 @@ export async function POST(req, res) {
   const webhookSecret = `${process.env.STRIPE_WEBHOOK_SECRET}`;
   const sig = req.headers.get("stripe-signature");
 
-  const reqBody = await req.text();
+  // const reqBody = await req.text();
+  const reqBody = await streamToString(req.body);
+  console.log("reqBody", reqBody);
   // const reqBody = await buffer(req);
 
   let event;
+  console.log(sig, webhookSecret);
 
   try {
     if (!sig || !webhookSecret) return;
     event = stripe.webhooks.constructEvent(reqBody, sig, webhookSecret);
+    console.log(event);
   } catch (error) {
+    console.log(error, JSON.stringify(error));
     return new NextResponse(`Webhook Error: ${error.message}`, { status: 500 });
   }
 

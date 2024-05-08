@@ -6,8 +6,8 @@ import { NextResponse } from "next/server";
 import sharp from "sharp";
 import fetch from "node-fetch";
 import { Resend } from "resend";
-// event= tune `?user_id=${session.user.id}&user_email=${session.user.email}&event=tune&studio_id=${studioID}&secret=${process.env.WEBHOOK_SECRET}`
-// event= prompt `?user_id=${session.user.id}&user_email=${session.user.email}&event=prompt&studio_id=${studioID}&secret=${process.env.WEBHOOK_SECRET}`
+
+export const maxDuration = 300;
 
 export async function POST(req, res) {
   const cookieStore = cookies();
@@ -15,12 +15,13 @@ export async function POST(req, res) {
   const user_email = query.get("user_email");
   const user_id = query.get("user_id");
   const event = query.get("event");
-  const body = await req.json();
+  const text = await req.text();
+  const { prompt } = await JSON.parse(text);
   const studio_id = query.get("studio_id");
   const secret = query.get("secret");
 
   if (secret !== `${process.env.WEBHOOK_SECRET}`) {
-    return NextResponse.json({ success: false }, { status: 200 });
+    return NextResponse.json({ success: false }, { status: 500 });
   }
 
   const resend = new Resend(`${process.env.RESEND_EMAIL_API_KEY}`);
@@ -44,73 +45,28 @@ export async function POST(req, res) {
   );
 
   // EVENTS
-  const EVENT_STUDIO_READY = "tune";
   const EVENT_PROMPT_READY = "prompt";
 
   switch (event) {
-    // case EVENT_STUDIO_READY:
-    //   // if the studio/tune is ready start prompting to the tune object with callback and tune_id
-    //   // http://localhost:3000/dashboard/webhooks/studio?user_id=user123&user_email=ablognet@gmail.com&event=tune
-    //   // const API_URL = 'https://api.astria.ai/tunes/1/prompts';
-    //   // const form = new FormData();
-    //   // form.append(
-    //   //   "prompt[text]",
-    //   //   "a painting of ohwx man in the style of Van Gogh"
-    //   // );
-    //   // form.append("prompt[negative_prompt]", "old, blemish, wrin");
-    //   // form.append("prompt[super_resolution]", true);
-    //   // form.append("prompt[face_correct]", true);
-    //   // form.append(
-    //   //   "prompt[callback]",
-    //   //   `https://www.headsshot.com/dashboard/webhooks/studio?user_id=${user_id}&user_email=${user_email}&event=prompt&tune_id=${body.id}&studio_id=${studio_id}`
-    //   // );
-    //   try {
-    //     if (!user_id || !user_email) return;
-    //     // Send email to customer
-    //     // grab the tune id  retrive all the prompts form astria and put the prompts array object into subabase
-    //     //  and and get array of "images" and loop over the arrays and put those images
-    //     // into supabase storage with studio and prompt mapping.
-
-    //     const headers = {
-    //       Authorization: `Bearer ${process.env.ASTRIA_API_KEY}`,
-    //     };
-    //     const response = await fetch(
-    //       `${process.env.ASTRIA_DOMAIN}/tunes/${body.id}/prompts`,
-    //       {
-    //         headers: headers,
-    //       }
-    //     );
-    //     prompts = await response.json();
-
-    //     // return Response.json(data);
-    //   } catch (error) {
-    //     return new NextResponse(
-    //       `Studio Webhook Error: ${JSON.stringify(query)}`,
-    //       {
-    //         status: 500,
-    //       }
-    //     );
-    //   }
-
     case EVENT_PROMPT_READY:
       const MMYYYYString = `${(new Date().getMonth() + 1)
         .toString()
         .padStart(2, "0")}-${new Date().getFullYear()}`;
 
-      const tune_id = body.tune_id;
+      const tune_id = prompt.tune_id;
       // const studio_id = query.get("studio_id");
-      const prompt_id = body.id;
+      const prompt_id = prompt.id;
       // Change the size of logo and convert this into base64 for less server request.
       const logo = await fetch(`${process.env.URL}/logo/watermark.png`);
-      const logoBuffer = await logo.buffer();
+      const logoBuffer = await logo.arrayBuffer();
       let previewImageArray = [];
 
       // FOR PREVIEW IMAGES AND WATERMARKING
 
-      body.images.forEach(async (imageURL, index) => {
+      prompt.images.forEach(async (imageURL, index) => {
         console.log("watermarking", index);
         const image = await fetch(imageURL);
-        const buffer = await image.buffer();
+        const buffer = await image.arrayBuffer();
         const watermarkedImage = await sharp(buffer)
           .composite([
             {
@@ -149,7 +105,7 @@ export async function POST(req, res) {
         );
 
         // Only perform this actions on last image item
-        if (index === body.images.length - 1) {
+        if (index === prompt.images.length - 1) {
           console.log("final index", index);
 
           // get preview's table data from supabase
@@ -185,7 +141,7 @@ export async function POST(req, res) {
       // UPDATE THE REAL IMAGE URLS TO RESULTS COLUMN
 
       // get results's table data from supabase
-      let imageUrls = body.images;
+      let imageUrls = prompt.images;
 
       Promise.all(
         imageUrls.map(async (url, index) => {
@@ -224,7 +180,7 @@ export async function POST(req, res) {
         from: "Support <support@proshoot.co>",
         to: [user_email],
         subject: "Your Studio is Ready! 🎉",
-        html: `<p>Your Studio is Ready!nbsp;<a href="https://www.proshoot.co/dashboard/studio/${tune_id}" >Click here.</a></p>`,
+        html: `<p>Your Studio is Ready! <a href="https://www.proshoot.co/dashboard/studio/${tune_id}" >Click here.</a></p>`,
       });
 
       return NextResponse.json({ success: true }, { status: 200 });
@@ -232,7 +188,7 @@ export async function POST(req, res) {
     default:
       return NextResponse.json({ success: false }, { status: 500 });
   }
-  return new NextResponse(JSON.stringify(prompts), { status: 200 });
+  return new NextResponse({ success: true }, { status: 200 });
 }
 
 //     let { data, error } = await supabase.rpc("add_purchase_history", {

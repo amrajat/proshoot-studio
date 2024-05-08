@@ -45,7 +45,7 @@ export async function POST(req, res) {
       payment_method_types: ["card"],
       customer_email: session.user.email,
       billing_address_collection: "auto",
-      success_url: `${origin}/dashboard/studio/create`,
+      success_url: `${origin}/dashboard/studio/create?type=message&email=${session.user.email}`,
       metadata: {
         user: session.user.id,
         plan: plan,

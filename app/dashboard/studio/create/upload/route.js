@@ -5,7 +5,9 @@ import { v4 as uuidv4 } from "uuid";
 import { getCurrentSession } from "@/lib/supabase/actions/server";
 import { PLANS } from "@/lib/data";
 
-export async function POST(req, res) {
+export const maxDuration = 300;
+
+export async function POST(req) {
   const cookieStore = cookies();
   const studioID = uuidv4();
 
@@ -46,21 +48,6 @@ export async function POST(req, res) {
     `${process.env.URL}/dashboard/webhooks/studio?user_id=${session.user.id}&user_email=${session.user.email}&event=tune&studio_id=${studioID}&secret=${process.env.WEBHOOK_SECRET}`
   );
 
-  // Prepare formData prompt attributes based on plan selected.
-  // const finalPrompts = generateFinalPromptArray(
-  //   formData.get("tune[name]")
-  // ).slice(0, PLANS[plan].headshots);
-
-  // finalPrompts.forEach((promptObject, index) => {
-  //   Object.entries(promptObject).forEach(([key, value]) => {
-  //     formData.append(`tune[prompts_attributes][${index}][${key}]`, value);
-  //     formData.append(
-  //       `tune[prompts_attributes][${index}][callback]`,
-  //       `${process.env.URL}/dashboard/webhooks/studio?user_id=${session.user.id}&user_email=${session.user.email}&event=prompt&studio_id=${studioID}&secret=${process.env.WEBHOOK_SECRET}`
-  //     );
-  //   });
-  // });
-
   // New ControlNet Approach
   const controlnetImagesUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/private/controlnet/${gender}/`;
   const numPrompts = Math.trunc(PLANS[plan].headshots / 4);
@@ -69,7 +56,7 @@ export async function POST(req, res) {
     formData.append(
       `tune[prompts_attributes][${index}][text]`,
       `${
-        gender === "man" ? "handsome" : "beautiful"
+        gender === "man" ? "handsome " : "beautiful "
       }ohwx ${gender} --tiled_upscale`
     );
     formData.append(
@@ -114,6 +101,8 @@ export async function POST(req, res) {
   formData.delete("plan");
   formData.delete("name");
 
+  console.log("Studio cover start");
+
   const studioCoverImage = formData.getAll("tune[images][]")[0];
   const fileName = `${session.user.id + "/" + studioID}/covers/${
     uuidv4() + "." + studioCoverImage.type.split("/")[1]
@@ -123,6 +112,9 @@ export async function POST(req, res) {
   const { error: storageError } = await supabase.storage
     .from("studios")
     .upload(fileName, studioCoverImage);
+
+  if (storageError) console.log("storageError", storageError);
+  console.log("Studio cover end");
 
   // New approach 👇
 
@@ -138,6 +130,7 @@ export async function POST(req, res) {
   console.log(result);
 
   result.coverImage = coverImageURL;
+  console.log("cover image url", result.coverImage);
 
   let updateStudioError;
   const { id, title, name: studioGender, created_at } = result;
@@ -154,6 +147,8 @@ export async function POST(req, res) {
       user_id: session.user.id,
     });
 
+    console.log("rpc add_new_studio error", error);
+
     updateStudioError = error;
   }
 
@@ -163,6 +158,8 @@ export async function POST(req, res) {
       .from("users")
       .update({ credits: credits })
       .eq("id", session.user.id);
+
+    console.log("updating credits error", error);
 
     if (error) return NextResponse.json({ success: false }, { status: 200 });
   }

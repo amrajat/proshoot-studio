@@ -1,5 +1,6 @@
 import AppNav from "@/components/dashboard/AppNav";
 import Container from "@/components/dashboard/Container";
+import Script from "next/script";
 import React from "react";
 
 export const metadata = {

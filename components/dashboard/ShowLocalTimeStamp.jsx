@@ -8,8 +8,7 @@ function ShowLocalTimeStamp({ ts }) {
 
   // const { isoDate, timeZone } = fetchInitialValues(); // 2014-06-25T10:00:00.000Z, America/New_York
   useEffect(() => {
-    const dateString = "2024-04-01T17:03:16.216Z"; // Your date string here
-    const date = parseISO(dateString);
+    const date = parseISO(ts);
 
     // Get the browser's time zone
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;

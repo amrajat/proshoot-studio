@@ -8,7 +8,7 @@ function AnnouncementBanner() {
         <div className="grid justify-center md:grid-cols-2 md:justify-between md:items-center gap-2">
           <div className="text-center md:text-start md:order-2 md:flex md:justify-end md:items-center">
             <p className="me-5 inline-block text-xs font-normal text-white">
-              Use code on stripe checkout page.
+              Use code on payment checkout page.
             </p>
             <a
               className="py-2 px-3 inline-flex items-center gap-x-2 text-xs font-normal rounded-lg border-2 border-white text-white hover:border-white/70 hover:text-white/70 disabled:opacity-50 disabled:pointer-events-none"

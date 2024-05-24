@@ -32,11 +32,11 @@ async function Studio() {
       <div className="group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
         <div className="h-auto ">
           <Image
-            src={"/polygon-potrait.jpg"}
+            src={"/examples/ai-portrait-6.jpg"}
             alt="image uploaded"
             width={"393"}
             height={"491"}
-            className="overflow-hidden w-auto"
+            className="overflow-hidden w-auto aspect-[4/5] object-cover object-left-top"
           />
         </div>
         <div className="p-4 md:p-6">

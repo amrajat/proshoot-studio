@@ -70,8 +70,8 @@ function Headshots() {
               <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
                 <div className="h-auto ">
                   <Image
-                    src={"/examples/ai-portrait-2.jpg"}
-                    alt="image uploaded"
+                    src={"/examples/ai-portrait-1.jpg"}
+                    alt="ai generated headshot image"
                     width={"393"}
                     height={"491"}
                     quality={100}
@@ -82,8 +82,32 @@ function Headshots() {
               <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
                 <div className="h-auto ">
                   <Image
-                    src={"/examples/ai-portrait-10.jpg"}
-                    alt="image uploaded"
+                    src={"/examples/ai-portrait-2.jpg"}
+                    alt="ai generated headshot image"
+                    width={"393"}
+                    height={"491"}
+                    quality={100}
+                    className="overflow-hidden w-auto"
+                  />
+                </div>
+              </div>
+              <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
+                <div className="h-auto ">
+                  <Image
+                    src={"/examples/ai-portrait-3.jpg"}
+                    alt="ai generated headshot image"
+                    width={"393"}
+                    height={"491"}
+                    quality={100}
+                    className="overflow-hidden w-auto"
+                  />
+                </div>
+              </div>
+              <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
+                <div className="h-auto ">
+                  <Image
+                    src={"/examples/ai-portrait-4.jpg"}
+                    alt="ai generated headshot image"
                     width={"393"}
                     height={"491"}
                     quality={100}
@@ -95,7 +119,67 @@ function Headshots() {
                 <div className="h-auto ">
                   <Image
                     src={"/examples/ai-portrait-5.jpg"}
-                    alt="image uploaded"
+                    alt="ai generated headshot image"
+                    width={"393"}
+                    height={"491"}
+                    quality={100}
+                    className="overflow-hidden w-auto"
+                  />
+                </div>
+              </div>
+              <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
+                <div className="h-auto ">
+                  <Image
+                    src={"/examples/ai-portrait-6.jpg"}
+                    alt="ai generated headshot image"
+                    width={"393"}
+                    height={"491"}
+                    quality={100}
+                    className="overflow-hidden w-auto"
+                  />
+                </div>
+              </div>
+              <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
+                <div className="h-auto ">
+                  <Image
+                    src={"/examples/ai-portrait-7.jpg"}
+                    alt="ai generated headshot image"
+                    width={"393"}
+                    height={"491"}
+                    quality={100}
+                    className="overflow-hidden w-auto"
+                  />
+                </div>
+              </div>
+              <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
+                <div className="h-auto ">
+                  <Image
+                    src={"/examples/ai-portrait-8.jpg"}
+                    alt="ai generated headshot image"
+                    width={"393"}
+                    height={"491"}
+                    quality={100}
+                    className="overflow-hidden w-auto"
+                  />
+                </div>
+              </div>
+              <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
+                <div className="h-auto ">
+                  <Image
+                    src={"/examples/ai-portrait-9.jpg"}
+                    alt="ai generated headshot image"
+                    width={"393"}
+                    height={"491"}
+                    quality={100}
+                    className="overflow-hidden w-auto"
+                  />
+                </div>
+              </div>
+              <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
+                <div className="h-auto ">
+                  <Image
+                    src={"/examples/ai-portrait-10.jpg"}
+                    alt="ai generated headshot image"
                     width={"393"}
                     height={"491"}
                     quality={100}
@@ -107,7 +191,7 @@ function Headshots() {
                 <div className="h-auto ">
                   <Image
                     src={"/examples/ai-portrait-11.jpg"}
-                    alt="image uploaded"
+                    alt="ai generated headshot image"
                     width={"393"}
                     height={"491"}
                     quality={100}

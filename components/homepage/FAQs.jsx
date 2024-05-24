@@ -11,7 +11,7 @@ const faqsList = [
   },
   {
     q: "Could you please provide me with an invoice?",
-    a: "Certainly, you can obtain an invoice for your purchase. You will get email with invoice.pdf from our payment partner Stripe.",
+    a: "Certainly, you can obtain an invoice for your purchase. You will get email with invoice.pdf from our payment partner Lemon Squeezy.",
   },
   {
     q: "Why do you require a large number of photos?",
@@ -35,7 +35,7 @@ const faqsList = [
   },
   {
     q: "Is the payment process secure?",
-    a: "Our payment gateway is Stripe, ensuring secure transactions. We do not store any financial information.",
+    a: "Our payment gateway is Lemon Squeezy, ensuring secure transactions. We do not store any financial information.",
   },
   {
     q: "How many high-quality and realistic photos I can expect?",

@@ -26,7 +26,7 @@ async function StudioCard({ studio }) {
           alt="image uploaded"
           width={"393"}
           height={"491"}
-          className="overflow-hidden w-auto"
+          className="overflow-hidden w-auto aspect-[4/5] object-cover"
         />
       </div>
       <div className="p-4 md:p-6">

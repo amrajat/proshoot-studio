@@ -33,7 +33,8 @@ function Affiliate() {
               {/* Title */}
               <div className="mt-5 max-w-4xl">
                 <h1 className="block font-semibold text-gray-800 text-4xl md:text-5xl lg:text-6xl dark:text-neutral-200">
-                  Make 30% on every sale.
+                  Become a Proshoot.co affiliate today & earn up to $17.70 on
+                  each sale!
                 </h1>
               </div>
               {/* End Title */}
@@ -47,7 +48,7 @@ function Affiliate() {
               <div className="mt-8 gap-3 flex justify-center">
                 <a
                   className="py-2.5 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-violet-900 text-white hover:bg-violet-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                  href="https://proshoot.trackdesk.com/sign-up"
+                  href="https://proshoot.lemonsqueezy.com/affiliates"
                 >
                   Join Program
                   <HiChevronRight

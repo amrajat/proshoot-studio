@@ -5,7 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 import { getCurrentSession } from "@/lib/supabase/actions/server";
 import { PLANS } from "@/lib/data";
 
-export const maxDuration = 300;
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function POST(req) {
   const cookieStore = cookies();

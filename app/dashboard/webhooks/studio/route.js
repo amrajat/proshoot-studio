@@ -7,7 +7,8 @@ import sharp from "sharp";
 import fetch from "node-fetch";
 import { Resend } from "resend";
 
-export const maxDuration = 300;
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function POST(req, res) {
   const cookieStore = cookies();

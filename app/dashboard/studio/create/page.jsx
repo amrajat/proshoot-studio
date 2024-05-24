@@ -16,7 +16,7 @@ import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import Script from "next/script";
 // import fetch from "node-fetch";
-export const maxDuration = 300;
+export const maxDuration = 60;
 // TODO: ADD IMAGE VALIDATION LATER, WITH ALL THE CHECKS SUCH AS NUM. OF MIN/MAX IMAGES. REDO UPLOAD, DELETE IMAGE...MAX SIZE
 // FIXME: FORMS SHOULD NOT BE FILLED IF KEY PRESS IS ENTER ON CURRENT STEP, WITHOUT COMPLETING STEP 2.
 

@@ -99,6 +99,7 @@ import { createServerClient } from "@supabase/ssr";
 //     }
 //   }
 // }
+export const dynamic = "force-dynamic";
 
 export async function POST(request) {
   const cookieStore = cookies();

@@ -8,7 +8,8 @@ export async function middleware(request) {
 
   if (
     pathname.startsWith(`/dashboard/stripe/webhook`) ||
-    pathname.startsWith(`/dashboard/webhooks`)
+    pathname.startsWith(`/dashboard/webhooks`) ||
+    pathname.startsWith(`/auth/callback`)
   ) {
     // Allow access to the requested path
     return NextResponse.next();

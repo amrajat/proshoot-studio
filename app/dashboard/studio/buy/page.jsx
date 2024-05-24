@@ -1,10 +1,11 @@
 "use client";
 import { useState, useTransition } from "react";
-import { getStripe } from "@/lib/stripe/stripe";
+// import { getStripe } from "@/lib/stripe/stripe";
 import ToolTip from "@/components/homepage/ToolTip";
 import Container from "@/components/dashboard/Container";
 import { HiMiniPlus, HiMiniMinus } from "react-icons/hi2";
 import { PLANS } from "@/lib/data";
+import { createCheckoutLS } from "@/lib/supabase/actions/server";
 
 function BuyStudio() {
   const [plan, setPlan] = useState("Premium");
@@ -32,34 +33,37 @@ function BuyStudio() {
 
   async function checkout(data) {
     startTransaction(async () => {
-      const stripe = await getStripe();
+      // const stripe = await getStripe();
 
-      const checkOutData = {
-        plan,
-        quantity,
-      };
+      // const checkOutData = {
+      //   plan,
+      //   quantity,
+      // };
 
       try {
-        const response = await fetch("/dashboard/stripe", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(checkOutData),
-        });
+        // Lemon Squeezy Starts
+        await createCheckoutLS(plan, quantity, PLANS[plan]["variantId"]);
+        // Lemon Squeezy Ends
 
-        const stripeSession = await response.json();
-
-        if (stripe) {
-          const result = await stripe.redirectToCheckout({
-            sessionId: stripeSession.id,
-          });
-
-          if (result.error) {
-          }
-        }
+        // Stripe Starts
+        // const response = await fetch("/dashboard/stripe", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   body: JSON.stringify(checkOutData),
+        // });
+        // const stripeSession = await response.json();
+        // if (stripe) {
+        //   const result = await stripe.redirectToCheckout({
+        //     sessionId: stripeSession.id,
+        //   });
+        //   if (result.error) {
+        //   }
+        // }
+        // Stripe Ends
       } catch (error) {
-        console.log("Error: ", error);
+        // console.log("Error: ", error);
       }
     });
   }

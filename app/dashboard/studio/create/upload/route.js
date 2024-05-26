@@ -104,17 +104,17 @@ export async function POST(req) {
 
   console.log("Studio cover start");
 
-  const studioCoverImage = formData.getAll("tune[images][]")[0];
-  const fileName = `${session.user.id + "/" + studioID}/covers/${
-    uuidv4() + "." + studioCoverImage.type.split("/")[1]
-  }`;
-  const coverImageURL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/studios/${fileName}`;
+  // const studioCoverImage = formData.getAll("tune[images][]")[0];
+  // const fileName = `${session.user.id + "/" + studioID}/covers/${
+  //   uuidv4() + "." + studioCoverImage.type.split("/")[1]
+  // }`;
+  // const coverImageURL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/studios/${fileName}`;
 
-  const { error: storageError } = await supabase.storage
-    .from("studios")
-    .upload(fileName, studioCoverImage);
+  // const { error: storageError } = await supabase.storage
+  //   .from("studios")
+  //   .upload(fileName, studioCoverImage);
 
-  if (storageError) console.log("storageError", storageError);
+  // if (storageError) console.log("storageError", storageError);
   console.log("Studio cover end");
 
   // New approach 👇
@@ -130,9 +130,6 @@ export async function POST(req) {
   const result = await response.json();
   console.log(result);
 
-  result.coverImage = coverImageURL;
-  console.log("cover image url", result.coverImage);
-
   let updateStudioError;
   const { id, title, name: studioGender, created_at } = result;
   if (result.id) {
@@ -141,7 +138,7 @@ export async function POST(req) {
         id,
         title,
         gender: studioGender,
-        coverImage: coverImageURL,
+        coverImage: formData.get("cover"),
         created_at,
         downloaded: false,
       },

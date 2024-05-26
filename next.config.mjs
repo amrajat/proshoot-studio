@@ -14,6 +14,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "api.astria.ai",
       },
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+      },
     ],
   },
   eslint: {

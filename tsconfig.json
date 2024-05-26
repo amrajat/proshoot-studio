@@ -27,7 +27,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "middleware.js",
-    "components/homepage/CardSlider.jsx"
+    "components/homepage/CardSlider.jsx",
+    "app/api/uploadthing/core.js"
   ],
   "exclude": ["node_modules"]
 }

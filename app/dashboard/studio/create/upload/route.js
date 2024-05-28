@@ -4,11 +4,13 @@ import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { getCurrentSession } from "@/lib/supabase/actions/server";
 import { PLANS } from "@/lib/data";
+import { performance } from "node:perf_hooks";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(req) {
+  const startTime = performance.now();
   const cookieStore = cookies();
   const studioID = uuidv4();
 
@@ -161,6 +163,8 @@ export async function POST(req) {
 
     if (error) return NextResponse.json({ success: false }, { status: 200 });
   }
+  const endTime = performance.now();
+  console.log("Studio Uploading took ", endTime - startTime);
 
   return NextResponse.json({ success: true, tune_id: id }, { status: 200 });
 }

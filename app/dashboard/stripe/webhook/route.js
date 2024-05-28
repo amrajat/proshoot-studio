@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { performance } from "node:perf_hooks";
 
 // async function processEvent(event) {
 //   let processingError = "";
@@ -102,6 +103,7 @@ import { createServerClient } from "@supabase/ssr";
 export const dynamic = "force-dynamic";
 
 export async function POST(request) {
+  const startTime = performance.now();
   const cookieStore = cookies();
 
   const supabase = createServerClient(
@@ -173,6 +175,9 @@ export async function POST(request) {
   // This could be done out of the main thread
 
   // processEvent(event);
+
+  const endTime = performance.now();
+  console.log("Lemon Squeezy webhook took this time", endTime - startTime);
 
   return new Response("Done");
 }

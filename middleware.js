@@ -30,6 +30,7 @@ export async function middleware(request) {
   // If the user is authenticated and trying to access any other path
   if (session) {
     // Allow access to the requested path
+
     return NextResponse.next();
   }
 

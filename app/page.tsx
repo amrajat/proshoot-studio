@@ -17,16 +17,16 @@ export default function Home() {
       <main id="content" role="main">
         <Header />
         <HeroParallax />
-        <PhotographyCompare />
-        <HowItWorks />
         {/* <ComparisonTable /> */}
-        <Detailed />
-        <Compare />
-        <Testimonials />
-        <Pricing />
-        <CardSlider />
+        {/* <Detailed /> */}
+        {/* <Compare /> */}
+        {/* <Testimonials /> */}
+        <PhotographyCompare />
         {/* <MediaPublications /> */}
-        <Teams />
+        {/* <Teams /> */}
+        <Pricing />
+        <HowItWorks />
+        <CardSlider />
         <FAQs />
       </main>
       <Footer />

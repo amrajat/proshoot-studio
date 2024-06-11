@@ -21,43 +21,43 @@ const HeroParallax = ({
     },
     {
       title: "AI Generated",
-      thumbnail: "/examples/ai-portrait-2.jpg",
+      thumbnail: "/examples/ai-portrait-1.jpg",
     },
     {
       title: "AI Generated",
-      thumbnail: "/examples/ai-portrait-3.jpg",
+      thumbnail: "/examples/ai-portrait-1.jpg",
     },
     {
       title: "AI Generated",
-      thumbnail: "/examples/ai-portrait-4.jpg",
+      thumbnail: "/examples/ai-portrait-1.jpg",
     },
     {
       title: "AI Generated",
-      thumbnail: "/examples/ai-portrait-5.jpg",
+      thumbnail: "/examples/ai-portrait-1.jpg",
     },
     {
       title: "AI Generated",
-      thumbnail: "/examples/ai-portrait-6.jpg",
+      thumbnail: "/examples/ai-portrait-1.jpg",
     },
     {
       title: "AI Generated",
-      thumbnail: "/examples/ai-portrait-7.jpg",
+      thumbnail: "/examples/ai-portrait-1.jpg",
     },
     {
       title: "AI Generated",
-      thumbnail: "/examples/ai-portrait-8.jpg",
+      thumbnail: "/examples/ai-portrait-1.jpg",
     },
     {
       title: "AI Generated",
-      thumbnail: "/examples/ai-portrait-9.jpg",
+      thumbnail: "/examples/ai-portrait-1.jpg",
     },
     {
       title: "AI Generated",
-      thumbnail: "/examples/ai-portrait-10.jpg",
+      thumbnail: "/examples/ai-portrait-1.jpg",
     },
     {
       title: "AI Generated",
-      thumbnail: "/examples/ai-portrait-11.jpg",
+      thumbnail: "/examples/ai-portrait-1.jpg",
     },
   ],
 }) => {
@@ -146,19 +146,18 @@ const HeroParallax = ({
 export const Header = () => {
   return (
     <div className="max-w-7xl relative mx-auto py-10 md:py-20 px-4 w-full  left-0 top-0">
-      <h2 className="text-sm font-semibold text-white sm:text-base mb-4">
+      <h2 className="text-sm font-semibold dark:text-white sm:text-base mb-4">
         The #1 Professional AI Headshot Generator
       </h2>
 
       <h1 className="text-2xl md:text-7xl font-bold dark:text-white">
-        Ditch the Studio!<br></br>Shine on Internet<br></br>Get Realistic
-        Headshots with AI
+        Get Realistic Headshots with AI
       </h1>
 
       <p className="max-w-2xl text-base md:text-xl mt-8 dark:text-neutral-200">
-        Our cutting-edge AI technology takes your selfies or everyday photos and
+        Our AI fine-tuning model takes your selfies or everyday photos and
         transforms them into stunning, polished business portraits. No studio
-        like fees, no scheduling hassles, just impactful headshots in hours at
+        like fees, no scheduling hassles, just impactful headshots in minutes at
         low as $29.
       </p>
     </div>

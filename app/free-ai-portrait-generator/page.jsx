@@ -1,6 +1,7 @@
 import Header from "@/components/homepage/Header";
 import Footer from "@/components/homepage/Footer";
 import Container from "../../components/dashboard/Container";
+import Link from "next/link";
 
 export const metadata = {
   title: { absolute: "Free AI Portraits Generator" },
@@ -24,8 +25,12 @@ function FreeHeadshot() {
           <p className="text-lg text-gray-800 dark:text-neutral-200 pb-[4.5rem]">
             If you fall under these special categores of NGOs, Education,
             Influencer, Reviewer SaaS/AI/Other. Please email us at
-            support@proshoot.co and we&apos;ll arrange AI studio for free/or at
-            discounted price to generate free ai headshots.
+            support@proshoot.co or visit our&nbsp;
+            <Link className="underline" href="/contact">
+              contact page
+            </Link>
+            &nbsp; and we&apos;ll arrange AI studio for free/or at discounted
+            price to generate free ai headshots.
           </p>
           {/* </div> */}
         </div>

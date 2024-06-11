@@ -4,11 +4,21 @@ import { UploadThingError } from "uploadthing/server";
 
 const f = createUploadthing();
 
+const MIN_NUMBER_IMAGE_UPLOAD =
+  Number(process.env.MIN_NUMBER_IMAGE_UPLOAD) || 3;
+const MAX_NUMBER_IMAGE_UPLOAD =
+  Number(process.env.MAX_NUMBER_IMAGE_UPLOAD) || 50;
+const MAX_IMAGE_SIZE = process.env.MAX_IMAGE_SIZE || "5MB";
+
 // FileRouter for your app, can contain multiple FileRoutes
 export const ourFileRouter = {
   // Define as many FileRoutes as you like, each with a unique routeSlug
   imageUploader: f({
-    image: { maxFileSize: "5MB", maxFileCount: 50, minFileCount: 3 },
+    image: {
+      maxFileSize: MAX_IMAGE_SIZE,
+      maxFileCount: MAX_NUMBER_IMAGE_UPLOAD,
+      minFileCount: MIN_NUMBER_IMAGE_UPLOAD,
+    },
   })
     // Set permissions and file types for this FileRoute
     .middleware(async ({ req }) => {

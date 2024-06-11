@@ -14,12 +14,9 @@ const faqsList = [
     a: "Certainly, you can obtain an invoice for your purchase. You will get email with invoice.pdf from our payment partner Lemon Squeezy.",
   },
   {
-    q: "Why do you require a large number of photos?",
-    a: "We require a large number of photos to train our AI model and produce the best possible headshot for you. Uploading more photos will result in a better outcome.",
-  },
-  {
     q: "What kind of photos should I upload?",
-    a: "Please ensure to upload both portrait and full-body shots of the person. It is recommended to use 26 pictures of your subject, ideally cropped to a 1:1 aspect ratio. Out of these, 6 photos should showcase the full body or entire object, while 10 medium shot photos from the chest up and 10 close-ups should also be included. Variation is key in creating a comprehensive collection, so make sure to change body poses for every picture, and use pictures from different days, backgrounds, and lighting. Every picture of your subject should introduce new information about them. To prevent the model from learning unnecessary features, avoid uploading pictures taken at the same hour or day. For example, using multiple pictures with the same shirt will make the model learn the shirt as well as part of the subject. It is also important to always use a new background. Please do not upload pictures mixed with other people or funny faces.",
+    // a: "Please ensure to upload both portrait and full-body shots of the person. It is recommended to use 26 pictures of your subject, ideally cropped to a 1:1 aspect ratio. Out of these, 6 photos should showcase the full body or entire object, while 10 medium shot photos from the chest up and 10 close-ups should also be included. Variation is key in creating a comprehensive collection, so make sure to change body poses for every picture, and use pictures from different days, backgrounds, and lighting. Every picture of your subject should introduce new information about them. To prevent the model from learning unnecessary features, avoid uploading pictures taken at the same hour or day. For example, using multiple pictures with the same shirt will make the model learn the shirt as well as part of the subject. It is also important to always use a new background. Please do not upload pictures mixed with other people or funny faces.",
+    a: "Just use minimum 3 camera facing everyday selfies/photos taken on different time and place. Don't worry! We will guide you at time of studio creation with our guidelines.",
   },
   {
     q: "Is it possible for me to delete my data?",

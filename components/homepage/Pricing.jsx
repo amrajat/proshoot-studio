@@ -1,5 +1,6 @@
 import { HiCheck, HiCheckBadge, HiCheckCircle } from "react-icons/hi2";
 import ToolTip from "@/components/homepage/ToolTip";
+import Link from "next/link";
 
 function Pricing() {
   return (
@@ -17,8 +18,8 @@ function Pricing() {
             simple one-time payment
           </h2>
           <p className="mt-2 lg:text-lg text-gray-800 dark:text-gray-200">
-            Whatever your status, our offers evolve according to your
-            needs.&nbsp;
+            {/* Whatever your status, our offers evolve according to your
+            needs.&nbsp; */}
             <span className="bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-700 text-transparent">
               with money back guarantee
             </span>
@@ -121,12 +122,12 @@ function Pricing() {
                 </span>
               </li>
             </ul>
-            <a
+            <Link
               className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-violet-600 text-violet-600 hover:border-violet-500 hover:text-violet-500 disabled:opacity-50 disabled:pointer-events-none dark:border-violet-500 dark:text-violet-500 dark:hover:text-violet-400 dark:hover:border-violet-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
               href="/auth?pricing=Basic"
             >
               Get started
-            </a>
+            </Link>
           </div>
           {/* End Card */}
           {/* Card */}
@@ -227,12 +228,12 @@ function Pricing() {
                 </span>
               </li>
             </ul>
-            <a
+            <Link
               className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
               href="/auth?pricing=Standard"
             >
               Get started
-            </a>
+            </Link>
           </div>
           {/* End Card */}
           {/* Card */}
@@ -328,12 +329,12 @@ function Pricing() {
                 </span>
               </li>
             </ul>
-            <a
+            <Link
               className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-violet-600 text-violet-600 hover:border-violet-500 hover:text-violet-500 disabled:opacity-50 disabled:pointer-events-none dark:border-violet-500 dark:text-violet-500 dark:hover:text-violet-400 dark:hover:border-violet-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
               href="/auth?pricing=Premium"
             >
               Get started
-            </a>
+            </Link>
           </div>
           {/* End Card */}
           {/* Card */}
@@ -429,12 +430,12 @@ function Pricing() {
                 </span>
               </li>
             </ul>
-            <a
+            <Link
               className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-violet-600 text-violet-600 hover:border-violet-500 hover:text-violet-500 disabled:opacity-50 disabled:pointer-events-none dark:border-violet-500 dark:text-violet-500 dark:hover:text-violet-400 dark:hover:border-violet-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
               href="/auth?pricing=Pro"
             >
               Get started
-            </a>
+            </Link>
           </div>
           {/* End Card */}
         </div>

@@ -3,10 +3,12 @@ import Link from "next/link";
 function CoverPage({ title, children, buttonText, buttonLink }) {
   return (
     <div className="text-center py-10 px-4 sm:px-6 lg:px-8">
-      <h1 className="block text-2xl font-bold text-white sm:text-4xl">
+      <h1 className="block text-2xl font-bold text-neutral-800 dark:text-neutral-100 sm:text-4xl">
         {title}
       </h1>
-      <p className="mt-3 text-lg text-gray-300">{children}</p>
+      <p className="mt-3 text-lg text-neutral-800 dark:text-neutral-100">
+        {children}
+      </p>
       <div className="mt-5 flex flex-col justify-center items-center gap-2 sm:flex-row sm:gap-3">
         <Link href={buttonLink}>
           <button

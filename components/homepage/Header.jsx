@@ -1,13 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 import Logo from "./Logo";
-import AnnouncementBanner from "@/components/homepage/AnnouncementBanner";
-import { HiBars3, HiMiniXMark, HiOutlineChevronDown } from "react-icons/hi2";
+import { HiBars3, HiMiniXMark } from "react-icons/hi2";
 
 function Header() {
   return (
     <>
-      <AnnouncementBanner />
+      {/* <AnnouncementBanner /> */}
       <header className="flex flex-wrap md:justify-start md:flex-nowrap z-50 w-full text-sm py-3 md:py-0">
         <nav
           className="max-w-[85rem] w-full mx-auto px-4 md:px-6 lg:px-8"
@@ -68,119 +66,10 @@ function Header() {
 
                   <Link
                     className="font-medium text-gray-600 hover:text-gray-500 py-3 md:py-6 dark:text-gray-400 dark:hover:text-gray-500 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                    href="/#teams"
+                    href="/free-ai-headshot-generator-examples"
                   >
-                    Teams
+                    Examples
                   </Link>
-
-                  <div className="hs-dropdown [--strategy:static] md:[--strategy:absolute] [--adaptive:none] md:[--trigger:hover] py-3 md:py-4">
-                    <button
-                      type="button"
-                      className="flex items-center w-full text-gray-600 hover:text-gray-400 font-medium dark:text-gray-400 dark:hover:text-gray-500 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                    >
-                      Headshots For
-                      <HiOutlineChevronDown
-                        className="ms-2 w-2.5 h-2.5 text-gray-600"
-                        width="16"
-                        height="16"
-                      />
-                    </button>
-
-                    <div className="hs-dropdown-menu transition-[opacity,margin] duration-[0.1ms] md:duration-[150ms] hs-dropdown-open:opacity-100 opacity-0 w-full hidden z-10 top-full start-0 min-w-[15rem] bg-white md:shadow-2xl rounded-lg py-2 md:p-4 dark:bg-slate-900 dark:divide-gray-700 before:absolute before:-top-5 before:start-0 before:w-full before:h-5">
-                      <div className="md:grid md:grid-cols-2 lg:grid-cols-2 gap-4">
-                        <div className="flex flex-col mx-1 md:mx-0">
-                          <a
-                            className="group flex gap-x-5 text-gray-800 hover:bg-gray-100 rounded-lg p-4 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                            href="/free-ai-headshot-generator-examples"
-                          >
-                            <div className="grow">
-                              <p className="font-medium text-gray-800 dark:text-gray-200">
-                                Legal Professionals
-                              </p>
-                            </div>
-                          </a>
-
-                          <a
-                            className="group flex gap-x-5 text-gray-800 hover:bg-gray-100 rounded-lg p-4 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                            href="/free-ai-headshot-generator-examples"
-                          >
-                            <div className="grow">
-                              <p className="font-medium text-gray-800 dark:text-gray-200">
-                                Social Service Professionals
-                              </p>
-                            </div>
-                          </a>
-
-                          <a
-                            className="group flex gap-x-5 text-gray-800 hover:bg-gray-100 rounded-lg p-4 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                            href="/free-ai-headshot-generator-examples"
-                          >
-                            <div className="grow">
-                              <p className="font-medium text-gray-800 dark:text-gray-200">
-                                Financial Professionals
-                              </p>
-                            </div>
-                          </a>
-
-                          <a
-                            className="group flex gap-x-5 text-gray-800 hover:bg-gray-100 rounded-lg p-4 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                            href="/free-ai-headshot-generator-examples"
-                          >
-                            <div className="grow">
-                              <p className="font-medium text-gray-800 dark:text-gray-200">
-                                Tech Professionals
-                              </p>
-                            </div>
-                          </a>
-                        </div>
-
-                        <div className="flex flex-col mx-1 md:mx-0">
-                          <a
-                            className="group flex gap-x-5 text-gray-800 hover:bg-gray-100 rounded-lg p-4 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                            href="/free-ai-headshot-generator-examples"
-                          >
-                            <div className="grow">
-                              <p className="font-medium text-gray-800 dark:text-gray-200">
-                                Education Professionals
-                              </p>
-                            </div>
-                          </a>
-
-                          <a
-                            className="group flex gap-x-5 text-gray-800 hover:bg-gray-100 rounded-lg p-4 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                            href="/free-ai-headshot-generator-examples"
-                          >
-                            <div className="grow">
-                              <p className="font-medium text-gray-800 dark:text-gray-200">
-                                Creative Professionals
-                              </p>
-                            </div>
-                          </a>
-
-                          <a
-                            className="group flex gap-x-5 text-gray-800 hover:bg-gray-100 rounded-lg p-4 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                            href="/free-ai-headshot-generator-examples"
-                          >
-                            <div className="grow">
-                              <p className="font-medium text-gray-800 dark:text-gray-200">
-                                Business Professionals
-                              </p>
-                            </div>
-                          </a>
-                          <a
-                            className="group flex gap-x-5 text-gray-800 hover:bg-gray-100 rounded-lg p-4 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                            href="/free-ai-headshot-generator-examples"
-                          >
-                            <div className="grow">
-                              <p className="font-medium text-gray-800 dark:text-gray-200">
-                                Medical, Health & Wellness Professionals
-                              </p>
-                            </div>
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
 
                   <Link
                     className="font-medium text-gray-600 hover:text-gray-500 py-3 md:py-6 dark:text-gray-400 dark:hover:text-gray-500 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
@@ -194,13 +83,6 @@ function Header() {
                     href="/contact"
                   >
                     Contact
-                  </Link>
-
-                  <Link
-                    className="font-medium text-gray-600 hover:text-gray-500 py-3 md:py-6 dark:text-gray-400 dark:hover:text-gray-500 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                    href="/auth"
-                  >
-                    Login
                   </Link>
 
                   <div className="pt-3 md:pt-0">

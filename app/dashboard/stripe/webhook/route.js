@@ -1,8 +1,7 @@
 import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { performance } from "node:perf_hooks";
-
+import { NextResponse } from "next/server";
 // async function processEvent(event) {
 //   let processingError = "";
 
@@ -103,7 +102,6 @@ import { performance } from "node:perf_hooks";
 export const dynamic = "force-dynamic";
 
 export async function POST(request) {
-  const startTime = performance.now();
   const cookieStore = cookies();
 
   const supabase = createServerClient(
@@ -144,6 +142,23 @@ export async function POST(request) {
   const bodyObject = JSON.parse(rawBody);
   const { plan, quantity, user, email_id } = bodyObject["meta"]["custom_data"];
 
+  // Start....First check if payment id is not already updated to avoid duplicate entries/credits to the database.
+
+  let {
+    data: [{ purchase_history = [] } = {}],
+  } = await supabase.from("users").select("purchase_history").eq("id", user);
+
+  if (purchase_history.length > 0) {
+    const isDuplicateEntry = purchase_history.find(
+      (paymentObject) =>
+        Number(paymentObject.session) === Number(bodyObject["data"]["id"])
+    );
+    if (isDuplicateEntry)
+      return NextResponse.json({ message: "Duplicate Entry" }, { status: 403 });
+  }
+
+  // End......First check if payment id is not already updated to avoid duplicate entries/credits to the database.
+
   const transaction_data = {
     plan,
     qty: Number(quantity),
@@ -176,113 +191,5 @@ export async function POST(request) {
 
   // processEvent(event);
 
-  const endTime = performance.now();
-  console.log("Lemon Squeezy webhook took this time", endTime - startTime);
-
   return new Response("Done");
 }
-
-// Stripe starts here.
-
-// import { NextResponse } from "next/server";
-// import { createServerClient } from "@supabase/ssr";
-// import { cookies } from "next/headers";
-// import Stripe from "stripe";
-// import { streamToString } from "@/lib/utils";
-// const checkout_session_completed = "checkout.session.completed";
-
-// export const dynamic = "force-dynamic";
-
-// export async function POST(req, res) {
-//   const cookieStore = cookies();
-
-//   const supabase = createServerClient(
-//     process.env.NEXT_PUBLIC_SUPABASE_URL,
-//     process.env.SUPABASE_SECRET_KEY,
-//     {
-//       cookies: {
-//         get(name) {
-//           return cookieStore.get(name)?.value;
-//         },
-//         set(name, value, options) {
-//           cookieStore.set({ name, value, ...options });
-//         },
-//         remove(name, options) {
-//           cookieStore.set({ name, value: "", ...options });
-//         },
-//       },
-//     }
-//   );
-//   const stripe = new Stripe(`${process.env.STRIPE_SECRET_KEY}`, {
-//     apiVersion: "2023-10-16",
-//   });
-//   const webhookSecret = `${process.env.STRIPE_WEBHOOK_SECRET}`;
-//   const sig = req.headers.get("stripe-signature");
-
-//   // const reqBody = await req.text();
-//   const reqBody = await streamToString(req.body);
-//   console.log("reqBody", reqBody);
-//   // const reqBody = await buffer(req);
-
-//   let event;
-//   console.log(sig, webhookSecret);
-
-//   try {
-//     if (!sig || !webhookSecret) return;
-//     event = stripe.webhooks.constructEvent(reqBody, sig, webhookSecret);
-//     console.log(event);
-//   } catch (error) {
-//     console.log(error, JSON.stringify(error));
-//     return new NextResponse(`Webhook Error: ${error.message}`, { status: 500 });
-//   }
-
-//   switch (event.type) {
-//     case checkout_session_completed:
-//       const session = event.data.object;
-
-//       const {
-//         // @ts-ignore
-//         metadata: { user, plan, quantity },
-//       } = session;
-//       const transaction_data = {
-//         plan,
-//         qty: Number(quantity),
-//         timestamp: new Date().toISOString(),
-//         session: session.id,
-//       };
-
-//       let { data, error } = await supabase.rpc("add_purchase_history", {
-//         transaction_data: transaction_data,
-//         user_id: user,
-//       });
-
-//       if (!error) {
-//         const {
-//           data: [{ credits }],
-//           error: creditsError,
-//         } = await supabase.from("users").select("credits").eq("id", user);
-
-//         if (!creditsError) {
-//           credits[plan] = credits[plan] + Number(quantity);
-//           const { data: updatedData, error: updateError } = await supabase
-//             .from("users")
-//             .update({ credits: credits })
-//             .eq("id", user);
-//         }
-//       }
-
-//       return NextResponse.json("Booking successful", {
-//         status: 200,
-//         statusText: "Booking Successful",
-//       });
-
-//     default:
-//   }
-
-//   return NextResponse.json("Event Received", {
-//     status: 200,
-//     statusText: "Event Received",
-//   });
-// }
-
-// Stripe Ends here

@@ -40,6 +40,7 @@ export async function POST(req) {
   const plan = formData.get("plan");
   const gender = formData.get("tune[name]");
   const name = formData.get("name");
+  const sharing_permission = formData.get("sharing_permission");
 
   // Prepare the formData for Tuning
   formData.append("tune[branch]", `${process.env.TUNE_BRANCH}`);
@@ -103,6 +104,7 @@ export async function POST(req) {
   formData.delete("credits");
   formData.delete("plan");
   formData.delete("name");
+  formData.delete("sharing_permission");
 
   console.log("Studio cover start");
 
@@ -143,6 +145,7 @@ export async function POST(req) {
         coverImage: formData.get("cover"),
         created_at,
         downloaded: false,
+        sharing_permission,
       },
       user_id: session.user.id,
     });

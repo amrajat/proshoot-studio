@@ -50,6 +50,8 @@ function ProfileUpdateForm({ id }) {
     },
   });
 
+  console.log(user);
+
   if (error) return <Error message="Failed to fetch user profile" />;
   if (!user && !isValidating) return <Error message="No user profile found" />;
   if (!user || isValidating || isLoading) return <Loader />;
@@ -64,6 +66,8 @@ function ProfileUpdateForm({ id }) {
     }
   }
 
+  console.log(user);
+
   return (
     <form action={(formData) => startTransaction(() => formAction(formData))}>
       {/* Grid */}
@@ -76,7 +80,6 @@ function ProfileUpdateForm({ id }) {
           >
             Full Name
           </label>
-          <ToolTip>Public</ToolTip>
         </div>
         <div className="sm:col-span-9">
           <div className="sm:flex">
@@ -86,7 +89,7 @@ function ProfileUpdateForm({ id }) {
               className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
               placeholder="First name"
               name="f_name"
-              defaultValue={user?.f_name}
+              defaultValue={user.metadata.f_name}
             />
             <input
               id="l_name"
@@ -94,7 +97,7 @@ function ProfileUpdateForm({ id }) {
               className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
               placeholder="Last name"
               name="l_name"
-              defaultValue={user?.l_name}
+              defaultValue={user.metadata.l_name}
             />
           </div>
         </div>
@@ -108,7 +111,6 @@ function ProfileUpdateForm({ id }) {
           >
             Company / Position
           </label>
-          <ToolTip type="public" />
         </div>
         <div className="sm:col-span-9">
           <div className="sm:flex">
@@ -118,7 +120,7 @@ function ProfileUpdateForm({ id }) {
               className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
               placeholder="Acme Corporation"
               name="company"
-              defaultValue={user?.company}
+              defaultValue={user.metadata.company}
             />
             <input
               id="position"
@@ -126,7 +128,7 @@ function ProfileUpdateForm({ id }) {
               className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
               placeholder="CEO & Founder"
               name="position"
-              defaultValue={user?.position}
+              defaultValue={user.metadata.position}
             />
           </div>
         </div>
@@ -140,7 +142,6 @@ function ProfileUpdateForm({ id }) {
           >
             Website
           </label>
-          <ToolTip type={"public"} />
         </div>
         <div className="sm:col-span-9">
           <input
@@ -149,7 +150,7 @@ function ProfileUpdateForm({ id }) {
             className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
             placeholder="acme.org"
             name="website"
-            defaultValue={user?.website}
+            defaultValue={user.metadata.website}
           />
         </div>
 
@@ -190,65 +191,59 @@ function ProfileUpdateForm({ id }) {
             className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
             placeholder="@elonmusk"
             name="x_username"
-            defaultValue={user?.x_username}
+            defaultValue={user.metadata.x_username}
           />
         </div>
 
         {/* X Username End */}
-
-        {/* Permission Start */}
+        {/* Linkedin Username Start */}
 
         <div className="sm:col-span-3">
           <label
-            htmlFor="permission"
+            htmlFor="linkedin_username"
             className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200"
           >
-            Permission
+            LinkedIn Username
           </label>
-          <ToolTip type="public" />
         </div>
         <div className="sm:col-span-9">
-          <div className="grid space-y-3">
-            <div className="relative flex items-start">
-              <div className="flex items-center h-5 mt-1">
-                <input
-                  id="permission"
-                  name="permission"
-                  type="checkbox"
-                  className="border-2 border-gray-200 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                  aria-describedby="permission-description"
-                  defaultChecked={user?.permission}
-                />
-              </div>
-              <label htmlFor="permission" className="ms-3">
-                <span className="block text-sm font-semibold text-gray-800 dark:text-gray-300">
-                  Please Check
-                </span>
-                <span
-                  id="permission-description"
-                  className="block text-xs text-gray-600 dark:text-gray-500"
-                >
-                  If Checked. We may share your generated headshots, name,
-                  company, and website on our website&apos;s showcase to display
-                  real headshots created by our users. This helps potential
-                  customers decide if our product meets their expectations.
-                  Thank you for your contribution!
-                </span>
-              </label>
-            </div>
-          </div>
+          <input
+            id="linkedin_username"
+            type="text"
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+            placeholder="linkedin username"
+            name="linkedin_username"
+            defaultValue={user.metadata.linkedin_username}
+          />
         </div>
-        {/* Permission End */}
+
+        {/* Linkedin Username End */}
+        {/* Instagram Username Start */}
+
+        <div className="sm:col-span-3">
+          <label
+            htmlFor="instagram_username"
+            className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200"
+          >
+            Instagram Username
+          </label>
+        </div>
+        <div className="sm:col-span-9">
+          <input
+            id="instagram_username"
+            type="text"
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+            placeholder="your IG handle"
+            name="instagram_username"
+            defaultValue={user.metadata.instagram_username}
+          />
+        </div>
+
+        {/* Instagram Username End */}
       </div>
       {/* End Grid */}
       {/* START RESET AND SAVE CHANGES BUTTON */}
       <div className="mt-5 flex justify-end gap-x-2">
-        {/* <button
-          type="button"
-          className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-2 border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-        >
-          Reset
-        </button> */}
         <button
           type="submit"
           className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"

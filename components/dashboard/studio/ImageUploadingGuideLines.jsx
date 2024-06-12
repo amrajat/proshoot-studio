@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { HiCheck, HiXMark } from "react-icons/hi2";
 import { LuBadgeCheck, LuBadgeAlert } from "react-icons/lu";
 
 function ImageUploadingGuideLines() {
@@ -25,24 +26,83 @@ function ImageUploadingGuideLines() {
               className="marker:text-blue-600 list-disc ps-4 space-y-2 text-sm"
             >
               <li>
-                Please upload at-least 10 (recommended but not required) camera
-                facing photos taken on different time and place if possible.
-                However, you may submit at least 3 images to fine-tune the
-                model.
-              </li>
-              <li>
-                Images ideally cropped to a 1:1 aspect ratio but not required.
+                Please upload at-least 10 camera facing photos taken on
+                different time and place if possible.
               </li>
               <li>
                 Vary the poses, background, and lighting for each picture so
                 each picture should introduce new information about the person.
               </li>
               <li>Use photos from different days to avoid repetition.</li>
-              <li>
-                It is also important to always use a new background for every
-                image.
-              </li>
             </ul>
+          </div>
+        </div>
+        <div className="flex w-full flex-wrap gap-2 mt-4 justify-center">
+          <div className="relative rounded-lg overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-green-100 bg-green-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
+              <HiCheck className="flex-shrink-0 size-2" />
+            </span>
+            <Image
+              alt=""
+              src="/image-uploading-guidelines/follow/follow-1.jpg"
+              width={98}
+              height={98}
+            />
+          </div>
+          <div className="relative rounded-lg overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-green-100 bg-green-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
+              <HiCheck className="flex-shrink-0 size-2" />
+            </span>
+            <Image
+              alt=""
+              src="/image-uploading-guidelines/follow/follow-2.jpg"
+              width={98}
+              height={98}
+            />
+          </div>
+          <div className="relative rounded-lg overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-green-100 bg-green-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
+              <HiCheck className="flex-shrink-0 size-2" />
+            </span>
+            <Image
+              alt=""
+              src="/image-uploading-guidelines/follow/follow-3.jpg"
+              width={98}
+              height={98}
+            />
+          </div>
+          <div className="relative rounded-lg overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-green-100 bg-green-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
+              <HiCheck className="flex-shrink-0 size-2" />
+            </span>
+            <Image
+              alt=""
+              src="/image-uploading-guidelines/follow/follow-4.jpg"
+              width={98}
+              height={98}
+            />
+          </div>
+          <div className="relative rounded-lg overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-green-100 bg-green-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
+              <HiCheck className="flex-shrink-0 size-2" />
+            </span>
+            <Image
+              alt=""
+              src="/image-uploading-guidelines/follow/follow-5.jpg"
+              width={98}
+              height={98}
+            />
+          </div>
+          <div className="relative rounded-lg overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-green-100 bg-green-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
+              <HiCheck className="flex-shrink-0 size-2" />
+            </span>
+            <Image
+              alt=""
+              src="/image-uploading-guidelines/follow/follow-6.jpg"
+              width={98}
+              height={98}
+            />
           </div>
         </div>
       </div>
@@ -72,9 +132,79 @@ function ImageUploadingGuideLines() {
 
               <li>
                 Please do not upload funny or weird faces or any photos with
-                other people/objects (hats, goggles, or any other accessories).
+                other people/objects (hats, masks, sun glasses, or any other
+                accessories).
               </li>
+              <li>Please avoid side view images.</li>
             </ul>
+          </div>
+        </div>
+        <div className="flex w-full flex-wrap gap-2 mt-4 justify-center">
+          <div className="relative rounded-lg overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+              <HiXMark className="flex-shrink-0 size-2" />
+            </span>
+            <Image
+              alt=""
+              src="/image-uploading-guidelines/avoid/avoid-1.jpg"
+              width={98}
+              height={98}
+            />
+          </div>
+          <div className="relative rounded-lg overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+              <HiXMark className="flex-shrink-0 size-2" />
+            </span>
+            <Image
+              alt=""
+              src="/image-uploading-guidelines/avoid/avoid-2.jpg"
+              width={98}
+              height={98}
+            />
+          </div>
+          <div className="relative rounded-lg overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+              <HiXMark className="flex-shrink-0 size-2" />
+            </span>
+            <Image
+              alt=""
+              src="/image-uploading-guidelines/avoid/avoid-3.jpg"
+              width={98}
+              height={98}
+            />
+          </div>
+          <div className="relative rounded-lg overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+              <HiXMark className="flex-shrink-0 size-2" />
+            </span>
+            <Image
+              alt=""
+              src="/image-uploading-guidelines/avoid/avoid-4.jpg"
+              width={98}
+              height={98}
+            />
+          </div>
+          <div className="relative rounded-lg overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+              <HiXMark className="flex-shrink-0 size-2" />
+            </span>
+            <Image
+              alt=""
+              src="/image-uploading-guidelines/avoid/avoid-5.jpg"
+              width={98}
+              height={98}
+            />
+          </div>
+          <div className="relative rounded-lg overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+              <HiXMark className="flex-shrink-0 size-2" />
+            </span>
+            <Image
+              alt=""
+              src="/image-uploading-guidelines/avoid/avoid-6.jpg"
+              width={98}
+              height={98}
+            />
           </div>
         </div>
       </div>

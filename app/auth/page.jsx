@@ -36,6 +36,11 @@ function AuthPage() {
               </div> */}
               {/* Form */}
               <AuthForm />
+              <p className="block text-xs mt-1 text-center text-gray-800 dark:text-gray-300">
+                You don't need to create account/password here. We use modern
+                authentication which allows you to access your account with one
+                time password or passcode.
+              </p>
               {/* End Form */}
             </div>
           </div>

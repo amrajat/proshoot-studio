@@ -4,11 +4,9 @@ import { UploadThingError } from "uploadthing/server";
 
 const f = createUploadthing();
 
-const MIN_NUMBER_IMAGE_UPLOAD =
-  Number(process.env.MIN_NUMBER_IMAGE_UPLOAD) || 3;
-const MAX_NUMBER_IMAGE_UPLOAD =
-  Number(process.env.MAX_NUMBER_IMAGE_UPLOAD) || 50;
-const MAX_IMAGE_SIZE = process.env.MAX_IMAGE_SIZE || "5MB";
+const MIN_NUMBER_IMAGE_UPLOAD = 3;
+const MAX_NUMBER_IMAGE_UPLOAD = 50;
+const MAX_IMAGE_SIZE = "5MB";
 
 // FileRouter for your app, can contain multiple FileRoutes
 export const ourFileRouter = {

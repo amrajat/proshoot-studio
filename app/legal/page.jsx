@@ -1,6 +1,7 @@
 import Header from "@/components/homepage/Header";
 import Footer from "@/components/homepage/Footer";
 import Container from "@/components/dashboard/Container";
+import Heading from "@/components/ui/Heading";
 
 export const metadata = {
   title: { absolute: "Legal Policies" },
@@ -18,18 +19,13 @@ function Legal() {
       <Container>
         {/* Content */}
         <div className="space-y-5 md:space-y-8">
-          <h1 className="text-2xl font-bold md:text-3xl dark:text-white">
-            Legal Pages
-          </h1>
+          <Heading type="h3">Legal Pages</Heading>
           {/* Terms & Conditions Starts Here */}
           <div className="space-y-3">
-            <h3
-              id="terms"
-              className="text-xl font-bold md:text-2xl dark:text-white"
-            >
+            <h3 id="terms" className="text-xl font-bold md:text-2xl ">
               Terms & Conditions
             </h3>
-            <p className="text-lg text-gray-800 dark:text-neutral-200">
+            <p className="text-lg text-gray-800 ">
               Welcome to Proshoot.co! This document outlines the terms and
               conditions ("Terms") that govern your use of the Proshoot.co
               website (the "Website") and its services (the "Services"), which
@@ -137,13 +133,10 @@ function Legal() {
           {/* Terms & Conditions Ends Here */}
           {/* Privacy Policy Starts Here */}
           <div className="space-y-3">
-            <h3
-              id="privacy"
-              className="text-xl font-bold md:text-2xl dark:text-white"
-            >
+            <h3 id="privacy" className="text-xl font-bold md:text-2xl ">
               Privacy Policy
             </h3>
-            <p className="text-lg text-gray-800 dark:text-neutral-200">
+            <p className="text-lg text-gray-800 ">
               Prime AI Company ("Prime AI," "we," "us," or "our") is committed
               to protecting the privacy of our users. This Privacy Policy
               explains what information we collect, how we use it, and under
@@ -223,13 +216,10 @@ function Legal() {
           {/* Privacy Policy Ends Here */}
           {/* Disclaimer Starts Here */}
           <div className="space-y-3">
-            <h3
-              id="disclaimer"
-              className="text-xl font-bold md:text-2xl dark:text-white"
-            >
+            <h3 id="disclaimer" className="text-xl font-bold md:text-2xl ">
               Disclaimer
             </h3>
-            <p className="text-lg text-gray-800 dark:text-neutral-200">
+            <p className="text-lg text-gray-800 ">
               Limitations of Liability and Disclaimers<br></br>
               <br></br>
               Proshoot.co strives to provide users with a state-of-the-art
@@ -284,13 +274,10 @@ function Legal() {
           {/* Disclaimer Ends Here */}
           {/* Refund Policy Starts Here */}
           <div className="space-y-3">
-            <h3
-              id="refund"
-              className="text-xl font-bold md:text-2xl dark:text-white"
-            >
+            <h3 id="refund" className="text-xl font-bold md:text-2xl ">
               Refund Policy
             </h3>
-            <p className="text-lg text-gray-800 dark:text-neutral-200">
+            <p className="text-lg text-gray-800 ">
               Proshoot.co is committed to exceeding your expectations. However,
               we understand that achieving the perfect headshot can be a
               subjective process. This policy outlines the conditions under
@@ -302,7 +289,7 @@ function Legal() {
               <br></br>
               <blockquote className="relative mt-2">
                 <div className="relative z-10">
-                  <p className="text-gray-800 sm:text-lg dark:text-white">
+                  <p className="text-gray-800 sm:text-lg ">
                     <em>
                       If you see Downloaded: False on Studio page, then your are
                       eligible for refund. This means your have not downloaded
@@ -347,13 +334,10 @@ function Legal() {
           {/* Refund Policy Ends Here */}
           {/* Fair Usage Policy Starts Here */}
           <div className="space-y-3">
-            <h3
-              id="fair-usage"
-              className="text-xl font-bold md:text-2xl dark:text-white"
-            >
+            <h3 id="fair-usage" className="text-xl font-bold md:text-2xl ">
               Fair Usage Policy
             </h3>
-            <p className="text-lg text-gray-800 dark:text-neutral-200">
+            <p className="text-lg text-gray-800 ">
               Welcome to Proshoot.co! We empower users to leverage the power of
               AI for creative headshot generation. This Fair Use Policy outlines
               acceptable use guidelines to ensure a positive experience for all
@@ -393,7 +377,7 @@ function Legal() {
             </p>
           </div>
           {/* Fair Usage Policy Ends Here */}
-          <p className="text-lg text-gray-800 dark:text-neutral-200">
+          <p className="text-lg text-gray-800 ">
             Page Last Updated: Saturday, May 05, 2024
           </p>
         </div>

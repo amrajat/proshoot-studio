@@ -1,17 +1,16 @@
-function Loader() {
+function Loader({ cls = "" }) {
   return (
-    <div className="flex animate-pulse">
+    <div className={`flex animate-pulse ${cls}`} aria-label="loading">
       <div className="ms-4 mt-2 w-full">
         {/* <h3
-          className="h-4 bg-gray-200 rounded-full dark:bg-gray-700"
+          className="h-4 bg-gray-200 rounded "
           style={{ width: "40%" }}
         /> */}
-        <ul className="mt-5 space-y-3">
-          <li className="w-full h-4 bg-gray-200 rounded-full dark:bg-gray-700" />
-          <li className="w-full h-4 bg-gray-200 rounded-full dark:bg-gray-700" />
-          <li className="w-full h-4 bg-gray-200 rounded-full dark:bg-gray-700" />
-          <li className="w-full h-4 bg-gray-200 rounded-full dark:bg-gray-700" />
-        </ul>
+        <div className="flex flex-row gap-2 justify-center">
+          <div className="w-4 h-4 rounded-full bg-blue-600 animate-bounce"></div>
+          <div className="w-4 h-4 rounded-full bg-blue-600 animate-bounce [animation-delay:-.3s]"></div>
+          <div className="w-4 h-4 rounded-full bg-blue-600 animate-bounce [animation-delay:-.5s]"></div>
+        </div>
       </div>
     </div>
   );

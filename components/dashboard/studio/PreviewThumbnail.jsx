@@ -17,7 +17,7 @@ const PreviewThumbnail = ({
 }) => {
   return (
     <div className="p-4 md:p-5 space-y-7">
-      {/* <div className="flex flex-col bg-white border shadow-sm rounded-xl dark:bg-slate-800 dark:border-gray-700"> */}
+      {/* <div className="flex flex-col bg-white border shadow-sm rounded  "> */}
       {images.map((image, index) => {
         const src = URL.createObjectURL(image);
         return (
@@ -26,7 +26,7 @@ const PreviewThumbnail = ({
             <div className="mb-2 flex justify-between items-center">
               <div className="flex items-center gap-x-3">
                 <Link href={src} target="_blank">
-                  <span className="size-20 object-cover overflow-hidden flex justify-center items-center border border-gray-200 text-gray-500 rounded-md dark:border-neutral-700">
+                  <span className="size-20 object-cover overflow-hidden flex justify-center items-center border border-gray-200 text-gray-500 rounded ">
                     <Image
                       src={src}
                       alt={image.name}
@@ -37,7 +37,7 @@ const PreviewThumbnail = ({
                   </span>
                 </Link>
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-white">
+                  <p className="text-sm font-medium text-gray-800 ">
                     {image.name}
                   </p>
                   <p
@@ -45,7 +45,7 @@ const PreviewThumbnail = ({
                       image.size > MAX_IMAGE_SIZE ||
                       !image.type.startsWith("image/")
                         ? "text-red-500"
-                        : "text-gray-500 dark:text-gray-500"
+                        : "text-gray-500 "
                     }`}
                   >
                     {Math.round(

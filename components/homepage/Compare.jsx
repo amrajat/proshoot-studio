@@ -2,37 +2,32 @@ import { HiCheckCircle, HiXCircle } from "react-icons/hi2";
 import ToolTip from "./ToolTip";
 import Logo from "./Logo";
 import Image from "next/image";
+import Heading, { SubHeading } from "@/components/ui/Heading";
+import { figtree } from "@/lib/utils";
+import BgGradient from "./BgGradient";
 
 function Compare() {
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden">
       {/* Gradients */}
-      {/* <div
-        aria-hidden="true"
-        className="flex absolute -top-48 start-0 -z-[1] overflow-x-hidden"
-      >
-        <div className="bg-purple-200 opacity-30 blur-3xl w-[1036px] h-[600px] dark:bg-purple-900 dark:opacity-20" />
-        <div className="bg-slate-200 opacity-90 blur-3xl w-[577px] h-[300px] transform translate-y-32 dark:bg-slate-800/60" />
-      </div> */}
+      <BgGradient />
       {/* End Gradients */}
-      <div className="max-w-[85rem] px-4 pt-10 sm:px-6 lg:px-8 lg:pt-14 mx-auto">
+      <div className="max-w-[85rem] px-4 py-12 sm:px-6 lg:px-8 lg:pt-16 lg:pb-28 mx-auto">
         {/* Title */}
-        <div className="max-w-2xl mx-auto text-center mb-10">
-          <h2 className="text-3xl leading-tight font-bold md:text-4xl md:leading-tight lg:text-5xl lg:leading-tight bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-700 text-transparent">
-            proshoots.co outperforms its competitors
-            {/* proshoots.co outperforms its competitors when it comes to creating
-          photorealistic and accurate images. */}{" "}
-          </h2>
-          <p className="mt-2 lg:text-lg text-gray-800 dark:text-gray-200">
-            Whatever your status, our offers evolve according to your needs.
-          </p>
+        <div className="mx-auto text-center mb-10">
+          <Heading>Proshoot.co Outperforms Its Competitors</Heading>
+          <SubHeading>
+            Proshoot.co Leads the Market with High-Resemblance, Realistic AI
+            Headshots—Guaranteed Sharpness and Ethnicity Integrity. Enjoy
+            High-Resolution, Deformation-Free Images, Delivered in Just 2 Hours.
+          </SubHeading>
         </div>
         {/* End Title */}
 
         {/* Grid */}
         <div className="mt-6 md:mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-3 xl:gap-6 lg:items-center">
           {/* Card */}
-          <div className="flex flex-col bg-white border border-gray-200 text-center rounded-2xl dark:bg-slate-900 dark:border-gray-700 overflow-hidden">
+          <div className="flex flex-col bg-white border border-gray-200 text-center rounded   overflow-hidden">
             <div className="relative w-full h-full">
               <Image
                 src="/dall-e-3.png"
@@ -44,7 +39,7 @@ function Compare() {
               />
             </div>
             <div className="p-4 md:p-8">
-              <h4 className="font-medium text-lg text-gray-800 dark:text-gray-200">
+              <h4 className={"font-medium text-lg " + figtree.className}>
                 DALL·E 3
               </h4>
 
@@ -60,9 +55,7 @@ function Compare() {
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
 
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Low Resemblance
-                  </span>
+                  <span className=" ">Low Resemblance</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -70,9 +63,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Looks like AI Generated
-                  </span>
+                  <span className=" ">Looks like AI Generated</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -80,9 +71,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    No Money Back Guarantee
-                  </span>
+                  <span className=" ">No Money Back Guarantee</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -90,9 +79,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Deformation
-                  </span>
+                  <span className=" ">Deformation</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -100,9 +87,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Like Madame Tussaud's Wax
-                  </span>
+                  <span className=" ">Like Madame Tussaud's Wax</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -110,19 +95,15 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Low Resolution
-                  </span>
+                  <span className=" ">Low Resolution</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiCheckCircle
                     width={24}
                     height={24}
-                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Faster
-                  </span>
+                  <span className=" ">Faster</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -130,9 +111,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Maintains Ethnicity
-                  </span>
+                  <span className=" ">Maintains Ethnicity</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -140,37 +119,28 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Blurry and Lacks Sharpness.
-                  </span>
+                  <span className=" ">Blurry and Lacks Sharpness.</span>
                 </li>
               </ul>
             </div>
           </div>
           {/* End Card */}
           {/* Card */}
-          <div className="flex flex-col bg-white border-2 border-violet-900 text-center shadow-xl rounded-2xl dark:bg-slate-900 dark:border-violet-700 overflow-hidden">
+          <div className="flex flex-col bg-white border-2 border-blue-600 text-center shadow-xl rounded   overflow-hidden">
             <div className="relative w-full h-full">
               <Image
-                src="/amazon-employee.png"
+                src="/examples/ai-portrait-10.jpg"
                 alt="proshoot.co generate image"
                 width="0"
                 height="0"
                 sizes="100vw"
-                className="w-full h-auto"
+                className="w-full h-auto shadow"
               />
             </div>
 
-            {/* <Image
-              src="/amazon-employee.png"
-              alt=""
-              className="w-full"
-              fill={true}
-              objectFit="contain"
-            /> */}
             <div className="p-4 md:p-8">
-              <h4 className="font-medium text-lg text-gray-800 dark:text-gray-200">
-                <span className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs uppercase font-semibold bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-white">
+              <h4 className="font-medium text-lg">
+                <span className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded text-xs uppercase font-semibold bg-blue-100 text-blue-600  ">
                   <Logo />
                 </span>
               </h4>
@@ -185,30 +155,26 @@ function Compare() {
                   <HiCheckCircle
                     width={24}
                     height={24}
-                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-700"
+                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                   />
 
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Highest Possible Resemblance
-                  </span>
+                  <span className=" ">Highest Possible Resemblance</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiCheckCircle
                     width={24}
                     height={24}
-                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-700"
+                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Sharp Realistic
-                  </span>
+                  <span className=" ">Sharp Realistic</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiCheckCircle
                     width={24}
                     height={24}
-                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-700"
+                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
+                  <span className=" ">
                     Money Back Guarantee{" "}
                     <ToolTip>Subject to our Refund Policy.</ToolTip>
                   </span>
@@ -217,31 +183,25 @@ function Compare() {
                   <HiCheckCircle
                     width={24}
                     height={24}
-                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-700"
+                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Almost! No Deformation
-                  </span>
+                  <span className=" ">Almost! No Deformation</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiCheckCircle
                     width={24}
                     height={24}
-                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-700"
+                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Looks like real image.
-                  </span>
+                  <span className=" ">Looks like real image.</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiCheckCircle
                     width={24}
                     height={24}
-                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-700"
+                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    High Resolution
-                  </span>
+                  <span className=" ">High Resolution</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -249,7 +209,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
+                  <span className=" ">
                     Ready within 2 Hours.
                     <ToolTip>This depends on the input images.</ToolTip>
                   </span>
@@ -258,28 +218,24 @@ function Compare() {
                   <HiCheckCircle
                     width={24}
                     height={24}
-                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-700"
+                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Maintains Ethnicity
-                  </span>
+                  <span className=" ">Maintains Ethnicity</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiCheckCircle
                     width={24}
                     height={24}
-                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-700"
+                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Sharp and scales upto 5X.
-                  </span>
+                  <span className=" ">Sharp and scales upto 5X.</span>
                 </li>
               </ul>
             </div>
           </div>
           {/* End Card */}
           {/* Card */}
-          <div className="flex flex-col bg-white border border-gray-200 text-center rounded-2xl dark:bg-slate-900 dark:border-gray-700 overflow-hidden">
+          <div className="flex flex-col bg-white border border-gray-200 text-center rounded   overflow-hidden">
             <div className="relative w-full h-full">
               <Image
                 src="/midjourney.png"
@@ -291,7 +247,7 @@ function Compare() {
               />
             </div>
             <div className="p-4 md:p-8">
-              <h4 className="font-medium text-lg text-gray-800 dark:text-gray-200">
+              <h4 className={"font-medium text-lg " + figtree.className}>
                 Midjourney
               </h4>
 
@@ -307,9 +263,7 @@ function Compare() {
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
 
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Low Resemblance
-                  </span>
+                  <span className=" ">Low Resemblance</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -317,9 +271,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Looks like AI Generated
-                  </span>
+                  <span className=" ">Looks like AI Generated</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -327,9 +279,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    No Money Back Guarantee
-                  </span>
+                  <span className=" ">No Money Back Guarantee</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -337,9 +287,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Deformation
-                  </span>
+                  <span className=" ">Deformation</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -347,9 +295,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Like Madame Tussaud's Wax
-                  </span>
+                  <span className=" ">Like Madame Tussaud's Wax</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -357,19 +303,15 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Low Resolution
-                  </span>
+                  <span className=" ">Low Resolution</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiCheckCircle
                     width={24}
                     height={24}
-                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Faster
-                  </span>
+                  <span className=" ">Faster</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -377,9 +319,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Maintains Ethnicity
-                  </span>
+                  <span className=" ">Maintains Ethnicity</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -387,16 +327,14 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Blurry and Lacks Sharpness.
-                  </span>
+                  <span className=" ">Blurry and Lacks Sharpness.</span>
                 </li>
               </ul>
             </div>
           </div>
           {/* End Card */}
           {/* Card */}
-          <div className="flex flex-col bg-white border border-gray-200 text-center rounded-2xl dark:bg-slate-900 dark:border-gray-700 overflow-hidden">
+          <div className="flex flex-col bg-white border border-gray-200 text-center rounded   overflow-hidden">
             <div className="relative w-full h-full">
               <Image
                 src="/firefly.png"
@@ -408,7 +346,7 @@ function Compare() {
               />
             </div>
             <div className="p-4 md:p-8">
-              <h4 className="font-medium text-lg text-gray-800 dark:text-gray-200">
+              <h4 className={"font-medium text-lg " + figtree.className}>
                 Adobe<sup>®</sup> Firefly
               </h4>
 
@@ -425,9 +363,7 @@ function Compare() {
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
 
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Low Resemblance
-                  </span>
+                  <span className=" ">Low Resemblance</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -435,9 +371,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Looks like AI Generated
-                  </span>
+                  <span className=" ">Looks like AI Generated</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -445,9 +379,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    No Money Back Guarantee
-                  </span>
+                  <span className=" ">No Money Back Guarantee</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -455,9 +387,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Deformation
-                  </span>
+                  <span className=" ">Deformation</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -465,9 +395,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Like Madame Tussaud's Wax
-                  </span>
+                  <span className=" ">Like Madame Tussaud's Wax</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -475,19 +403,15 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Low Resolution
-                  </span>
+                  <span className=" ">Low Resolution</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiCheckCircle
                     width={24}
                     height={24}
-                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                    className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Faster
-                  </span>
+                  <span className=" ">Faster</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -495,9 +419,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Maintains Ethnicity
-                  </span>
+                  <span className=" ">Maintains Ethnicity</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiXCircle
@@ -505,9 +427,7 @@ function Compare() {
                     height={24}
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-red-700"
                   />
-                  <span className="text-gray-800 dark:text-gray-400">
-                    Blurry and Lacks Sharpness.
-                  </span>
+                  <span className=" ">Blurry and Lacks Sharpness.</span>
                 </li>
               </ul>
             </div>

@@ -9,9 +9,9 @@ import { useFormState } from "react-dom";
 import useSWR from "swr";
 import { useState, useTransition } from "react";
 
-import ToolTip from "@/components/homepage/ToolTip";
 import Loader from "@/components/Loader";
 import Error from "@/components/Error";
+import { figtree } from "@/lib/utils";
 
 function ProfileUpdateForm({ id }) {
   //  Form Validation
@@ -50,8 +50,6 @@ function ProfileUpdateForm({ id }) {
     },
   });
 
-  console.log(user);
-
   if (error) return <Error message="Failed to fetch user profile" />;
   if (!user && !isValidating) return <Error message="No user profile found" />;
   if (!user || isValidating || isLoading) return <Loader />;
@@ -66,18 +64,13 @@ function ProfileUpdateForm({ id }) {
     }
   }
 
-  console.log(user);
-
   return (
     <form action={(formData) => startTransaction(() => formAction(formData))}>
       {/* Grid */}
       <div className="grid sm:grid-cols-12 gap-2 sm:gap-6">
         {/* FullName Start */}
         <div className="sm:col-span-3">
-          <label
-            htmlFor="name"
-            className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200"
-          >
+          <label htmlFor="name" className="inline-block text-sm mt-2.5 ">
             Full Name
           </label>
         </div>
@@ -86,7 +79,7 @@ function ProfileUpdateForm({ id }) {
             <input
               id="f_name"
               type="text"
-              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t last:rounded-b sm:first:rounded-s sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
               placeholder="First name"
               name="f_name"
               defaultValue={user.metadata.f_name}
@@ -94,7 +87,7 @@ function ProfileUpdateForm({ id }) {
             <input
               id="l_name"
               type="text"
-              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t last:rounded-b sm:first:rounded-s sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
               placeholder="Last name"
               name="l_name"
               defaultValue={user.metadata.l_name}
@@ -107,7 +100,7 @@ function ProfileUpdateForm({ id }) {
         <div className="sm:col-span-3">
           <label
             htmlFor="company-position"
-            className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200"
+            className="inline-block text-sm mt-2.5 "
           >
             Company / Position
           </label>
@@ -117,7 +110,7 @@ function ProfileUpdateForm({ id }) {
             <input
               id="company"
               type="text"
-              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t last:rounded-b sm:first:rounded-s sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
               placeholder="Acme Corporation"
               name="company"
               defaultValue={user.metadata.company}
@@ -125,7 +118,7 @@ function ProfileUpdateForm({ id }) {
             <input
               id="position"
               type="text"
-              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t last:rounded-b sm:first:rounded-s sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
               placeholder="CEO & Founder"
               name="position"
               defaultValue={user.metadata.position}
@@ -136,10 +129,7 @@ function ProfileUpdateForm({ id }) {
 
         {/* Website Start */}
         <div className="sm:col-span-3">
-          <label
-            htmlFor="website"
-            className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200"
-          >
+          <label htmlFor="website" className="inline-block text-sm mt-2.5 ">
             Website
           </label>
         </div>
@@ -147,7 +137,7 @@ function ProfileUpdateForm({ id }) {
           <input
             id="website"
             type="text"
-            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
             placeholder="acme.org"
             name="website"
             defaultValue={user.metadata.website}
@@ -155,10 +145,7 @@ function ProfileUpdateForm({ id }) {
         </div>
 
         <div className="sm:col-span-3">
-          <label
-            htmlFor="email"
-            className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200"
-          >
+          <label htmlFor="email" className="inline-block text-sm mt-2.5 ">
             Email
           </label>
         </div>
@@ -166,7 +153,7 @@ function ProfileUpdateForm({ id }) {
           <input
             id="email"
             type="email"
-            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
             placeholder={user?.email}
             name="email"
             disabled
@@ -177,10 +164,7 @@ function ProfileUpdateForm({ id }) {
         {/* X Username Start */}
 
         <div className="sm:col-span-3">
-          <label
-            htmlFor="x_username"
-            className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200"
-          >
+          <label htmlFor="x_username" className="inline-block text-sm mt-2.5 ">
             X Username
           </label>
         </div>
@@ -188,7 +172,7 @@ function ProfileUpdateForm({ id }) {
           <input
             id="x_username"
             type="text"
-            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
             placeholder="@elonmusk"
             name="x_username"
             defaultValue={user.metadata.x_username}
@@ -201,7 +185,7 @@ function ProfileUpdateForm({ id }) {
         <div className="sm:col-span-3">
           <label
             htmlFor="linkedin_username"
-            className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200"
+            className="inline-block text-sm mt-2.5 "
           >
             LinkedIn Username
           </label>
@@ -210,7 +194,7 @@ function ProfileUpdateForm({ id }) {
           <input
             id="linkedin_username"
             type="text"
-            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
             placeholder="linkedin username"
             name="linkedin_username"
             defaultValue={user.metadata.linkedin_username}
@@ -223,7 +207,7 @@ function ProfileUpdateForm({ id }) {
         <div className="sm:col-span-3">
           <label
             htmlFor="instagram_username"
-            className="inline-block text-sm text-gray-800 mt-2.5 dark:text-gray-200"
+            className="inline-block text-sm mt-2.5 "
           >
             Instagram Username
           </label>
@@ -232,7 +216,7 @@ function ProfileUpdateForm({ id }) {
           <input
             id="instagram_username"
             type="text"
-            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
             placeholder="your IG handle"
             name="instagram_username"
             defaultValue={user.metadata.instagram_username}
@@ -246,10 +230,13 @@ function ProfileUpdateForm({ id }) {
       <div className="mt-5 flex justify-end gap-x-2">
         <button
           type="submit"
-          className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+          className={
+            figtree.className +
+            " py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none   "
+          }
           disabled={isUpdating}
         >
-          {pending ? "Saving" : "Save changes"}
+          {pending ? "Saving" : "Save Changes"}
         </button>
       </div>
       {/* START RESET AND SAVE CHANGES BUTTON */}

@@ -6,6 +6,8 @@ import { MdErrorOutline } from "react-icons/md";
 import ShowLocalTimeStamp from "@/components/dashboard/ShowLocalTimeStamp";
 
 import Link from "next/link";
+import Heading from "@/components/ui/Heading";
+import { figtree } from "@/lib/utils";
 
 async function Credits() {
   let purchase_history;
@@ -23,18 +25,18 @@ async function Credits() {
   if (purchase_history.length < 1)
     return (
       <Container>
-        <div className="bg-white rounded-xl shadow p-4 sm:p-7 dark:bg-slate-900">
+        <div className="bg-white rounded shadow p-4 sm:p-7 ">
           <div className="mb-8">
-            <div className="h-full flex flex-col bg-white border shadow-sm rounded-xl dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
+            <div className="h-full flex flex-col bg-white border shadow-sm rounded   ">
               <div className="flex flex-auto flex-col justify-center items-center p-4 md:p-5">
                 <MdErrorOutline className="size-10 text-gray-500" />
-                <p className="mt-5 text-sm text-gray-800 dark:text-gray-300">
+                <p className="mt-5 text-sm text-gray-800 ">
                   No data, Buy one of our plan to see details here.
                 </p>
                 <Link href="/dashboard/studio/buy" className="mt-6">
                   <button
                     type="button"
-                    className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                    className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none   "
                   >
                     Buy Studio
                   </button>
@@ -48,14 +50,10 @@ async function Credits() {
 
   return (
     <Container>
-      <div className="bg-white rounded-xl shadow p-4 sm:p-7 dark:bg-slate-900">
+      <div className="bg-white rounded shadow p-4 sm:p-7 ">
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
-            Credits
-          </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            View your available credits.
-          </p>
+          <Heading type="h5">Credits</Heading>
+          <p className="text-sm text-gray-600 ">View your available credits.</p>
           {/* Credits Stats here */}
           <div className="my-8">
             <>
@@ -64,14 +62,19 @@ async function Credits() {
                 {/* Grid */}
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   {/* Card */}
-                  <div className="flex flex-col border rounded-xl dark:border-gray-800">
+                  <div className="flex flex-col border rounded ">
                     <div className="p-4 md:p-5">
                       <div className="flex items-center gap-x-2">
-                        <p className="text-sm font-semibold text-gray-500">
+                        <p
+                          className={
+                            figtree.className +
+                            " text-sm font-semibold text-gray-500"
+                          }
+                        >
                           Basic
                         </p>
                       </div>
-                      <h3 className="mt-2 text-2xl sm:text-3xl lg:text-4xl text-gray-800 dark:text-gray-200">
+                      <h3 className="mt-2 text-2xl sm:text-3xl lg:text-4xl text-gray-800 ">
                         <span className="font-semibold">
                           {credits["Basic"]}
                         </span>
@@ -81,14 +84,19 @@ async function Credits() {
                   </div>
                   {/* End Card */}
                   {/* Card */}
-                  <div className="flex flex-col border rounded-xl dark:border-gray-800">
+                  <div className="flex flex-col border rounded ">
                     <div className="p-4 md:p-5">
                       <div className="flex items-center gap-x-2">
-                        <p className="text-sm font-semibold text-gray-500">
+                        <p
+                          className={
+                            figtree.className +
+                            " text-sm font-semibold text-gray-500"
+                          }
+                        >
                           Standard
                         </p>
                       </div>
-                      <h3 className="mt-2 text-2xl sm:text-3xl lg:text-4xl text-gray-800 dark:text-gray-200">
+                      <h3 className="mt-2 text-2xl sm:text-3xl lg:text-4xl text-gray-800 ">
                         <span className="font-semibold">
                           {credits["Standard"]}
                         </span>
@@ -98,14 +106,19 @@ async function Credits() {
                   </div>
                   {/* End Card */}
                   {/* Card */}
-                  <div className="flex flex-col border rounded-xl dark:border-gray-800">
+                  <div className="flex flex-col border rounded ">
                     <div className="p-4 md:p-5">
                       <div className="flex items-center gap-x-2">
-                        <p className="text-sm font-semibold text-gray-500">
+                        <p
+                          className={
+                            figtree.className +
+                            " text-sm font-semibold text-gray-500"
+                          }
+                        >
                           Premium
                         </p>
                       </div>
-                      <h3 className="mt-2 text-2xl sm:text-3xl lg:text-4xl text-gray-800 dark:text-gray-200">
+                      <h3 className="mt-2 text-2xl sm:text-3xl lg:text-4xl text-gray-800 ">
                         <span className="font-semibold">
                           {credits["Premium"]}
                         </span>
@@ -115,14 +128,19 @@ async function Credits() {
                   </div>
                   {/* End Card */}
                   {/* Card */}
-                  <div className="flex flex-col border rounded-xl dark:border-gray-800">
+                  <div className="flex flex-col border rounded ">
                     <div className="p-4 md:p-5">
                       <div className="flex items-center gap-x-2">
-                        <p className="text-sm font-semibold text-gray-500">
+                        <p
+                          className={
+                            figtree.className +
+                            " text-sm font-semibold text-gray-500"
+                          }
+                        >
                           Pro
                         </p>
                       </div>
-                      <h3 className="mt-2 text-2xl sm:text-3xl lg:text-4xl text-gray-800 dark:text-gray-200">
+                      <h3 className="mt-2 text-2xl sm:text-3xl lg:text-4xl text-gray-800 ">
                         <span className="font-semibold">{credits["Pro"]}</span>
                         {/* <span className="text-gray-500">/ 0</span> */}
                       </h3>
@@ -138,18 +156,14 @@ async function Credits() {
           {/* Credits Ends here */}
 
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
-              Transaction History
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              View transaction history.
-            </p>
+            <Heading type="h5"> Transaction History</Heading>
+            <p className="text-sm text-gray-600 ">View transaction history.</p>
             <div className="my-8">
               <div className="flex flex-col">
                 <div className="-m-1.5 overflow-x-auto">
                   <div className="p-1.5 min-w-full inline-block align-middle">
                     <div className="overflow-hidden">
-                      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <table className="min-w-full divide-y divide-gray-200 ">
                         <thead>
                           <tr>
                             <th
@@ -184,20 +198,20 @@ async function Credits() {
                         {purchase_history.map((transaction, index) => (
                           <tbody
                             key={index}
-                            className="divide-y divide-gray-200 dark:divide-gray-700"
+                            className="divide-y divide-gray-200 "
                           >
                             <tr>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 ">
                                 {transaction.qty}
                               </td>
 
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 ">
                                 {transaction.plan}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 ">
                                 {transaction.session}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-end font-medium text-gray-800 dark:text-gray-200">
+                              <td className="px-6 py-4 whitespace-nowrap text-end font-medium text-gray-800 ">
                                 {
                                   <ShowLocalTimeStamp
                                     ts={transaction.timestamp}

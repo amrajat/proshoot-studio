@@ -2,6 +2,7 @@ import Header from "@/components/homepage/Header";
 import Footer from "@/components/homepage/Footer";
 import Container from "@/components/dashboard/Container";
 import Image from "next/image";
+import Heading from "@/components/ui/Heading";
 
 export const metadata = {
   title: { absolute: "Not Found!" },
@@ -17,11 +18,9 @@ function About() {
         {/* Content */}
         <div className="space-y-5 md:space-y-8">
           {/* <div className="space-y-3"> */}
-          <h1 className="text-2xl font-bold md:text-3xl dark:text-white">
-            Houston, we have a problem...
-          </h1>
+          <Heading type="h4">Houston, we have a problem...</Heading>
 
-          <h5 className="text-lg md:text-md dark:text-white">
+          <h5 className="text-lg md:text-md ">
             Looks like you've drifted off course, Captain. Our scanners can't
             detect the page you're requesting in this sector of the digital
             cosmos. Fear not, intrepid explorer! Double-check your coordinates

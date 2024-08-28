@@ -4,6 +4,9 @@ import Container from "../../components/dashboard/Container";
 import Image from "next/image";
 import { HiChevronRight } from "react-icons/hi2";
 import Link from "next/link";
+import Heading from "@/components/ui/Heading";
+import { EXAMPLES } from "@/lib/data";
+import ToolTip from "@/components/homepage/ToolTip";
 
 export const metadata = {
   title: { absolute: "Free AI Headshots Examples" },
@@ -21,190 +24,82 @@ function Headshots() {
           aria-hidden="true"
           className="flex absolute -top-96 start-1/2 transform -translate-x-1/2"
         >
-          <div className="bg-gradient-to-r from-violet-300/50 to-purple-100 blur-3xl w-[25rem] h-[44rem] rotate-[-60deg] transform -translate-x-[10rem] dark:from-violet-900/50 dark:to-purple-900" />
-          <div className="bg-gradient-to-tl from-blue-50 via-blue-100 to-blue-50 blur-3xl w-[90rem] h-[50rem] rounded-fulls origin-top-left -rotate-12 -translate-x-[15rem] dark:from-indigo-900/70 dark:via-indigo-900/70 dark:to-blue-900/70" />
+          <div className="bg-gradient-to-r from-violet-300/50 to-purple-100 blur-3xl w-[25rem] h-[44rem] rotate-[-60deg] transform -translate-x-[10rem]  " />
+          <div className="bg-gradient-to-tl from-blue-50 via-blue-100 to-blue-50 blur-3xl w-[90rem] h-[50rem] roundeds origin-top-left -rotate-12 -translate-x-[15rem]   " />
         </div>
         {/* End Gradients */}
         <div className="relative z-10">
           <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
             <div className="max-w-4xl text-center mx-auto">
-              <p className="inline-block text-sm font-medium bg-clip-text bg-gradient-to-l from-blue-600 to-violet-500 text-transparent dark:from-blue-400 dark:to-violet-400">
+              <p className="inline-block text-sm font-medium bg-clip-text bg-gradient-to-l from-blue-600 to-violet-500 text-transparent  ">
                 Proshoot: Headshots Example
               </p>
               {/* Title */}
               <div className="mt-5 max-w-4xl">
-                <h1 className="block font-semibold text-gray-800 text-4xl md:text-5xl lg:text-6xl dark:text-neutral-200">
-                  See our AI Headshots
-                </h1>
+                <Heading type="h1">See our AI Headshots</Heading>
               </div>
               {/* End Title */}
               <div className="mt-5 max-w-4xl">
-                <p className="text-lg text-gray-600 dark:text-neutral-400">
+                <p className="text-lg">
                   Curious about the quality of headshots Proshoot.co can
                   generate? Take a look at these examples and discover the
                   potential for professional, personalized portraits created.
-                  <br></br>
-                  <span className="text-red-500 text-xs font-normal">
-                    We'll add examples if we receive consent from our customers
-                    to showcase their generated images to our website publicity.
-                  </span>
                 </p>
               </div>
               {/* Buttons */}
-              <div className="mt-8 gap-3 flex justify-center">
+              <div className="mt-8 gap-3 flex justify-center flex-col">
                 <Link
-                  className="py-2.5 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-violet-900 text-white hover:bg-violet-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                  href="/auth"
+                  href="/dashboard/studio"
+                  className="py-3 px-4 inline-flex justify-center items-center gap-x-2 text-base font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none self-center"
                 >
-                  Generate Headshot
-                  <HiChevronRight
-                    className="flex-shrink-0 size-4"
-                    width={24}
-                    height={24}
-                  />
+                  Get Started
+                  <HiChevronRight className="ml-2 h-4 w-4" strokeWidth={2} />
                 </Link>
+                <span className="text-xs font-normal">
+                  Trust & Safety - We will not use images without the customer's
+                  consent, nor will we sell your pictures to anyone. All photos
+                  will be deleted from the server within 30 days. You may
+                  request immediate deletion of images by contacting us.
+                </span>
               </div>
               {/* End Buttons */}
             </div>
-            <h2 className="text-center mt-4 text-2xl text-gray-600 dark:text-neutral-400">
-              You'll see real examples here very soon.
-            </h2>
-            {false && (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
-                <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
-                  <div className="h-auto ">
-                    <Image
-                      src={"/examples/ai-portrait-1.jpg"}
-                      alt="ai generated headshot image"
-                      width={"393"}
-                      height={"491"}
-                      quality={100}
-                      className="overflow-hidden w-auto"
-                    />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
+              {EXAMPLES.splice(0, 24).map((example) => {
+                return (
+                  <div
+                    key={example.title}
+                    className="relative rounded overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm   "
+                  >
+                    <div className="h-auto ">
+                      <Image
+                        src={example.thumbnail}
+                        width="0"
+                        height="0"
+                        sizes="100vw"
+                        className="w-full h-auto rounded aspect-[2/3] object-cover hover:scale-110 transition-transform"
+                        quality={100}
+                        alt={"hi"}
+                      />
+                      <div className="absolute inset-0 h-full w-full opacity-0 group-hover/product:opacity-80 bg-blue-600/25 pointer-events-none"></div>
+                      <span className="absolute left-1 top-1 flex items-center gap-x-1.5 py-1.5 px-3 rounded text-xs font-medium bg-blue-600 text-white">
+                        <span className="self-center">AI Generated </span>
+                        <ToolTip>
+                          These images are artificially generated using our AI
+                          headshot generator.
+                        </ToolTip>
+                      </span>
+
+                      <blockquote className="absolute left-[50%] translate-x-[-50%] bottom-0 inline-flex items-center gap-x-1.5 py-4 px-4 text-sm font-medium text-white italic w-full">
+                        <p className="lowercase bg-blue-600/25 backdrop-blur-md px-2 py-1 rounded mb-4 z-10 relative before:content-['\201C'] before:font-serif before:absolute before:top-0 before:left-0 before:text-2xl before:text-blue-400 before:-mt-4 before:-ml-2 after:content-['\201D'] after:font-serif after:absolute after:bottom-0 after:right-0 after:text-2xl after:text-blue-400 after:-mb-4 after:-mr-2">
+                          {example.title}
+                        </p>
+                      </blockquote>
+                    </div>
                   </div>
-                </div>
-                <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
-                  <div className="h-auto ">
-                    <Image
-                      src={"/examples/ai-portrait-2.jpg"}
-                      alt="ai generated headshot image"
-                      width={"393"}
-                      height={"491"}
-                      quality={100}
-                      className="overflow-hidden w-auto"
-                    />
-                  </div>
-                </div>
-                <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
-                  <div className="h-auto ">
-                    <Image
-                      src={"/examples/ai-portrait-3.jpg"}
-                      alt="ai generated headshot image"
-                      width={"393"}
-                      height={"491"}
-                      quality={100}
-                      className="overflow-hidden w-auto"
-                    />
-                  </div>
-                </div>
-                <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
-                  <div className="h-auto ">
-                    <Image
-                      src={"/examples/ai-portrait-4.jpg"}
-                      alt="ai generated headshot image"
-                      width={"393"}
-                      height={"491"}
-                      quality={100}
-                      className="overflow-hidden w-auto"
-                    />
-                  </div>
-                </div>
-                <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
-                  <div className="h-auto ">
-                    <Image
-                      src={"/examples/ai-portrait-5.jpg"}
-                      alt="ai generated headshot image"
-                      width={"393"}
-                      height={"491"}
-                      quality={100}
-                      className="overflow-hidden w-auto"
-                    />
-                  </div>
-                </div>
-                <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
-                  <div className="h-auto ">
-                    <Image
-                      src={"/examples/ai-portrait-6.jpg"}
-                      alt="ai generated headshot image"
-                      width={"393"}
-                      height={"491"}
-                      quality={100}
-                      className="overflow-hidden w-auto"
-                    />
-                  </div>
-                </div>
-                <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
-                  <div className="h-auto ">
-                    <Image
-                      src={"/examples/ai-portrait-7.jpg"}
-                      alt="ai generated headshot image"
-                      width={"393"}
-                      height={"491"}
-                      quality={100}
-                      className="overflow-hidden w-auto"
-                    />
-                  </div>
-                </div>
-                <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
-                  <div className="h-auto ">
-                    <Image
-                      src={"/examples/ai-portrait-8.jpg"}
-                      alt="ai generated headshot image"
-                      width={"393"}
-                      height={"491"}
-                      quality={100}
-                      className="overflow-hidden w-auto"
-                    />
-                  </div>
-                </div>
-                <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
-                  <div className="h-auto ">
-                    <Image
-                      src={"/examples/ai-portrait-9.jpg"}
-                      alt="ai generated headshot image"
-                      width={"393"}
-                      height={"491"}
-                      quality={100}
-                      className="overflow-hidden w-auto"
-                    />
-                  </div>
-                </div>
-                <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
-                  <div className="h-auto ">
-                    <Image
-                      src={"/examples/ai-portrait-10.jpg"}
-                      alt="ai generated headshot image"
-                      width={"393"}
-                      height={"491"}
-                      quality={100}
-                      className="overflow-hidden w-auto"
-                    />
-                  </div>
-                </div>
-                <div className="rounded-md overflow-hidden group flex flex-col h-full bg-white border border-gray-200 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:shadow-slate-700/[.7]">
-                  <div className="h-auto ">
-                    <Image
-                      src={"/examples/ai-portrait-11.jpg"}
-                      alt="ai generated headshot image"
-                      width={"393"}
-                      height={"491"}
-                      quality={100}
-                      className="overflow-hidden w-auto"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

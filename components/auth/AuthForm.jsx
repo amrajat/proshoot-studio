@@ -104,7 +104,7 @@ function AuthForm() {
               {...registerEmail("email")}
               type="email"
               id="hs-hero-signup-form-floating-input-email"
-              className="peer p-4 block w-full bg-gray-100 border-transparent rounded-lg text-sm placeholder:text-transparent focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:focus:ring-neutral-600
+              className="peer p-4 block w-full bg-gray-200 border-transparent rounded text-sm placeholder:text-transparent focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none
               focus:pt-6
               focus:pb-2
               [&:not(:placeholder-shown)]:pt-6
@@ -121,7 +121,7 @@ function AuthForm() {
 
             <label
               htmlFor="hs-hero-signup-form-floating-input-email"
-              className="absolute top-0 start-0 p-4 h-full text-sm truncate pointer-events-none transition ease-in-out duration-100 border border-transparent dark:text-white peer-disabled:opacity-50 peer-disabled:pointer-events-none
+              className="absolute top-0 start-0 p-4 h-full text-sm truncate pointer-events-none transition ease-in-out duration-100 border border-transparent  peer-disabled:opacity-50 peer-disabled:pointer-events-none
                   peer-focus:text-xs
                   peer-focus:-translate-y-1.5
                   peer-focus:text-gray-500
@@ -137,7 +137,7 @@ function AuthForm() {
           {/* End Checkbox */}
           <button
             type="submit"
-            className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+            className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none   "
           >
             {!isLoading ? "Send OTP" : "Sending OTP"}
           </button>
@@ -153,7 +153,7 @@ function AuthForm() {
         action={handleSubmitToken(verifyEmailWithOTP)}
         className={`grid gap-y-4 ${!userEmail ? "hidden" : ""}`}
       >
-        <p className="block text-xs mt-1 text-gray-800 dark:text-gray-300">
+        <p className="block text-xs mt-1">
           Please enter 6 digit One Time Password (OTP) received on your email
           inbox. Don&apos;t forget to check spam folder.
         </p>
@@ -167,7 +167,7 @@ function AuthForm() {
           <input
             {...registerToken("token1")}
             type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
             data-hs-pin-input-item=""
             autoFocus={false}
             disabled={isLoading || !userEmail}
@@ -175,35 +175,35 @@ function AuthForm() {
           <input
             {...registerToken("token2")}
             type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
             data-hs-pin-input-item=""
             disabled={isLoading || !userEmail}
           />
           <input
             {...registerToken("token3")}
             type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
             data-hs-pin-input-item=""
             disabled={isLoading || !userEmail}
           />
           <input
             {...registerToken("token4")}
             type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
             data-hs-pin-input-item=""
             disabled={isLoading || !userEmail}
           />
           <input
             {...registerToken("token5")}
             type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
             data-hs-pin-input-item=""
             disabled={isLoading || !userEmail}
           />
           <input
             {...registerToken("token6")}
             type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-transparent dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
             data-hs-pin-input-item=""
             disabled={isLoading || !userEmail}
           />
@@ -223,7 +223,7 @@ function AuthForm() {
 
         <button
           type="submit"
-          className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+          className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
         >
           {!isLoading ? "Login" : "Verifying OTP"}
         </button>

@@ -1,4 +1,5 @@
 import { HiMiniPlus, HiMiniMinus } from "react-icons/hi2";
+import Heading from "../ui/Heading";
 
 const faqsList = [
   {
@@ -88,12 +89,8 @@ function FAQs() {
         <div className="grid md:grid-cols-6 gap-6">
           <div className="md:col-span-2">
             <div className="max-w-xs">
-              <h2 className="text-2xl font-bold md:text-3xl md:leading-tight dark:text-white">
-                Frequently
-                <br />
-                asked questions
-              </h2>
-              <p className="mt-1 hidden md:block text-gray-600 dark:text-gray-400">
+              <Heading>FAQs</Heading>
+              <p className="mt-1 hidden md:block">
                 Answers to the most frequently asked questions.
               </p>
             </div>
@@ -102,7 +99,7 @@ function FAQs() {
 
           <div className="md:col-span-4">
             {/* <!-- Accordion --> */}
-            <div className="hs-accordion-group divide-y divide-gray-200 dark:divide-gray-700">
+            <div className="hs-accordion-group divide-y divide-gray-200">
               {faqsList.map((faq, index) => {
                 return (
                   <div
@@ -113,18 +110,18 @@ function FAQs() {
                     id={`hs-basic-with-title-and-arrow-stretched-heading-${NUMBERS[index]}`}
                   >
                     <button
-                      className="hs-accordion-toggle group pb-3 inline-flex items-center justify-between gap-x-3 w-full md:text-lg font-semibold text-start text-gray-800 rounded-lg transition hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                      className="hs-accordion-toggle group pb-3 inline-flex items-center justify-between gap-x-3 w-full md:text-lg font-semibold text-start rounded transition hover:text-gray-500     "
                       aria-controls={`hs-basic-with-title-and-arrow-stretched-collapse-${NUMBERS[index]}`}
                     >
                       {faq.q}
                       <HiMiniPlus
                         width={24}
                         height={24}
-                        className="hs-accordion-active:hidden block flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
+                        className="hs-accordion-active:hidden block flex-shrink-0 w-5 h-5 group-hover:text-gray-500 "
                       />
 
                       <HiMiniMinus
-                        className="hs-accordion-active:block hidden flex-shrink-0 w-5 h-5 text-gray-600 group-hover:text-gray-500 dark:text-gray-400"
+                        className="hs-accordion-active:block hidden flex-shrink-0 w-5 h-5 group-hover:text-gray-500 "
                         width={24}
                         height={24}
                       />
@@ -136,9 +133,7 @@ function FAQs() {
                       } w-full overflow-hidden transition-[height] duration-300`}
                       aria-labelledby={`hs-basic-with-title-and-arrow-stretched-heading-${NUMBERS[index]}`}
                     >
-                      <p className="text-gray-600 dark:text-gray-400">
-                        {faq.a}
-                      </p>
+                      <p>{faq.a}</p>
                     </div>
                   </div>
                 );

@@ -4,17 +4,11 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 export default function Loading() {
   return (
     <div className="flex justify-center items-center h-screen">
-      <div
-        className="animate-spin inline-block"
-        role="status"
-        aria-label="loading"
-      >
-        <span className="sr-only">Loading...</span>
-        <AiOutlineLoading3Quarters />
+      <div className="flex flex-row gap-2" aria-label="loading">
+        <div className="w-4 h-4 rounded-full bg-blue-600 animate-bounce"></div>
+        <div className="w-4 h-4 rounded-full bg-blue-600 animate-bounce [animation-delay:-.3s]"></div>
+        <div className="w-4 h-4 rounded-full bg-blue-600 animate-bounce [animation-delay:-.5s]"></div>
       </div>
-      <p className="text-sm text-gray-800 dark:text-neutral-200">
-        &nbsp;Loading...
-      </p>
     </div>
   );
 }

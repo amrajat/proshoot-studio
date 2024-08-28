@@ -1,3 +1,4 @@
+import Heading from "../../components/ui/Heading";
 import Header from "@/components/homepage/Header";
 import Footer from "@/components/homepage/Footer";
 import Container from "../../components/dashboard/Container";
@@ -19,10 +20,8 @@ function FreeHeadshot() {
         {/* Content */}
         <div className="space-y-5 md:space-y-8">
           {/* <div className="space-y-3"> */}
-          <h1 className="text-2xl font-bold md:text-3xl dark:text-white">
-            Free Headshot Generator
-          </h1>
-          <p className="text-lg text-gray-800 dark:text-neutral-200 pb-[4.5rem]">
+          <Heading type="h3">Free Headshot Generator</Heading>
+          <p className="text-lg text-gray-800  pb-[4.5rem]">
             If you fall under these special categores of NGOs, Education,
             Influencer, Reviewer SaaS/AI/Other. Please email us at
             support@proshoot.co or visit our&nbsp;

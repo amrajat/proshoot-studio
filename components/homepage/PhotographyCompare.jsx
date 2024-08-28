@@ -1,201 +1,122 @@
-import { HiCheck, HiXMark } from "react-icons/hi2";
+import { HiArrowRight, HiCheck, HiXMark } from "react-icons/hi2";
 import Logo from "./Logo";
+import Link from "next/link";
+import Heading, { SubHeading } from "../ui/Heading";
+import { figtree } from "@/lib/utils";
+import BgGradient from "@/components/homepage/BgGradient";
 
 function PhotographyCompare() {
   return (
-    <>
-      {/* Features */}
-      <div className="overflow-hidden">
-        <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
-          {/* Title */}
-          <div className="mx-auto max-w-2xl mb-8 lg:mb-14 text-center">
-            <h2 className="flex gap-1 items-center justify-center text-2xl leading-tight font-bold md:text-3xl md:leading-tight lg:text-4xl lg:leading-tight bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-700 text-transparent">
-              <span>
+    <div className="relative overflow-hidden">
+      {/* Gradients */}
+      <BgGradient />
+      {/* End Gradients */}
+      <div className="max-w-[85rem] px-4 py-12 sm:px-6 lg:px-8 lg:pt-16 lg:pb-28 mx-auto">
+        {/* Title */}
+        <div className="mx-auto text-center mb-10">
+          <Heading>AI is Getting Better Everyday.</Heading>
+          <SubHeading>
+            Achieve Unmatched Resemblance, Realism, and Affordability with AI -
+            No Deformities, Countless Variations, and Quick 2-Hour Delivery, All
+            at a Fraction of the Cost.
+          </SubHeading>
+        </div>
+        {/* End Title */}
+        <div className="relative xl:w-10/12 xl:mx-auto">
+          {/* Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+            <div>
+              {/* Card */}
+              <div className="shadow-xl shadow-gray-200 p-5 relative z-10 border rounded md:p-10 bg-white">
                 <Logo />
-              </span>
-              VS Traditional Studio
-            </h2>
-          </div>
-          {/* End Title */}
-          <div className="relative xl:w-10/12 xl:mx-auto">
-            {/* Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-              <div>
-                {/* Card */}
-                <div className="shadow-xl shadow-gray-200 p-5 relative z-10 bg-white border rounded-xl md:p-10 dark:bg-neutral-900 dark:border-green-800 dark:shadow-gray-900/20">
-                  <div className="flex-shrink-0 absolute left-0 top-0 translate-x-[-50%] translate-y-[-50%]">
-                    <span className="inline-flex justify-center items-center size-12 rounded-full border-4 border-blue-100 bg-blue-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
-                      <HiCheck className="flex-shrink-0 size-6" />
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-neutral-200">
-                    AI based Photography
-                  </h3>
-                  <div className="text-sm text-gray-500 dark:text-neutral-500">
-                    Affordable
-                  </div>
-                  <span className="absolute top-0 end-0 rounded-se-xl rounded-es-xl text-xs font-medium bg-gray-800 text-white py-1.5 px-3 dark:bg-white dark:text-neutral-800">
-                    Smart Choice
-                  </span>
-                  <div className="mt-5">
-                    <span className="text-6xl font-bold text-gray-800 dark:text-neutral-200">
-                      $29
-                    </span>
-                    <span className="text-lg font-bold text-gray-800 dark:text-neutral-200">
-                      .00
-                    </span>
-                    <span className="ms-3 text-gray-500 dark:text-neutral-500">
-                      USD / person
-                    </span>
-                  </div>
-                  <div className="mt-5 grid sm:grid-cols-2 gap-y-2 py-4 first:pt-0 last:pb-0 sm:gap-x-6 sm:gap-y-0">
-                    {/* List */}
-                    <ul className="space-y-2 text-sm sm:text-base">
-                      <li className="flex space-x-3">
-                        <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
-                          <HiCheck
-                            className="flex-shrink-0 size-3.5"
-                            width={24}
-                            height={24}
-                          />
-                        </span>
-                        <span className="text-gray-800 dark:text-neutral-200">
-                          Realistic
-                        </span>
-                      </li>
-                      <li className="flex space-x-3">
-                        <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
-                          <HiCheck
-                            className="flex-shrink-0 size-3.5"
-                            width={24}
-                            height={24}
-                          />
-                        </span>
-                        <span className="text-gray-800 dark:text-neutral-200">
-                          Works everywhere
-                        </span>
-                      </li>
-                      <li className="flex space-x-3">
-                        <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
-                          <HiCheck
-                            className="flex-shrink-0 size-3.5"
-                            width={24}
-                            height={24}
-                          />
-                        </span>
-                        <span className="text-gray-800 dark:text-neutral-200">
-                          No deformities<sup>+</sup>
-                        </span>
-                      </li>
-                    </ul>
-                    {/* End List */}
-                    {/* List */}
-                    <ul className="space-y-2 text-sm sm:text-base">
-                      <li className="flex space-x-3">
-                        <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
-                          <HiCheck
-                            className="flex-shrink-0 size-3.5"
-                            width={24}
-                            height={24}
-                          />
-                        </span>
-                        <span className="text-gray-800 dark:text-neutral-200">
-                          Very Affordable
-                        </span>
-                      </li>
-                      <li className="flex space-x-3">
-                        <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
-                          <HiCheck
-                            className="flex-shrink-0 size-3.5"
-                            width={24}
-                            height={24}
-                          />
-                        </span>
-                        <span className="text-gray-800 dark:text-neutral-200">
-                          So much variation.
-                        </span>
-                      </li>
-                      <li className="flex space-x-3">
-                        <span className="mt-0.5 size-5 flex justify-center items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-800/30 dark:text-blue-500">
-                          <HiCheck
-                            className="flex-shrink-0 size-3.5"
-                            width={24}
-                            height={24}
-                          />
-                        </span>
-                        <span className="text-gray-800 dark:text-neutral-200">
-                          Takes about 2 hours.
-                        </span>
-                      </li>
-                    </ul>
-                    {/* End List */}
-                  </div>
-                  <div className="mt-5 grid grid-cols-2 gap-x-4 py-4 first:pt-0 last:pb-0">
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-neutral-500">
-                        Redo Studio anytime.
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-neutral-500">
-                        Money-back guarantee.
-                      </p>
-                    </div>
-                    <div className="flex justify-end">
-                      <a
-                        type="button"
-                        href="/auth"
-                        className="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-violet-900 text-white hover:bg-violet-700 disabled:opacity-50 disabled:pointer-events-none"
-                      >
-                        Get headshots
-                      </a>
-                    </div>
-                  </div>
+                <h3 className={"text-2xl font-bold my-1 " + figtree.className}>
+                  AI based Studio.
+                </h3>
+                <div className="text-xs text-gray-500 ">
+                  100% Money Back Guarantee.
                 </div>
-                {/* End Card */}
-              </div>
-
-              <div>
-                {/* Card */}
-                <div className="p-4 relative z-10 bg-white border rounded-xl md:p-10 dark:bg-neutral-900 dark:border-red-800">
-                  <div className="flex-shrink-0 absolute left-0 top-0 translate-x-[-50%] translate-y-[-50%]">
-                    <span className="inline-flex justify-center items-center size-12 rounded-full border-4 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
-                      <HiXMark className="flex-shrink-0 size-6" />
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-neutral-200">
-                    Traditional Photography
-                  </h3>
-                  <div className="text-sm text-red-500 dark:text-red-500">
-                    Expensive
-                  </div>
-                  <span className="absolute top-0 end-0 rounded-se-xl rounded-es-xl text-xs font-medium bg-gray-800 text-white py-1.5 px-3 dark:bg-red-800 dark:text-neutral-200">
-                    Bad Choice
-                  </span>
-                  <div className="mt-5">
-                    <span className="text-6xl font-bold text-gray-800 dark:text-neutral-200">
-                      $200
-                    </span>
-                    <span className="text-lg font-bold text-gray-800 dark:text-neutral-200">
-                      average
-                    </span>
-                    <span className="ms-3 text-gray-500 dark:text-neutral-500">
-                      USD / person
-                    </span>
-                  </div>
-                  <p className="text-xs mt-5 text-red-500">
-                    Expensive, Limited Styles, Takes longer
-                  </p>
-                  <div className="mt-5 grid grid-cols-2 gap-x-4 py-4 first:pt-0 last:pb-0"></div>
+                <span className="absolute top-0 end-0 rounded-se rounded-es text-xs font-medium bg-blue-600 text-white py-1.5 px-3">
+                  Smart Choice
+                </span>
+                <div className="mt-5">
+                  <span className="text-6xl font-bold">$29</span>
+                  <span className="text-lg font-bold">.00 USD</span>
+                  {/* <span className="ms-3 text-gray-500 ">USD / person</span> */}
                 </div>
-                {/* End Card */}
+                <div className="mt-5 grid sm:grid-cols-2 gap-y-2 py-4 first:pt-0 last:pb-0 sm:gap-x-6 sm:gap-y-0">
+                  {/* List */}
+                  <ul className="space-y-2 text-sm sm:text-base">
+                    <li className="flex space-x-3">
+                      <HiCheck className="w-5 h-5 text-blue-600 mr-2 mt-1 flex-shrink-0" />
+                      <span>Highest Resemble</span>
+                    </li>
+                    <li className="flex space-x-3">
+                      <HiCheck className="w-5 h-5 text-blue-600 mr-2 mt-1 flex-shrink-0" />
+                      <span>Realistic</span>
+                    </li>
+                    <li className="flex space-x-3">
+                      <HiCheck className="w-5 h-5 text-blue-600 mr-2 mt-1 flex-shrink-0" />
+                      <span>No deformities</span>
+                    </li>
+                  </ul>
+                  {/* End List */}
+                  {/* List */}
+                  <ul className="space-y-2 text-sm sm:text-base">
+                    <li className="flex space-x-3">
+                      <HiCheck className="w-5 h-5 text-blue-600 mr-2 mt-1 flex-shrink-0" />
+                      <span>Very Affordable</span>
+                    </li>
+                    <li className="flex space-x-3">
+                      <HiCheck className="w-5 h-5 text-blue-600 mr-2 mt-1 flex-shrink-0" />
+                      <span>Many Variation.</span>
+                    </li>
+                    <li className="flex space-x-3">
+                      <HiCheck className="w-5 h-5 text-blue-600 mr-2 mt-1 flex-shrink-0" />
+                      <span>Takes about 2 hours.</span>
+                    </li>
+                  </ul>
+                  {/* End List */}
+                </div>
+                <div className="mt-5 grid grid-cols-1 gap-x-4 py-4 first:pt-0 last:pb-0 w-full">
+                  <Link
+                    href="/dashboard/studio"
+                    className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-base font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none shadow"
+                  >
+                    Get Your Headshots
+                    <HiArrowRight className="ml-2 h-4 w-4" strokeWidth={2} />
+                  </Link>
+                </div>
               </div>
+              {/* End Card */}
             </div>
-            {/* End Grid */}
+
+            <div>
+              {/* Card */}
+              <div className="p-4 relative z-10 bg-red-50 border rounded md:p-10  ">
+                <h3 className={"text-xl font-bold " + figtree.className}>
+                  Traditional Photography
+                </h3>
+                <div className="text-sm text-red-500 ">Expensive</div>
+                <span className="absolute top-0 end-0 rounded-se rounded-es text-xs font-medium bg-red-600 text-white py-1.5 px-3  ">
+                  Bad Choice
+                </span>
+                <div className="mt-5">
+                  <span className="text-6xl font-bold">$300</span>
+                  <span className="text-lg font-bold">average</span>
+                  <span className="ms-3 text-gray-500 ">USD / person</span>
+                </div>
+                <p className="text-xs mt-5 text-red-500">
+                  Expensive, Limited Styles, Takes longer
+                </p>
+                <div className="mt-5 grid grid-cols-2 gap-x-4 py-4 first:pt-0 last:pb-0"></div>
+              </div>
+              {/* End Card */}
+            </div>
           </div>
+          {/* End Grid */}
         </div>
       </div>
-      {/* End Features */}
-    </>
+    </div>
   );
 }
 

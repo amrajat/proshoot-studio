@@ -6,20 +6,17 @@ function ImageUploadingGuideLines() {
   return (
     <>
       <div
-        className="bg-blue-50 border-t-4 border-blue-500 p-4 dark:bg-blue-800/30 mb-2 text-gray-800
-        dark:text-gray-200"
+        className="bg-blue-50 border-t-4 border-blue-600 p-4 mb-2 rounded"
         role="alert"
       >
         <div className="flex">
           <div className="flex-shrink-0">
-            <span className="inline-flex justify-center items-center size-8 rounded-full border-4 border-blue-100 bg-blue-200 text-blue-800 dark:border-blue-900 dark:bg-blue-800 dark:text-blue-400">
+            <span className="inline-flex justify-center items-center size-8 rounded border-4 border-blue-100 bg-blue-600 text-white shadow-sm   ">
               <LuBadgeCheck className="flex-shrink-0 size-4" />
             </span>
           </div>
           <div className="ms-3">
-            <h3 className="text-gray-800 font-semibold dark:text-white mb-2">
-              Follow
-            </h3>
+            <h3 className="font-semibold  mb-2">Follow</h3>
 
             <ul
               role="list"
@@ -38,67 +35,67 @@ function ImageUploadingGuideLines() {
           </div>
         </div>
         <div className="flex w-full flex-wrap gap-2 mt-4 justify-center">
-          <div className="relative rounded-lg overflow-hidden">
-            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-green-100 bg-green-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
+          <div className="relative rounded overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-blue-100 bg-blue-600 text-white shadow-sm   ">
               <HiCheck className="flex-shrink-0 size-2" />
             </span>
             <Image
-              alt=""
+              alt="image uploading guidlines"
               src="/image-uploading-guidelines/follow/follow-1.jpg"
               width={98}
               height={98}
             />
           </div>
-          <div className="relative rounded-lg overflow-hidden">
-            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-green-100 bg-green-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
+          <div className="relative rounded overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-blue-100 bg-blue-600 text-white shadow-sm   ">
               <HiCheck className="flex-shrink-0 size-2" />
             </span>
             <Image
-              alt=""
+              alt="image uploading guidlines"
               src="/image-uploading-guidelines/follow/follow-2.jpg"
               width={98}
               height={98}
             />
           </div>
-          <div className="relative rounded-lg overflow-hidden">
-            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-green-100 bg-green-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
+          <div className="relative rounded overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-blue-100 bg-blue-600 text-white shadow-sm   ">
               <HiCheck className="flex-shrink-0 size-2" />
             </span>
             <Image
-              alt=""
+              alt="image uploading guidlines"
               src="/image-uploading-guidelines/follow/follow-3.jpg"
               width={98}
               height={98}
             />
           </div>
-          <div className="relative rounded-lg overflow-hidden">
-            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-green-100 bg-green-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
+          <div className="relative rounded overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-blue-100 bg-blue-600 text-white shadow-sm   ">
               <HiCheck className="flex-shrink-0 size-2" />
             </span>
             <Image
-              alt=""
+              alt="image uploading guidlines"
               src="/image-uploading-guidelines/follow/follow-4.jpg"
               width={98}
               height={98}
             />
           </div>
-          <div className="relative rounded-lg overflow-hidden">
-            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-green-100 bg-green-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
+          <div className="relative rounded overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-blue-100 bg-blue-600 text-white shadow-sm   ">
               <HiCheck className="flex-shrink-0 size-2" />
             </span>
             <Image
-              alt=""
+              alt="image uploading guidlines"
               src="/image-uploading-guidelines/follow/follow-5.jpg"
               width={98}
               height={98}
             />
           </div>
-          <div className="relative rounded-lg overflow-hidden">
-            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-green-100 bg-green-200 text-green-800 dark:border-green-900 dark:bg-green-800 dark:text-green-400">
+          <div className="relative rounded overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-blue-100 bg-blue-600 text-white shadow-sm   ">
               <HiCheck className="flex-shrink-0 size-2" />
             </span>
             <Image
-              alt=""
+              alt="image uploading guidlines"
               src="/image-uploading-guidelines/follow/follow-6.jpg"
               width={98}
               height={98}
@@ -107,19 +104,17 @@ function ImageUploadingGuideLines() {
         </div>
       </div>
       <div
-        className="bg-red-50 border-t-4 border-red-500 p-4 dark:bg-red-800/30"
+        className="bg-red-50 border-t-4 border-red-500 p-4 rounded"
         role="alert"
       >
         <div className="flex">
           <div className="flex-shrink-0">
-            <span className="inline-flex justify-center items-center size-8 rounded-full border-4 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+            <span className="inline-flex justify-center items-center size-8 rounded border-4 border-red-100 bg-red-600 text-white shadow-sm   ">
               <LuBadgeAlert className="flex-shrink-0 size-4" />
             </span>
           </div>
           <div className="ms-3">
-            <h3 className="text-gray-800 font-semibold dark:text-white mb-2">
-              Avoid
-            </h3>
+            <h3 className="font-semibold  mb-2">Avoid</h3>
             <ul
               role="list"
               className="marker:text-red-600 list-disc ps-4 space-y-2 text-sm"
@@ -140,67 +135,67 @@ function ImageUploadingGuideLines() {
           </div>
         </div>
         <div className="flex w-full flex-wrap gap-2 mt-4 justify-center">
-          <div className="relative rounded-lg overflow-hidden">
-            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+          <div className="relative rounded overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-red-100 bg-red-600 text-white shadow-sm   ">
               <HiXMark className="flex-shrink-0 size-2" />
             </span>
             <Image
-              alt=""
+              alt="image uploading guidlines"
               src="/image-uploading-guidelines/avoid/avoid-1.jpg"
               width={98}
               height={98}
             />
           </div>
-          <div className="relative rounded-lg overflow-hidden">
-            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+          <div className="relative rounded overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-red-100 bg-red-600 text-white shadow-sm   ">
               <HiXMark className="flex-shrink-0 size-2" />
             </span>
             <Image
-              alt=""
+              alt="image uploading guidlines"
               src="/image-uploading-guidelines/avoid/avoid-2.jpg"
               width={98}
               height={98}
             />
           </div>
-          <div className="relative rounded-lg overflow-hidden">
-            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+          <div className="relative rounded overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-red-100 bg-red-600 text-white shadow-sm   ">
               <HiXMark className="flex-shrink-0 size-2" />
             </span>
             <Image
-              alt=""
+              alt="image uploading guidlines"
               src="/image-uploading-guidelines/avoid/avoid-3.jpg"
               width={98}
               height={98}
             />
           </div>
-          <div className="relative rounded-lg overflow-hidden">
-            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+          <div className="relative rounded overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-red-100 bg-red-600 text-white shadow-sm   ">
               <HiXMark className="flex-shrink-0 size-2" />
             </span>
             <Image
-              alt=""
+              alt="image uploading guidlines"
               src="/image-uploading-guidelines/avoid/avoid-4.jpg"
               width={98}
               height={98}
             />
           </div>
-          <div className="relative rounded-lg overflow-hidden">
-            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+          <div className="relative rounded overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-red-100 bg-red-600 text-white shadow-sm   ">
               <HiXMark className="flex-shrink-0 size-2" />
             </span>
             <Image
-              alt=""
+              alt="image uploading guidlines"
               src="/image-uploading-guidelines/avoid/avoid-5.jpg"
               width={98}
               height={98}
             />
           </div>
-          <div className="relative rounded-lg overflow-hidden">
-            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded-full border-2 border-red-100 bg-red-200 text-red-800 dark:border-red-900 dark:bg-red-800 dark:text-red-400">
+          <div className="relative rounded overflow-hidden">
+            <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-red-100 bg-red-600 text-white shadow-sm   ">
               <HiXMark className="flex-shrink-0 size-2" />
             </span>
             <Image
-              alt=""
+              alt="image uploading guidlines"
               src="/image-uploading-guidelines/avoid/avoid-6.jpg"
               width={98}
               height={98}

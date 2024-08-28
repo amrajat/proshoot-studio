@@ -1,3 +1,7 @@
+import { Figtree } from "next/font/google";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
 export async function streamToString(
   stream: ReadableStream<Uint8Array>
 ): Promise<string> {
@@ -15,4 +19,10 @@ export async function streamToString(
 
   reader.releaseLock();
   return result;
+}
+
+export const figtree = Figtree({ subsets: ["latin"], display: "swap" });
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 }

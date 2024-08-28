@@ -1,3 +1,4 @@
+import Heading from "../../components/ui/Heading";
 import Header from "@/components/homepage/Header";
 import Footer from "@/components/homepage/Footer";
 import Container from "@/components/dashboard/Container";
@@ -18,12 +19,8 @@ function Blog() {
         {/* Content */}
         <div className="space-y-5 md:space-y-8">
           {/* <div className="space-y-3"> */}
-          <h1 className="text-2xl font-bold md:text-3xl dark:text-white">
-            Blog
-          </h1>
-          <p className="text-lg text-gray-800 dark:text-neutral-200">
-            No articles yet.
-          </p>
+          <Heading type="h3">Blog</Heading>
+          <p className="text-lg text-gray-800 ">No articles yet.</p>
           {/* </div> */}
         </div>
         {/* End Content */}

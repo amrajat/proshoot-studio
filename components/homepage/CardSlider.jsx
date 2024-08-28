@@ -1,26 +1,14 @@
 "use client";
-import { v4 as uuid4 } from "uuid";
 import { cn } from "@/lib/cn";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
+import ToolTip from "./ToolTip";
+import { EXAMPLES } from "@/lib/data";
 
 const CardSlider = ({
-  items = [
-    { image: "/examples/ai-portrait-1.jpg" },
-    { image: "/examples/ai-portrait-1.jpg" },
-    { image: "/examples/ai-portrait-1.jpg" },
-    { image: "/examples/ai-portrait-1.jpg" },
-    { image: "/examples/ai-portrait-1.jpg" },
-    { image: "/examples/ai-portrait-1.jpg" },
-    { image: "/examples/ai-portrait-1.jpg" },
-    { image: "/examples/ai-portrait-1.jpg" },
-    { image: "/examples/ai-portrait-1.jpg" },
-    { image: "/examples/ai-portrait-1.jpg" },
-    { image: "/examples/ai-portrait-1.jpg" },
-  ],
-
+  items = EXAMPLES.slice(0, 24),
   direction = "left",
-  speed = "fast",
+  speed = "normal",
   pauseOnHover = true,
   className = null,
 }) => {
@@ -90,21 +78,35 @@ const CardSlider = ({
         )}
       >
         {items.map((item, idx) => (
-          <li key={uuid4()} className="relative block rounded-md">
-            <span className="absolute mt-1 ml-1 inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-md text-xs font-medium border border-gray-200 bg-white text-gray-800 shadow-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-white">
-              AI Generated
-            </span>
-            <span className="absolute left-[50%] translate-x-[-50%] bottom-0 inline-flex items-center gap-x-1.5 py-1.5 px-3 text-xs font-medium text-white shadow-sm">
-              Compressed Image
-            </span>
-            <Image
-              src={item.image}
-              alt={""}
-              width="300"
-              height="450"
-              className="w-full h-auto"
-              quality={100}
-            />
+          <li
+            key={item.title}
+            className="relative rounded block bg-white border border-gray-200 shadow-sm   "
+          >
+            <div className="h-auto ">
+              <Image
+                src={item.thumbnail}
+                width="300"
+                height="450"
+                // sizes="100vw"
+                className="w-full h-auto rounded aspect-[2/3] object-cover"
+                quality={100}
+                alt={item.title}
+              />
+              <div className="absolute inset-0 h-full w-full opacity-0 group-hover/product:opacity-80 bg-blue-600/25 pointer-events-none"></div>
+              <span className="absolute left-1 top-1 flex items-center gap-x-1.5 py-1.5 px-3 rounded text-xs font-medium bg-blue-600 text-white">
+                <span className="self-center">AI Generated </span>
+                <ToolTip>
+                  These images are artificially generated using our AI headshot
+                  generator.
+                </ToolTip>
+              </span>
+
+              <blockquote className="absolute left-[50%] translate-x-[-50%] bottom-0 inline-flex items-center gap-x-1.5 py-4 px-4 text-sm font-medium text-white italic w-full">
+                <p className="lowercase bg-blue-600/25 backdrop-blur-md px-2 py-1 rounded mb-4 z-10 relative before:content-['\201C'] before:font-serif before:absolute before:top-0 before:left-0 before:text-2xl before:text-blue-400 before:-mt-4 before:-ml-2 after:content-['\201D'] after:font-serif after:absolute after:bottom-0 after:right-0 after:text-2xl after:text-blue-400 after:-mb-4 after:-mr-2">
+                  {item.title}
+                </p>
+              </blockquote>
+            </div>
           </li>
         ))}
       </ul>

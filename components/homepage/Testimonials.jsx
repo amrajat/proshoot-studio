@@ -1,22 +1,24 @@
 import Image from "next/image";
+import Logo from "./Logo";
+import { figtree } from "@/lib/utils";
+import BgGradient from "./BgGradient";
 
 function Testimonials() {
   return (
     <div className="relative overflow-hidden">
       <div className="max-w-[85rem] px-4 py-12 sm:px-6 lg:px-8 lg:pt-16 lg:pb-28 mx-auto">
         {/* Gradients */}
-        <div aria-hidden="true" className="flex absolute start-0 -z-[1]">
-          <div className="bg-purple-200 opacity-20 blur-3xl w-[1036px] h-[300px] dark:bg-purple-900 dark:opacity-20" />
-        </div>
+        <BgGradient />
         {/* End Gradients */}
         {/* Grid */}
         <div className="lg:grid lg:grid-cols-6 lg:gap-8 lg:items-center">
           <div className="hidden lg:block lg:col-span-2">
             <Image
-              className="rounded-xl"
-              src="/amazon-employee.png"
+              className="rounded shadow"
+              src="/examples/ai-portrait-15.jpg"
               alt="Jessica"
               height={512}
+              quality={100}
               width={512}
             />
           </div>
@@ -42,7 +44,7 @@ function Testimonials() {
                           fillRule: "evenodd",
                           clipRule: "evenodd",
                         }}
-                        className="fill-gray-800 dark:fill-gray-200"
+                        className="fill-gray-800 "
                       />
                     </g>
                   </g>
@@ -63,10 +65,15 @@ function Testimonials() {
                 </g>
               </svg>
 
-              <p className="text-xl font-medium text-gray-800 lg:text-2xl lg:leading-normal dark:text-gray-200">
+              <p
+                className={
+                  "text-xl font-medium lg:text-2xl lg:leading-normal " +
+                  figtree.className
+                }
+              >
                 I needed a professional headshot for my online presence but
                 didn&apos;t have the time for a traditional photo shoot.
-                <span className="bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-700 text-transparent">
+                <span className="bg-clip-text bg-gradient-to-r from-blue-600 to-blue-700 text-transparent">
                   &nbsp;proshoot.co
                 </span>
                 &nbsp;saved the day! The AI-generated image was flawless and It
@@ -77,19 +84,27 @@ function Testimonials() {
                 <div className="flex items-center">
                   <div className="lg:hidden flex-shrink-0">
                     <Image
-                      className="h-12 w-12 rounded-full"
-                      src="/amazon-employee-mobile.png"
+                      className="h-12 w-12 rounded aspect-square object-cover"
+                      src="/examples/ai-portrait-15.jpg"
                       alt="Jessica"
                       height={512}
                       width={512}
                     />
                   </div>
                   <div className="ms-4 lg:ms-0">
-                    <p className="font-medium text-gray-800 dark:text-gray-200">
-                      Jessica
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Software engineer, Amazon<sup>&#174;</sup>
+                    <div
+                      className={
+                        "font-medium text-gray-800 flex gap-2 " +
+                        figtree.className
+                      }
+                    >
+                      <span>Brian</span>
+                      {/* <span>
+                        <Logo />
+                      </span> */}
+                    </div>
+                    <p className="text-sm text-gray-600 ">
+                      Operations Management, Amazon<sup>&#174;</sup>
                     </p>
                   </div>
                 </div>

@@ -17,7 +17,7 @@
   --background-end-rgb: 255, 255, 255;
 
   /* Featured REviews */
-  --color-primary-purple: hsl(263, 55%, 52%);
+  --color-primary-blue: hsl(221, 83%, 53%);
   --color-primary-light-gray-500: hsl(217, 19%, 35%);
   --color-primary-blue: hsl(219, 29%, 14%);
   --color-primary-white: hsl(0, 0%, 100%);
@@ -27,16 +27,8 @@
   --font-primary: "Inter", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
 body {
-  color: rgb(var(--foreground-rgb));
+  color: rgb(var(--color-primary-blue));
   background: linear-gradient(
       to bottom,
       transparent,
@@ -44,33 +36,6 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
-@media (min-width: 768px) {
-  .hero {
-    animation: moveBackground 100s linear infinite;
-    background-image: url(https://www.headshotpro.com/_nuxt/img/hero-examples-moving.8ec00d1.jpg);
-    background-position: 0 10%;
-    background-size: 100%;
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 200%;
-  }
-}
-
-/* @media (min-width: 768px) {
-  .hero {
-    animation: var(--moveBackground) 100s linear infinite;
-    background-image: url(https://www.headshotpro.com/_nuxt/img/hero-examples-moving.8ec00d1.jpg);
-    background-position: 0 10%;
-    background-size: 100%;
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 200%;
-  }
-} */
 
 @layer utilities {
   .text-balance {
@@ -78,313 +43,89 @@ body {
   }
 }
 
-/* FeaturedReviews Component Starts here */
-
-/* ANIMATION */
-@keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes animate-to-right {
-  0% {
-    opacity: 0;
-    transform: translateX(-10rem);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes animate-to-bottom {
-  0% {
-    opacity: 0;
-    transform: translateY(-10rem);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes animate-to-up {
-  0% {
-    opacity: 0;
-    transform: translateY(10rem);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.container {
-  /* max-width: 75rem; */
-  /* margin: auto 1rem; */
-  display: grid;
-  grid-template-columns: repeat(4, [col-start] 1fr [col-end]);
-  grid-template-rows: repeat(3, [row-start] min-content [row-end]);
-  gap: 1rem;
-}
-
-.card {
-  padding: 1.5rem;
+/* Blue Hero Moving Background Starts Here */
+.hero-moving-bg {
+  width: 100%;
+  height: 100%;
+  background: var(--color-primary-white);
   position: relative;
-  border-radius: 1rem;
-
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0);
-  background-color: var(--color-primary-white);
-  transition: all 0.2s ease;
-}
-
-.card:hover {
-  filter: saturate(1.5);
-}
-
-.card-1 {
-  position: relative;
-  grid-column: col-start 1 / col-end 2;
-  z-index: 1;
   overflow: hidden;
-
-  background: linear-gradient(
-    -45deg,
-    var(--color-primary-purple),
-    var(--color-primary-blue),
-    rgb(134, 31, 98),
-    rgb(95, 174, 230),
-    rgb(15, 97, 15)
-  );
-  background-size: 400% 400%;
-  animation: gradient 15s ease infinite, animate-to-right 1.5s ease backwards;
 }
 
-.card-2 {
-  grid-column: col-start 2 / col-end 3;
+.hero-moving-bg::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, #2563eb 10%, transparent 20%),
+    radial-gradient(circle, transparent 10%, #2563eb 20%);
+  background-size: 30px 30px; /* Adjust the size of the pattern */
+  animation: moveBackground 8s linear infinite; /* Adjust the animation duration and timing function */
 }
 
-.card-3 {
-  grid-column: col-start 3 / col-end 3;
-  grid-row: row-start 1;
+@keyframes moveBackground {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(20%, 20%);
+  }
 }
 
-.card-4 {
-  grid-column: col-start 1 / col-end 1;
-  grid-row: row-start 2;
-}
+/* Blue Hero Moving Background Ends Here */
 
-.card-5 {
-  grid-row: row-start 1 / row-end 2;
-  grid-column: col-start 4 / col-end 4;
-
-  animation: animate-to-bottom 1.5s ease backwards;
-}
-
-.attribution {
-  grid-column: col-start 1 / col-end 4;
-  align-items: center;
-
-  padding: 1.5rem;
-  position: relative;
-  border-radius: 1rem;
-
+/* Black Footer  Moving Background Starts Here */
+.footer-bg {
+  /* Basic dimensions and centering */
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
-  gap: 2rem;
   align-items: center;
 
+  /* Dark mode colors and gradient */
+  background: #121212; /* Fallback for browsers that don't support gradients */
   background: linear-gradient(
-    -45deg,
-    var(--color-primary-purple),
-    var(--color-primary-blue),
-    rgb(134, 31, 98),
-    rgb(95, 174, 230),
-    rgb(15, 97, 15)
+    135deg,
+    #121212 25%,
+    #1a1a1a 25%,
+    #1a1a1a 50%,
+    #121212 50%,
+    #121212 75%,
+    #1a1a1a 75%,
+    #1a1a1a
   );
-  background-size: 400% 400%;
-  animation: gradient 15s ease infinite, animate-to-up 1s ease backwards;
+  background-size: 40px 40px;
+
+  /* Animation */
+  animation: move 4s linear infinite;
 }
 
-/* Profile Image, Name and Position */
-
-.card__profile {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.card__profile-image {
-  position: relative;
-  border-radius: 50%;
-  width: 2rem;
-  height: 2rem;
-  aspect-ratio: 1/1;
-
-  outline: 2px solid var(--color-neutral-light-gray-300);
-}
-
-.card__profile-figure--name {
-  line-height: 1.1;
-  color: var(--color-neutral-light-gray-200);
-  font-weight: 500;
-}
-
-.card__profile-figure--title {
-  color: var(--color-neutral-light-gray-300);
-}
-
-.card__title {
-  line-height: 1.1;
-  z-index: 2;
-}
-
-.card__paragraph {
-  color: var(--color-neutral-light-gray-300);
-  position: relative;
-}
-
-.card__paragraph::before {
-  content: "\201C";
-  position: absolute;
-  left: -0.8rem;
-  font-size: 2rem;
-  line-height: 1;
-  font-family: sans-serif;
-  opacity: 0.5;
-  /* border: 1px solid red; */
-}
-
-.card__paragraph::after {
-  position: absolute;
-  content: "\201D";
-  font-size: 2rem;
-  line-height: 1;
-  font-family: sans-serif;
-  opacity: 0.5;
-  /* border: 1px solid red; */
-}
-
-.card-1::after {
-  position: absolute;
-  content: "\201D";
-  font-size: 28rem;
-  line-height: 1;
-  font-family: sans-serif;
-  top: -3.5rem;
-  right: 1rem;
-  opacity: 0.3;
-  z-index: -1;
-  /* border: 1px solid red; */
-}
-
-/* UTILITIES / HELPER CLASSES */
-.outline-primary {
-  outline: 2px solid var(--color-primary-purple);
-}
-
-.bg-purple {
-  background-color: var(--color-primary-purple);
-}
-.bg-gray {
-  background-color: var(--color-primary-light-gray-500);
-}
-
-.text-clr-dark {
-  color: var(--color-primary-blue);
-}
-.text-clr-gray-dark {
-  color: var(--color-primary-light-gray-500);
-}
-
-.color-gradient-primary {
-  background-image: linear-gradient(
-    45deg,
-    var(--color-primary-purple),
-    var(--color-primary-blue)
-  );
-
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-.blur {
-  filter: blur(0.1rem);
-}
-
-/* MEDIA QUERIES FOR RESPONSIVENESS */
-
-@media only screen and (max-width: 56.25em) {
-  .container {
-    margin: 1rem;
-    grid-template-columns: repeat(4, [col-start] 1fr [col-end]);
-    grid-template-rows: repeat(4, [row-start] min-content [row-end]);
+@keyframes move {
+  0% {
+    background-position: 0 0;
   }
-
-  .card-1 {
-    grid-column: col-start 1 / col-end 2;
-  }
-  .card-2 {
-    grid-column: col-start 1 / col-end 4;
-    grid-row: row-start 2 / row-end 2;
-  }
-  .card-3 {
-    grid-column: col-start 3 / col-end 4;
-    grid-row: row-start 3 / row-end 3;
-  }
-  .card-4 {
-    grid-column: col-start 1 / col-end 2;
-    grid-row: row-start 3 / row-end 3;
-  }
-  .card-5 {
-    grid-column: col-start 3 / col-end 4;
-    grid-row: row-start 1;
-  }
-  .attribution {
-    grid-column: col-start 1 / col-end 4;
+  100% {
+    background-position: 40px 40px;
   }
 }
 
-@media only screen and (max-width: 36em) {
-  .container {
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(auto-fit, minmax(max-content, 1fr));
-  }
-
-  .card-1 {
-    grid-column: 1 / -1;
-    grid-row: 1 / span 1;
-  }
-  .card-2 {
-    grid-column: 1 / -1;
-    grid-row: 2 / span 1;
-  }
-  .card-3 {
-    grid-column: 1 / -1;
-    grid-row: 4 / span 1;
-  }
-  .card-4 {
-    grid-column: 1 / -1;
-    grid-row: 3 / span 1;
-  }
-  .card-5 {
-    grid-column: 1 / -1;
-    grid-row: 5 / span 1;
-  }
-  .attribution {
-    grid-column: 1 / -1;
-    grid-row: 6 / span 1;
-  }
+/* Black Footer  Moving Background Ends Here */
+/* Bottom CTA Background Starts Here */
+.bottom-cta {
+  width: 100%;
+  height: 100%;
+  /* Add your background pattern here */
+  background-color: transparent;
+  background-image: radial-gradient(
+      rgba(37, 99, 235, 0.25) 10%,
+      transparent 10%
+    ),
+    radial-gradient(rgba(37, 99, 235, 0.25) 10%, transparent 10%);
+  background-size: 100px 100px;
+  background-position: 0 0, 50px 50px;
 }
-/* FeaturedReviews Component Ends here */
+
+/* Bottom CTA Background Ends Here */

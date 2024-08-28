@@ -197,18 +197,18 @@ export default function CreateStudio() {
             {steps.map((step, index) => (
               <li key={step.name} className="md:flex-1">
                 {currentStep > index ? (
-                  <div className="group flex w-full flex-col border-l-4 border-sky-600 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4">
-                    <span className="text-sm font-medium text-sky-600 transition-colors ">
+                  <div className="group flex w-full flex-col border-l-4 border-blue-600 py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4">
+                    <span className="text-sm font-medium text-blue-600 transition-colors ">
                       {step.id}
                     </span>
                     <span className="text-sm font-medium">{step.name}</span>
                   </div>
                 ) : currentStep === index ? (
                   <div
-                    className="flex w-full flex-col border-l-4 border-sky-600 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
+                    className="flex w-full flex-col border-l-4 border-blue-600 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
                     aria-current="step"
                   >
-                    <span className="text-sm font-medium text-sky-600">
+                    <span className="text-sm font-medium text-blue-600">
                       {step.id}
                     </span>
                     <span className="text-sm font-medium">{step.name}</span>
@@ -240,16 +240,10 @@ export default function CreateStudio() {
           {currentStep === 0 && (
             <fieldset disabled={isPending}>
               <div>
-                <h2
-                  className="text-base font-semibold leading-7 text-gray-800
-        dark:text-gray-200"
-                >
+                <h2 className="text-base font-semibold leading-7">
                   Personal Information
                 </h2>
-                <p
-                  className="mt-1 text-sm leading-6 text-gray-800
-        dark:text-gray-200"
-                >
+                <p className="mt-1 text-sm leading-6">
                   Provide your personal details. this will help us better fine
                   tuning the model for best results.
                 </p>
@@ -262,7 +256,14 @@ export default function CreateStudio() {
                           <label
                             key={uuidv4()}
                             htmlFor={PlanName}
-                            className="relative py-3 px-4 flex border-2 border-transparent rounded-lg cursor-pointer focus:outline-none"
+                            className={
+                              "relative py-3 px-4 flex border border-gray-2 rounded shadow-sm focus:outline-none" +
+                              `${
+                                Number(RemainingCredits) <= 0
+                                  ? " bg-transparent cursor-not-allowed"
+                                  : " bg-white cursor-pointer"
+                              }`
+                            }
                           >
                             <input
                               disabled={Number(RemainingCredits) <= 0}
@@ -272,18 +273,18 @@ export default function CreateStudio() {
                               // checked={Number(RemainingCredits > 0)}
                               defaultChecked={Number(RemainingCredits > 0)}
                               {...register("plan")}
-                              className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded-lg cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none dark:border-neutral-700 dark:checked:border-blue-500 dark:focus:ring-neutral-800 dark:focus:ring-offset-neutral-800
+                              className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none
 
-                            before:content-[''] before:top-3.5 before:start-3.5  before:border-blue-600 before:h-5 before:rounded-full dark:before:border-neutral-700"
+                            before:content-[''] before:top-3.5 before:start-3.5  before:border-blue-600 before:h-5 before:rounded "
                               name="credits"
                             />
 
                             <span className="w-full">
-                              <span className="block font-normal text-blue-600 dark:text-neutral-200">
+                              <span className="block font-normal">
                                 {PlanName}
                               </span>
 
-                              <span className="block text-xs leading-relaxed text-blue-600 dark:text-neutral-500 mt-1">
+                              <span className="block text-xs leading-relaxed mt-1">
                                 {RemainingCredits} available.
                               </span>
                             </span>
@@ -304,7 +305,7 @@ export default function CreateStudio() {
                     {/* Select */}
                     <div className="relative">
                       <select
-                        className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                        className="py-3 px-4 pe-9 block w-full bg-white shadow-sm border-gray-200 rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
                         {...register("gender")}
                         id="gender"
                       >
@@ -327,7 +328,7 @@ export default function CreateStudio() {
                   <div className="sm:col-span-3">
                     <div className="relative">
                       <select
-                        className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                        className="py-3 px-4 pe-9 block w-full bg-white shadow-sm border-gray-200 rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
                         {...register("profession")}
                         id="profession"
                       >
@@ -362,7 +363,7 @@ export default function CreateStudio() {
                       <input
                         type="text"
                         id="name"
-                        className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600 placeholder-current"
+                        className="py-3 px-4 pe-9 block w-full bg-white shadow-sm border-gray-200 rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     placeholder-current"
                         {...register("name")}
                         placeholder="Name"
                       />
@@ -387,7 +388,7 @@ export default function CreateStudio() {
                               id="permission"
                               name="permission"
                               type="checkbox"
-                              className="border-2 border-gray-200 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                              className="border-2 border-gray-200 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
                               aria-describedby="permission-description"
                               // {...register("sharing_permission")}
                               defaultChecked={sharingPermission}
@@ -397,22 +398,15 @@ export default function CreateStudio() {
                             />
                           </div>
                           <label htmlFor="permission" className="ms-3">
-                            <span className="block text-sm font-semibold text-gray-800 dark:text-gray-300">
-                              Studio Sharing Permission. Please check, this will
-                              help us grow.
+                            <span className="block text-sm font-semibold text-gray-800 ">
+                              Studio Sharing Permission.
                             </span>
                             <span
                               id="permission-description"
-                              className="block text-xs text-gray-600 dark:text-gray-500"
+                              className="block text-xs text-gray-600 "
                             >
-                              If Checked. We may share some/all of generated
-                              headshots to our showcase.
-                              {/* If Checked. We may share your generated headshots,
-                            name, company, and website on our website&apos;s
-                            showcase to display real headshots created by our
-                            users. This helps potential customers decide if our
-                            product meets their expectations. Thank you for your
-                            contribution! */}
+                              If Checked. We may share some of your generated
+                              images to our showcase.
                             </span>
                           </label>
                         </div>
@@ -429,13 +423,13 @@ export default function CreateStudio() {
               <div>
                 <h2
                   className="text-base font-semibold leading-7text-gray-800
-        dark:text-gray-200"
+        "
                 >
                   Upload Images
                 </h2>
                 <p
                   className="mt-1 text-sm leading-6 text-gray-800
-        dark:text-gray-200"
+        "
                 >
                   To produce good results, please follow the image uploading
                   guidelines carefully.
@@ -473,11 +467,11 @@ export default function CreateStudio() {
             <>
               <h2
                 className="text-base font-semibold leading-7 text-gray-800
-        dark:text-gray-200"
+        "
               >
                 Complete
               </h2>
-              <h5 className="mt-1 font-semibold text-gray-900 dark:text-gray-50">
+              <h5 className="mt-1 font-semibold text-gray-900 ">
                 {isPending && studioSuccess && "Your Studio is being created."}
               </h5>
               <h5 className={"mt-1 font-semibold leading-6 text-red-500"}>
@@ -497,7 +491,7 @@ export default function CreateStudio() {
                 type="button"
                 onClick={prev}
                 disabled={currentStep === 0}
-                className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-normal rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                className="py-3 px-4 inline-flex justify-center items-center gap-x-2 text-base font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
               >
                 Back
               </button>
@@ -509,7 +503,7 @@ export default function CreateStudio() {
                   currentStep === steps.length - 1 ||
                   (currentStep === steps.length - 2 && !images)
                 }
-                className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-normal rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                className="py-3 px-4 inline-flex justify-center items-center gap-x-2 text-base font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
               >
                 {isPending ? "Creating" : currentStep === 1 ? "Create" : "Next"}
               </button>

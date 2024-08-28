@@ -45,16 +45,14 @@ function BuyStudio() {
     });
   }
   return (
-    <Container>
-      <div className="flex justify-center items-center">
-        <form className="mt-5 sm:mt-8" action={checkout}>
-          <div className="py-6 first:pt-0 last:pb-0 border-t first:border-transparent border-gray-200 dark:border-gray-700 dark:first:border-transparent">
+    <Container cls="py-0 lg:py-0">
+      <div className="flex justify-center items-start">
+        <form className="" action={checkout}>
+          <div className="py-6 first:pt-0 last:pb-0 border-t first:border-transparent border border-gray-200 shadow-sm">
             <div className="lg:max-w-lg lg:mx-auto lg:me-0 ms-auto">
-              <div className="max-w-7xl p-4 sm:p-7 flex flex-col bg-white rounded-2xl shadow-lg dark:bg-slate-900">
+              <div className="max-w-7xl p-4 sm:p-7 flex flex-col bg-white rounded shadow-lg ">
                 <div className="text-center">
-                  <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
-                    Buy Studio
-                  </h1>
+                  <h1 className="block text-2xl font-bold ">Buy Studio</h1>
                 </div>
                 <div className="mt-5">
                   <div className="flex flex-col gap-4">
@@ -62,20 +60,20 @@ function BuyStudio() {
                       {/* Checkbox */}
                       <label
                         htmlFor="hs-pro-gpromf"
-                        className="relative py-3 px-4 flex border-2 border-transparent rounded-lg cursor-pointer focus:outline-none"
+                        className="relative py-3 px-4 flex border-2 border-transparent rounded cursor-pointer focus:outline-none"
                       >
                         <input
                           type="radio"
                           id="hs-pro-gpromf"
-                          className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded-lg cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none dark:border-neutral-700 dark:checked:border-blue-500 dark:focus:ring-neutral-800 dark:focus:ring-offset-neutral-800
+                          className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none
 
-                            before:content-[''] before:top-3.5 before:start-3.5  before:border-blue-600 before:h-5 before:rounded-full dark:before:border-neutral-700"
+                            before:content-[''] before:top-3.5 before:start-3.5  before:border-blue-600 before:h-5 before:rounded "
                           value="Basic"
                           name="hs-pro-gpromn"
                           onChange={handleOptionChange}
                         />
                         <span className="peer-checked:flex hidden absolute top-4 end-4">
-                          <span className="block w-5 h-5 flex justify-center items-center rounded-full bg-blue-600">
+                          <span className="block w-5 h-5 flex justify-center items-center rounded bg-blue-600">
                             <svg
                               className="flex-shrink-0 w-3 h-3 text-white"
                               xmlns="http://www.w3.org/2000/svg"
@@ -107,16 +105,14 @@ function BuyStudio() {
                               height={20}
                               rx={10}
                               fill="currentColor"
-                              className="fill-blue-300 dark:fill-blue-600"
+                              className="fill-blue-300 "
                             />
                           </svg>
-                          <span className="block font-normal text-blue-600 dark:text-neutral-200">
-                            Basic
-                          </span>
-                          <span className="inline-flex items-center py-1.5 text-sm font-medium bg-white text-gray-800 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:text-white">
+                          <span className="block font-semibold">Basic</span>
+                          <span className="inline-flex items-center py-1.5 text-sm font-medium bg-white shadow-sm   ">
                             $ {PLANS["Basic"]["planPrice"]}
                           </span>
-                          <span className="block text-sm leading-relaxed text-blue-600 dark:text-neutral-500">
+                          <span className="block text-sm leading-relaxed">
                             {/* FIXME: UPDATE ALL THESE DESCRIPTIONS */}
                             {PLANS["Basic"]["headshots"]} Headshots
                           </span>
@@ -126,20 +122,20 @@ function BuyStudio() {
                       {/* Checkbox */}
                       <label
                         htmlFor="hs-pro-gproms"
-                        className="relative py-3 px-4 flex border-2 border-transparent rounded-lg cursor-pointer focus:outline-none"
+                        className="relative py-3 px-4 flex border-2 border-transparent rounded cursor-pointer focus:outline-none"
                       >
                         <input
                           type="radio"
                           id="hs-pro-gproms"
-                          className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded-lg cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none dark:border-neutral-700 dark:checked:border-blue-500 dark:focus:ring-neutral-800 dark:focus:ring-offset-neutral-800
+                          className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none
 
-                            before:content-[''] before:top-3.5 before:start-3.5  before:border-blue-600 before:h-5 before:rounded-full dark:before:border-neutral-700"
+                            before:content-[''] before:top-3.5 before:start-3.5  before:border-blue-600 before:h-5 before:rounded "
                           value="Standard"
                           name="hs-pro-gpromn"
                           onChange={handleOptionChange}
                         />
                         <span className="peer-checked:flex hidden absolute top-4 end-4">
-                          <span className="block w-5 h-5 flex justify-center items-center rounded-full bg-blue-600">
+                          <span className="block w-5 h-5 flex justify-center items-center rounded bg-blue-600">
                             <svg
                               className="flex-shrink-0 w-3 h-3 text-white"
                               xmlns="http://www.w3.org/2000/svg"
@@ -171,7 +167,7 @@ function BuyStudio() {
                               height={20}
                               rx={10}
                               fill="currentColor"
-                              className="fill-blue-300 dark:fill-blue-600"
+                              className="fill-blue-300 "
                             />
                             <rect
                               x={14}
@@ -180,16 +176,14 @@ function BuyStudio() {
                               height={20}
                               rx={10}
                               fill="currentColor"
-                              className="fill-blue-500 dark:fill-blue-700"
+                              className="fill-blue-500 "
                             />
                           </svg>
-                          <span className="block font-normal text-blue-600 dark:text-neutral-200">
-                            Standard
-                          </span>
-                          <span className="inline-flex items-center py-1.5 text-sm font-medium bg-white text-gray-800 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:text-white">
+                          <span className="block font-semibold">Standard</span>
+                          <span className="inline-flex items-center py-1.5 text-sm font-medium bg-white shadow-sm   ">
                             $ {PLANS["Standard"]["planPrice"]}
                           </span>
-                          <span className="block text-sm leading-relaxed text-blue-600 dark:text-neutral-500">
+                          <span className="block text-sm leading-relaxed">
                             {PLANS["Standard"]["headshots"]} Headshots
                           </span>
                         </span>
@@ -198,21 +192,21 @@ function BuyStudio() {
                       {/* Checkbox */}
                       <label
                         htmlFor="hs-pro-gpromt"
-                        className="relative py-3 px-4 flex border-2 border-transparent rounded-lg cursor-pointer focus:outline-none"
+                        className="relative py-3 px-4 flex border-2 border-transparent rounded cursor-pointer focus:outline-none"
                       >
                         <input
                           type="radio"
                           id="hs-pro-gpromt"
-                          className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded-lg cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none dark:border-neutral-700 dark:checked:border-blue-500 dark:focus:ring-neutral-800 dark:focus:ring-offset-neutral-800
+                          className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none
 
-                            before:content-[''] before:top-3.5 before:start-3.5  before:border-blue-600 before:h-5 before:rounded-full dark:before:border-neutral-700"
+                            before:content-[''] before:top-3.5 before:start-3.5  before:border-blue-600 before:h-5 before:rounded "
                           value="Premium"
                           name="hs-pro-gpromn"
                           onChange={handleOptionChange}
                           defaultChecked={true}
                         />
                         <span className="peer-checked:flex hidden absolute top-4 end-4">
-                          <span className="block w-5 h-5 flex justify-center items-center rounded-full bg-blue-600">
+                          <span className="block w-5 h-5 flex justify-center items-center rounded bg-blue-600">
                             <svg
                               className="flex-shrink-0 w-3 h-3 text-white"
                               xmlns="http://www.w3.org/2000/svg"
@@ -244,7 +238,7 @@ function BuyStudio() {
                               height={20}
                               rx={10}
                               fill="currentColor"
-                              className="fill-blue-200 dark:fill-blue-500"
+                              className="fill-blue-200 "
                             />
                             <rect
                               y={10}
@@ -252,7 +246,7 @@ function BuyStudio() {
                               height={20}
                               rx={10}
                               fill="currentColor"
-                              className="fill-blue-300 dark:fill-blue-600"
+                              className="fill-blue-300 "
                             />
                             <rect
                               x={14}
@@ -261,12 +255,12 @@ function BuyStudio() {
                               height={20}
                               rx={10}
                               fill="currentColor"
-                              className="fill-blue-500 dark:fill-blue-700"
+                              className="fill-blue-500 "
                             />
                           </svg>
-                          <span className="block font-normal text-blue-600 dark:text-neutral-200">
+                          <span className="block font-semibold">
                             Premium &nbsp;
-                            <span className="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-normal bg-blue-100 text-blue-600 rounded-full dark:bg-blue-500/10 dark:text-blue-500">
+                            <span className="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-normal bg-blue-100 text-blue-600 rounded  ">
                               <svg
                                 className="flex-shrink-0 size-3"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -285,10 +279,10 @@ function BuyStudio() {
                               most popular
                             </span>
                           </span>
-                          <span className="inline-flex items-center py-1.5 text-sm font-medium bg-white text-gray-800 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:text-white">
+                          <span className="inline-flex items-center py-1.5 text-sm font-medium bg-white shadow-sm   ">
                             $ {PLANS["Premium"]["planPrice"]}
                           </span>
-                          <span className="block text-sm leading-relaxed text-blue-600 dark:text-neutral-500">
+                          <span className="block text-sm leading-relaxed">
                             {PLANS["Premium"]["headshots"]} Headshots
                           </span>
                         </span>
@@ -297,20 +291,20 @@ function BuyStudio() {
                       {/* Checkbox */}
                       <label
                         htmlFor="hs-pro-gprome"
-                        className="relative py-3 px-4 flex border-2 border-transparent rounded-lg cursor-pointer focus:outline-none"
+                        className="relative py-3 px-4 flex border-2 border-transparent rounded cursor-pointer focus:outline-none"
                       >
                         <input
                           type="radio"
                           id="hs-pro-gprome"
-                          className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded-lg cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none dark:border-neutral-700 dark:checked:border-blue-500 dark:focus:ring-neutral-800 dark:focus:ring-offset-neutral-800
+                          className="peer absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent disabled:opacity-50 pointer-events-none
 
-                            before:content-[''] before:top-3.5 before:start-3.5  before:border-blue-600 before:h-5 before:rounded-full dark:before:border-neutral-700"
+                            before:content-[''] before:top-3.5 before:start-3.5  before:border-blue-600 before:h-5 before:rounded "
                           value="Pro"
                           name="hs-pro-gpromn"
                           onChange={handleOptionChange}
                         />
                         <span className="peer-checked:flex hidden absolute top-4 end-4">
-                          <span className="block w-5 h-5 flex justify-center items-center rounded-full bg-blue-600">
+                          <span className="block w-5 h-5 flex justify-center items-center rounded bg-blue-600">
                             <svg
                               className="flex-shrink-0 w-3 h-3 text-white"
                               xmlns="http://www.w3.org/2000/svg"
@@ -341,7 +335,7 @@ function BuyStudio() {
                               height={20}
                               rx={10}
                               fill="currentColor"
-                              className="fill-blue-200 dark:fill-blue-500"
+                              className="fill-blue-200 "
                             />
                             <rect
                               y={10}
@@ -349,7 +343,7 @@ function BuyStudio() {
                               height={20}
                               rx={10}
                               fill="currentColor"
-                              className="fill-blue-300 dark:fill-blue-600"
+                              className="fill-blue-300 "
                             />
                             <rect
                               x={14}
@@ -358,7 +352,7 @@ function BuyStudio() {
                               height={20}
                               rx={10}
                               fill="currentColor"
-                              className="fill-blue-400 dark:fill-blue-700"
+                              className="fill-blue-400 "
                             />
                             <rect
                               x={14}
@@ -366,17 +360,15 @@ function BuyStudio() {
                               height={20}
                               rx={10}
                               fill="currentColor"
-                              className="fill-blue-600 dark:fill-blue-800"
+                              className="fill-blue-600 "
                             />
                           </svg>
-                          <span className="block font-normal text-blue-600 dark:text-neutral-200">
-                            Pro
-                          </span>
-                          <span className="inline-flex items-center py-1.5 text-sm font-medium bg-white text-gray-800 shadow-sm dark:bg-slate-900 dark:border-gray-700 dark:text-white">
+                          <span className="block font-semibold">Pro</span>
+                          <span className="inline-flex items-center py-1.5 text-sm font-medium bg-white shadow-sm   ">
                             $ {PLANS["Pro"]["planPrice"]}
                           </span>
 
-                          <span className="block text-sm leading-relaxed text-blue-600 dark:text-neutral-500">
+                          <span className="block text-sm leading-relaxed">
                             {PLANS["Pro"]["headshots"]} Headshots
                           </span>
                         </span>
@@ -389,32 +381,32 @@ function BuyStudio() {
                         {/* Input Number */}
                         <div
                           id="quantity"
-                          className="py-2 px-3 bg-white border border-gray-200 rounded-lg dark:bg-slate-900 dark:border-gray-700"
+                          className="py-2 px-3 bg-white border border-gray-200 rounded  "
                         >
                           <div className="w-full flex justify-between items-center gap-x-3">
                             <div>
-                              <span className="block font-normal text-sm text-gray-800 dark:text-white">
+                              <span className="block font-normal text-sm ">
                                 Studio Quantity
                                 <ToolTip>
                                   Each studio generates images for one single
                                   person
                                 </ToolTip>
                               </span>
-                              <span className="block text-xs text-gray-700 dark:text-gray-300">
+                              <span className="block text-xs text-gray-700 ">
                                 {quantity}
                               </span>
                             </div>
                             <div className="flex items-center gap-x-1.5">
                               <button
                                 type="button"
-                                className="w-6 h-6 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-md border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                                className="w-6 h-6 inline-flex justify-center items-center gap-x-2 border-gray-200 font-medium rounded border text-base bg-white shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none       "
                                 onClick={decrementNumber}
                                 disabled={quantity <= 1}
                               >
                                 <HiMiniMinus />
                               </button>
                               <input
-                                className="p-0 w-6 bg-transparent border-0 text-gray-800 text-center focus:ring-0 dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="p-0 w-6 bg-transparent border-0 text-center focus:ring-0  [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 type="number"
                                 min={1}
                                 value={quantity}
@@ -422,7 +414,7 @@ function BuyStudio() {
                               />
                               <button
                                 type="button"
-                                className="w-6 h-6 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-md border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                                className="w-6 h-6 inline-flex justify-center items-center gap-x-2 border-gray-200 font-medium rounded border text-base bg-white shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none       "
                                 onClick={incrementNumber}
                               >
                                 <HiMiniPlus />
@@ -439,7 +431,7 @@ function BuyStudio() {
                     <button
                       type="submit"
                       disabled={!quantity}
-                      className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-normal rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                      className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none   "
                     >
                       {pending
                         ? "Redirecting"
@@ -448,7 +440,7 @@ function BuyStudio() {
                           )}`}
                     </button>
                   </div>
-                  <p className="text-gray-700 dark:text-gray-300 text-xs text-center mt-2">
+                  <p className="text-xs text-center mt-2">
                     If you have any discount code your can redeem at next
                     checkout page.
                   </p>

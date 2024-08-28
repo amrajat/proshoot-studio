@@ -1,40 +1,38 @@
 import { HiCheck, HiCheckBadge, HiCheckCircle } from "react-icons/hi2";
 import ToolTip from "@/components/homepage/ToolTip";
 import Link from "next/link";
+import Heading, { SubHeading } from "../ui/Heading";
+import BgGradient from "./BgGradient";
+import { figtree } from "@/lib/utils";
 
 function Pricing() {
   return (
-    <div id="pricing" className="relative">
+    <div id="pricing" className="relative overflow-hidden">
       {/* Gradients */}
-      {/* <div aria-hidden="true" className="flex absolute -top-48 start-0 -z-[1]">
-        <div className="bg-purple-200 opacity-30 blur-3xl w-[1036px] h-[600px] dark:bg-purple-900 dark:opacity-20" />
-        <div className="bg-slate-200 opacity-90 blur-3xl w-[577px] h-[300px] transform translate-y-32 dark:bg-slate-800/60" />
-      </div> */}
+      <BgGradient />
       {/* End Gradients */}
-      <div className="max-w-[85rem] px-4 pt-10 sm:px-6 lg:px-8 lg:pt-14 mx-auto">
+      <div className="max-w-[85rem] px-4 py-12 sm:px-6 lg:px-8 lg:pt-16 lg:pb-28 mx-auto">
         {/* Title */}
-        <div className="max-w-2xl mx-auto text-center mb-10">
-          <h2 className="text-3xl leading-tight font-bold md:text-4xl md:leading-tight lg:text-5xl lg:leading-tight bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-700 text-transparent">
-            simple one-time payment
-          </h2>
-          <p className="mt-2 lg:text-lg text-gray-800 dark:text-gray-200">
-            {/* Whatever your status, our offers evolve according to your
-            needs.&nbsp; */}
-            <span className="bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-700 text-transparent">
-              with money back guarantee
-            </span>
-          </p>
+        <div className="mx-auto text-center mb-10">
+          <Heading>Simple Pricing</Heading>
+          {/* <p className="mt-2 lg:text-lg text-gray-800 "> */}
+          {/* inline-block text-sm font-medium bg-clip-text bg-gradient-to-l from-blue-600 to-violet-500 text-transparent   */}
+          <SubHeading>
+            No recurring payments or hidden charges. You have complete ownership
+            and commercial rights to your images, allowing you to use them
+            freely without any restrictions.
+          </SubHeading>
         </div>
         {/* End Title */}
 
         {/* Grid */}
         <div className="mt-6 md:mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-3 xl:gap-6 lg:items-center">
           {/* Card */}
-          <div className="flex flex-col bg-white border border-gray-200 text-center rounded-2xl p-4 md:p-8 dark:bg-slate-900 dark:border-gray-700">
-            <h4 className="font-medium text-lg text-gray-800 dark:text-gray-200">
+          <div className="flex flex-col bg-white border border-gray-200 text-center rounded p-4 md:p-8  ">
+            <h4 className={"font-medium text-lg " + figtree.className}>
               Basic
             </h4>
-            <span className="mt-7 font-bold text-3xl md:text-4xl xl:text-5xl text-gray-800 dark:text-gray-200">
+            <span className="mt-7 font-bold text-3xl md:text-4xl xl:text-5xl text-gray-800 ">
               $29
             </span>
             <p className="mt-2 text-sm text-gray-500">
@@ -45,40 +43,34 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
 
-                <span className="text-gray-800 dark:text-gray-400">
-                  20 Headshots
-                </span>
+                <span>20 Headshots</span>
               </li>
               <li className="flex space-x-2">
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
-                  5 Unique Clothing
-                </span>
+                <span>5 Unique Clothing</span>
               </li>
               <li className="flex space-x-2">
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
-                  5 Unique Backgrounds
-                </span>
+                <span>5 Unique Backgrounds</span>
               </li>
               <li className="flex space-x-2">
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   Ready within 2 Hours.
                   <ToolTip>This depends on the input images.</ToolTip>
                 </span>
@@ -87,9 +79,9 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   Money Back Guarantee
                   <ToolTip>Subject to our Refund Policy.</ToolTip>
                 </span>
@@ -98,9 +90,9 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   Consists 1 Studio
                   <ToolTip>
                     Each studio generates images for one single person.
@@ -111,9 +103,9 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   1 Studio Redo
                   <ToolTip>
                     If you&apos;re not satisfied with results. You can always
@@ -123,7 +115,7 @@ function Pricing() {
               </li>
             </ul>
             <Link
-              className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-violet-600 text-violet-600 hover:border-violet-500 hover:text-violet-500 disabled:opacity-50 disabled:pointer-events-none dark:border-violet-500 dark:text-violet-500 dark:hover:text-violet-400 dark:hover:border-violet-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+              className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-blue-600 text-blue-600 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:pointer-events-none       "
               href="/auth?pricing=Basic"
             >
               Get started
@@ -131,16 +123,16 @@ function Pricing() {
           </div>
           {/* End Card */}
           {/* Card */}
-          <div className="flex flex-col bg-white border-2 border-violet-900 text-center shadow-xl rounded-2xl p-4 md:p-8 dark:bg-slate-900 dark:border-violet-700">
+          <div className="flex flex-col bg-white border-2 border-blue-600 text-center shadow-xl rounded p-4 md:p-8  ">
             <p className="mb-3">
-              <span className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs uppercase font-semibold bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-white">
+              <span className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded text-xs uppercase font-semibold bg-blue-100 text-blue-600  ">
                 Most popular
               </span>
             </p>
-            <h4 className="font-medium text-lg text-gray-800 dark:text-gray-200">
+            <h4 className={"font-medium text-lg " + figtree.className}>
               Standard
             </h4>
-            <span className="mt-5 font-bold text-3xl md:text-4xl xl:text-5xl text-gray-800 dark:text-gray-200">
+            <span className="mt-5 font-bold text-3xl md:text-4xl xl:text-5xl text-gray-800 ">
               $39
             </span>
             <p className="mt-2 text-sm text-gray-500">
@@ -151,40 +143,34 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
 
-                <span className="text-gray-800 dark:text-gray-400">
-                  40 Headshots
-                </span>
+                <span>40 Headshots</span>
               </li>
               <li className="flex space-x-2">
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
-                  10 Unique Clothing
-                </span>
+                <span>10 Unique Clothing</span>
               </li>
               <li className="flex space-x-2">
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
-                  10 Unique Backgrounds
-                </span>
+                <span>10 Unique Backgrounds</span>
               </li>
               <li className="flex space-x-2">
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   Ready within 2 Hours.
                   <ToolTip>This depends on the input images.</ToolTip>
                 </span>
@@ -193,9 +179,9 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   Money Back Guarantee
                   <ToolTip>Subject to our Refund Policy.</ToolTip>
                 </span>
@@ -204,9 +190,9 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   Consists 1 Studio
                   <ToolTip>
                     Each studio generates images for one single person.
@@ -217,9 +203,9 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   1 Studio Redo
                   <ToolTip>
                     If you&apos;re not satisfied with results. You can always
@@ -229,7 +215,7 @@ function Pricing() {
               </li>
             </ul>
             <Link
-              className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+              className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none   "
               href="/auth?pricing=Standard"
             >
               Get started
@@ -237,11 +223,11 @@ function Pricing() {
           </div>
           {/* End Card */}
           {/* Card */}
-          <div className="flex flex-col bg-white border border-gray-200 text-center rounded-2xl p-4 md:p-8 dark:bg-slate-900 dark:border-gray-700">
-            <h4 className="font-medium text-lg text-gray-800 dark:text-gray-200">
+          <div className="flex flex-col bg-white border border-gray-200 text-center rounded p-4 md:p-8  ">
+            <h4 className={"font-medium text-lg " + figtree.className}>
               Premium
             </h4>
-            <span className="mt-5 font-bold text-3xl md:text-4xl xl:text-5xl text-gray-800 dark:text-gray-200">
+            <span className="mt-5 font-bold text-3xl md:text-4xl xl:text-5xl text-gray-800 ">
               $49
             </span>
             <p className="mt-2 text-sm text-gray-500">
@@ -252,40 +238,34 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
 
-                <span className="text-gray-800 dark:text-gray-400">
-                  60 Headshots
-                </span>
+                <span>60 Headshots</span>
               </li>
               <li className="flex space-x-2">
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
-                  15 Unique Clothing
-                </span>
+                <span>15 Unique Clothing</span>
               </li>
               <li className="flex space-x-2">
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
-                  15 Unique Backgrounds
-                </span>
+                <span>15 Unique Backgrounds</span>
               </li>
               <li className="flex space-x-2">
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   Ready within 2 Hours.
                   <ToolTip>This depends on the input images.</ToolTip>
                 </span>
@@ -294,9 +274,9 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   Money Back Guarantee
                   <ToolTip>Subject to our Refund Policy.</ToolTip>
                 </span>
@@ -305,9 +285,9 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   Consists 1 Studio
                   <ToolTip>
                     Each studio generates images for one single person.
@@ -318,9 +298,9 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   1 Studio Redo
                   <ToolTip>
                     If you&apos;re not satisfied with results. You can always
@@ -330,7 +310,7 @@ function Pricing() {
               </li>
             </ul>
             <Link
-              className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-violet-600 text-violet-600 hover:border-violet-500 hover:text-violet-500 disabled:opacity-50 disabled:pointer-events-none dark:border-violet-500 dark:text-violet-500 dark:hover:text-violet-400 dark:hover:border-violet-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+              className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-blue-600 text-blue-600 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:pointer-events-none       "
               href="/auth?pricing=Premium"
             >
               Get started
@@ -338,11 +318,9 @@ function Pricing() {
           </div>
           {/* End Card */}
           {/* Card */}
-          <div className="flex flex-col bg-white border border-gray-200 text-center rounded-2xl p-4 md:p-8 dark:bg-slate-900 dark:border-gray-700">
-            <h4 className="font-medium text-lg text-gray-800 dark:text-gray-200">
-              Pro
-            </h4>
-            <span className="mt-5 font-bold text-3xl md:text-4xl xl:text-5xl text-gray-800 dark:text-gray-200">
+          <div className="flex flex-col bg-white border border-gray-200 text-center rounded p-4 md:p-8  ">
+            <h4 className={"font-medium text-lg " + figtree.className}>Pro</h4>
+            <span className="mt-5 font-bold text-3xl md:text-4xl xl:text-5xl text-gray-800 ">
               $59
             </span>
             <p className="mt-2 text-sm text-gray-500">
@@ -353,40 +331,34 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
 
-                <span className="text-gray-800 dark:text-gray-400">
-                  80 Headshots
-                </span>
+                <span>80 Headshots</span>
               </li>
               <li className="flex space-x-2">
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
-                  30 Unique Clothing
-                </span>
+                <span>30 Unique Clothing</span>
               </li>
               <li className="flex space-x-2">
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
-                  30 Unique Backgrounds
-                </span>
+                <span>30 Unique Backgrounds</span>
               </li>
               <li className="flex space-x-2">
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   Ready within 2 Hours.
                   <ToolTip>This depends on the input images.</ToolTip>
                 </span>
@@ -395,9 +367,9 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   Money Back Guarantee
                   <ToolTip>Subject to our Refund Policy.</ToolTip>
                 </span>
@@ -406,9 +378,9 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   Consists 1 Studio
                   <ToolTip>
                     Each studio generates images for one single person.
@@ -419,9 +391,9 @@ function Pricing() {
                 <HiCheckCircle
                   width={24}
                   height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-violet-900"
+                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                 />
-                <span className="text-gray-800 dark:text-gray-400">
+                <span>
                   1 Studio Redo
                   <ToolTip>
                     If you&apos;re not satisfied with results. You can always
@@ -431,7 +403,7 @@ function Pricing() {
               </li>
             </ul>
             <Link
-              className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-violet-600 text-violet-600 hover:border-violet-500 hover:text-violet-500 disabled:opacity-50 disabled:pointer-events-none dark:border-violet-500 dark:text-violet-500 dark:hover:text-violet-400 dark:hover:border-violet-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+              className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-blue-600 text-blue-600 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:pointer-events-none       "
               href="/auth?pricing=Pro"
             >
               Get started

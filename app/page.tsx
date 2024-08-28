@@ -4,12 +4,12 @@ import FAQs from "@/components/homepage/FAQs";
 import Pricing from "@/components/homepage/Pricing";
 import Testimonials from "@/components/homepage/Testimonials";
 import HeroParallax from "@/components/homepage/Hero";
-import HowItWorks from "@/components/homepage/HowItWorks";
+// import HowItWorks from "@/components/homepage/HowItWorks";
 import Detailed from "@/components/homepage/Detailed";
 import Compare from "@/components/homepage/Compare";
+import MediaPublications from "@/components/homepage/MediaPublications";
 import PhotographyCompare from "@/components/homepage/PhotographyCompare";
 import CardSlider from "@/components/homepage/CardSlider";
-import Teams from "@/components/homepage/Teams";
 
 export default function Home() {
   return (
@@ -17,15 +17,13 @@ export default function Home() {
       <main id="content" role="main">
         <Header />
         <HeroParallax />
-        {/* <ComparisonTable /> */}
-        {/* <Detailed /> */}
-        {/* <Compare /> */}
-        {/* <Testimonials /> */}
         <PhotographyCompare />
-        {/* <MediaPublications /> */}
-        {/* <Teams /> */}
+        <Detailed />
+        <Compare />
+        <Testimonials />
         <Pricing />
-        <HowItWorks />
+        {/* <HowItWorks /> */}
+        <MediaPublications />
         <CardSlider />
         <FAQs />
       </main>

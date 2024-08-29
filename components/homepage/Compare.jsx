@@ -140,8 +140,8 @@ function Compare() {
 
             <div className="p-4 md:p-8">
               <h4 className="font-medium text-lg">
-                <span className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded text-xs uppercase font-semibold bg-blue-100 text-blue-600  ">
-                  <Logo />
+                <span className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded text-xs uppercase font-semibold bg-blue-600 text-blue-600  ">
+                  <Logo type="white" />
                 </span>
               </h4>
 

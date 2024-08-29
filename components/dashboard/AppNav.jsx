@@ -1,5 +1,6 @@
+"use client";
 import Link from "next/link";
-import Logo from "@/components/homepage/Logo";
+import { signOutCurrentUser } from "@/lib/supabase/actions/server";
 
 function AppNav() {
   return (
@@ -59,12 +60,12 @@ function AppNav() {
           </Link>
         </div>
         <div className="snap-center shrink-0 pe-5 sm:pe-8 sm:last:pe-0">
-          <Link
-            href="#"
+          <button
+            onClick={async () => await signOutCurrentUser()}
             className="inline-flex items-center gap-x-2 hover:text-gray-500     "
           >
             Sign Out
-          </Link>
+          </button>
         </div>
       </div>
     </nav>

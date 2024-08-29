@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
-import { signOutCurrentUser } from "@/lib/supabase/actions/server";
+import { signOutCurrentUser } from "@/lib/supabase/actions/client";
+import { useRouter } from "next/navigation";
 
 function AppNav() {
+  const router = useRouter();
   return (
     <nav
       className="sticky -top-px bg-white text-sm font-medium text-black ring-1 ring-gray-900 ring-opacity-5 border-t shadow-sm shadow-gray-100 pt-6 md:pb-6 -mt-px   "
@@ -61,7 +63,10 @@ function AppNav() {
         </div>
         <div className="snap-center shrink-0 pe-5 sm:pe-8 sm:last:pe-0">
           <button
-            onClick={async () => await signOutCurrentUser()}
+            onClick={async () => {
+              await signOutCurrentUser();
+              router.refresh();
+            }}
             className="inline-flex items-center gap-x-2 hover:text-gray-500     "
           >
             Sign Out

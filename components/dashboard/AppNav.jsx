@@ -62,6 +62,17 @@ function AppNav() {
           </Link>
         </div>
         <div className="snap-center shrink-0 pe-5 sm:pe-8 sm:last:pe-0">
+          <Link
+            className="inline-flex items-center gap-x-2 hover:text-gray-500     "
+            href="/dashboard/flux"
+          >
+            Flux
+            <sup className="text-red-600 text-xs hover:text-red-500 pt-1">
+              Beta
+            </sup>
+          </Link>
+        </div>
+        <div className="snap-center shrink-0 pe-5 sm:pe-8 sm:last:pe-0">
           <button
             onClick={async () => {
               await signOutCurrentUser();

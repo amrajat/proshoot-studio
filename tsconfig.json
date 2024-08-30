@@ -29,7 +29,8 @@
     "middleware.js",
     "components/homepage/CardSlider.jsx",
     "app/api/uploadthing/core.js",
-    "lib/utils.ts"
+    "lib/utils.ts",
+    "app/dashboard/flux/page.jsx"
   ],
   "exclude": ["node_modules"]
 }

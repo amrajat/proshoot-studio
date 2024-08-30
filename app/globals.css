@@ -18,13 +18,13 @@
 
   /* Featured REviews */
   --color-primary-blue: hsl(221, 83%, 53%);
-  --color-primary-light-gray-500: hsl(217, 19%, 35%);
-  --color-primary-blue: hsl(219, 29%, 14%);
+  /* --color-primary-light-gray-500: hsl(217, 19%, 35%); */
+  /* --color-primary-blue: hsl(219, 29%, 14%); */
   --color-primary-white: hsl(0, 0%, 100%);
-  --color-neutral-light-gray-300: hsl(0, 0%, 81%);
-  --color-neutral-light-gray-200: hsl(210, 46%, 95%);
-  --font-size-default: 0.8125rem;
-  --font-primary: "Inter", sans-serif;
+  /* --color-neutral-light-gray-300: hsl(0, 0%, 81%); */
+  /* --color-neutral-light-gray-200: hsl(210, 46%, 95%); */
+  /* --font-size-default: 0.8125rem; */
+  /* --font-primary: "Inter", sans-serif; */
 }
 
 body {

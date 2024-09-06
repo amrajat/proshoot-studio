@@ -44,6 +44,8 @@ async function StudioCard({ studio }) {
           Downloaded: {studio.downloaded ? "TRUE" : "FALSE"}
           <br></br>
           Created: {<ShowLocalTimeStamp ts={studio.created_at} />}
+          <br></br>
+          Sharing Permission: {studio.sharing_permission ? "TRUE" : "FALSE"}
         </p>
       </div>
       <div className="mt-auto flex border-t border-gray-200 divide-x divide-gray-200  ">

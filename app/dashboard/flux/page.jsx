@@ -2,12 +2,9 @@
 import ImageUploadingGuideLines from "@/components/dashboard/studio/ImageUploadingGuideLines";
 import Button from "@/components/ui/Button";
 import { useState, useCallback, useRef } from "react";
-// import { createClient } from "@supabase/supabase-js";
 import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
 import { v4 as uuidv4 } from "uuid";
 
-// import { Button } from "@/components/ui/button";
-// import { Progress } from "@/components/ui/progress";
 import {
   HiCloudArrowUp,
   HiOutlinePaperClip,
@@ -15,13 +12,7 @@ import {
   HiXMark,
 } from "react-icons/hi2";
 import Image from "next/image";
-// import { toast } from "@/components/ui/use-toast";
 
-// Initialize Supabase client
-// const supabase = createClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL,
-//   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-// );
 const supabase = createSupabaseBrowserClient();
 
 export default function Component() {
@@ -32,7 +23,6 @@ export default function Component() {
   const [showGuidlines, setShowGuidlines] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [userDetails, setUserDetails] = useState({
-    name: null,
     gender: null,
     profession: null,
   });
@@ -78,42 +68,33 @@ export default function Component() {
 
     const randomString = uuidv4();
 
+    let uploadedCount = 0;
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const { error } = await supabase.storage
         .from("temp-flux")
         .upload(
-          `${user.id}/${randomString}/${
-            userDetails.name.replace(" ", "-") +
-            "-" +
-            userDetails.gender +
-            "-" +
-            userDetails.profession
+          `${user?.id}/${randomString}/${
+            userDetails?.gender + "-" + userDetails?.profession
           }/${Date.now()}_${file.name}`,
           file
         );
 
       if (error) {
         console.error("Error uploading file:", error);
-        // toast({
-        //   title: "Upload Error",
-        //   description: `Failed to upload ${file.name}`,
-        //   variant: "destructive",
-        // });
+        // Implement proper error handling here
       } else {
-        setIsCompleted(true);
-        // toast({
-        //   title: "Upload Success",
-        //   description: `Successfully uploaded ${file.name}`,
-        // });
+        uploadedCount++;
+        // Update progress after each successful upload
+        setProgress((uploadedCount / files.length) * 100);
       }
-
-      setProgress(((i + 1) / files.length) * 100);
     }
 
+    // Set isCompleted only after all files have been processed
+    setIsCompleted(uploadedCount === files.length);
     setUploading(false);
     removeAllFiles();
-  }, [files, removeAllFiles]);
+  }, [files, removeAllFiles, userDetails]);
 
   return (
     <>
@@ -131,28 +112,18 @@ export default function Component() {
               button to read more about image upload guidelines.{" "}
             </span>
             If you don't follow the image uploading guideline then it will not
-            finetune your images. Thank you!
+            finetune your images. Please{" "}
+            <span className="text-red-600 font-bold underline">
+              upload at-least 10 camera facing photos{" "}
+            </span>
+            taken on different time and place. Thank you!
           </h1>
           {showGuidlines && <ImageUploadingGuideLines />}
           <Button onClick={() => setShowGuidlines(!showGuidlines)}>
             {showGuidlines ? "Hide" : "Show"} Image Guidelines
           </Button>
           {/* Name, Gender, Profession*/}
-          <div className="max-w-sm">
-            <input
-              disabled={uploading}
-              type="text"
-              id="name"
-              className="py-3 px-4 pe-9 block w-full bg-white shadow-sm border-gray-200 rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     placeholder-current"
-              placeholder="Name"
-              onChange={(e) =>
-                setUserDetails((prev) => ({
-                  ...prev,
-                  name: e.target.value,
-                }))
-              }
-            />
-          </div>
+
           <div className="max-w-sm">
             <select
               disabled={uploading}
@@ -243,7 +214,15 @@ export default function Component() {
 
           {previews.length > 0 && (
             <div className="space-y-2 space-x-2">
-              <Button onClick={uploadFiles} disabled={uploading}>
+              <Button
+                onClick={uploadFiles}
+                disabled={
+                  uploading ||
+                  !userDetails.gender ||
+                  !userDetails.profession ||
+                  files.length < 10
+                }
+              >
                 <HiCloudArrowUp />
                 {uploading ? "Uploading..." : "Upload & Create Studio"}
               </Button>
@@ -258,7 +237,7 @@ export default function Component() {
             </div>
           )}
 
-          {uploading && (
+          {parseInt(progress) <= 100 && parseInt(progress) > 0 && (
             <div
               className="flex w-full h-4 bg-gray-200 rounded-full overflow-hidden"
               role="progressbar"
@@ -267,7 +246,7 @@ export default function Component() {
               aria-valuemax="100"
             >
               <div
-                className="flex flex-col justify-center rounded-full overflow-hidden bg-blue-600 text-xs text-white text-center whitespace-nowrap transition duration-500"
+                className="flex flex-col justify-center rounded-full overflow-hidden bg-blue-600 text-xs text-white text-center whitespace-nowrap duration-500 transition-all"
                 style={{ width: `${parseInt(progress)}%` }}
               >
                 {parseInt(progress)}%
@@ -276,7 +255,7 @@ export default function Component() {
           )}
         </div>
       )}
-      {isCompleted && (
+      {isCompleted && parseInt(progress) === 100 && !uploading && (
         <h1 className="text-2xl font-bold">
           Thank you! You'll be notified soon by email or check your studio page
           for generated headshots.

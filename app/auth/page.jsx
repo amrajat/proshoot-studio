@@ -3,7 +3,6 @@ import Logo from "@/components/homepage/Logo";
 import AuthForm from "@/components/auth/AuthForm";
 import OAuth from "@/components/auth/OAuth";
 import Heading from "@/components/ui/Heading";
-import Footer from "@/components/homepage/Footer";
 import Image from "next/image";
 
 export const metadata = {
@@ -77,9 +76,9 @@ function AuthPage() {
                 <div className="mt-5">
                   <OAuth />
 
-                  {/* <div className="py-3 flex items-center text-xs text-gray-400 uppercase before:flex-[1_1_0%] before:border-t before:border-gray-200 before:me-6 after:flex-[1_1_0%] after:border-t after:border-gray-200 after:ms-6   ">
+                  <div className="py-3 flex items-center text-xs text-gray-400 uppercase before:flex-[1_1_0%] before:border-t before:border-gray-200 before:me-6 after:flex-[1_1_0%] after:border-t after:border-gray-200 after:ms-6   ">
                     Or
-                  </div> */}
+                  </div>
                   {/* Form */}
                   <AuthForm />
                   <p className="block text-xs mt-1 text-center">

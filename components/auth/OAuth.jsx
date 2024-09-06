@@ -1,10 +1,8 @@
 "use server";
 import { signInWithGoogle } from "@/lib/supabase/actions/server";
-
 async function OAuth() {
   return (
     <form
-      className="hidden"
       action={async () => {
         "use server";
         await signInWithGoogle();
@@ -12,12 +10,9 @@ async function OAuth() {
     >
       <button
         type="submit"
-        // onClick={async () => {
-        //   await signInWithGoogle();
-        // }}
         className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none       "
       >
-        Login in with
+        Continue with Google
         <svg
           className="w-4 h-auto"
           width={46}

@@ -1,18 +1,16 @@
 "use server";
-import { signInWithGoogle } from "@/lib/supabase/actions/server";
-async function OAuth() {
-  return (
-    <form
-      action={async () => {
-        "use server";
-        await signInWithGoogle();
-      }}
-    >
+import { signInWithOAuth } from "@/lib/supabase/actions/server";
+import { cookies } from "next/headers";
+async function OAuth({ provider }) {
+  const cookieJar = cookies();
+  const lastSignedInMethod = cookieJar.get("lastSignedInMethod")?.value;
+
+  const buttonProvider =
+    provider === "google" ? (
       <button
         type="submit"
-        className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none       "
+        className="relative w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none       "
       >
-        Continue with Google
         <svg
           className="w-4 h-auto"
           width={46}
@@ -37,7 +35,58 @@ async function OAuth() {
             fill="#EB4335"
           />
         </svg>
+        Continue with Google
+        {lastSignedInMethod === "google" && (
+          <div className="absolute top-1/2 translate-y-1/2 right-0 whitespace-nowrap ml-8 bg-blue-600/75 px-4 py-1 rounded text-xs text-white">
+            Last Used
+          </div>
+        )}
       </button>
+    ) : (
+      <button
+        type="submit"
+        className="relative w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none       "
+      >
+        <span className="flex items-center">
+          <svg className="w-5 h-5 mr-2" viewBox="0 0 32 32" fill="none">
+            <g>
+              <path
+                d="M32,30c0,1.104-0.896,2-2,2H2c-1.104,0-2-0.896-2-2V2c0-1.104,0.896-2,2-2h28c1.104,0,2,0.896,2,2V30z"
+                fill="#007BB5"
+              />
+              <g>
+                <rect fill="#FFFFFF" height={14} width={4} x={7} y={11} />
+                <path
+                  d="M20.499,11c-2.791,0-3.271,1.018-3.499,2v-2h-4v14h4v-8c0-1.297,0.703-2,2-2c1.266,0,2,0.688,2,2v8h4v-7    C25,14,24.479,11,20.499,11z"
+                  fill="#FFFFFF"
+                />
+                <circle cx={9} cy={8} fill="#FFFFFF" r={2} />
+              </g>
+            </g>
+            <g />
+            <g />
+            <g />
+            <g />
+            <g />
+            <g />
+          </svg>
+          Continue with LinkedIn
+        </span>
+        {lastSignedInMethod === "linkedin_oidc" && (
+          <div className="absolute top-1/2 translate-y-1/2 right-0 whitespace-nowrap ml-8 bg-blue-600/75 px-4 py-1 rounded text-xs text-white">
+            Last Used
+          </div>
+        )}
+      </button>
+    );
+  return (
+    <form
+      action={async () => {
+        "use server";
+        await signInWithOAuth(provider);
+      }}
+    >
+      {buttonProvider}
     </form>
   );
 }

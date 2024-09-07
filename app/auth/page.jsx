@@ -4,6 +4,7 @@ import AuthForm from "@/components/auth/AuthForm";
 import OAuth from "@/components/auth/OAuth";
 import Heading from "@/components/ui/Heading";
 import Image from "next/image";
+import { cookies } from "next/headers";
 
 export const metadata = {
   title: { absolute: "Login" },
@@ -53,6 +54,8 @@ export const metadata = {
 // export default AuthPage;
 
 function AuthPage() {
+  const cookieJar = cookies();
+  const lastSignedInMethod = cookieJar.get("lastSignedInMethod")?.value;
   return (
     <>
       <Header />
@@ -64,27 +67,32 @@ function AuthPage() {
             <div className="mx-auto max-w-sm mb-4 pb-4 border border-gray-200 rounded shadow-sm bg-white">
               <div className="p-4 sm:p-7">
                 <div className="text-center">
-                  <div className="text-center flex justify-center">
-                    <Logo />
-                  </div>
+                  {/* <div className="text-center flex justify-center">
+                    <Logo type="blue" />
+                  </div> */}
 
-                  <h1 className="block text-2xl font-bold mt-6">Login</h1>
+                  <h1 className="block text-2xl font-bold mt-6">Get Started</h1>
                   <p className="block text-xs mt-1">
-                    With One Time Password (OTP).
+                    with one click social login or email login.
                   </p>
                 </div>
                 <div className="mt-5">
-                  <OAuth />
+                  <OAuth provider={"google"} />
 
                   <div className="py-3 flex items-center text-xs text-gray-400 uppercase before:flex-[1_1_0%] before:border-t before:border-gray-200 before:me-6 after:flex-[1_1_0%] after:border-t after:border-gray-200 after:ms-6   ">
                     Or
                   </div>
+                  <OAuth provider={"linkedin_oidc"} />
+                  <div className="py-3 flex items-center text-xs text-gray-400 uppercase before:flex-[1_1_0%] before:border-t before:border-gray-200 before:me-6 after:flex-[1_1_0%] after:border-t after:border-gray-200 after:ms-6   ">
+                    Or continue with email
+                  </div>
                   {/* Form */}
-                  <AuthForm />
+                  <AuthForm lastSignedInMethod={lastSignedInMethod} />
                   <p className="block text-xs mt-1 text-center">
                     You don't need to create account/password here. We use
                     modern authentication which allows you to access your
-                    account with one time password or passcode.
+                    account with your existing social accounts or passcode based
+                    email login.
                   </p>
                   {/* End Form */}
                 </div>

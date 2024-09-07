@@ -5,12 +5,12 @@ import { useForm } from "react-hook-form";
 import {
   signInWithEmailOTP,
   verifyEmailOTP,
-} from "@/lib/supabase/actions/client";
+} from "@/lib/supabase/actions/server";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 // FIXME: REPLACE YUP WITH ZOD VALIDATION and import supabase from client not server.
-function AuthForm() {
+function AuthForm({ lastSignedInMethod }) {
   const [displayError, setDisplayError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [userEmail, setUserEmail] = useState(null);
@@ -115,6 +115,11 @@ function AuthForm() {
               autoComplete="email"
               required
             />
+            {lastSignedInMethod === "email" && (
+              <div className="absolute -translate-y-1/2 right-0 whitespace-nowrap ml-8 bg-blue-600/75 px-4 py-1 rounded text-xs text-white">
+                Last Used
+              </div>
+            )}
             <p className="text-xs text-red-600 mt-2" id="email-error">
               {errorsEmail.email ? errorsEmail.email?.message : displayError}
             </p>
@@ -139,7 +144,7 @@ function AuthForm() {
             type="submit"
             className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none   "
           >
-            {!isLoading ? "Send OTP" : "Sending OTP"}
+            {!isLoading ? "Continue with Email" : "Sending OTP"}
           </button>
         </div>
       </form>

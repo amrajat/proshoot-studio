@@ -21,9 +21,21 @@ function Heading({ children, type = "h2", cls = "" }) {
 
 export default Heading;
 
-export function SubHeading({ children }) {
+export function SubHeading({ children, cls = "", align = "center" }) {
+  const textAlign = {
+    left: "text-left",
+    center: "text-center",
+    right: "text-right",
+  };
   return (
-    <p className="text-base md:text-lg md:mt-4 mt-2 lg:text-lg text-center my-6 md:my-12 bg-clip-text bg-gradient-to-r from-blue-600 to-violet-500 text-transparent lowercase">
+    <p
+      className={
+        "text-base md:text-lg md:mt-4 mt-2 lg:text-lg my-6 md:my-12 bg-clip-text bg-gradient-to-r from-blue-600 to-violet-500 text-transparent lowercase " +
+        textAlign[align] +
+        " " +
+        +cls
+      }
+    >
       {children}
     </p>
   );

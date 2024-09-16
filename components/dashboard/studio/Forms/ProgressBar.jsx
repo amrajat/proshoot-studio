@@ -1,5 +1,5 @@
 function ProgressBar({ stepCompleted, totalSteps }) {
-  const percentCompleted = (parseInt(stepCompleted) / totalSteps) * 100;
+  const percentCompleted = parseInt((stepCompleted / totalSteps) * 100);
   return (
     <div
       className="flex w-full h-4 bg-gray-200 rounded overflow-hidden"
@@ -14,6 +14,7 @@ function ProgressBar({ stepCompleted, totalSteps }) {
       >
         {percentCompleted}%
       </div>
+      <p></p>
     </div>
   );
 }

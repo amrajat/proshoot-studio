@@ -21,13 +21,13 @@ async function StudioCard({ studio }) {
   return (
     <div className="group flex flex-col h-full bg-white border border-gray-200 shadow-sm   ">
       <div className="h-auto ">
-        <Image
+        {/* <Image
           src={studio.coverImage}
           alt="image uploaded"
           width={"393"}
           height={"491"}
           className="overflow-hidden w-auto aspect-[4/5] object-cover"
-        />
+        /> */}
       </div>
       <div className="p-4 md:p-6">
         <span className="block mb-1 text-xs font-semibold uppercase text-blue-600 ">

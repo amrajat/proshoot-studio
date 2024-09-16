@@ -13,7 +13,10 @@ function Error({ message }) {
         </div>
         <div className="ms-3">
           <h3 className="text-gray-800 font-semibold ">Oops!</h3>
-          <p className="text-sm text-gray-700 ">{message}</p>
+          <p className="text-sm text-gray-700 ">
+            {message ||
+              "Something went wrong! Please contact our support team."}
+          </p>
         </div>
       </div>
     </div>

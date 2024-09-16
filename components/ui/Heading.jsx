@@ -32,8 +32,7 @@ export function SubHeading({ children, cls = "", align = "center" }) {
       className={
         "text-base md:text-lg md:mt-4 mt-2 lg:text-lg my-6 md:my-12 bg-clip-text bg-gradient-to-r from-blue-600 to-violet-500 text-transparent lowercase " +
         textAlign[align] +
-        " " +
-        +cls
+        ` ${cls}`
       }
     >
       {children}

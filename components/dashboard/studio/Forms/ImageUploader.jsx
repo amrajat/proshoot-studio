@@ -13,7 +13,6 @@ import {
 } from "react-icons/hi2";
 import JSZip from "jszip";
 import Heading, { SubHeading } from "@/components/ui/Heading";
-import { sign } from "crypto";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
 import Loader from "@/components/Loader";
 

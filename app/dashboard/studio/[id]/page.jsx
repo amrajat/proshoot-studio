@@ -6,11 +6,11 @@ import {
   isStudioDownloaded,
   updateStudioDownloadStatus,
 } from "@/lib/supabase/actions/server";
-import { redirect } from "next/navigation";
 
 async function ViewStudio({ params }) {
-  const alreadyDownloaded = await isStudioDownloaded(Number(params.id));
+  const alreadyDownloaded = await isStudioDownloaded(params.id);
   const images = await getStudioImages(params.id);
+
   if (!images)
     return (
       <CoverPage
@@ -32,7 +32,7 @@ async function ViewStudio({ params }) {
             <ViewGeneratedImage
               key={index}
               image={image}
-              tune_id={Number(params.id)}
+              tune_id={params.id}
               alreadyDownloaded={alreadyDownloaded}
             />
           ))}

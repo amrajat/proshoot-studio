@@ -15,7 +15,7 @@ async function StudioCard({ studio }) {
     const isPassed = isAfter(today, targetDate);
 
     if (isPassed) {
-      await updateStudioDownloadStatus(Number(studio.id));
+      await updateStudioDownloadStatus(studio.id);
     }
   }
   return (
@@ -34,11 +34,11 @@ async function StudioCard({ studio }) {
           {studio.gender.toUpperCase()}
           <br></br>
         </span>
-        <span className="block mb-1 text-xs font-semibold uppercase text-blue-600 ">
-          {studio.name}
+        <span className="block mb-1 text-xs font-semibold text-blue-600 ">
+          {studio.id.toLowerCase()}
         </span>
         <h3 className="text-xl font-semibold text-gray-800  ">
-          {studio.title.split("/")[0]}
+          {studio.title}
         </h3>
         <p className="mt-3 text-xs text-gray-500">
           Downloaded: {studio.downloaded ? "TRUE" : "FALSE"}

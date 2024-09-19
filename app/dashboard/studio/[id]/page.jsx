@@ -38,6 +38,12 @@ async function ViewStudio({ params }) {
           ))}
           {/* End Card */}
         </div>
+        {!alreadyDownloaded && (
+          <p className="mt-2">
+            Note: These images are compressed for preview, but the downloaded
+            version will show the full original image quality.
+          </p>
+        )}
         {/* End Grid */}
       </div>
     </div>

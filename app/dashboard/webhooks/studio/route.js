@@ -4,14 +4,12 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import sharp from "sharp";
 import fetch from "node-fetch";
-import { Resend } from "resend";
 import { SendMailClient } from "zeptomail";
 import pLimit from "p-limit";
 import * as Sentry from "@sentry/nextjs";
 import { validateWebhook } from "replicate";
 import { PLANS } from "@/lib/data";
 import generatePrompts from "@/lib/PROMPTS";
-import { getStudioAttributes } from "@/lib/supabase/actions/server";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -26,19 +24,18 @@ const limit = pLimit(CONCURRENCY_LIMIT);
 export async function POST(request) {
   const secret = process.env.REPLICATE_WEBHOOK_SIGNING_SECRET;
 
-  // TODO: DISABLED FOR DEVELOPMENT TESTING
-  // if (!secret) {
-  //   return NextResponse.json(
-  //     { detail: "Webhook received, but not validated." },
-  //     { status: 200 }
-  //   );
-  // }
+  if (!secret) {
+    return NextResponse.json(
+      { detail: "Webhook received, but not validated." },
+      { status: 200 }
+    );
+  }
 
-  // const webhookIsValid = await validateWebhook(request.clone(), secret);
+  const webhookIsValid = await validateWebhook(request.clone(), secret);
 
-  // if (!webhookIsValid) {
-  //   return NextResponse.json({ detail: "Webhook is invalid" }, { status: 401 });
-  // }
+  if (!webhookIsValid) {
+    return NextResponse.json({ detail: "Webhook is invalid" }, { status: 401 });
+  }
 
   try {
     const cookieStore = cookies();
@@ -51,7 +48,6 @@ export async function POST(request) {
 
     Sentry.setUser({ email: user_email, id: user_id });
 
-    const resend = new Resend(process.env.RESEND_EMAIL_API_KEY);
     const url = process.env.ZOHO_ZEPTOMAIL_URL;
     const token = process.env.ZOHO_ZEPTOMAIL_TOKEN;
     const eMailClient = new SendMailClient({ url, token });
@@ -77,7 +73,12 @@ export async function POST(request) {
     switch (event) {
       case "training":
         const trainingResponse = await JSON.parse(body);
-        await generateImagesUsingPrompts(trainingResponse, planName);
+        await generateImagesUsingPrompts(
+          trainingResponse,
+          user_id,
+          planName,
+          supabase
+        );
         await sendTrainingCompleteEmail(
           eMailClient,
           user_email,
@@ -108,22 +109,29 @@ export async function POST(request) {
   }
 }
 
-async function generateImagesUsingPrompts() {
+async function generateImagesUsingPrompts(
+  trainingResponse,
+  user_id,
+  planName,
+  supabase
+) {
   try {
     const studioAttributes = await getStudioAttributes(
       trainingResponse.id,
-      user_id
+      user_id,
+      supabase
     );
-    const numPrompts = generatePrompts(studioAttributes.attributes).slice(
+    const numPrompts = parseInt(PLANS[planName].headshots / 4);
+    const availablePrompts = generatePrompts(studioAttributes.attributes).slice(
       0,
-      parseInt(PLANS[planName] / 4)
+      numPrompts
     );
-    for (let i = 0; i < numPrompts.length; i++) {
+    for (let i = 0; i < availablePrompts.length; i++) {
       await replicate.predictions.create({
         version: studioAttributes.studioVersion,
         input: {
           model: "dev",
-          prompt: numPrompts[i],
+          prompt: availablePrompts[i],
           extra_lora:
             studioAttributes.attributes.imageQuality === "realistic"
               ? "huggingface.co/XLabs-AI/flux-RealismLora"
@@ -233,9 +241,9 @@ async function processImageDual(
     const buffer = await imageResponse.arrayBuffer();
 
     // Process and upload original image
-    const originalImage = await sharp(buffer).jpeg({ quality: 90 }).toBuffer();
+    // const originalImage = await sharp(buffer).jpeg({ quality: 90 }).toBuffer();
     const originalUpload = await uploadToSupabase(
-      originalImage,
+      buffer,
       supabase,
       predictionResponse,
       "results"
@@ -359,6 +367,17 @@ async function updateResultsColumn(user_id, tune_id, imageUrls, supabase) {
     Sentry.captureException(error);
     throw error;
   }
+}
+
+async function getStudioAttributes(studioID, user_id, supabase) {
+  const { data: [{ studios } = {}] = [], error } = await supabase
+    .from("users")
+    .select("studios")
+    .eq("id", user_id);
+  if (error) throw new Error(error);
+  const studio = studios.find((item) => item.id == studioID);
+  if (!studio) throw new Error("Studio not found");
+  return studio; // Return the found studio
 }
 
 async function fetchWithRetry(

@@ -33,7 +33,7 @@ export async function POST(request) {
     // }
 
     const {
-      data: [{ credits }],
+      data: { credits },
       error: creditsError,
     } = await supabase
       .from("users")

@@ -3,7 +3,7 @@ import Image from "next/image";
 import { isAfter, parseISO, add } from "date-fns";
 import ShowLocalTimeStamp from "@/components/dashboard/ShowLocalTimeStamp";
 
-async function StudioCard({ studio }) {
+async function StudioCard({ studio, index }) {
   if (!studio.downloaded) {
     // Parse the target date string into a Date object
     let targetDate = parseISO(studio.created_at);
@@ -19,24 +19,25 @@ async function StudioCard({ studio }) {
     }
   }
   return (
-    <div className="group flex flex-col h-full bg-white border border-gray-200 shadow-sm   ">
-      <div className="h-auto ">
-        {/* <Image
-          src={studio.coverImage}
+    <div className="group flex flex-col h-full bg-white border border-gray-200 shadow-sm">
+      <div className="h-auto relative overflow-hidden">
+        <Image
+          src="/examples/ai-portrait-1.jpg"
           alt="image uploaded"
           width={"393"}
           height={"491"}
-          className="overflow-hidden w-auto aspect-[4/5] object-cover"
-        /> */}
+          className="overflow-hidden w-auto aspect-[4/5] object-cover blur-3xl"
+        />
+        <span className="absolute font-extrabold text-9xl text-white top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 drop-shadow-2xl">
+          0{index + 1}
+        </span>
       </div>
       <div className="p-4 md:p-6">
         <span className="block mb-1 text-xs font-semibold uppercase text-blue-600 ">
           {studio.gender.toUpperCase()}
           <br></br>
         </span>
-        <span className="block mb-1 text-xs font-semibold text-blue-600 ">
-          {studio.id.toLowerCase()}
-        </span>
+
         <h3 className="text-xl font-semibold text-gray-800  ">
           {studio.title}
         </h3>

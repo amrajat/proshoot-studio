@@ -34,6 +34,7 @@ import Button from "@/components/ui/Button";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
 
 const FileUploader = ({
   register,
@@ -99,6 +100,7 @@ export default function Replicate() {
   });
 
   const selectedPlan = watch("plan");
+  const router = useRouter();
 
   async function fetcher() {
     try {
@@ -202,71 +204,6 @@ export default function Replicate() {
     }
   };
 
-  // const onSubmit = async (data) => {
-  //   try {
-  //     // Zod validation happens automatically thanks to zodResolver
-  //     const sanitizedData = formSchema.parse(data); // Parse with Zod
-  //     console.log("Sanitized in Zod validation first row data:", sanitizedData);
-
-  //     // Here you would typically send the sanitizedData to your backend
-  //     // ... your API call logic ...
-  //   } catch (error) {
-  //     if (error instanceof z.ZodError) {
-  //       // Handle Zod errors (display them to the user)
-  //       console.error("Zod validation errors:", error.errors);
-
-  //       // Optionally, set errors back to useForm for display
-  //       error.issues.forEach((issue) => {
-  //         // Assuming your field names in Zod schema match your form field names
-  //         setError(issue.path[0], { type: "manual", message: issue.message });
-  //       });
-  //     } else {
-  //       // Handle other errors
-  //       console.error("Submission error:", error);
-  //     }
-  //   }
-
-  //   // Sanitize and validate the data before submission
-  //   const sanitizedData = {
-  //     gender: data.gender,
-  //     profession: data.profession,
-  //     age: data.age,
-  //     ethnicity: data.ethnicity,
-  //     hairStyle: data.hairStyle,
-  //     eyeColor: data.eyeColor,
-  //     grooming: data.grooming,
-  //     clothing: data.clothing,
-  //     gazeDirection: data.gazeDirection,
-  //     expression: data.expression,
-  //     background: data.background,
-  //     lighting: data.lighting,
-  //     cameraType: data.cameraType,
-  //     lensType: data.lensType,
-  //     aperture: data.aperture,
-
-  //     plan: data.plan,
-  //     images: data.images,
-  //     imageQualityType: data.imageQualityType,
-  //     studioName: data.studioName.trim(),
-  //   };
-
-  //   // Here you would typically send the data to your backend
-  //   console.log("Submitting data:", sanitizedData);
-  //   console.log(formSchema.parse(data));
-  //   // await axios.post("/dashboard/studio/create/upload", sanitizedData);
-  //   const response = await fetch("/dashboard/replicate/upload", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify(sanitizedData),
-  //   });
-  //   if (!response.ok) throw new Error("Submission failed");
-  //   //   const result = await response.json();
-  //   const promptData = await response.json();
-  //   console.log(promptData);
-  // };
-
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
@@ -278,7 +215,7 @@ export default function Replicate() {
         return;
       }
 
-      const response = await fetch("/dashboard/replicate/upload", {
+      const response = await fetch("/dashboard/studio/create/upload", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -293,7 +230,9 @@ export default function Replicate() {
         throw new Error("Submission failed!");
       }
       const result = await response.json();
+      console.log(result);
       setStudioMessage(result.message);
+      router.push("/dashboard/studio/" + result.studioId);
     } catch (error) {
       if (error instanceof z.ZodError) {
         console.error("Zod validation errors:", error.errors);

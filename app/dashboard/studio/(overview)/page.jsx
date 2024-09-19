@@ -61,8 +61,8 @@ async function Studio() {
         </div>
       </div>
       {/* Card */}
-      {studios.map((studio) => (
-        <StudioCard key={studio.id} studio={studio} />
+      {studios.map((studio, index) => (
+        <StudioCard key={studio.id} studio={studio} index={index} />
       ))}
       {/* End Card */}
     </div>

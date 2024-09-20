@@ -9,7 +9,7 @@ import pLimit from "p-limit";
 import * as Sentry from "@sentry/nextjs";
 import { validateWebhook } from "replicate";
 import { PLANS } from "@/lib/data";
-import generatePrompts from "@/lib/PROMPTS";
+import generatePrompts from "@/lib/prompts";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;

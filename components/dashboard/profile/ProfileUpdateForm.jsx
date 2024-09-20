@@ -77,20 +77,12 @@ function ProfileUpdateForm({ id }) {
         <div className="sm:col-span-9">
           <div className="sm:flex">
             <input
-              id="f_name"
+              id="full_name"
               type="text"
-              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t last:rounded-b sm:first:rounded-s sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
-              placeholder="First name"
-              name="f_name"
-              defaultValue={user.metadata.f_name}
-            />
-            <input
-              id="l_name"
-              type="text"
-              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t last:rounded-b sm:first:rounded-s sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
-              placeholder="Last name"
-              name="l_name"
-              defaultValue={user.metadata.l_name}
+              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px  sm:mt-0 sm:first:ms-0  text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none rounded outline-blue-600"
+              placeholder="Full name"
+              name="full_name"
+              defaultValue={user.full_name}
             />
           </div>
         </div>
@@ -110,7 +102,7 @@ function ProfileUpdateForm({ id }) {
             <input
               id="company"
               type="text"
-              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t last:rounded-b sm:first:rounded-s sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
+              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px  sm:mt-0 sm:first:ms-0   text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none rounded outline-blue-600"
               placeholder="Acme Corporation"
               name="company"
               defaultValue={user.metadata.company}
@@ -118,7 +110,7 @@ function ProfileUpdateForm({ id }) {
             <input
               id="position"
               type="text"
-              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t last:rounded-b sm:first:rounded-s sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
+              className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm -mt-px -ms-px  sm:mt-0 sm:first:ms-0   text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none rounded outline-blue-600"
               placeholder="CEO & Founder"
               name="position"
               defaultValue={user.metadata.position}
@@ -137,7 +129,7 @@ function ProfileUpdateForm({ id }) {
           <input
             id="website"
             type="text"
-            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
+            className="py-2 px-3 pe-11 block w-full border-2 border-gay-200 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none rounded outline-blue-600"
             placeholder="acme.org"
             name="website"
             defaultValue={user.metadata.website}
@@ -172,7 +164,7 @@ function ProfileUpdateForm({ id }) {
           <input
             id="x_username"
             type="text"
-            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none outline-blue-600"
             placeholder="@elonmusk"
             name="x_username"
             defaultValue={user.metadata.x_username}
@@ -194,7 +186,7 @@ function ProfileUpdateForm({ id }) {
           <input
             id="linkedin_username"
             type="text"
-            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none outline-blue-600"
             placeholder="linkedin username"
             name="linkedin_username"
             defaultValue={user.metadata.linkedin_username}
@@ -216,7 +208,7 @@ function ProfileUpdateForm({ id }) {
           <input
             id="instagram_username"
             type="text"
-            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none    "
+            className="py-2 px-3 pe-11 block w-full border-2 border-gray-200 shadow-sm text-sm rounded focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none outline-blue-600"
             placeholder="your IG handle"
             name="instagram_username"
             defaultValue={user.metadata.instagram_username}

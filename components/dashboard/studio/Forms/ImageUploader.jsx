@@ -113,15 +113,17 @@ export default function ImageUploader({
       });
       // Generate the zip file as a Blob
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      const randomString = uuidv4();
-      const filePath = `${user?.id}/${randomString}/${Date.now()}_name.zip`;
+      const filePath = `${user?.id}/${uuidv4()}/${Date.now()}.zip`;
 
       // Upload the zip blob to Supabase
       const { data, error } = await supabase.storage
-        .from("temp-flux") // Replace with your bucket name
+        .from("training-images") // Replace with your bucket name
         .upload(filePath, zipBlob, {
           contentType: "application/zip", // Set the content type to zip
         });
+
+      console.log(data);
+      console.log(error);
 
       if (error) {
         // Handle error, e.g., show an error message
@@ -130,8 +132,8 @@ export default function ImageUploader({
         // Get signed URL for the uploaded zip file
         const { data: signedUrlData, error: signedUrlError } =
           await supabase.storage
-            .from("temp-flux")
-            .createSignedUrl(filePath, 3600); // Adjust expiration as needed
+            .from("training-images")
+            .createSignedUrl(filePath, 21600); // Expires after 6 hours. Seconds
         setValue("images", signedUrlData.signedUrl);
       }
     } catch (error) {
@@ -212,6 +214,10 @@ export default function ImageUploader({
                       {MAX_NUM_IMAGES} images
                     </span>
                     , each up to{" "}
+                    <span className="font-medium text-blue-600 hover:text-blue-700">
+                      {(MAX_FILE_SIZE / 1048576).toFixed(0)} MB
+                    </span>{" "}
+                    and combined size of all images lesser than{" "}
                     <span className="font-medium text-blue-600 hover:text-blue-700">
                       {(MAX_FILE_SIZE / 1048576).toFixed(0)} MB
                     </span>
@@ -341,7 +347,7 @@ export default function ImageUploader({
             </SubHeading>
           )}
           <div className="mt-2">
-            {errors && errors["images"]?.message && (
+            {!isCompleted && errors && errors["images"]?.message && (
               <p className="mt-2 text-sm text-red-400">
                 {errors["images"]?.message}
               </p>

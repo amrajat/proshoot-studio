@@ -306,7 +306,7 @@ async function uploadPreviewsToSupabase(
   }/previews/${predictionResponse.id}/${uuidv4()}.jpg`;
   return await supabase.storage
     .from("studios")
-    .upload(fileName, imageBuffer, { upsert: true, contentType: "image/jpeg" }); // TODO: THIS MIGHT CREATE AN ISSUE USE IMAGE/JPG INSTEAD
+    .upload(fileName, imageBuffer, { upsert: true, contentType: "image/jpeg" });
 }
 
 async function updateUserPreviews(

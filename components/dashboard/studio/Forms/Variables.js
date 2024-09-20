@@ -352,7 +352,7 @@ export const GAZE_DIRECTIONS = [
   {
     title: "Please select gaze direction.",
     subtitle:
-      "Please refrain from entering custom values as we will create your images using a range of gaze direction variations provided below.",
+      "Please refrain from selecting any options or entering custom values as we will create your images using a range of gaze direction variations provided below.",
     fieldName: "gazeDirection",
   },
   {
@@ -386,7 +386,7 @@ export const BACKGROUNDS = [
   {
     title: "Please select background for your images.",
     subtitle:
-      "Please refrain from entering custom values as we will create your images using a range of background variations provided below.",
+      "Please refrain from selecting any options or entering custom values as we will create your images using a range of background variations provided below.",
     fieldName: "background",
   },
   {
@@ -446,7 +446,7 @@ export const LIGHTINGS = [
   {
     title: "Please select lightings for your images.",
     subtitle:
-      "Please refrain from entering custom values as we will create your images using a range of lighting variations provided below.",
+      "Please refrain from selecting any options or entering custom values as we will create your images using a range of lighting variations provided below.",
     fieldName: "lighting",
   },
   {
@@ -506,7 +506,7 @@ export const EXPRESSIONS = [
   {
     title: "Please select your face expressions.",
     subtitle:
-      "Please refrain from entering custom values as we will create your images using a range of expression variations provided below.",
+      "Please refrain from selecting any options or entering custom values as we will create your images using a range of expression variations provided below.",
     fieldName: "expression",
   },
   {
@@ -548,7 +548,7 @@ export const CAMERA_TYPE = [
   {
     title: "Please select camera type.",
     subtitle:
-      "Please refrain from entering custom values as we will create your images using a range of camera type variations provided below.",
+      "Please refrain from selecting any options or entering custom values as we will create your images using a range of camera type variations provided below.",
     fieldName: "cameraType",
   },
   {
@@ -572,7 +572,7 @@ export const CAMERA_LENSES = [
   {
     title: "Please select camera lens.",
     subtitle:
-      "Please refrain from entering custom values as we will create your images using a range of camera lens variations provided below.",
+      "Please refrain from selecting any options or entering custom values as we will create your images using a range of camera lens variations provided below.",
     fieldName: "lensType",
   },
   {

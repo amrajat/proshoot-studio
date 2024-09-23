@@ -122,9 +122,6 @@ export default function ImageUploader({
           contentType: "application/zip", // Set the content type to zip
         });
 
-      console.log(data);
-      console.log(error);
-
       if (error) {
         // Handle error, e.g., show an error message
       } else {

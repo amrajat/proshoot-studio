@@ -52,7 +52,7 @@ export async function POST(request) {
       );
     }
 
-    const response = await replicate.trainings.create(
+    const trainingResponse = await replicate.trainings.create(
       "ostris",
       "flux-dev-lora-trainer",
       "d995297071a44dcb72244e6c19462111649ec86a9646c32df56daa7f14801944",
@@ -79,11 +79,10 @@ export async function POST(request) {
       }
     );
 
-    if (!response.ok) {
+    if (!trainingResponse?.id) {
       throw new Error("Failed to create training on Replicate");
     }
 
-    const trainingResponse = await response.json();
     trainingResponse.logs = null; // Logs are lengthy and unnecessary
 
     const { data: newStudioData, error: newStudioError } = await supabase.rpc(

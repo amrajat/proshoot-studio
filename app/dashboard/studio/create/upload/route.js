@@ -83,8 +83,6 @@ export async function POST(request) {
       throw new Error("Failed to create training on Replicate");
     }
 
-    trainingResponse.logs = null; // Logs are lengthy and unnecessary
-
     const { data: newStudioData, error: newStudioError } = await supabase.rpc(
       "add_new_studio",
       {
@@ -92,13 +90,11 @@ export async function POST(request) {
           id: trainingResponse.id,
           title: studioData.studioName.replace(/[^a-z0-9]/gi, "").toLowerCase(),
           gender: studioData.gender,
-          studioVersion: trainingResponse.output?.version, // This will be used while prompting the images.
           coverImage: null,
           created_at: trainingResponse.created_at,
           downloaded: false,
           sharing_permission: false,
-          metadata: { trainingResponse },
-          attributes: { studioData },
+          attributes: { ...studioData },
         },
         user_id: session.user.id,
       }

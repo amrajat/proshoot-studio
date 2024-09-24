@@ -10,6 +10,7 @@ import * as Sentry from "@sentry/nextjs";
 import { validateWebhook } from "replicate";
 import { PLANS } from "@/lib/data";
 import generatePrompts from "@/lib/prompts";
+import Replicate from "replicate";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -44,6 +45,7 @@ export async function POST(request) {
     const user_id = query.get("user_id");
     const event = query.get("event");
     const planName = query.get("plan");
+    const training_id = query.get("training_id");
     const body = await request.text();
 
     Sentry.setUser({ email: user_email, id: user_id });
@@ -51,6 +53,10 @@ export async function POST(request) {
     const url = process.env.ZOHO_ZEPTOMAIL_URL;
     const token = process.env.ZOHO_ZEPTOMAIL_TOKEN;
     const eMailClient = new SendMailClient({ url, token });
+
+    const replicate = new Replicate({
+      auth: process.env.REPLICATE_API_TOKEN,
+    });
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -76,8 +82,10 @@ export async function POST(request) {
         await generateImagesUsingPrompts(
           trainingResponse,
           user_id,
+          user_email,
           planName,
-          supabase
+          supabase,
+          replicate
         );
         await sendTrainingCompleteEmail(
           eMailClient,
@@ -87,8 +95,8 @@ export async function POST(request) {
         break;
 
       case "prediction":
-        const predictionResponse = await JSON.parse(body);
-        await handleImages(predictionResponse, supabase, user_id);
+        const { output: images } = await JSON.parse(body);
+        await handleImages(images, supabase, user_id, training_id);
         break;
 
       default:
@@ -112,8 +120,10 @@ export async function POST(request) {
 async function generateImagesUsingPrompts(
   trainingResponse,
   user_id,
+  user_email,
   planName,
-  supabase
+  supabase,
+  replicate
 ) {
   try {
     const studioAttributes = await getStudioAttributes(
@@ -122,20 +132,21 @@ async function generateImagesUsingPrompts(
       supabase
     );
     const numPrompts = parseInt(PLANS[planName].headshots / 4);
-    const availablePrompts = generatePrompts(studioAttributes.attributes).slice(
+    const availablePrompts = generatePrompts(studioAttributes).slice(
       0,
       numPrompts
     );
     for (let i = 0; i < availablePrompts.length; i++) {
       await replicate.predictions.create({
-        version: studioAttributes.studioVersion,
+        version: trainingResponse?.output?.version.split(":")[1],
         input: {
           model: "dev",
           prompt: availablePrompts[i],
-          extra_lora:
-            studioAttributes.attributes.imageQuality === "realistic"
-              ? "huggingface.co/XLabs-AI/flux-RealismLora"
-              : null,
+          // extra_lora:
+          //   studioAttributes.imageQuality === "realistic"
+          //     ? "huggingface.co/XLabs-AI/flux-RealismLora"
+          //     : null,
+          extra_lora: "huggingface.co/XLabs-AI/flux-RealismLora",
           lora_scale: 1,
           num_outputs: 4,
           aspect_ratio: "2:3",
@@ -146,7 +157,7 @@ async function generateImagesUsingPrompts(
           extra_lora_scale: 1,
           num_inference_steps: 28,
         },
-        webhook: `${process.env.URL}/dashboard/webhooks/studio?user_id=${user_id}&user_email=${user_email}&event=prediction`,
+        webhook: `${process.env.URL}/dashboard/webhooks/studio?user_id=${user_id}&user_email=${user_email}&event=prediction&training_id=${trainingResponse.id}`,
         webhook_events_filter: ["completed"],
       });
     }
@@ -182,16 +193,13 @@ async function sendTrainingCompleteEmail(eMailClient, user_email, studioID) {
   }
 }
 
-async function handleImages(predictionResponse, supabase, user_id) {
+async function handleImages(images, supabase, user_id, training_id) {
   try {
-    const images = predictionResponse.output;
     const logoBuffer = await fetchLogoBuffer();
     let processedImages = [];
 
     const promises = images.map((imageURL) =>
-      limit(() =>
-        processImageDual(imageURL, logoBuffer, supabase, predictionResponse)
-      )
+      limit(() => processImageDual(imageURL, logoBuffer, supabase, training_id))
     );
 
     processedImages = await Promise.allSettled(promises);
@@ -203,13 +211,13 @@ async function handleImages(predictionResponse, supabase, user_id) {
     if (successfulImages.length > 0) {
       await updateUserPreviews(
         user_id,
-        predictionResponse.id,
+        training_id,
         successfulImages.map((img) => img.watermarked),
         supabase
       );
       await updateResultsColumn(
         user_id,
-        predictionResponse.id,
+        training_id,
         successfulImages.map((img) => img.original),
         supabase
       );
@@ -230,12 +238,7 @@ async function fetchLogoBuffer() {
   return await logoResponse.arrayBuffer();
 }
 
-async function processImageDual(
-  imageURL,
-  logoBuffer,
-  supabase,
-  predictionResponse
-) {
+async function processImageDual(imageURL, logoBuffer, supabase, training_id) {
   try {
     const imageResponse = await fetchWithRetry(imageURL);
     const buffer = await imageResponse.arrayBuffer();
@@ -245,7 +248,7 @@ async function processImageDual(
     const originalUpload = await uploadToSupabase(
       buffer,
       supabase,
-      predictionResponse,
+      training_id,
       "results"
     );
 
@@ -254,7 +257,7 @@ async function processImageDual(
     const watermarkedUpload = await uploadToSupabase(
       watermarkedImage,
       supabase,
-      predictionResponse,
+      training_id,
       "previews"
     );
 
@@ -282,28 +285,10 @@ async function applyWatermark(imageBuffer, logoBuffer) {
     .toBuffer();
 }
 
-async function uploadToSupabase(
-  imageBuffer,
-  supabase,
-  predictionResponse,
-  type
-) {
-  const fileName = `${new Date().toISOString().slice(0, 7)}/${
-    predictionResponse.id
-  }/${type}/${uuidv4()}.jpg`;
-  return await supabase.storage
-    .from("studios")
-    .upload(fileName, imageBuffer, { upsert: true, contentType: "image/jpeg" });
-}
-
-async function uploadPreviewsToSupabase(
-  imageBuffer,
-  supabase,
-  predictionResponse
-) {
-  const fileName = `${new Date().toISOString().slice(0, 7)}/${
-    predictionResponse.id
-  }/previews/${predictionResponse.id}/${uuidv4()}.jpg`;
+async function uploadToSupabase(imageBuffer, supabase, training_id, type) {
+  const fileName = `${new Date()
+    .toISOString()
+    .slice(0, 7)}/${training_id}/${type}/${uuidv4()}.jpg`;
   return await supabase.storage
     .from("studios")
     .upload(fileName, imageBuffer, { upsert: true, contentType: "image/jpeg" });
@@ -377,7 +362,7 @@ async function getStudioAttributes(studioID, user_id, supabase) {
   if (error) throw new Error(error);
   const studio = studios.find((item) => item.id == studioID);
   if (!studio) throw new Error("Studio not found");
-  return studio; // Return the found studio
+  return studio.attributes; // Return the found studio
 }
 
 async function fetchWithRetry(

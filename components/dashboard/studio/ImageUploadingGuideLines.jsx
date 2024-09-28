@@ -23,14 +23,27 @@ function ImageUploadingGuideLines() {
               className="marker:text-blue-600 list-disc ps-4 space-y-2 text-sm"
             >
               <li>
+                Clear view of face in good lighting and Remember good input =
+                good output.
+              </li>
+              <li>
                 Please upload at-least 10 camera facing photos taken on
                 different time and place if possible.
               </li>
               <li>
-                Vary the poses, background, and lighting for each picture so
-                each picture should introduce new information about the person.
+                Please upload at-least 2 extra (10 camera facing + 2 side view)
+                slightly side view images.
+              </li>
+              <li>
+                Vary the poses, outfits, background, and lighting for each
+                picture so each picture should introduce new information about
+                the person.
               </li>
               <li>Use photos from different days to avoid repetition.</li>
+              <li>
+                Use high resolution professional camera or smartphone photos
+                minimum face size 512*512 pixels.
+              </li>
             </ul>
           </div>
         </div>
@@ -120,9 +133,9 @@ function ImageUploadingGuideLines() {
               className="marker:text-red-600 list-disc ps-4 space-y-2 text-sm"
             >
               <li>
-                Avoid uploading pictures taken at the same hour or day because
-                using multiple pictures with the same object will make the model
-                learn the object as well as part of the subject
+                Avoid uploading images taken at the same day because using
+                multiple images with the same object will make the model learn
+                the object as well as part of the subject.
               </li>
 
               <li>
@@ -130,7 +143,22 @@ function ImageUploadingGuideLines() {
                 other people/objects (hats, masks, sun glasses, or any other
                 accessories).
               </li>
-              <li>Please avoid side view images.</li>
+              <li>
+                Avoid face/color filters; they make your photos look fake and
+                avoid blurry or low-quality photos.
+              </li>
+              <li>
+                Don’t upload AI-generated photos and make sure your face is
+                clear, not-pixelated and isn’t cut off in the photo.
+              </li>
+              <li>
+                Avoid clothing, jewelry, or makeup you don’t usually wear and
+                don’t use angled selfies or photos with face distortions.
+              </li>
+              <li>
+                Avoid uploading many similar photos with the same outfit or
+                background. Use a variety instead.
+              </li>
             </ul>
           </div>
         </div>

@@ -284,44 +284,47 @@ function Legal() {
               which a full refund may be requested.
               <br></br>
               <br></br>
-              Eligibility for Refund: A full refund of your purchase price is
-              available if the following criteria are met:
+              <strong>Eligibility for Refund:</strong> A full refund of your
+              purchase price is available if the following criteria are met:
               <br></br>
               <blockquote className="relative mt-2">
                 <div className="relative z-10">
                   <p className="text-gray-800 sm:text-lg ">
                     <em>
-                      If you see Downloaded: False on Studio page, then your are
-                      eligible for refund. This means your have not downloaded
-                      any of images yet or the 7 day window is still open.
+                      If you see <strong>Downloaded: False</strong> on Studio
+                      page, then your are eligible for refund. This means your
+                      have not downloaded any of images yet or the 7 day window
+                      is still open.
                       <br></br>
-                      If you see Downloaded: True on Studio page, then your are
-                      not eligible for refund. This means your have downloaded
-                      any of images or the 7 day window is closed.
+                      If you see <strong>Downloaded: True</strong> on Studio
+                      page, then your are not eligible for refund. This means
+                      your have downloaded any of images or the 7 day window is
+                      closed.
                     </em>
                   </p>
                 </div>
               </blockquote>
               <br></br>
               <br></br>
-              Unutilized Headshots: You have not downloaded any of the
-              AI-generated headshots from your order. Your can download the
-              images by clicking/tapping on "Download" button.<br></br>
-              <br></br>Time Limit: Your request for a refund is submitted within
-              seven (7) days of Studio Creation Date not the placing the order
-              for your ease. Refund Process:
+              <strong>Unutilized Headshots:</strong> You have not downloaded any
+              of the AI-generated headshots from your order. Your can download
+              the images by clicking/tapping on "Download" button.<br></br>
               <br></br>
-              You're not eligible for for refund if you redo the studio, or
-              upload less than 20 images(5 full-body shots, 5 medium shots, and
-              10 close-ups) as shown on studio creation page on your dashboard.
+              <strong>Time Limit:</strong> Your request for a refund is
+              submitted within seven (7) days of Studio Creation Date not the
+              placing the order for your ease.<br></br>
+              <br></br>
+              <strong>Refund Process:</strong> You're not eligible for for
+              refund if you redo the studio, or do not follow image uploading
+              guideline shown on studio creation page.
               <br></br>
               To request a refund, please email us support@proshoot.co
               <br></br>
               <br></br>
-              Processing Times: Refunds submitted through the self-service
-              portal are typically processed within fourteen (14) business days.
-              You will receive a confirmation email once your refund is
-              complete.
+              <strong>Processing Times:</strong> Refunds submitted through the
+              self-service portal are typically processed within fourteen (14)
+              business days. You will receive a confirmation email once your
+              refund is complete.
               <br></br>
               <br></br>
               Our Commitment to Satisfaction: At Proshoot.co, your satisfaction

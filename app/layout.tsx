@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   },
   alternates: { canonical: "./" },
   description:
-    "Create high-quality, professional headshots in seconds using Proshoot.co's cutting-edge AI technology. Save time and money, get the perfect headshot every time.",
+    "Create high-quality, professional AI headshots in seconds using Proshoot.co's cutting-edge AI technology. Save time and money, get the perfect AI headshot.",
 };
 
 export default function RootLayout({

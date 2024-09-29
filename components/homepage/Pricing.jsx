@@ -124,7 +124,7 @@ function Pricing() {
             </ul>
             <Link
               className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-blue-600 text-blue-600 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:pointer-events-none       "
-              href="/auth?pricing=Basic"
+              href="/auth"
             >
               Get started
             </Link>
@@ -232,7 +232,7 @@ function Pricing() {
             </ul>
             <Link
               className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none   "
-              href="/auth?pricing=Standard"
+              href="/auth"
             >
               Get started
             </Link>
@@ -335,7 +335,7 @@ function Pricing() {
             </ul>
             <Link
               className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-blue-600 text-blue-600 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:pointer-events-none       "
-              href="/auth?pricing=Premium"
+              href="/auth"
             >
               Get started
             </Link>
@@ -436,7 +436,7 @@ function Pricing() {
             </ul>
             <Link
               className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-blue-600 text-blue-600 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:pointer-events-none       "
-              href="/auth?pricing=Pro"
+              href="/auth"
             >
               Get started
             </Link>

@@ -4,7 +4,6 @@ export default function sitemap() {
   const paths = [
     "about",
     "affiliate",
-    "api",
     "auth",
     "blog",
     "contact",

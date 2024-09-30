@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import PrelineScript from "@/components/PrelineScript";
+import CookieBanner from "@/components/CookieBanner";
 import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -29,6 +30,7 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth min-h-screen">
       <body className={inter.className + " antialiased" + " min-h-screen"}>
         {children}
+        <CookieBanner />
         <Analytics />
         <SpeedInsights />
       </body>

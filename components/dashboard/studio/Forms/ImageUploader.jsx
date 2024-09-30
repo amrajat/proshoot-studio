@@ -37,7 +37,7 @@ export default function ImageUploader({
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [showGuidelines, setShowGuidelines] = useState(false);
+  const [showGuidelines, setShowGuidelines] = useState(true);
 
   const fileInputRef = useRef(null);
 

@@ -7,7 +7,7 @@ function Footer() {
   return (
     <>
       <BottomCTA />
-      <footer className="relative overflow-hidden footer-bg">
+      <footer className="relative overflow-hidden bg-[#23282B]">
         {/* Gradients */}
         {/* <div aria-hidden="true" className="flex absolute start-0 -z-[1]">
           <div className="bg-purple-200 opacity-10 blur-3xl w-[1036px] h-[600px]  " />

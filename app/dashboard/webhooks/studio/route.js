@@ -150,7 +150,7 @@ async function generateImagesUsingPrompts(
           extra_lora: "huggingface.co/XLabs-AI/flux-RealismLora",
           lora_scale: 1,
           num_outputs: 4,
-          aspect_ratio: "2:3",
+          aspect_ratio: "1:1",
           output_format: "jpg",
           guidance_scale: 3.5,
           output_quality: 100,

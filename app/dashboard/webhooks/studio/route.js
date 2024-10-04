@@ -147,7 +147,8 @@ async function generateImagesUsingPrompts(
           //   studioAttributes.imageQuality === "realistic"
           //     ? "huggingface.co/XLabs-AI/flux-RealismLora"
           //     : null,
-          extra_lora: "huggingface.co/XLabs-AI/flux-RealismLora",
+          extra_lora:
+            "https://huggingface.co/XLabs-AI/flux-lora-collection/resolve/main/realism_lora_comfy_converted.safetensors",
           lora_scale: 1,
           num_outputs: 4,
           aspect_ratio: "1:1",

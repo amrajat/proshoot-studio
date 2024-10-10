@@ -1,4 +1,8 @@
-import { getCurrentSession, getStudios } from "@/lib/supabase/actions/server";
+import {
+  getCurrentSession,
+  getPurchaseHistory,
+  getStudios,
+} from "@/lib/supabase/actions/server";
 import Error from "@/components/Error";
 import CoverPage from "@/components/dashboard/CoverPage";
 
@@ -6,24 +10,30 @@ import StudioCard from "@/components/dashboard/studio/StudioCard";
 import Image from "next/image";
 import { HiPlus } from "react-icons/hi2";
 import Link from "next/link";
+import BuyStudio from "../buy/page";
 
 async function Studio() {
   let studios;
+  let purchase_history;
   try {
     const { session } = await getCurrentSession();
+    [{ purchase_history = [] } = {}] = await getPurchaseHistory();
+
     studios = await getStudios(session.user.id);
   } catch (error) {
     return <Error message="Something went wrong." />;
   }
+  if (purchase_history.length < 1) {
+    return <BuyStudio />;
+  }
   if (studios.length < 1) {
     return (
       <CoverPage
-        title="No Studio Found."
-        buttonText="Buy Studio"
-        buttonLink="/dashboard/studio/buy"
+        title="No Headshots Found!"
+        buttonText="Generate AI Headshots"
+        buttonLink="/dashboard/studio/create"
       >
-        It appears that you have not made any purchases for a studio or have not
-        yet created a studio.
+        It appears that you have not have any headshots generated yet.
       </CoverPage>
     );
   }
@@ -44,10 +54,10 @@ async function Studio() {
             Create New Studio
           </span>
           <h3 className="text-xl font-semibold text-gray-800  ">
-            Generate New Images
+            Generate Headshots
           </h3>
           <p className="mt-3 text-gray-500">
-            Generate more headshots or generate for another person.
+            Generate headshots for another person.
           </p>
         </div>
         <div className="mt-auto flex border-t border-gray-200 divide-x divide-gray-200  ">
@@ -55,7 +65,7 @@ async function Studio() {
             className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none       "
             href={`/dashboard/studio/create`}
           >
-            Create Studio
+            Generate Now
             <HiPlus />
           </Link>
         </div>

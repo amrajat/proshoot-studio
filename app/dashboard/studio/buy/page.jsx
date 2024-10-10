@@ -1,21 +1,16 @@
 "use client";
 import { useState, useTransition } from "react";
-// import { getStripe } from "@/lib/stripe/stripe";
 import ToolTip from "@/components/homepage/ToolTip";
 import Container from "@/components/dashboard/Container";
-import { HiMiniPlus, HiMiniMinus, HiCheck } from "react-icons/hi2";
+import { HiMiniPlus, HiMiniMinus } from "react-icons/hi2";
 import { PLANS } from "@/lib/data";
 import { createCheckoutLS } from "@/lib/supabase/actions/server";
 
 function BuyStudio() {
   const [plan, setPlan] = useState("Premium");
   const [quantity, setQuantity] = useState(1);
-  const [promotionalCodeValue, setPromotionalCodeValue] = useState("");
   const [pending, startTransaction] = useTransition();
 
-  const handlePromotionalCodeValue = (event) => {
-    setPromotionalCodeValue(event.target.value);
-  };
   const handleOptionChange = (event) => {
     setPlan(event.target.value);
   };
@@ -52,7 +47,9 @@ function BuyStudio() {
             <div className="lg:max-w-lg lg:mx-auto lg:me-0 ms-auto">
               <div className="max-w-7xl p-4 sm:p-7 flex flex-col bg-white rounded shadow-lg ">
                 <div className="text-center">
-                  <h1 className="block text-2xl font-bold ">Buy Studio</h1>
+                  <h1 className="block text-2xl font-bold ">
+                    Buy Headshots Package
+                  </h1>
                 </div>
                 <div className="mt-5">
                   <div className="flex flex-col gap-4">
@@ -386,10 +383,10 @@ function BuyStudio() {
                           <div className="w-full flex justify-between items-center gap-x-3">
                             <div>
                               <span className="block font-normal text-sm ">
-                                Studio Quantity
+                                Quantity
                                 <ToolTip>
-                                  Each studio generates images for one single
-                                  person
+                                  Each unit generates images for one single
+                                  person.
                                 </ToolTip>
                               </span>
                               <span className="block text-xs text-gray-700 ">
@@ -430,7 +427,7 @@ function BuyStudio() {
                   <div className="mt-5">
                     <button
                       type="submit"
-                      disabled={!quantity}
+                      disabled={!quantity || pending}
                       className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none   "
                     >
                       {pending
@@ -440,10 +437,16 @@ function BuyStudio() {
                           )}`}
                     </button>
                   </div>
-                  <p className="text-xs text-center mt-2">
-                    If you have any discount code your can redeem at next
-                    checkout page.
-                  </p>
+                  <ol className="mt-2">
+                    <li className="text-xs">
+                      1. After payment, you'll be redirected to create your
+                      headshots.
+                    </li>
+                    <li className="text-xs">
+                      2. If you have any discount code your can redeem at next
+                      checkout page.
+                    </li>
+                  </ol>
                 </div>
               </div>
             </div>

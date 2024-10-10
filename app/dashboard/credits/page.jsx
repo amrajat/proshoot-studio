@@ -2,12 +2,11 @@ import Container from "@/components/dashboard/Container";
 import Error from "@/components/Error";
 
 import { getCredits, getPurchaseHistory } from "@/lib/supabase/actions/server";
-import { MdErrorOutline } from "react-icons/md";
 import ShowLocalTimeStamp from "@/components/dashboard/ShowLocalTimeStamp";
 
-import Link from "next/link";
 import Heading from "@/components/ui/Heading";
 import { figtree } from "@/lib/utils";
+import BuyStudio from "../studio/buy/page";
 
 async function Credits() {
   let purchase_history;
@@ -22,31 +21,7 @@ async function Credits() {
       </Container>
     );
   }
-  if (purchase_history.length < 1)
-    return (
-      <Container>
-        <div className="bg-white rounded shadow p-4 sm:p-7 ">
-          <div className="mb-8">
-            <div className="h-full flex flex-col bg-white border shadow-sm rounded   ">
-              <div className="flex flex-auto flex-col justify-center items-center p-4 md:p-5">
-                <MdErrorOutline className="size-10 text-gray-500" />
-                <p className="mt-5 text-sm text-gray-800 ">
-                  No data, Buy one of our plan to see details here.
-                </p>
-                <Link href="/dashboard/studio/buy" className="mt-6">
-                  <button
-                    type="button"
-                    className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none   "
-                  >
-                    Buy Studio
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Container>
-    );
+  if (purchase_history.length < 1) return <BuyStudio />;
 
   return (
     <Container>

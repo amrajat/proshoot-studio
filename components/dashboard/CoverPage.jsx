@@ -1,11 +1,10 @@
 import Link from "next/link";
+import Heading from "../ui/Heading";
 
 function CoverPage({ title, children, buttonText, buttonLink }) {
   return (
     <div className="text-center py-10 px-4 sm:px-6 lg:px-8">
-      <h2 className="text-2xl font-bold md:text-5xl md:leading-tight text-blue-600 drop-shadow-sm antialiased">
-        {title}
-      </h2>
+      <Heading>{title}</Heading>
       <p className="mt-3 text-lg">{children}</p>
       <div className="mt-5 flex flex-col justify-center items-center gap-2 sm:flex-row sm:gap-3">
         <Link href={buttonLink}>

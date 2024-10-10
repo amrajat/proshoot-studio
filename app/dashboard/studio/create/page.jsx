@@ -26,7 +26,6 @@ import {
   STUDIO_NAME_SELECTOR,
 } from "@/components/dashboard/studio/Forms/Variables";
 import { getCredits } from "@/lib/supabase/actions/client";
-import CoverPage from "@/components/dashboard/CoverPage";
 import Error from "@/components/Error";
 import Loader from "@/components/Loader";
 import useSWR from "swr";
@@ -35,6 +34,7 @@ import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import BuyStudio from "../buy/page";
 
 const FileUploader = ({
   register,
@@ -120,16 +120,7 @@ export default function Replicate() {
   if (isLoading) return <Loader />;
   if (creditsError) return <Error message={creditsError.message} />;
   if (!credits || Object.values(credits).every((count) => count <= 0)) {
-    return (
-      <CoverPage
-        title="Zero Studio Credits"
-        buttonLink="/dashboard/studio/buy"
-        buttonText="Buy Studio"
-      >
-        You don't have any credits to create a studio. Please purchase a plan
-        first.
-      </CoverPage>
-    );
+    return <BuyStudio />;
   }
 
   const order = ["Basic", "Standard", "Premium", "Pro"];

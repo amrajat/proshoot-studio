@@ -349,6 +349,11 @@ export default function ImageUploader({
                 {errors["images"]?.message}
               </p>
             )}
+            <p className="text-sm text-red-400">
+              Attention: To qualify for refunds if you are unhappy with the
+              generated images, you must strictly follow all the guidelines for
+              uploading images shown above.
+            </p>
           </div>
         </div>
       )}

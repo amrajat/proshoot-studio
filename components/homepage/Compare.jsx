@@ -25,7 +25,7 @@ function Compare() {
         {/* End Title */}
 
         {/* Grid */}
-        <div className="mt-6 md:mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-3 xl:gap-6 lg:items-center">
+        <div className="mt-6 md:mt-12 grid sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-6 lg:gap-3 xl:gap-6 lg:items-center">
           {/* Card */}
           <div className="flex flex-col bg-white border border-gray-200 text-center rounded   overflow-hidden">
             <div className="relative w-full h-full">
@@ -134,6 +134,7 @@ function Compare() {
                 width="0"
                 height="0"
                 sizes="100vw"
+                quality={100}
                 className="w-full h-auto shadow"
               />
             </div>
@@ -158,7 +159,7 @@ function Compare() {
                     className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
                   />
 
-                  <span className=" ">Highest Possible Resemblance</span>
+                  <span className=" ">Highest Resemblance</span>
                 </li>
                 <li className="flex space-x-2">
                   <HiCheckCircle

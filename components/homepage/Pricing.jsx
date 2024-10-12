@@ -1,4 +1,4 @@
-import { HiCheck, HiCheckBadge, HiCheckCircle } from "react-icons/hi2";
+import { HiCheckCircle } from "react-icons/hi2";
 import ToolTip from "@/components/homepage/ToolTip";
 import Link from "next/link";
 import Heading, { SubHeading } from "../ui/Heading";
@@ -26,7 +26,7 @@ function Pricing() {
         {/* End Title */}
 
         {/* Grid */}
-        <div className="mt-6 md:mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-3 xl:gap-6 lg:items-center">
+        <div className="mt-6 md:mt-12 grid sm:grid-cols-2 lg:grid-cols-2 min-[1170px]:grid-cols-4 gap-3 md:gap-6 lg:gap-3 xl:gap-6 lg:items-center">
           {/* Card */}
           <div className="flex flex-col bg-white border border-gray-200 text-center rounded p-4 md:p-8  ">
             <h4 className={"font-medium text-lg " + figtree.className}>
@@ -113,14 +113,6 @@ function Pricing() {
                   </ToolTip>
                 </span>
               </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>Customized AI Prompts</span>
-              </li>
             </ul>
             <Link
               className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-blue-600 text-blue-600 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:pointer-events-none       "
@@ -131,12 +123,7 @@ function Pricing() {
           </div>
           {/* End Card */}
           {/* Card */}
-          <div className="flex flex-col bg-white border-2 border-blue-600 text-center shadow-xl rounded p-4 md:p-8  ">
-            <p className="mb-3">
-              <span className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded text-xs uppercase font-semibold bg-blue-100 text-blue-600  ">
-                Most popular
-              </span>
-            </p>
+          <div className="flex flex-col bg-white border border-gray-200 text-center rounded p-4 md:p-8">
             <h4 className={"font-medium text-lg " + figtree.className}>
               Standard
             </h4>
@@ -221,14 +208,6 @@ function Pricing() {
                   </ToolTip>
                 </span>
               </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>Customized AI Prompts</span>
-              </li>
             </ul>
             <Link
               className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none   "
@@ -239,7 +218,12 @@ function Pricing() {
           </div>
           {/* End Card */}
           {/* Card */}
-          <div className="flex flex-col bg-white border border-gray-200 text-center rounded p-4 md:p-8  ">
+          <div className="flex flex-col bg-white border-2 border-blue-600 text-center shadow-xl rounded p-4 md:p-8">
+            <p className="mb-3">
+              <span className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded text-xs uppercase font-semibold bg-blue-100 text-blue-600  ">
+                Most popular
+              </span>
+            </p>
             <h4 className={"font-medium text-lg " + figtree.className}>
               Premium
             </h4>
@@ -323,14 +307,6 @@ function Pricing() {
                     redo the studio.
                   </ToolTip>
                 </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>Customized AI Prompts</span>
               </li>
             </ul>
             <Link
@@ -424,14 +400,6 @@ function Pricing() {
                     redo the studio.
                   </ToolTip>
                 </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>Customized AI Prompts</span>
               </li>
             </ul>
             <Link

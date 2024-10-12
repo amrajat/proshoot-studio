@@ -98,7 +98,7 @@ function PhotographyCompare() {
                 </h3>
                 <div className="text-sm text-red-500 ">Expensive</div>
                 <span className="absolute top-0 end-0 rounded-se rounded-es text-xs font-medium bg-red-600 text-white py-1.5 px-3  ">
-                  Bad Choice
+                  Expensive Choice
                 </span>
                 <div className="mt-5">
                   <span className="text-6xl font-bold">$300</span>

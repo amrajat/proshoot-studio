@@ -36,14 +36,15 @@ export default function RootLayout({
       </body>
       <PrelineScript />
       <Script id="ls-affiliate">{`window.lemonSqueezyAffiliateConfig = { store: "proshoot" }`}</Script>
-      <Script id="ls-affiliate">{`window.dataLayer = window.dataLayer || [];
-                        function gtag(){dataLayer.push(arguments);}
-                        gtag('js', new Date());
-                        gtag('config', 'G-8XCVHBFX54');`}</Script>
+      <Script id="google-analytics">{`
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-8XCVHBFX54');`}</Script>
       <Script src="https://lmsqueezy.com/affiliate.js" defer></Script>
       <Script
+        async
         src="https://www.googletagmanager.com/gtag/js?id=G-8XCVHBFX54"
-        defer
       ></Script>
     </html>
   );

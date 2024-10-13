@@ -191,7 +191,6 @@ export default function Replicate() {
         throw new Error("Submission failed!");
       }
       const result = await response.json();
-      console.log(result);
       setStudioMessage(result.message);
       router.push("/dashboard/studio/" + result.studioId);
     } catch (error) {

@@ -668,8 +668,8 @@ export const STUDIO_NAME_SELECTOR = [
 
 export const formSchema = z.object({
   plan: z.enum(["Basic", "Standard", "Premium", "Pro"]),
-  gender: z.string().min(3, { message: "Please select your gender." }), // Adjust based on your GENDERS data
-  profession: z.string().min(3, { message: "Please select your profession." }), // Adjust based on your PROFESSIONS data
+  gender: z.string().min(3, { message: "Please select your gender." }),
+  // profession: z.string().min(3, { message: "Please select your profession." }),
   age: z.string().min(1, { message: "Please select your age range." }),
   ethnicity: z.string().min(1, { message: "Please select your ethnicity." }),
   hairStyle: z.string().min(1, { message: "Please select your hair style." }),
@@ -677,15 +677,15 @@ export const formSchema = z.object({
   grooming: z
     .string()
     .min(1, { message: "Please select your grooming style." }),
-  clothing: z.string().nullable().optional(),
-  gazeDirection: z.string().nullable().optional(),
-  expression: z.string().nullable().optional(),
-  background: z.string().nullable().optional(),
-  lighting: z.string().nullable().optional(),
-  cameraType: z.string().nullable().optional(),
-  lensType: z.string().nullable().optional(),
-  aperture: z.string().nullable().optional(),
+  // clothing: z.string().nullable().optional(),
+  // gazeDirection: z.string().nullable().optional(),
+  // expression: z.string().nullable().optional(),
+  // background: z.string().nullable().optional(),
+  // lighting: z.string().nullable().optional(),
+  // cameraType: z.string().nullable().optional(),
+  // lensType: z.string().nullable().optional(),
+  // aperture: z.string().nullable().optional(),
   images: z.string().url({ message: "Please upload images." }), // Since you're uploading a zip, validate the signed URL string
-  imageQualityType: z.string().min(1, "Please select image generation mode."),
+  // imageQualityType: z.string().min(1, "Please select image generation mode."),
   studioName: z.string().min(1, "Please enter your studio name."),
 });

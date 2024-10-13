@@ -87,11 +87,11 @@ export async function POST(request) {
           supabase,
           replicate
         );
-        await sendTrainingCompleteEmail(
-          eMailClient,
-          user_email,
-          trainingResponse.id
-        );
+        // await sendTrainingCompleteEmail(
+        //   eMailClient,
+        //   user_email,
+        //   trainingResponse.id
+        // );
         break;
 
       case "prediction":

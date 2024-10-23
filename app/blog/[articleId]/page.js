@@ -64,7 +64,7 @@ export default async function Article({ params }) {
             description: article.description,
             image: `https://${config.domainName}${article.image.urlRelative}`,
             datePublished: article.publishedAt,
-            dateModified: article.publishedAt,
+            dateModified: article.modifiedAt,
             author: {
               "@type": "Person",
               name: article.author.name,
@@ -116,7 +116,7 @@ export default async function Article({ params }) {
             </span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 md:mb-8">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 md:mb-8">
             {article.title}
           </h1>
 
@@ -129,7 +129,7 @@ export default async function Article({ params }) {
           {/* SIDEBAR WITH AUTHORS AND 3 RELATED ARTICLES */}
           <section className="max-md:pb-4 md:pl-12 max-md:border-b md:border-l md:order-last md:w-72 shrink-0 border-base-content/10">
             <p className="text-base-content/80 text-sm mb-2 md:mb-3">
-              Posted by
+              Written by
             </p>
             <Avatar article={article} />
 

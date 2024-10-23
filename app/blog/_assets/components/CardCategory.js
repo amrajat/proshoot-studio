@@ -6,7 +6,7 @@ const CardCategory = ({ category, tag = "h2" }) => {
 
   return (
     <Link
-      className="p-4 bg-base-200 text-base-content rounded-box duration-200 hover:bg-neutral hover:text-neutral-content"
+      className="p-2 bg-base-200 text-center text-base-content rounded-box duration-200 hover:bg-neutral hover:text-neutral-content border border-blue-600 rounded shadow-sm"
       href={`/blog/category/${category.slug}`}
       title={category.title}
       rel="tag"

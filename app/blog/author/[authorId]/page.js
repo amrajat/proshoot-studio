@@ -46,7 +46,7 @@ export default async function Author({ params }) {
             className="rounded-box w-[12rem] md:w-[16rem] "
           />
 
-          {author.socials?.length > 0 && (
+          {/* {author.socials?.length > 0 && (
             <div className="flex flex-col md:flex-row gap-4">
               {author.socials.map((social) => (
                 <a
@@ -61,7 +61,7 @@ export default async function Author({ params }) {
                 </a>
               ))}
             </div>
-          )}
+          )} */}
         </div>
       </section>
 

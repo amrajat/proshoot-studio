@@ -21,7 +21,7 @@ const CardArticle = ({
           title={article.title}
           rel="bookmark"
         >
-          <figure>
+          <figure className="rounded overflow-hidden">
             <Image
               src={article.image.src}
               alt={article.image.alt}
@@ -34,7 +34,7 @@ const CardArticle = ({
           </figure>
         </Link>
       )}
-      <div className="card-body">
+      <div className="card-body mt-2">
         {/* CATEGORIES */}
         {showCategory && (
           <div className="flex flex-wrap gap-2">

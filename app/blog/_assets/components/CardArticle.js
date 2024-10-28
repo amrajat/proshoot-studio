@@ -68,6 +68,7 @@ const CardArticle = ({
               {new Date(article.publishedAt).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
+                year: "numeric",
               })}
             </span>
           </div>

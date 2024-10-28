@@ -108,6 +108,16 @@ export default async function Article({ params }) {
               />
             ))}
             <span className="text-base-content/80" itemProp="datePublished">
+              Published:{" "}
+              {new Date(article.publishedAt).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+
+            <span className="text-base-content/80" itemProp="datePublished">
+              Last Updated:{" "}
               {new Date(article.publishedAt).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",

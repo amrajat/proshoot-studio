@@ -5,10 +5,8 @@ import config from "@/config";
 import { getSEOTags } from "@/lib/seo";
 
 export const metadata = getSEOTags({
-  title: `${config.appName} Blog | Best AI Headshots.`,
+  title: `${config.appName} Blog | Best AI Headshot Generator.`,
   description:
-    // learn about AI, ai headshots, building softwares and online personal brand.
-
     "Learn how to utilize artificial inteligence for your business needs to grow faster in your career. We also share information about ai headshots.",
   canonicalUrlRelative: "/blog",
 });

@@ -96,7 +96,7 @@ export async function POST(request) {
 
       case "prediction":
         const { output: images } = await JSON.parse(body);
-        if (!output) break; // In case of error in prediction.
+        if (!images) break; // In case of error in prediction.
         await handleImages(images, supabase, user_id, training_id);
         break;
 

@@ -6,8 +6,10 @@ import Pricing from "@/components/homepage/Pricing";
 import HowItWorks from "@/components/homepage/HowItWorks";
 import UseCases from "@/components/homepage/UseCases";
 import Comparison from "@/components/homepage/Comparison";
-import Footer from "@/components/homepage/Footer";
 import FAQs from "@/components/homepage/FAQs";
+import TestimonialsCarousel from "@/components/homepage/TestimonialsCarousel";
+
+import Footer from "@/components/homepage/Footer";
 import Testimonials from "@/components/homepage/Testimonials";
 // import HeroParallax from "@/components/homepage/Hero";
 // import HowItWorks from "@/components/homepage/HowItWorks";
@@ -30,14 +32,15 @@ export default function Home() {
         <HowItWorks />
         <UseCases />
         <Comparison />
+        <TestimonialsCarousel />
+        <FAQs />
         {/* <Detailed /> */}
         {/* <Compare /> */}
         {/* <Testimonials /> */}
         {/* <MediaPublications /> */}
         {/* <CardSlider /> */}
-        {/* <FAQs /> */}
       </main>
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 }

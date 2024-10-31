@@ -3,6 +3,7 @@ import Hero from "@/components/homepage/Hero";
 import Reviews from "@/components/homepage/Reviews";
 import Features from "@/components/homepage/Features";
 import Pricing from "@/components/homepage/Pricing";
+import HowItWorks from "@/components/homepage/HowItWorks";
 import Footer from "@/components/homepage/Footer";
 import FAQs from "@/components/homepage/FAQs";
 import Testimonials from "@/components/homepage/Testimonials";
@@ -27,7 +28,7 @@ export default function Home() {
         {/* <Detailed /> */}
         {/* <Compare /> */}
         {/* <Testimonials /> */}
-        {/* <HowItWorks /> */}
+        <HowItWorks />
         {/* <MediaPublications /> */}
         {/* <CardSlider /> */}
         {/* <FAQs /> */}

@@ -99,7 +99,7 @@ export const Header = () => {
         The Most Realistic AI Headshot Generator with Highest Resemble.
       </h1>
 
-      <Heading type="h1" cls="font-semibold text-white">
+      <Heading type="h2" cls="font-semibold text-white">
         Get Realistic AI Headshots
       </Heading>
 

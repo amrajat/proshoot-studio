@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@headlessui/react": "^2.1.10",
     "@hookform/resolvers": "^3.3.4",
     "@lemonsqueezy/lemonsqueezy.js": "^3.0.0",
     "@sentry/nextjs": "^8.25.0",

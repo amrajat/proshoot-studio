@@ -11,7 +11,7 @@ import Testimonials from "@/components/homepage/Testimonials";
 import Detailed from "@/components/homepage/Detailed";
 import Compare from "@/components/homepage/Compare";
 import MediaPublications from "@/components/homepage/MediaPublications";
-import PhotographyCompare from "@/components/homepage/PhotographyCompare";
+import PhotographyCompared from "@/components/homepage/PhotographyCompared";
 import CardSlider from "@/components/homepage/CardSlider";
 
 export default function Home() {
@@ -22,7 +22,7 @@ export default function Home() {
         <Hero />
         <Reviews />
         <Features />
-        {/* <PhotographyCompare /> */}
+        <PhotographyCompared />
         {/* <Detailed /> */}
         {/* <Compare /> */}
         {/* <Testimonials /> */}

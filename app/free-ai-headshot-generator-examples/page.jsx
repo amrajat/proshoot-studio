@@ -1,4 +1,4 @@
-import Header from "@/components/homepage/Header";
+import Header from "@/components/layout/Header";
 import Footer from "@/components/homepage/Footer";
 import Container from "../../components/dashboard/Container";
 import Image from "next/image";

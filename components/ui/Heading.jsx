@@ -1,4 +1,4 @@
-import { figtree } from "@/lib/utils";
+// import { figtree } from "@/lib/utils";
 
 function Heading({ children, type = "h2", cls = "" }) {
   const Tag = ["h1", "h2", "h3", "h4"].includes(type) ? type : "h2";
@@ -12,7 +12,7 @@ function Heading({ children, type = "h2", cls = "" }) {
 
   return (
     <Tag
-      className={`${Style[type]} tracking-tight font-medium text-[#1D1F1E] drop-shadow-sm ${figtree.className} ${cls}`}
+    // className={`${Style[type]} tracking-tight font-medium text-[#1D1F1E] drop-shadow-sm ${figtree.className} ${cls}`}
     >
       {children}
     </Tag>

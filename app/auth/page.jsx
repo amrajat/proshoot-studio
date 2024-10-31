@@ -1,4 +1,4 @@
-import Header from "@/components/homepage/Header";
+import Header from "@/components/layout/Header";
 import Logo from "@/components/homepage/Logo";
 import AuthForm from "@/components/auth/AuthForm";
 import OAuth from "@/components/auth/OAuth";

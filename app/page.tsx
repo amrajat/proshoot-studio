@@ -1,9 +1,9 @@
-import Header from "@/components/homepage/Header";
+import Header from "@/components/layout/Header";
 import Footer from "@/components/homepage/Footer";
 import FAQs from "@/components/homepage/FAQs";
 import Pricing from "@/components/homepage/Pricing";
 import Testimonials from "@/components/homepage/Testimonials";
-import HeroParallax from "@/components/homepage/Hero";
+// import HeroParallax from "@/components/homepage/Hero";
 // import HowItWorks from "@/components/homepage/HowItWorks";
 import Detailed from "@/components/homepage/Detailed";
 import Compare from "@/components/homepage/Compare";
@@ -16,18 +16,18 @@ export default function Home() {
     <>
       <main id="content" role="main">
         <Header />
-        <HeroParallax />
-        <PhotographyCompare />
-        <Detailed />
-        <Compare />
-        <Testimonials />
-        <Pricing />
+        {/* <HeroParallax /> */}
+        {/* <PhotographyCompare /> */}
+        {/* <Detailed /> */}
+        {/* <Compare /> */}
+        {/* <Testimonials /> */}
+        {/* <Pricing /> */}
         {/* <HowItWorks /> */}
-        <MediaPublications />
-        <CardSlider />
-        <FAQs />
+        {/* <MediaPublications /> */}
+        {/* <CardSlider /> */}
+        {/* <FAQs /> */}
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

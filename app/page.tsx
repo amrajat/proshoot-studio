@@ -1,6 +1,7 @@
 import Header from "@/components/layout/Header";
 import Hero from "@/components/homepage/Hero";
 import Reviews from "@/components/homepage/Reviews";
+import Features from "@/components/homepage/Features";
 import Footer from "@/components/homepage/Footer";
 import FAQs from "@/components/homepage/FAQs";
 import Pricing from "@/components/homepage/Pricing";
@@ -20,6 +21,7 @@ export default function Home() {
         <Header />
         <Hero />
         <Reviews />
+        <Features />
         {/* <PhotographyCompare /> */}
         {/* <Detailed /> */}
         {/* <Compare /> */}

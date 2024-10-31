@@ -1,420 +1,180 @@
-import { HiCheckCircle } from "react-icons/hi2";
-import ToolTip from "@/components/homepage/ToolTip";
-import Link from "next/link";
-import Heading, { SubHeading } from "../ui/Heading";
-import BgGradient from "./BgGradient";
-import { figtree } from "@/lib/utils";
+"use client";
+import { useState } from "react";
+import { Check, CheckCircle2, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import SectionParaHeading from "@/components/shared/section-para-heading";
+import Tooltip from "@/components/shared/tooltip";
 
-function Pricing() {
+const pricingPlans = [
+  {
+    name: "Basic",
+    price: 29,
+    description: "Perfect for individuals starting their online presence",
+    features: [
+      "40 AI-generated Headshots",
+      "10 Unique Clothing Options",
+      "10 Unique Backgrounds",
+      "Ready within 2 Hours",
+      "Money Back Guarantee",
+      "1 Studio Redo",
+    ],
+  },
+  {
+    name: "Standard",
+    price: 39,
+    description: "Ideal for professionals seeking variety",
+    features: [
+      "60 AI-generated Headshots",
+      "15 Unique Clothing Options",
+      "15 Unique Backgrounds",
+      "Ready within 2 Hours",
+      "Money Back Guarantee",
+      "1 Studio Redo",
+      "Priority Support",
+    ],
+  },
+  {
+    name: "Premium",
+    price: 49,
+    description: "Best value for growing online presence",
+    features: [
+      "80 AI-generated Headshots",
+      "20 Unique Clothing Options",
+      "20 Unique Backgrounds",
+      "Ready within 2 Hours",
+      "Money Back Guarantee",
+      "2 Studio Redos",
+      "Priority Support",
+      "Personal Branding Consultation",
+    ],
+    popular: true,
+  },
+  {
+    name: "Pro",
+    price: 59,
+    description: "Ultimate package for seasoned professionals",
+    features: [
+      "100 AI-generated Headshots",
+      "25 Unique Clothing Options",
+      "25 Unique Backgrounds",
+      "Ready within 1 Hour",
+      "Money Back Guarantee",
+      "3 Studio Redos",
+      "VIP Support",
+      "Personal Branding Consultation",
+      "Social Media Kit",
+    ],
+  },
+];
+
+export default function Pricing() {
+  const [isAnnual, setIsAnnual] = useState(false);
+
   return (
-    <div id="pricing" className="relative overflow-hidden">
-      {/* Gradients */}
-      <BgGradient />
-      {/* End Gradients */}
-      <div className="max-w-[85rem] px-4 py-12 sm:px-6 lg:px-8 lg:pt-16 lg:pb-28 mx-auto">
-        {/* Title */}
-        <div className="mx-auto text-center mb-10">
-          <Heading>Simple Pricing</Heading>
-          {/* <p className="mt-2 lg:text-lg text-gray-800 "> */}
-          {/* inline-block text-sm font-medium bg-clip-text bg-gradient-to-l from-blue-600 to-violet-500 text-transparent   */}
-          <SubHeading>
-            No recurring payments or hidden charges. You have complete ownership
-            and commercial rights to your images, allowing you to use them
-            freely without any restrictions.
-          </SubHeading>
-        </div>
-        {/* End Title */}
+    // <section className="py-16 px-4 bg-background">
+    <section className="relative bg-gradient-to-b from-secondary to-background py-16 sm:py-24">
+      <div className="container mx-auto">
+        <SectionParaHeading
+          badgeText={"One time fee"}
+          title={"Simple, Transparent Pricing"}
+        >
+          Choose the perfect plan for your needs. No hidden fees, no recurring
+          charges. You own your AI-generated headshots with full commercial
+          rights.
+        </SectionParaHeading>
 
-        {/* Grid */}
+        <div className="flex justify-center items-center space-x-4 mb-8">
+          <span
+            className={`text-sm font-medium ${
+              !isAnnual ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            Individuals
+          </span>
+          <Switch checked={isAnnual} onCheckedChange={setIsAnnual} />
+          <span
+            className={`text-sm font-medium ${
+              isAnnual ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            Teams{" "}
+            {/* {
+              <Badge variant="outline" className="ml-2">
+                {isAnnual && "minimum team of 10 people."}
+              </Badge>
+            } */}
+          </span>
+        </div>
+
         <div className="mt-6 md:mt-12 grid sm:grid-cols-2 lg:grid-cols-2 min-[1170px]:grid-cols-4 gap-3 md:gap-6 lg:gap-3 xl:gap-6 lg:items-center">
-          {/* Card */}
-          <div className="flex flex-col bg-white border border-gray-200 text-center rounded p-4 md:p-8  ">
-            <h4 className={"font-medium text-lg " + figtree.className}>
-              Basic
-            </h4>
-            <span className="mt-7 font-bold text-3xl md:text-4xl xl:text-5xl text-gray-800 ">
-              $29
-            </span>
-            <p className="mt-2 text-sm text-gray-500">
-              Works well if you&apos;re on a tight budget.
-            </p>
-            <ul className="mt-7 space-y-2.5 text-sm">
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-
-                <span>40 Headshots</span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>10 Unique Clothing</span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>10 Unique Backgrounds</span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  Ready within 2 Hours.
-                  <ToolTip>This depends on the input images.</ToolTip>
-                </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  Money Back Guarantee
-                  <ToolTip>Subject to our Refund Policy.</ToolTip>
-                </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  Consists 1 Studio
-                  <ToolTip>
-                    Each studio generates images for one single person.
-                  </ToolTip>
-                </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  1 Studio Redo
-                  <ToolTip>
-                    If you&apos;re not satisfied with results. You can always
-                    redo the studio.
-                  </ToolTip>
-                </span>
-              </li>
-            </ul>
-            <Link
-              className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-blue-600 text-blue-600 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:pointer-events-none       "
-              href="/auth"
+          {pricingPlans.map((plan) => (
+            <Card
+              key={plan.name}
+              className={`flex flex-col text-center ${
+                plan.popular ? "border-2 border-primary shadow-lg" : ""
+              }`}
             >
-              Get started
-            </Link>
-          </div>
-          {/* End Card */}
-          {/* Card */}
-          <div className="flex flex-col bg-white border border-gray-200 text-center rounded p-4 md:p-8">
-            <h4 className={"font-medium text-lg " + figtree.className}>
-              Standard
-            </h4>
-            <span className="mt-5 font-bold text-3xl md:text-4xl xl:text-5xl text-gray-800 ">
-              $39
-            </span>
-            <p className="mt-2 text-sm text-gray-500">
-              Get started with our most loved plan.
-            </p>
-            <ul className="mt-7 space-y-2.5 text-sm">
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-
-                <span>60 Headshots</span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>15 Unique Clothing</span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>15 Unique Backgrounds</span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  Ready within 2 Hours.
-                  <ToolTip>This depends on the input images.</ToolTip>
-                </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  Money Back Guarantee
-                  <ToolTip>Subject to our Refund Policy.</ToolTip>
-                </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  Consists 1 Studio
-                  <ToolTip>
-                    Each studio generates images for one single person.
-                  </ToolTip>
-                </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  1 Studio Redo
-                  <ToolTip>
-                    If you&apos;re not satisfied with results. You can always
-                    redo the studio.
-                  </ToolTip>
-                </span>
-              </li>
-            </ul>
-            <Link
-              className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none   "
-              href="/auth"
-            >
-              Get started
-            </Link>
-          </div>
-          {/* End Card */}
-          {/* Card */}
-          <div className="flex flex-col bg-white border-2 border-blue-600 text-center shadow-xl rounded p-4 md:p-8">
-            <p className="mb-3">
-              <span className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded text-xs uppercase font-semibold bg-blue-100 text-blue-600  ">
-                Most popular
-              </span>
-            </p>
-            <h4 className={"font-medium text-lg " + figtree.className}>
-              Premium
-            </h4>
-            <span className="mt-5 font-bold text-3xl md:text-4xl xl:text-5xl text-gray-800 ">
-              $49
-            </span>
-            <p className="mt-2 text-sm text-gray-500">
-              Everything you need for a growing internet presence.
-            </p>
-            <ul className="mt-7 space-y-2.5 text-sm">
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-
-                <span>80 Headshots</span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>20 Unique Clothing</span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>20 Unique Backgrounds</span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  Ready within 2 Hours.
-                  <ToolTip>This depends on the input images.</ToolTip>
-                </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  Money Back Guarantee
-                  <ToolTip>Subject to our Refund Policy.</ToolTip>
-                </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  Consists 1 Studio
-                  <ToolTip>
-                    Each studio generates images for one single person.
-                  </ToolTip>
-                </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  1 Studio Redo
-                  <ToolTip>
-                    If you&apos;re not satisfied with results. You can always
-                    redo the studio.
-                  </ToolTip>
-                </span>
-              </li>
-            </ul>
-            <Link
-              className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-blue-600 text-blue-600 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:pointer-events-none       "
-              href="/auth"
-            >
-              Get started
-            </Link>
-          </div>
-          {/* End Card */}
-          {/* Card */}
-          <div className="flex flex-col bg-white border border-gray-200 text-center rounded p-4 md:p-8  ">
-            <h4 className={"font-medium text-lg " + figtree.className}>Pro</h4>
-            <span className="mt-5 font-bold text-3xl md:text-4xl xl:text-5xl text-gray-800 ">
-              $59
-            </span>
-            <p className="mt-2 text-sm text-gray-500">
-              Step into Professionalism with Confidence
-            </p>
-            <ul className="mt-7 space-y-2.5 text-sm">
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-
-                <span>100 Headshots</span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>25 Unique Clothing</span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>25 Unique Backgrounds</span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  Ready within 2 Hours.
-                  <ToolTip>This depends on the input images.</ToolTip>
-                </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  Money Back Guarantee
-                  <ToolTip>Subject to our Refund Policy.</ToolTip>
-                </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  Consists 1 Studio
-                  <ToolTip>
-                    Each studio generates images for one single person.
-                  </ToolTip>
-                </span>
-              </li>
-              <li className="flex space-x-2">
-                <HiCheckCircle
-                  width={24}
-                  height={24}
-                  className="flex-shrink-0 mt-0.5 h-4 w-4 text-blue-600"
-                />
-                <span>
-                  1 Studio Redo
-                  <ToolTip>
-                    If you&apos;re not satisfied with results. You can always
-                    redo the studio.
-                  </ToolTip>
-                </span>
-              </li>
-            </ul>
-            <Link
-              className="mt-5 py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-blue-600 text-blue-600 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:pointer-events-none       "
-              href="/auth"
-            >
-              Get started
-            </Link>
-          </div>
-          {/* End Card */}
+              <CardHeader>
+                {plan.popular && (
+                  <Badge className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded text-xs uppercase font-semibold w-auto self-center">
+                    Most Popular
+                  </Badge>
+                )}
+                <CardTitle className="text-lg mb-4">{plan.name}</CardTitle>
+                <div className="font-bold text-3xl md:text-4xl xl:text-5xl">
+                  ${isAnnual ? (plan.price * 1 * 0.5).toFixed(0) : plan.price}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {isAnnual ? "/person" : "/session"}
+                  </span>
+                </div>
+                <CardDescription className="text-accent-foreground">
+                  {plan.description}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow text-sm">
+                <ul className="space-y-2">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center space-x-2">
+                      <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-primary mr-2" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  className="w-full border-primary"
+                  variant={plan.popular ? "default" : "outline"}
+                >
+                  {isAnnual ? "Contact Us" : "Get Started"}
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
-        {/* End Grid */}
+
+        <div className="mt-12 text-center">
+          <h3 className="text-2xl font-bold leading-tight tracking-tighter md:text-3xl lg:leading-[1.1] text-center mb-4">
+            100% Satisfaction Guaranteed
+          </h3>
+          <p className="font-light text-foreground max-w-2xl mx-auto">
+            We're confident you'll love your AI-generated headshots. If you're
+            not completely satisfied, we offer a 30-day money-back guarantee. No
+            questions asked.{" "}
+            <Tooltip content="Read our refund policy better understanding and more transparency." />
+          </p>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
-
-export default Pricing;

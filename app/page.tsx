@@ -2,9 +2,9 @@ import Header from "@/components/layout/Header";
 import Hero from "@/components/homepage/Hero";
 import Reviews from "@/components/homepage/Reviews";
 import Features from "@/components/homepage/Features";
+import Pricing from "@/components/homepage/Pricing";
 import Footer from "@/components/homepage/Footer";
 import FAQs from "@/components/homepage/FAQs";
-import Pricing from "@/components/homepage/Pricing";
 import Testimonials from "@/components/homepage/Testimonials";
 // import HeroParallax from "@/components/homepage/Hero";
 // import HowItWorks from "@/components/homepage/HowItWorks";
@@ -23,10 +23,10 @@ export default function Home() {
         <Reviews />
         <Features />
         <PhotographyCompared />
+        <Pricing />
         {/* <Detailed /> */}
         {/* <Compare /> */}
         {/* <Testimonials /> */}
-        {/* <Pricing /> */}
         {/* <HowItWorks /> */}
         {/* <MediaPublications /> */}
         {/* <CardSlider /> */}

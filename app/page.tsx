@@ -1,4 +1,5 @@
 import Header from "@/components/layout/Header";
+import Hero from "@/components/homepage/Hero";
 import Footer from "@/components/homepage/Footer";
 import FAQs from "@/components/homepage/FAQs";
 import Pricing from "@/components/homepage/Pricing";
@@ -16,6 +17,7 @@ export default function Home() {
     <>
       <main id="content" role="main">
         <Header />
+        <Hero />
         {/* <HeroParallax /> */}
         {/* <PhotographyCompare /> */}
         {/* <Detailed /> */}

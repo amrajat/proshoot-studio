@@ -4,6 +4,8 @@ import Reviews from "@/components/homepage/Reviews";
 import Features from "@/components/homepage/Features";
 import Pricing from "@/components/homepage/Pricing";
 import HowItWorks from "@/components/homepage/HowItWorks";
+import UseCases from "@/components/homepage/UseCases";
+import Comparison from "@/components/homepage/Comparison";
 import Footer from "@/components/homepage/Footer";
 import FAQs from "@/components/homepage/FAQs";
 import Testimonials from "@/components/homepage/Testimonials";
@@ -25,10 +27,12 @@ export default function Home() {
         <Features />
         <PhotographyCompared />
         <Pricing />
+        <HowItWorks />
+        <UseCases />
+        <Comparison />
         {/* <Detailed /> */}
         {/* <Compare /> */}
         {/* <Testimonials /> */}
-        <HowItWorks />
         {/* <MediaPublications /> */}
         {/* <CardSlider /> */}
         {/* <FAQs /> */}

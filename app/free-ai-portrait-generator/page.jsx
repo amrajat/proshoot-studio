@@ -1,7 +1,7 @@
-import Heading from "../../components/ui/Heading";
+import Heading from "@/components/shared/Heading";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/homepage/Footer";
-import Container from "../../components/dashboard/Container";
+import Container from "@/components/dashboard/Container";
 import Link from "next/link";
 
 export const metadata = {
@@ -14,14 +14,13 @@ function FreeHeadshot() {
   return (
     <>
       <Header />
-      {/* Blog Article */}
 
       <Container>
-        {/* Content */}
         <div className="space-y-5 md:space-y-8">
-          {/* <div className="space-y-3"> */}
-          <Heading type="h3">Free Headshot Generator</Heading>
-          <p className="text-lg text-gray-800  pb-[4.5rem]">
+          <Heading as="h3" variant={"hero"}>
+            Free Headshot Generator
+          </Heading>
+          <p className="text-lg  pb-[4.5rem]">
             If you fall under these special categores of NGOs, Education,
             Influencer, Reviewer SaaS/AI/Other. Please email us at
             support@proshoot.co or visit our&nbsp;
@@ -31,11 +30,8 @@ function FreeHeadshot() {
             &nbsp; and we&apos;ll arrange AI studio for free/or at discounted
             price to generate free ai headshots.
           </p>
-          {/* </div> */}
         </div>
-        {/* End Content */}
       </Container>
-      {/* End Blog Article */}
       <Footer />
     </>
   );

@@ -4,7 +4,7 @@ import Error from "@/components/Error";
 import { getCredits, getPurchaseHistory } from "@/lib/supabase/actions/server";
 import ShowLocalTimeStamp from "@/components/dashboard/ShowLocalTimeStamp";
 
-import Heading from "@/components/ui/Heading";
+import Heading from "@/components/shared/Heading";
 import { figtree } from "@/lib/utils";
 import BuyStudio from "../studio/buy/page";
 

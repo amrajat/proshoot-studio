@@ -1,21 +1,16 @@
 import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
 
-// This is the category card that appears in the home page and in the category page
-const CardCategory = ({ category, tag = "h2" }) => {
-  const TitleTag = tag;
-
+export default function CardCategory({ category }) {
   return (
-    <Link
-      className="p-2 bg-base-200 text-center text-base-content rounded-box duration-200 hover:bg-neutral hover:text-neutral-content border border-blue-600 rounded shadow-sm"
-      href={`/blog/category/${category.slug}`}
-      title={category.title}
-      rel="tag"
-    >
-      <TitleTag className="md:text-lg font-medium">
-        {category?.titleShort || category.title}
-      </TitleTag>
+    <Link href={`/blog/category/${category.slug}`}>
+      <Card className="transition-all hover:shadow-md">
+        <CardContent className="flex items-center justify-center p-4 h-full">
+          <h3 className="text-lg font-medium text-center">
+            {category.titleShort || category.title}
+          </h3>
+        </CardContent>
+      </Card>
     </Link>
   );
-};
-
-export default CardCategory;
+}

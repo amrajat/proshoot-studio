@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { HiCheck } from "react-icons/hi2";
-import Heading from "@/components/ui/Heading";
+import Heading from "@/components/shared/Heading";
 export default function EthnicitySelector({
   isPending,
   register,

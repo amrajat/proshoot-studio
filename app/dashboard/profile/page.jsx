@@ -3,7 +3,7 @@ import { getCurrentSession } from "@/lib/supabase/actions/server";
 import ProfileUpdateForm from "@/components/dashboard/profile/ProfileUpdateForm";
 import Spinner from "@/components/homepage/Spinner";
 import Container from "@/components/dashboard/Container";
-import Heading from "@/components/ui/Heading";
+import Heading from "@/components/shared/Heading";
 
 async function Profile() {
   const { session } = await getCurrentSession();

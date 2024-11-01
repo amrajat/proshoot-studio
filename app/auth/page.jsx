@@ -2,7 +2,7 @@ import Header from "@/components/layout/Header";
 import Logo from "@/components/homepage/Logo";
 import AuthForm from "@/components/auth/AuthForm";
 import OAuth from "@/components/auth/OAuth";
-import Heading from "@/components/ui/Heading";
+import Heading from "@/components/shared/Heading";
 import Image from "next/image";
 import { cookies } from "next/headers";
 

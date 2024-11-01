@@ -1,39 +1,55 @@
+import { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import Script from "next/script";
+import { ChevronLeft } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { articles } from "../_assets/content";
-import BadgeCategory from "../_assets/components/BadgeCategory";
-import Avatar from "../_assets/components/Avatar";
-import { getSEOTags } from "@/lib/seo";
 import config from "@/config";
 
 export async function generateMetadata({ params }) {
   const article = articles.find((article) => article.slug === params.articleId);
 
-  return getSEOTags({
+  if (!article) {
+    return {};
+  }
+
+  return {
     title: article.title,
     description: article.description,
-    canonicalUrlRelative: `/blog/${article.slug}`,
-    extraTags: {
-      openGraph: {
-        title: article.title,
-        description: article.description,
-        url: `/blog/${article.slug}`,
-        images: [
-          {
-            url: article.image.urlRelative,
-            width: 1200,
-            height: 660,
-          },
-        ],
-        locale: "en_US",
-        type: "website",
-      },
+    openGraph: {
+      title: article.title,
+      description: article.description,
+      url: `${config.baseUrl}/blog/${article.slug}`,
+      siteName: config.appName,
+      images: [
+        {
+          url: `${config.baseUrl}${article.image.urlRelative}`,
+          width: 1200,
+          height: 630,
+        },
+      ],
+      locale: "en_US",
+      type: "article",
     },
-  });
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: article.description,
+      images: [`${config.baseUrl}${article.image.urlRelative}`],
+    },
+  };
 }
 
-export default async function Article({ params }) {
+export default function ArticlePage({ params }) {
   const article = articles.find((article) => article.slug === params.articleId);
+
+  if (!article) {
+    return <div>Article not found</div>;
+  }
+
   const articlesRelated = articles
     .filter(
       (a) =>
@@ -42,27 +58,125 @@ export default async function Article({ params }) {
           article.categories.map((c) => c.slug).includes(c.slug)
         )
     )
-    .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+    .sort(
+      (a, b) =>
+        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+    )
     .slice(0, 3);
 
   return (
-    <>
-      {/* SCHEMA JSON-LD MARKUP FOR GOOGLE */}
-      <Script
+    <div className="container mx-auto px-4 py-8">
+      <Link
+        href="/blog"
+        className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-8"
+      >
+        <ChevronLeft className="mr-2 h-4 w-4" />
+        Back to Blog
+      </Link>
+
+      <article className="max-w-3xl mx-auto">
+        <header className="mb-12">
+          <div className="flex flex-wrap gap-2 mb-4">
+            {article.categories.map((category) => (
+              <Badge key={category.slug} variant="secondary">
+                {category.title}
+              </Badge>
+            ))}
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight mb-4">
+            {article.title}
+          </h1>
+          <p className="text-xl text-muted-foreground mb-6">
+            {article.description}
+          </p>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <time dateTime={article.publishedAt}>
+              Published:{" "}
+              {new Date(article.publishedAt).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </time>
+            <time dateTime={article.modifiedAt}>
+              Updated:{" "}
+              {new Date(article.modifiedAt).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </time>
+          </div>
+        </header>
+
+        <Image
+          src={article.image.urlRelative}
+          alt={article.image.alt}
+          width={1200}
+          height={630}
+          className="rounded-lg mb-12"
+          priority
+        />
+
+        <div className="prose prose-lg max-w-none mb-12">{article.content}</div>
+
+        <footer className="border-t pt-8">
+          <div className="flex items-center gap-4 mb-8">
+            <Avatar className="h-12 w-12">
+              <AvatarImage
+                src={article.author.avatar}
+                alt={article.author.name}
+              />
+              <AvatarFallback>{article.author.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-semibold">{article.author.name}</p>
+              <p className="text-sm text-muted-foreground">
+                {article.author.bio}
+              </p>
+            </div>
+          </div>
+
+          {articlesRelated.length > 0 && (
+            <div>
+              <h2 className="text-2xl font-bold mb-4">Related Articles</h2>
+              <div className="grid gap-6 md:grid-cols-3">
+                {articlesRelated.map((relatedArticle) => (
+                  <Card key={relatedArticle.slug}>
+                    <CardContent className="p-4">
+                      <Link
+                        href={`/blog/${relatedArticle.slug}`}
+                        className="block"
+                      >
+                        <h3 className="font-semibold mb-2 hover:text-primary transition-colors">
+                          {relatedArticle.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {relatedArticle.description}
+                        </p>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+        </footer>
+      </article>
+
+      <script
         type="application/ld+json"
-        id={`json-ld-article-${article.slug}`}
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Article",
             mainEntityOfPage: {
               "@type": "WebPage",
-              "@id": `https://${config.domainName}/blog/${article.slug}`,
+              "@id": `${config.baseUrl}/blog/${article.slug}`,
             },
-            name: article.title,
             headline: article.title,
             description: article.description,
-            image: `https://${config.domainName}${article.image.urlRelative}`,
+            image: `${config.baseUrl}${article.image.urlRelative}`,
             datePublished: article.publishedAt,
             dateModified: article.modifiedAt,
             author: {
@@ -72,111 +186,6 @@ export default async function Article({ params }) {
           }),
         }}
       />
-
-      {/* GO BACK LINK */}
-      <div>
-        <Link
-          href="/blog"
-          className="link !no-underline text-base-content/80 hover:text-base-content inline-flex items-center gap-1"
-          title="Back to Blog"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            className="w-5 h-5"
-          >
-            <path
-              fillRule="evenodd"
-              d="M15 10a.75.75 0 01-.75.75H7.612l2.158 1.96a.75.75 0 11-1.04 1.08l-3.5-3.25a.75.75 0 010-1.08l3.5-3.25a.75.75 0 111.04 1.08L7.612 9.25h6.638A.75.75 0 0115 10z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Back to Blog
-        </Link>
-      </div>
-
-      <article>
-        {/* HEADER WITH CATEGORIES AND DATE AND TITLE */}
-        <section className="my-12 md:my-20 max-w-[800px]">
-          <div className="flex items-center gap-4 mb-6">
-            {article.categories.map((category) => (
-              <BadgeCategory
-                category={category}
-                key={category.slug}
-                extraStyle="!badge-lg"
-              />
-            ))}
-            <span className="text-base-content/80" itemProp="datePublished">
-              Published:{" "}
-              {new Date(article.publishedAt).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </span>
-
-            <span className="text-base-content/80" itemProp="datePublished">
-              Last Updated:{" "}
-              {new Date(article.publishedAt).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </span>
-          </div>
-
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 md:mb-8">
-            {article.title}
-          </h1>
-
-          <p className="text-base-content/80 md:text-lg max-w-[700px]">
-            {article.description}
-          </p>
-        </section>
-
-        <div className="flex flex-col md:flex-row">
-          {/* SIDEBAR WITH AUTHORS AND 3 RELATED ARTICLES */}
-          <section className="max-md:pb-4 md:pl-12 max-md:border-b md:border-l md:order-last md:w-72 shrink-0 border-base-content/10">
-            <p className="text-base-content/80 text-sm mb-2 md:mb-3">
-              Written by
-            </p>
-            <Avatar article={article} />
-
-            {articlesRelated.length > 0 && (
-              <div className="hidden md:block mt-12">
-                <p className=" text-base-content/80 text-sm  mb-2 md:mb-3">
-                  Related reading
-                </p>
-                <div className="space-y-2 md:space-y-5">
-                  {articlesRelated.map((article) => (
-                    <div className="" key={article.slug}>
-                      <p className="mb-0.5">
-                        <Link
-                          href={`/blog/${article.slug}`}
-                          className="link link-hover hover:link-primary font-medium"
-                          title={article.title}
-                          rel="bookmark"
-                        >
-                          {article.title}
-                        </Link>
-                      </p>
-                      <p className="text-base-content/80 max-w-full text-sm">
-                        {article.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* ARTICLE CONTENT */}
-          <section className="w-full max-md:pt-4 md:pr-20 space-y-12 md:space-y-20">
-            {article.content}
-          </section>
-        </div>
-      </article>
-    </>
+    </div>
   );
 }

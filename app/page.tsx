@@ -8,16 +8,12 @@ import UseCases from "@/components/homepage/UseCases";
 import Comparison from "@/components/homepage/Comparison";
 import FAQs from "@/components/homepage/FAQs";
 import TestimonialsCarousel from "@/components/homepage/TestimonialsCarousel";
-
-import Footer from "@/components/homepage/Footer";
-import Testimonials from "@/components/homepage/Testimonials";
-// import HeroParallax from "@/components/homepage/Hero";
-// import HowItWorks from "@/components/homepage/HowItWorks";
-import Detailed from "@/components/homepage/Detailed";
-import Compare from "@/components/homepage/Compare";
-import MediaPublications from "@/components/homepage/MediaPublications";
 import PhotographyCompared from "@/components/homepage/PhotographyCompared";
-import CardSlider from "@/components/homepage/CardSlider";
+import Footer from "@/components/homepage/Footer";
+// import Detailed from "@/components/homepage/Detailed";
+// import Compare from "@/components/homepage/Compare";
+// import MediaPublications from "@/components/homepage/MediaPublications";
+// import CardSlider from "@/components/homepage/CardSlider";
 
 export default function Home() {
   return (
@@ -34,11 +30,6 @@ export default function Home() {
         <Comparison />
         <TestimonialsCarousel />
         <FAQs />
-        {/* <Detailed /> */}
-        {/* <Compare /> */}
-        {/* <Testimonials /> */}
-        {/* <MediaPublications /> */}
-        {/* <CardSlider /> */}
       </main>
       <Footer />
     </>

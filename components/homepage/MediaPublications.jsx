@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Heading, { SubHeading } from "../ui/Heading";
+import Heading, { SubHeading } from "../shared/Heading";
 
 function MediaPublications() {
   return (

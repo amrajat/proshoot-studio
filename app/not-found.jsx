@@ -2,7 +2,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/homepage/Footer";
 import Container from "@/components/dashboard/Container";
 import Image from "next/image";
-import Heading from "@/components/ui/Heading";
+import Heading from "@/components/shared/Heading";
 
 export const metadata = {
   title: { absolute: "Not Found!" },

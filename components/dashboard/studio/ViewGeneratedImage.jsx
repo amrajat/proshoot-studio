@@ -1,76 +1,85 @@
 "use client";
-import { updateStudioDownloadStatus } from "@/lib/supabase/actions/server";
-import Image from "next/image";
 
-function ViewGeneratedImage({ image, tune_id, alreadyDownloaded }) {
+import { useState } from "react";
+import Image from "next/image";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Eye, Download } from "lucide-react";
+import { updateStudioDownloadStatus } from "@/lib/supabase/actions/server";
+
+function ViewGeneratedImage({
+  image,
+  tune_id,
+  alreadyDownloaded,
+  imageNumber,
+}) {
+  const [isLoading, setIsLoading] = useState(false);
+
   async function downloadImage() {
+    setIsLoading(true);
     try {
-      // Fetch the image data
       const response = await fetch(image);
       const blob = await response.blob();
-
-      // Create a URL for the blob
       const blobUrl = window.URL.createObjectURL(new Blob([blob]));
-
-      // Create a link element
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = "image.jpg"; // Set the filename for the downloaded image
-
-      // Append the link to the document body
+      link.download = `image-${imageNumber}.jpg`;
       document.body.appendChild(link);
-
-      // Trigger a click event on the link
       link.click();
-
-      // Remove the link and revoke the URL from memory
       document.body.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
       console.error("Error downloading image:", error);
     }
+    setIsLoading(false);
   }
+
   return (
-    <div className="group flex flex-col h-full bg-white border border-gray-200 shadow-sm   ">
-      <div className="h-auto w-full">
+    <Card className="overflow-hidden shadow-none rounded">
+      <CardContent className="p-0 relative">
+        <div className="absolute top-2 left-2 bg-background/80 text-foreground px-2 py-1 rounded-md text-sm font-semibold">
+          #{imageNumber}
+        </div>
         <Image
           src={image}
-          alt="ai generated image"
-          width={"393"}
-          height={"491"}
-          className="overflow-hidden w-auto"
-          quality={100}
-          // objectFit="contain"
-          // layout="fill"
+          alt={`AI generated image ${imageNumber}`}
+          width={400}
+          height={400}
+          className="w-full h-[300px] object-cover"
         />
-      </div>
-
-      <div className="mt-auto flex border-t border-gray-200 divide-x divide-gray-200  ">
-        <a
-          className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none       "
-          href={image}
-          target="_blank"
-        >
-          Preview
-        </a>
-        <a
-          className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none       "
-          href="#"
-        >
-          {!alreadyDownloaded ? (
-            <form
-              action={async () => {
-                await updateStudioDownloadStatus(tune_id);
-              }}
-            >
-              <button type="submit">Download</button>
-            </form>
-          ) : (
-            <button onClick={downloadImage}>Download</button>
-          )}
-        </a>
-      </div>
-    </div>
+      </CardContent>
+      <CardFooter className="grid grid-cols-2 gap-2 p-2">
+        <Button variant="outline" size="sm" className="w-full" asChild>
+          <a href={image} target="_blank" rel="noopener noreferrer">
+            <Eye className="mr-2 h-4 w-4" />
+            Preview
+          </a>
+        </Button>
+        {!alreadyDownloaded ? (
+          <form
+            className="w-full"
+            action={async () => {
+              await updateStudioDownloadStatus(tune_id);
+            }}
+          >
+            <Button type="submit" size="sm" className="w-full">
+              <Download className="mr-2 h-4 w-4" />
+              Download
+            </Button>
+          </form>
+        ) : (
+          <Button
+            onClick={downloadImage}
+            disabled={isLoading}
+            size="sm"
+            className="w-full"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {isLoading ? "Downloading..." : "Download"}
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 }
 

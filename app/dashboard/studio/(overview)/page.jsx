@@ -1,82 +1,124 @@
+import { Suspense } from "react";
 import {
   getCurrentSession,
   getPurchaseHistory,
   getStudios,
 } from "@/lib/supabase/actions/server";
-import Error from "@/components/Error";
-import CoverPage from "@/components/dashboard/CoverPage";
-
-import StudioCard from "@/components/dashboard/studio/StudioCard";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { HiPlus } from "react-icons/hi2";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import BuyStudio from "../buy/page";
+import StudioCard from "@/components/dashboard/studio/StudioCard";
 
-async function Studio() {
-  let studios;
-  let purchase_history;
+async function StudioContent() {
   try {
     const { session } = await getCurrentSession();
-    [{ purchase_history = [] } = {}] = await getPurchaseHistory();
+    const [{ purchase_history = [] } = {}] = await getPurchaseHistory();
+    const studios = await getStudios(session.user.id);
 
-    studios = await getStudios(session.user.id);
-  } catch (error) {
-    return <Error message="Something went wrong." />;
-  }
-  if (purchase_history.length < 1) {
-    return <BuyStudio />;
-  }
-  if (studios.length < 1) {
+    if (purchase_history.length < 1) {
+      return <BuyStudio />;
+    }
+
+    if (studios.length < 1) {
+      return (
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold tracking-tight">
+            No Headshots Found!
+          </h2>
+          <p className="text-muted-foreground">
+            It appears that you have not generated any headshots yet.
+          </p>
+          <Button asChild>
+            <Link href="/dashboard/studio/create">Generate AI Headshots</Link>
+          </Button>
+        </div>
+      );
+    }
+
     return (
-      <CoverPage
-        title="No Headshots Found!"
-        buttonText="Generate AI Headshots"
-        buttonLink="/dashboard/studio/create"
-      >
-        It appears that you have not have any headshots generated yet.
-      </CoverPage>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <Card className="group rounded shadow-none flex flex-col h-full">
+          <CardHeader className="relative aspect-[4/5] p-0 overflow-hidden rounded">
+            <Image
+              src="/examples/ai-portrait-1.jpg"
+              alt="Create New Studio"
+              fill
+              className="object-cover rounded"
+            />
+          </CardHeader>
+          <CardContent className="p-4 space-y-2">
+            <p className="text-sm font-semibold text-primary">
+              Create New Studio
+            </p>
+            <CardTitle>Generate Headshots</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Generate headshots for another person.
+            </p>
+          </CardContent>
+          <CardFooter className="mt-auto">
+            <Button asChild className="w-full">
+              <Link href="/dashboard/studio/create">
+                Generate Now
+                <Plus className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+        {studios.map((studio, index) => (
+          <StudioCard key={studio.id} studio={studio} index={index} />
+        ))}
+      </div>
+    );
+  } catch (error) {
+    console.error("Error in StudioContent:", error);
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          Something went wrong. Please try again later.
+        </AlertDescription>
+      </Alert>
     );
   }
+}
+
+export default function Studio() {
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div className="group flex flex-col h-full bg-white border border-gray-200 shadow-sm   ">
-        <div className="h-auto ">
-          <Image
-            src={"/examples/ai-portrait-1.jpg"}
-            alt="image uploaded"
-            width={"393"}
-            height={"491"}
-            className="overflow-hidden w-auto aspect-[4/5] object-cover object-left-top"
-          />
-        </div>
-        <div className="p-4 md:p-6">
-          <span className="block mb-1 text-xs font-semibold uppercase text-blue-600 ">
-            Create New Studio
-          </span>
-          <h3 className="text-xl font-semibold text-gray-800  ">
-            Generate Headshots
-          </h3>
-          <p className="mt-3 text-gray-500">
-            Generate headshots for another person.
-          </p>
-        </div>
-        <div className="mt-auto flex border-t border-gray-200 divide-x divide-gray-200  ">
-          <Link
-            className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none       "
-            href={`/dashboard/studio/create`}
-          >
-            Generate Now
-            <HiPlus />
-          </Link>
-        </div>
-      </div>
-      {/* Card */}
-      {studios.map((studio, index) => (
-        <StudioCard key={studio.id} studio={studio} index={index} />
-      ))}
-      {/* End Card */}
-    </div>
+    <Suspense fallback={<StudioSkeleton />}>
+      <StudioContent />
+    </Suspense>
   );
 }
 
-export default Studio;
+function StudioSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {[...Array(4)].map((_, i) => (
+        <Card key={i}>
+          <CardHeader className="p-0">
+            <Skeleton className="aspect-[4/5] w-full" />
+          </CardHeader>
+          <CardContent className="p-4 space-y-2">
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-6 w-2/3" />
+            <Skeleton className="h-4 w-full" />
+          </CardContent>
+          <CardFooter>
+            <Skeleton className="h-10 w-full" />
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+}

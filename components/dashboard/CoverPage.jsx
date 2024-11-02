@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Heading from "../ui/Heading";
+import Heading from "@/components/shared/heading";
 
 function CoverPage({ title, children, buttonText, buttonLink }) {
   return (

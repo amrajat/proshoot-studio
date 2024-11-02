@@ -5,7 +5,6 @@ import StarRatings from "@/components/shared/star-ratings";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import FooterCTA from "@/components/homepage/FooterCTA";
-import { buttonVariants } from "@/components/ui/button";
 
 const footerLinks = [
   {

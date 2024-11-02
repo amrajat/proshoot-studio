@@ -1,122 +1,82 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { motion, useAnimation } from "framer-motion";
+import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Camera, Shield, Users } from "lucide-react";
-import StarRatings from "@/components/shared/star-ratings";
+import { ArrowRight, Shield, Cog, ShieldCheck } from "lucide-react";
+import Heading from "@/components/shared/heading";
 
-export default function FooterCTA() {
-  const [headshots, setHeadshots] = useState(0);
-  const controls = useAnimation();
-
-  useEffect(() => {
-    controls.start("visible");
-  }, [controls]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setHeadshots((prev) => Math.min(prev + 123, 40000));
-    }, 50);
-    return () => clearInterval(interval);
-  }, []);
-
-  const containerVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-        staggerChildren: 0.1,
-      },
+function BottomCTA() {
+  const stats = [
+    {
+      icon: Shield,
+      title: "Privacy First",
+      description: "to Protect your data",
     },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 },
-    },
-  };
+    { title: "7000+", description: "Happy Customers" },
+    { icon: Cog, title: "400K+", description: "Headshots Generated" },
+  ];
 
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-secondary to-background">
-      <div className="container mx-auto px-4 md:px-6">
-        <Card className="w-full overflow-hidden">
+    <section className="relative overflow-hidden bg-gradient-to-b from-background to-primary/10 py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <Card className="w-full max-w-5xl mx-auto overflow-hidden">
           <CardContent className="p-6 sm:p-10">
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate={controls}
-              className="grid gap-8 md:grid-cols-2 items-center"
-            >
-              <motion.div variants={itemVariants} className="space-y-6">
-                <Badge
-                  variant="secondary"
-                  className="px-3 py-1 text-sm font-medium"
-                >
-                  AI-Powered Perfection
-                </Badge>
-                <h2 className="text-3xl font-bold leading-tight tracking-tighter md:text-4xl lg:leading-[1.1]">
-                  Get Your AI Headshots Today!
-                </h2>
-                <p className="text-lg font-light">
-                  Join thousands of professionals who've boosted their online
-                  presence with our AI headshot generator.
-                </p>
-                <Button size="lg" className="w-full sm:w-auto">
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  Create Your Perfect Headshot
-                </Button>
-              </motion.div>
-              <motion.div
-                variants={itemVariants}
-                className="grid gap-4 sm:grid-cols-2"
-              >
-                <div className="bg-primary/20 rounded-lg p-4 flex flex-col items-center justify-center text-center">
-                  <Users className="h-10 w-10 mb-2" aria-hidden="true" />
-                  <h3 className="text-2xl font-bold">1,000+</h3>
-                  <p className="text-muted-foreground">Happy Customers</p>
-                </div>
-                <div className="bg-primary/20 rounded-lg p-4 flex flex-col items-center justify-center text-center">
-                  <Camera className="h-10 w-10 mb-2" aria-hidden="true" />
-                  <h3 className="text-2xl font-bold">
-                    {headshots.toLocaleString()}+
-                  </h3>
-                  <p className="text-muted-foreground">Headshots Generated</p>
-                </div>
-                <div className="bg-primary/20 rounded-lg p-4 flex flex-col items-center justify-center text-center sm:col-span-2">
-                  <div className="flex items-center mb-2">
-                    <StarRatings />
-                  </div>
-                  <p className="text-lg font-semibold">
-                    Highly Rated by Our Users
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12">
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center">
+                  {stat.icon ? (
+                    <stat.icon className="mx-auto h-10 w-10 text-primary" />
+                  ) : (
+                    <div className="flex justify-center items-center -space-x-4">
+                      {[1, 2, 3].map((i) => (
+                        <Image
+                          key={i}
+                          width={48}
+                          height={48}
+                          className="relative inline-block h-12 w-12 rounded-full border-2 border-white object-cover"
+                          src={`/avatar-${i}.jpg`}
+                          alt={`Avatar ${i}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  <h3 className="mt-4 text-2xl font-bold">{stat.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {stat.description}
                   </p>
                 </div>
-              </motion.div>
-            </motion.div>
-            <motion.div
-              variants={itemVariants}
-              className="mt-8 pt-6 border-t border-primary/30 flex flex-wrap items-center justify-between gap-4"
-            >
-              <div className="flex items-center space-x-2">
-                <Shield className="h-5 w-5" aria-hidden="true" />
-                <span className="text-sm font-medium">
-                  100% Privacy Guaranteed
-                </span>
-              </div>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                See How It Works
-              </Button>
-            </motion.div>
+              ))}
+            </div>
           </CardContent>
         </Card>
+
+        <div className="mt-16 text-center">
+          <Heading as="h2" variant="hero">
+            get your <span className="text-primary">AI Headshots</span>
+          </Heading>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Elevate your professional image with our cutting-edge AI technology.
+          </p>
+          <Badge variant="outline" className="mt-6">
+            <ShieldCheck className="size-4 mr-2 text-success" />
+            100% Money Back Guarantee
+          </Badge>
+          <div className="mt-8">
+            <Button asChild size="lg">
+              <Link
+                href="/dashboard/studio"
+                className="inline-flex items-center"
+              >
+                Generate AI Headshots
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
       </div>
     </section>
   );
 }
+
+export default BottomCTA;

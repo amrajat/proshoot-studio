@@ -43,7 +43,7 @@ export default async function StudioCard({ studio, index }) {
           <p>Sharing Permission: {studio.sharing_permission ? "Yes" : "No"}</p>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="p-4">
         <Button asChild className="w-full">
           <Link href={`/dashboard/studio/${studio.id}`}>View Studio</Link>
         </Button>

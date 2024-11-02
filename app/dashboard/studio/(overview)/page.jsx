@@ -66,7 +66,7 @@ async function StudioContent() {
               Generate headshots for another person.
             </p>
           </CardContent>
-          <CardFooter className="mt-auto">
+          <CardFooter className="mt-auto p-4">
             <Button asChild className="w-full">
               <Link href="/dashboard/studio/create">
                 Generate Now

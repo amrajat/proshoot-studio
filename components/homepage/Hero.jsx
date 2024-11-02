@@ -22,14 +22,14 @@ function Hero() {
     <section className="relative bg-gradient-to-b from-secondary to-background py-16 sm:py-24">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto text-center mb-16">
-          <h5 className="py-1 px-2 rounded-lg flex text-xs font-normal gap-1 items-center text-foreground bg-primary/15 justify-self-center mb-2 sm:text-sm lg:text-base">
-            <Sparkles className="text-primary" /> New AI Model Upgraded on
+          <h5 className="py-1 px-2 rounded-lg flex text-xs font-normal gap-1 items-center text-foreground bg-success/15 justify-self-center mb-2 sm:text-sm lg:text-base">
+            <Sparkles className="text-success" /> New AI Model Upgraded on
             October, 2024{" "}
             <Tooltip content="This newer model produces ultra-realistic images with the highest resemblance possible to date." />
           </h5>
 
-          <h5 className="py-1 px-2 rounded-lg flex text-xs font-normal gap-1 items-center text-foreground bg-primary/15 justify-self-center mb-6 sm:text-sm lg:text-base">
-            <Trophy className="text-primary" /> The #1 Realistic AI Headshot
+          <h5 className="py-1 px-2 rounded-lg flex text-xs font-normal gap-1 items-center text-foreground bg-success/15 justify-self-center mb-6 sm:text-sm lg:text-base">
+            <Trophy className="text-success" /> The #1 Realistic AI Headshot
             Generator for Professional Headshots{" "}
             <Tooltip content="You'll love it 😍..." />
           </h5>
@@ -55,7 +55,7 @@ function Hero() {
             </Link>
 
             <span className="text-muted-foreground text-sm flex items-center justify-center">
-              <ShieldCheck className="mr-2 h-5 w-5 text-primary" />
+              <ShieldCheck className="mr-2 h-5 w-5 text-success" />
               7-days money-back guarantee
             </span>
           </div>

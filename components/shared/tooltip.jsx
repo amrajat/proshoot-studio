@@ -11,7 +11,7 @@ const Tooltip = ({ content, icon: Icon = HelpCircle }) => {
   return (
     <TooltipProvider>
       <ShadCNTooltip>
-        <TooltipTrigger className="inline-flex items-center">
+        <TooltipTrigger className="inline-flex items-center" type="button">
           <Icon className="w-4 h-4 mr-1" />
         </TooltipTrigger>
         <TooltipContent className="leading-normal">

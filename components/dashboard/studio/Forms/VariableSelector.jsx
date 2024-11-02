@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { HiCheck } from "react-icons/hi2";
-import Heading, { SubHeading } from "@/components/ui/Heading";
+import Heading from "@/components/shared/heading";
+
 import { v4 as uuidv4 } from "uuid";
 
 export default function VariableSelector({

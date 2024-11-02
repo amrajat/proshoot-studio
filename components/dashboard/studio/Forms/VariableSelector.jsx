@@ -88,11 +88,9 @@ export default function VariableSelector({
           ? "this field required."
           : "Please refrain from selecting any options below unless you have a specific interest in a specific type of image(s)."}
       </span>
-      <Heading type="h3">{details.title}</Heading>
+      <Heading variant={"hero"}>{details.title}</Heading>
 
-      <SubHeading align="left" cls="pl-0 xs:pl-0 xl:pl-1">
-        {details.subtitle}
-      </SubHeading>
+      <h2 className="pl-0 xs:pl-0 xl:pl-1">{details.subtitle}</h2>
 
       <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
         <div className="col-span-full">

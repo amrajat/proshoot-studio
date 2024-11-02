@@ -19,7 +19,7 @@ import { getCredits } from "@/lib/supabase/actions/client";
 import Error from "@/components/Error";
 import Loader from "@/components/Loader";
 import useSWR from "swr";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -49,7 +49,7 @@ const FileUploader = ({
   </div>
 );
 
-export default function Replicate() {
+export default function StudioCreate() {
   const [currentStep, setCurrentStep] = useState(0);
   const [previousStep, setPreviousStep] = useState(0);
   const [shouldValidate, setShouldValidate] = useState(false);

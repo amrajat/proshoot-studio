@@ -12,7 +12,6 @@ import {
   HiOutlineTrash,
 } from "react-icons/hi2";
 import JSZip from "jszip";
-// import Heading, { SubHeading } from "@/components/ui/Heading";
 import Heading from "@/components/shared/heading";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
 import Loader from "@/components/Loader";
@@ -162,9 +161,9 @@ export default function ImageUploader({
           <span className="text-xs uppercase font-bold pl-0 xs:pl-0 xl:pl-1 text-red-600">
             this field required.
           </span>
-          <Heading type="h3">Please upload your images.</Heading>
+          <Heading variant={"hero"}>Please upload your images.</Heading>
 
-          <SubHeading align="left" cls="pl-0 xs:pl-0 xl:pl-1">
+          <h2 className="pl-0 xs:pl-0 xl:pl-1">
             Please follow the image uploading guidelines for best results.{" "}
             <span
               onClick={() => setShowGuidelines(!showGuidelines)}
@@ -172,7 +171,7 @@ export default function ImageUploader({
             >
               {showGuidelines ? "Hide" : "Show"} guidelines
             </span>
-          </SubHeading>
+          </h2>
           {showGuidelines && <ImageUploadingGuideLines />}
           {!isCompleted ? (
             <div className="w-full mx-auto space-y-4 mt-6 transition-all">

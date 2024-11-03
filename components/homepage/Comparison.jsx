@@ -11,6 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 import SectionParaHeading from "@/components/shared/section-para-heading";
+import Image from "next/image";
 
 export default function Comparison() {
   const ref = useRef(null);
@@ -91,7 +92,7 @@ export default function Comparison() {
         </SectionParaHeading>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* BetterPic Column */}
+          {/* Proshoot Column */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
@@ -102,7 +103,7 @@ export default function Comparison() {
               <CardContent className="p-6">
                 <div className="mb-8">
                   <h3 className="text-2xl font-bold text-primary mb-2">
-                    BetterPic
+                    Proshoot.co
                   </h3>
                   <p className="text-muted-foreground">
                     Professional AI Headshot Generation
@@ -116,10 +117,12 @@ export default function Comparison() {
                         key={i}
                         className="aspect-square rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform"
                       >
-                        <img
-                          src={`/placeholder.svg?height=300&width=300`}
+                        <Image
+                          width={300}
+                          height={300}
+                          src={`/examples/ai-portrait-${i}.jpg`}
                           alt={`Professional headshot example ${i}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover object-top"
                         />
                       </div>
                     ))}
@@ -170,15 +173,21 @@ export default function Comparison() {
 
                 <div className="grid gap-6">
                   <div className="grid grid-cols-3 gap-4">
-                    {[1, 2, 3].map((i) => (
+                    {[
+                      "alternatives-1.jpg",
+                      "alternatives-2.jpg",
+                      "alternatives-3.jpg",
+                    ].map((i) => (
                       <div
                         key={i}
-                        className="aspect-square rounded-lg overflow-hidden bg-gray-200 hover:scale-105 transition-transform"
+                        className="aspect-square rounded-lg overflow-hidden"
                       >
-                        <img
-                          src={`/placeholder.svg?height=300&width=300`}
+                        <Image
+                          width={300}
+                          height={300}
+                          src={`/${i}`}
                           alt={`Alternative headshot example ${i}`}
-                          className="w-full h-full object-cover opacity-80"
+                          className="w-full h-full object-cover aspect-square opacity-80 object-top"
                         />
                       </div>
                     ))}

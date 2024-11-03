@@ -107,15 +107,15 @@ const ReviewsCarousel = () => {
   const mediaLogos = [
     {
       name: "Bloomberg",
-      src: "/bloomberg.svg?height=30&width=120",
+      src: "/media-publishers/bloomberg.svg",
     },
     {
       name: "Wired",
-      src: "/wired.svg?height=30&width=120",
+      src: "/media-publishers/wired.svg",
     },
     {
       name: "Vice",
-      src: "/vice.svg?height=30&width=120",
+      src: "/media-publishers/vice.svg",
     },
   ];
   return (
@@ -123,13 +123,12 @@ const ReviewsCarousel = () => {
       <CarouselContent>
         {Array.from({ length: 5 }).map((_, index) => (
           <CarouselItem key={index}>
-            {/* <div className="p-1"> */}
-            <Card>
+            <Card className="rounded shadow-none border-none bg-gradient-to-b from-secondary to-background">
               <CardContent className="p-4">
                 <div className="flex items-center justify-center mb-4">
                   <StarRatings />
                 </div>
-                <p className="text-sm text-muted-foreground text-center italic">
+                <p className="text-base font-light text-accent-foreground text-center italic">
                   I needed a professional headshot for my online presence but
                   didn't have the time for a traditional photo shoot. It saved
                   the day! The AI-generated image was flawless and It captured
@@ -148,6 +147,7 @@ const ReviewsCarousel = () => {
                   </p>
                 </div>
                 <div className="flex flex-wrap justify-center items-center gap-8">
+                  <p className="text-sm text-muted-foreground">As seen on</p>
                   {mediaLogos.map((logo, index) => (
                     <Image
                       key={index}
@@ -166,8 +166,8 @@ const ReviewsCarousel = () => {
           </CarouselItem>
         ))}
       </CarouselContent>
-      {/* <CarouselPrevious />
-      <CarouselNext /> */}
+      <CarouselPrevious className="relative" />
+      <CarouselNext className="relative" />
     </Carousel>
   );
 };
@@ -199,14 +199,23 @@ const UsedByHappyCustomers = () => {
 
 const TrustedByCompanies = () => {
   const companyLogos = [
-    { name: "Byte Dance", src: "/bytedance.svg?height=30&width=120" },
-    { name: "Dell Technologies", src: "/dell.svg?height=30&width=100" },
-    { name: "JP Morgan Chase", src: "/jpmorgan.svg?height=30&width=80" },
-    { name: "Meta", src: "/meta.svg?height=30&width=100" },
-    { name: "Mozilla Firefox", src: "/mozilla.svg?height=30&width=100" },
-    { name: "Open AI", src: "/openai.svg?height=30&width=100" },
-    { name: "Vercel", src: "/vercel.svg?height=30&width=100" },
-    { name: "Retool", src: "/retool.svg?height=30&width=100" },
+    { name: "Byte Dance", src: "/companies/bytedance.svg" },
+    {
+      name: "Dell Technologies",
+      src: "/companies/dell.svg",
+    },
+    {
+      name: "JP Morgan Chase",
+      src: "/companies/jpmorgan.svg",
+    },
+    { name: "Meta", src: "/companies/meta.svg" },
+    {
+      name: "Mozilla Firefox",
+      src: "/companies/mozilla.svg",
+    },
+    { name: "Open AI", src: "/companies/openai.svg" },
+    { name: "Vercel", src: "/companies/vercel.svg" },
+    { name: "Retool", src: "/companies/retool.svg" },
   ];
   return (
     <div className="text-center mb-8">

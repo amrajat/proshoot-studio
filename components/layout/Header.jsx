@@ -23,46 +23,76 @@ import {
 import StarRatings from "@/components/shared/star-ratings";
 import Logo from "@/components/homepage/Logo";
 
-const components = [
+const headshots = [
   {
-    title: "Product A",
-    href: "/products/a",
+    title: "LinkedIn Headshots",
+    href: "#",
     description: "Our flagship product with cutting-edge features.",
   },
   {
-    title: "Product B",
-    href: "/products/b",
+    title: "Model Headshots",
+    href: "#",
     description: "An affordable solution for small businesses.",
   },
   {
-    title: "Product C",
-    href: "/products/c",
+    title: "Realtor Headshots",
+    href: "#",
     description: "Enterprise-grade software for large organizations.",
   },
   {
-    title: "Product D",
-    href: "/products/d",
+    title: "Executive Headshots",
+    href: "#",
+    description: "Customizable platform for unique business needs.",
+  },
+  {
+    title: "Medical Headshots",
+    href: "#",
+    description: "Customizable platform for unique business needs.",
+  },
+  {
+    title: "Corporate Headshots",
+    href: "#",
+    description: "Customizable platform for unique business needs.",
+  },
+  {
+    title: "Actor Headshots",
+    href: "#",
+    description: "Customizable platform for unique business needs.",
+  },
+  {
+    title: "Tech Headshots",
+    href: "#",
+    description: "Customizable platform for unique business needs.",
+  },
+  {
+    title: "Creative Headshots",
+    href: "#",
+    description: "Customizable platform for unique business needs.",
+  },
+  {
+    title: "Eras Headshots",
+    href: "#",
     description: "Customizable platform for unique business needs.",
   },
 ];
 
-const resources = [
-  {
-    title: "Documentation",
-    href: "/docs",
-    description: "Comprehensive guides and API references.",
-  },
-  {
-    title: "Blog",
-    href: "/blog",
-    description: "Latest news, tips, and best practices.",
-  },
-  {
-    title: "Community",
-    href: "/community",
-    description: "Join our vibrant community of developers.",
-  },
-];
+// const resources = [
+//   {
+//     title: "Documentation",
+//     href: "/docs",
+//     description: "Comprehensive guides and API references.",
+//   },
+//   {
+//     title: "Blog",
+//     href: "/blog",
+//     description: "Latest news, tips, and best practices.",
+//   },
+//   {
+//     title: "Community",
+//     href: "/community",
+//     description: "Join our vibrant community of developers.",
+//   },
+// ];
 
 export default function NavBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -108,7 +138,7 @@ export default function NavBar() {
                     <NavigationMenuTrigger>Headshot Type</NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                        {components.map((component) => (
+                        {headshots.map((component) => (
                           <ListItem
                             key={component.title}
                             title={component.title}
@@ -120,7 +150,7 @@ export default function NavBar() {
                       </ul>
                     </NavigationMenuContent>
                   </NavigationMenuItem>
-                  <NavigationMenuItem>
+                  {/* <NavigationMenuItem>
                     <NavigationMenuTrigger>Resources</NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
@@ -135,6 +165,15 @@ export default function NavBar() {
                         ))}
                       </ul>
                     </NavigationMenuContent>
+                  </NavigationMenuItem> */}
+                  <NavigationMenuItem>
+                    <Link href="/company-headshots" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Company Headshots
+                      </NavigationMenuLink>
+                    </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <Link href="/#pricing" legacyBehavior passHref>
@@ -160,6 +199,15 @@ export default function NavBar() {
                         className={navigationMenuTriggerStyle()}
                       >
                         Contact
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <Link href="/blog" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Blog
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
@@ -198,7 +246,7 @@ export default function NavBar() {
           <div className="lg:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1">
               <MobileNavItem href="#" title="Headshot Type">
-                {components.map((component) => (
+                {headshots.map((component) => (
                   <MobileNavSubItem
                     key={component.title}
                     href={component.href}
@@ -206,7 +254,7 @@ export default function NavBar() {
                   />
                 ))}
               </MobileNavItem>
-              <MobileNavItem href="#" title="Resources">
+              {/* <MobileNavItem href="#" title="Resources">
                 {resources.map((resource) => (
                   <MobileNavSubItem
                     key={resource.title}
@@ -214,7 +262,7 @@ export default function NavBar() {
                     title={resource.title}
                   />
                 ))}
-              </MobileNavItem>
+              </MobileNavItem> */}
               <MobileNavItem href="/pricing" title="Pricing" />
               <MobileNavItem href="/examples" title="Examples" />
               <MobileNavItem href="/contact" title="Contact" />

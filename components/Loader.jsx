@@ -7,9 +7,9 @@ function Loader({ cls = "" }) {
           style={{ width: "40%" }}
         /> */}
         <div className="flex flex-row gap-2 justify-center">
-          <div className="size-4 rounded-full bg-blue-600 animate-bounce"></div>
-          <div className="size-4 rounded-full bg-blue-600 animate-bounce [animation-delay:-.3s]"></div>
-          <div className="size-4 rounded-full bg-blue-600 animate-bounce [animation-delay:-.5s]"></div>
+          <div className="size-4 rounded-full bg-primary animate-bounce"></div>
+          <div className="size-4 rounded-full bg-primary animate-bounce [animation-delay:-.3s]"></div>
+          <div className="size-4 rounded-full bg-primary animate-bounce [animation-delay:-.5s]"></div>
         </div>
       </div>
     </div>

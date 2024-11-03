@@ -3,18 +3,18 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Shield, Cog, ShieldCheck } from "lucide-react";
+import { ArrowRight, Image as ImageIcon, ShieldCheck } from "lucide-react";
 import Heading from "@/components/shared/heading";
 
 function BottomCTA() {
   const stats = [
     {
-      icon: Shield,
+      icon: ShieldCheck,
       title: "Privacy First",
       description: "to Protect your data",
     },
     { title: "7000+", description: "Happy Customers" },
-    { icon: Cog, title: "400K+", description: "Headshots Generated" },
+    { icon: ImageIcon, title: "400K+", description: "Headshots Generated" },
   ];
 
   return (

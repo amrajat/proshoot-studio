@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { Check, CheckCircle2, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Check, CheckCircle2, Star } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -120,7 +121,7 @@ export default function Pricing() {
           {pricingPlans.map((plan) => (
             <Card
               key={plan.name}
-              className={`flex flex-col text-center ${
+              className={`flex flex-col text-center rounded ${
                 plan.popular ? "border-2 border-primary shadow-lg" : ""
               }`}
             >
@@ -132,7 +133,7 @@ export default function Pricing() {
                 )}
                 <CardTitle className="text-lg mb-4">{plan.name}</CardTitle>
                 <div className="font-bold text-3xl md:text-4xl xl:text-5xl">
-                  ${isAnnual ? (plan.price * 1 * 0.5).toFixed(0) : plan.price}
+                  ${isAnnual ? "$" : plan.price}
                   <span className="text-sm font-normal text-muted-foreground">
                     {isAnnual ? "/person" : "/session"}
                   </span>
@@ -152,12 +153,15 @@ export default function Pricing() {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button
-                  className="w-full border-primary"
-                  variant={plan.popular ? "default" : "outline"}
+                <Link
+                  href="/dashboard"
+                  className={`w-full border-primary ${buttonVariants({
+                    variant: plan.popular ? "default" : "outline",
+                  })}`}
                 >
                   {isAnnual ? "Contact Us" : "Get Started"}
-                </Button>
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
               </CardFooter>
             </Card>
           ))}

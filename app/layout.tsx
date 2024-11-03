@@ -4,6 +4,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GeistSans } from "geist/font/sans";
+import { Toaster } from "@/components/ui/toaster";
 
 import PrelineScript from "@/components/PrelineScript";
 import CookieBanner from "@/components/CookieBanner";
@@ -29,6 +30,7 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth min-h-screen">
       <body className={GeistSans.className + " antialiased" + " min-h-screen"}>
         {children}
+        <Toaster />
         <CookieBanner />
         <Analytics />
         <SpeedInsights />

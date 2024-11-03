@@ -66,7 +66,7 @@ export default function TestimonialsCarousel() {
                       <div className="lg:col-span-4">
                         <blockquote>
                           <Quote
-                            className="scale-[-1] text-destructive block lg:hidden xl:hidden 2xl:block"
+                            className="scale-[-1] text-destructive block lg:hidden xl:hidden 2xl:block ml-[-5px]"
                             width={48}
                             height={48}
                             strokeWidth={1.5}
@@ -121,10 +121,10 @@ export default function TestimonialsCarousel() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          {/* <div className="hidden sm:block">
-            <CarouselPrevious className="absolute left-4 top-1/2" />
-            <CarouselNext className="absolute right-4 top-1/2" />
-          </div> */}
+          {/* <div className="hidden sm:block"> */}
+          <CarouselPrevious className="top-full left-1/3" />
+          <CarouselNext className="top-full right-1/3" />
+          {/* </div> */}
         </Carousel>
       </div>
     </section>

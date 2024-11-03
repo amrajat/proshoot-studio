@@ -12,21 +12,21 @@ const useCasesArray = [
     title: "Social Media",
     description:
       "Stand out on platforms like LinkedIn, Facebook, and Instagram with a professional AI-generated headshot that captures your best self.",
-    image: "/placeholder.svg?height=400&width=600",
+    image: "/placeholder.svg",
   },
   {
     id: "teams",
     title: "Team Pages",
     description:
       "Create cohesive and professional team pages with AI-generated headshots that maintain a consistent style across your entire organization.",
-    image: "/placeholder.svg?height=400&width=600",
+    image: "/placeholder.svg",
   },
   {
     id: "business-cards",
     title: "Business Cards",
     description:
       "Elevate your business cards with a striking AI-generated headshot that leaves a lasting impression on potential clients and partners.",
-    image: "/placeholder.svg?height=400&width=600",
+    image: "/placeholder.svg",
   },
   {
     id: "cv-resumes",

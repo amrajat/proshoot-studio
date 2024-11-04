@@ -13,21 +13,22 @@ const categorySlugs = {
 };
 
 // All the blog categories data display in the /blog/category/[categoryI].js pages.
-export const categories = [
-  {
-    // The slug to use in the URL, from the categorySlugs object above.
-    slug: categorySlugs.feature,
-    // The title to display the category title (h1), the category badge, the category filter, and more. Less than 60 characters.
-    title: "New Features",
-    // A short version of the title above, display in small components like badges. 1 or 2 words
-    titleShort: "Features",
-    // The description of the category to display in the category page. Up to 160 characters.
-    description:
-      "Learn about our new features. We're constantly improving our product to provide you best quality ai headshots possible.",
-    // A short version of the description above, only displayed in the <Header /> on mobile. Up to 60 characters.
-    descriptionShort: "Latest features added to Proshoot.",
-  },
-];
+export const categories = [];
+// export const categories = [
+//   {
+//     // The slug to use in the URL, from the categorySlugs object above.
+//     slug: categorySlugs.feature,
+//     // The title to display the category title (h1), the category badge, the category filter, and more. Less than 60 characters.
+//     title: "New Features",
+//     // A short version of the title above, display in small components like badges. 1 or 2 words
+//     titleShort: "Features",
+//     // The description of the category to display in the category page. Up to 160 characters.
+//     description:
+//       "Learn about our new features. We're constantly improving our product to provide you best quality ai headshots possible.",
+//     // A short version of the description above, only displayed in the <Header /> on mobile. Up to 60 characters.
+//     descriptionShort: "Latest features added to Proshoot.",
+//   },
+// ];
 
 // ==================================================================================================================================================================
 // BLOG AUTHORS 📝
@@ -142,81 +143,82 @@ const styles = {
 };
 
 // All the blog articles data display in the /blog/[articleId].js pages.
-export const articles = [
-  {
-    // The unique slug to use in the URL. It's also used to generate the canonical URL.
-    slug: "how-to-generate-ai-headshots",
-    // The title to display in the article page (h1). Less than 60 characters. It's also used to generate the meta title.
-    title: "How to do a headshot with AI?",
-    // The description of the article to display in the article page. Up to 160 characters. It's also used to generate the meta description.
-    description:
-      "Learn how to generate headshot with AI to update your linkedin profile and build your personal brand to shine on the internet.",
-    // An array of categories of the article. It's used to generate the category badges, the category filter, and more.
-    categories: [
-      categories.find((category) => category.slug === categorySlugs.feature),
-    ],
-    // The author of the article. It's used to generate a link to the author's bio page.
-    author: authors.find((author) => author.slug === authorSlugs.rajat),
-    // The date of the article. It's used to generate the meta date.
-    publishedAt: "2023-11-20",
-    modifiedAt: "2024-10-23",
-    image: {
-      // The image to display in <CardArticle /> components.
-      src: introducingSupabaseImg,
-      // The relative URL of the same image to use in the Open Graph meta tags & the Schema Markup JSON-LD.
-      urlRelative: "/blog-images/how-to-generate-ai-headshot.jpg",
-      alt: "this is the alt tag.",
-    },
-    // The actual content of the article that will be shown under the <h1> title in the article page.
-    content: (
-      <>
-        <Image
-          src={introducingSupabaseImg}
-          alt="alt tag"
-          width={700}
-          height={500}
-          priority={true}
-          className="rounded-box"
-          placeholder="blur"
-        />
-        <section>
-          <h2 className={styles.h2}>Introduction</h2>
-          <p className={styles.p}>
-            Supabase is an open-source Firebase alternative. It&apos;s a great
-            tool.
-          </p>
-        </section>
+export const articles = [];
+// export const articles = [
+//   {
+//     // The unique slug to use in the URL. It's also used to generate the canonical URL.
+//     slug: "how-to-generate-ai-headshots",
+//     // The title to display in the article page (h1). Less than 60 characters. It's also used to generate the meta title.
+//     title: "How to do a headshot with AI?",
+//     // The description of the article to display in the article page. Up to 160 characters. It's also used to generate the meta description.
+//     description:
+//       "Learn how to generate headshot with AI to update your linkedin profile and build your personal brand to shine on the internet.",
+//     // An array of categories of the article. It's used to generate the category badges, the category filter, and more.
+//     categories: [
+//       categories.find((category) => category.slug === categorySlugs.feature),
+//     ],
+//     // The author of the article. It's used to generate a link to the author's bio page.
+//     author: authors.find((author) => author.slug === authorSlugs.rajat),
+//     // The date of the article. It's used to generate the meta date.
+//     publishedAt: "2023-11-20",
+//     modifiedAt: "2024-10-23",
+//     image: {
+//       // The image to display in <CardArticle /> components.
+//       src: introducingSupabaseImg,
+//       // The relative URL of the same image to use in the Open Graph meta tags & the Schema Markup JSON-LD.
+//       urlRelative: "/blog-images/how-to-generate-ai-headshot.jpg",
+//       alt: "this is the alt tag.",
+//     },
+//     // The actual content of the article that will be shown under the <h1> title in the article page.
+//     content: (
+//       <>
+//         <Image
+//           src={introducingSupabaseImg}
+//           alt="alt tag"
+//           width={700}
+//           height={500}
+//           priority={true}
+//           className="rounded-box"
+//           placeholder="blur"
+//         />
+//         <section>
+//           <h2 className={styles.h2}>Introduction</h2>
+//           <p className={styles.p}>
+//             Supabase is an open-source Firebase alternative. It&apos;s a great
+//             tool.
+//           </p>
+//         </section>
 
-        <section>
-          <h3 className={styles.h3}>1. Create a supabase account</h3>
-          <p className={styles.p}>
-            First, go to{" "}
-            <a href="https://supabase.com/" className="link link-primary">
-              Supabase
-            </a>{" "}
-            and create an account. It&apos;s free for up to 10,000 rows per
-            table.
-            <br />
-            Then create a new project and a new table. You can use the following
-            SQL schema:
-          </p>
-        </section>
+//         <section>
+//           <h3 className={styles.h3}>1. Create a supabase account</h3>
+//           <p className={styles.p}>
+//             First, go to{" "}
+//             <a href="https://supabase.com/" className="link link-primary">
+//               Supabase
+//             </a>{" "}
+//             and create an account. It&apos;s free for up to 10,000 rows per
+//             table.
+//             <br />
+//             Then create a new project and a new table. You can use the following
+//             SQL schema:
+//           </p>
+//         </section>
 
-        <section>
-          <h3 className={styles.h3}>2. Add your credentials to ShipFast</h3>
-          <p className={styles.p}>
-            Copy the <span className={styles.codeInline}>API URL</span> and{" "}
-            <span className={styles.codeInline}>API Key</span> from your
-            Supabase project settings and add them to your ShipFast project
-            settings. Add these files to your project:
-          </p>
+//         <section>
+//           <h3 className={styles.h3}>2. Add your credentials to ShipFast</h3>
+//           <p className={styles.p}>
+//             Copy the <span className={styles.codeInline}>API URL</span> and{" "}
+//             <span className={styles.codeInline}>API Key</span> from your
+//             Supabase project settings and add them to your ShipFast project
+//             settings. Add these files to your project:
+//           </p>
 
-          <ul className={styles.ul}>
-            <li className={styles.li}>.env.local</li>
-            <li className={styles.li}>.env.production</li>
-          </ul>
-        </section>
-      </>
-    ),
-  },
-];
+//           <ul className={styles.ul}>
+//             <li className={styles.li}>.env.local</li>
+//             <li className={styles.li}>.env.production</li>
+//           </ul>
+//         </section>
+//       </>
+//     ),
+//   },
+// ];

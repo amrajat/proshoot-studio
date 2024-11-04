@@ -30,7 +30,8 @@
     "components/homepage/CardSlider.jsx",
     "app/api/uploadthing/core.js",
     "lib/utils.ts",
-    "app/dashboard/flux/page.jsx"
+    "app/dashboard/flux/page.jsx",
+    "components/auth/AuthForm.jsx"
   ],
   "exclude": ["node_modules"]
 }

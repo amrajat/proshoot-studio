@@ -42,7 +42,7 @@ function ImageUploadingGuideLines() {
               <li>Use photos from different days to avoid repetition.</li>
               <li>
                 Use high resolution professional camera or smartphone photos
-                minimum face size 512*512 pixels.
+                minimum face size 1024*1024 pixels.
               </li>
             </ul>
           </div>

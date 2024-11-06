@@ -1,184 +1,134 @@
 "use client";
 
 import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { useRouter } from "next/navigation";
-import {
-  signInWithEmailOTP,
-  verifyEmailOTP,
-} from "@/lib/supabase/actions/server";
+import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useRouter } from "next/navigation";
 
-const emailSchema = z.object({
-  email: z
-    .string()
-    .email("Please use a valid email.")
-    .min(1, "Email is required."),
-});
-
-const tokenSchema = z.object({
-  token: z.string().length(6, "OTP must be 6 digits."),
-});
-
-export default function AuthForm({ lastSignedInMethod }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [userEmail, setUserEmail] = useState(null);
+export default function SupabaseLogin() {
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState("email");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { toast } = useToast();
 
-  const emailForm = useForm({
-    resolver: zodResolver(emailSchema),
-    defaultValues: {
-      email: "",
-    },
-  });
+  const supabase = createSupabaseBrowserClient();
 
-  const tokenForm = useForm({
-    resolver: zodResolver(tokenSchema),
-    defaultValues: {
-      token: "",
-    },
-  });
+  const handleEmailSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-  async function onEmailSubmit(values) {
-    setIsLoading(true);
-    try {
-      const { data, error } = await signInWithEmailOTP(values.email);
-      if (error) throw error;
-      setUserEmail(values.email);
-      toast({
-        title: "OTP Sent",
-        description: "Please check your email for the OTP.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setStep("otp");
     }
-  }
 
-  async function onTokenSubmit(values) {
-    setIsLoading(true);
-    try {
-      const { data, error } = await verifyEmailOTP(userEmail, values.token);
-      if (error) throw error;
-      toast({
-        title: "Success",
-        description: "You have been successfully logged in.",
-      });
+    setLoading(false);
+  };
+
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token: otp,
+      type: "email",
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      // Redirect or update UI state on successful login
       router.push("/dashboard");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
     }
-  }
+
+    setLoading(false);
+  };
 
   return (
-    <CardContent className="p-0">
-      {!userEmail ? (
-        <Form {...emailForm}>
-          <form
-            onSubmit={emailForm.handleSubmit(onEmailSubmit)}
-            className="space-y-4"
-          >
-            <FormField
-              control={emailForm.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="you@example.com"
-                      {...field}
-                      className="h-10 px-4"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {lastSignedInMethod === "email" && (
-              <p className="text-sm text-muted-foreground">Last used method</p>
-            )}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Sending OTP..." : "Continue with Email"}
-            </Button>
+    <>
+      <CardContent className="p-0 pb-6">
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        {step === "email" ? (
+          <form onSubmit={handleEmailSubmit}>
+            <div className="grid w-full items-center gap-4">
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
           </form>
-        </Form>
-      ) : (
-        <Form {...tokenForm}>
-          <form
-            onSubmit={tokenForm.handleSubmit(onTokenSubmit)}
-            className="space-y-4"
-          >
-            <FormField
-              control={tokenForm.control}
-              name="token"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>One-Time Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter 6-digit OTP"
-                      maxLength={6}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <p className="text-sm text-muted-foreground">
-              Please enter the 6-digit OTP sent to {userEmail}. Check your spam
-              folder if you don't see it.
-            </p>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Verifying OTP..." : "Login"}
-            </Button>
-            <Button
-              variant="link"
-              className="w-full"
-              onClick={() => {
-                setUserEmail(null);
-                tokenForm.reset();
-              }}
-              disabled={isLoading}
-            >
-              Go Back.
-            </Button>
+        ) : (
+          <form onSubmit={handleOtpSubmit}>
+            <div className="grid w-full items-center gap-4">
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="otp">One-Time Password</Label>
+                <Input
+                  id="otp"
+                  type="text"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
           </form>
-        </Form>
-      )}
-    </CardContent>
+        )}
+      </CardContent>
+      <CardFooter className="flex flex-col gap-2 p-0">
+        <Button
+          type="submit"
+          onClick={step === "email" ? handleEmailSubmit : handleOtpSubmit}
+          disabled={loading}
+          className="w-full self-stretch"
+        >
+          {loading
+            ? "Loading..."
+            : step === "email"
+            ? "Send OTP"
+            : "Verify OTP"}
+        </Button>
+        {step === "otp" && (
+          <Button variant="outline" onClick={() => setStep("email")}>
+            Back
+          </Button>
+        )}
+      </CardFooter>
+    </>
   );
 }

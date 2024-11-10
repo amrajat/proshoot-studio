@@ -1,34 +1,40 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
 import { v4 as uuidv4 } from "uuid";
 import { useDropzone } from "react-dropzone";
-import Image from "next/image";
+import NextImage from "next/image";
 import {
   HiArrowUpTray,
   HiCheckCircle,
   HiOutlinePhoto,
   HiOutlineTrash,
+  HiExclamationCircle,
 } from "react-icons/hi2";
 import JSZip from "jszip";
 import Heading from "@/components/shared/heading";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
 import Loader from "@/components/Loader";
+import * as faceapi from "face-api.js";
+import smartcrop from "smartcrop";
 
 const supabase = createSupabaseBrowserClient();
 
 // Image validation rules
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const MAX_NUM_IMAGES = 50;
+const MIN_NUM_IMAGES = 10; //This variable is not used anymore.
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 const ACCEPTED_IMAGE_TYPES = {
   "image/jpeg": [],
   "image/jpg": [],
   "image/png": [],
 };
+const MIN_IMAGE_DIMENSION = 1024;
 
-export default function ImageUploader({
+export default function ImageUploader2({
   setValue,
   errors,
   isSubmitting,
@@ -38,10 +44,145 @@ export default function ImageUploader({
   const [uploading, setUploading] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [showGuidelines, setShowGuidelines] = useState(true);
+  const [warningMessage, setWarningMessage] = useState("");
+  const [loadingModels, setLoadingModels] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [includeInvalidImages, setIncludeInvalidImages] = useState(false);
+  const [allowLessThanTen, setAllowLessThanTen] = useState(false);
 
   const fileInputRef = useRef(null);
 
-  const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
+  useEffect(() => {
+    Promise.all([
+      faceapi.loadTinyFaceDetectorModel("/models"),
+      faceapi.loadFaceLandmarkModel("/models"),
+    ]).then(() => {
+      setLoadingModels(false);
+    });
+  }, []);
+
+  useEffect(() => {
+    const validFiles = files.filter((file) => !file.error && file.accepted);
+    if (validFiles.length > 0 && validFiles.length < 10) {
+      setWarningMessage(
+        `You have uploaded ${validFiles.length} valid image${
+          validFiles.length !== 1 ? "s" : ""
+        }. If you upload fewer than 10 images, you will not be eligible for refunds or redos. Please follow the guidelines and upload at least 10 images where your face is clearly visible.`
+      );
+    } else {
+      setWarningMessage("");
+    }
+  }, [files]);
+
+  const cropImage = async (file) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = async () => {
+        const size = Math.max(
+          MIN_IMAGE_DIMENSION,
+          Math.min(img.width, img.height)
+        );
+        const result = await smartcrop.crop(img, {
+          width: size,
+          height: size,
+          minScale: 0.9, // Adjust this value to include more of the surrounding area
+          ruleOfThirds: false,
+        });
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = size;
+        canvas.height = size;
+        ctx.drawImage(
+          img,
+          result.topCrop.x,
+          result.topCrop.y,
+          result.topCrop.width,
+          result.topCrop.height,
+          0,
+          0,
+          size,
+          size
+        );
+        canvas.toBlob((blob) => {
+          resolve(new File([blob], file.name, { type: file.type }));
+        }, file.type);
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const processImage = async (file) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = async () => {
+        let accepted = true;
+        let declineReason = "";
+
+        if (
+          img.width < MIN_IMAGE_DIMENSION ||
+          img.height < MIN_IMAGE_DIMENSION
+        ) {
+          accepted = false;
+          declineReason = `Image is too small. Minimum size is ${MIN_IMAGE_DIMENSION}x${MIN_IMAGE_DIMENSION} pixels.`;
+        } else {
+          const detections = await faceapi
+            .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks();
+
+          if (detections.length > 1) {
+            accepted = false;
+            declineReason = "Multiple faces detected";
+          } else if (detections.length === 0) {
+            accepted = false;
+            declineReason = "No face detected";
+          } else if (
+            detections[0].detection.box.width /
+              detections[0].detection.imageWidth <
+            0.1
+          ) {
+            accepted = false;
+            declineReason = "Face is too small";
+          } else {
+            // Check if the face is frontal
+            const landmarks = detections[0].landmarks;
+            const leftEye = landmarks.getLeftEye();
+            const rightEye = landmarks.getRightEye();
+            const nose = landmarks.getNose();
+
+            const eyeDistance = Math.abs(leftEye[0].x - rightEye[3].x);
+            const noseDeviation = Math.abs(
+              nose[3].x - (leftEye[0].x + rightEye[3].x) / 2
+            );
+
+            if (noseDeviation / eyeDistance > 0.2) {
+              accepted = false;
+              declineReason = "Face is not sufficiently frontal";
+            }
+          }
+        }
+
+        if (accepted) {
+          const croppedFile = await cropImage(file);
+          resolve({
+            file: croppedFile,
+            preview: URL.createObjectURL(croppedFile),
+            accepted,
+            declineReason,
+          });
+        } else {
+          resolve({
+            file,
+            preview: URL.createObjectURL(file),
+            accepted,
+            declineReason,
+          });
+        }
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const onDrop = useCallback(async (acceptedFiles, rejectedFiles) => {
     // Handle rejected files (e.g., show error messages)
     rejectedFiles.forEach((file) => {
       if (file.file.size > MAX_FILE_SIZE) {
@@ -53,19 +194,15 @@ export default function ImageUploader({
       }
     });
 
-    // Add accepted files
-    setFiles((prevFiles) => {
-      const newFiles = acceptedFiles.map((file) =>
-        Object.assign(file, {
-          preview: URL.createObjectURL(file),
-          progress: 0,
-          error: null,
-        })
-      );
+    setUploading(true);
+    setProcessing(true);
+    const processedFiles = await Promise.all(acceptedFiles.map(processImage));
+    setProcessing(false);
+    setUploading(false);
 
-      // Limit the number of files
-      const totalFiles = [...prevFiles, ...newFiles].slice(0, MAX_NUM_IMAGES);
-      return totalFiles;
+    setFiles((prevFiles) => {
+      const newFiles = [...prevFiles, ...processedFiles];
+      return newFiles.slice(0, MAX_NUM_IMAGES);
     });
   }, []);
 
@@ -76,13 +213,12 @@ export default function ImageUploader({
     maxFiles: MAX_NUM_IMAGES,
   });
 
-  const handleFileChange = useCallback((e) => {
-    onDrop(Array.from(e.target.files), []);
-  }, []);
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
+  const handleFileChange = useCallback(
+    (e) => {
+      onDrop(Array.from(e.target.files), []);
+    },
+    [onDrop]
+  );
 
   const removeFile = useCallback((index) => {
     setFiles((prevFiles) => {
@@ -108,8 +244,11 @@ export default function ImageUploader({
 
     try {
       const zip = new JSZip();
-      files.forEach((file) => {
-        zip.file(file.name, file);
+      const validFiles = includeInvalidImages
+        ? files
+        : files.filter((file) => file.accepted);
+      validFiles.forEach((file) => {
+        zip.file(file.file.name, file.file);
       });
       // Generate the zip file as a Blob
       const zipBlob = await zip.generateAsync({ type: "blob" });
@@ -124,6 +263,7 @@ export default function ImageUploader({
 
       if (error) {
         // Handle error, e.g., show an error message
+        console.error("Upload error:", error);
       } else {
         // Handle success, e.g., show a success message
         // Get signed URL for the uploaded zip file
@@ -131,22 +271,31 @@ export default function ImageUploader({
           await supabase.storage
             .from("training-images")
             .createSignedUrl(filePath, 21600); // Expires after 6 hours. Seconds
-        setValue("images", signedUrlData.signedUrl);
+        if (signedUrlError) {
+          console.error("Signed URL error:", signedUrlError);
+        } else {
+          setValue("images", signedUrlData.signedUrl);
+        }
       }
     } catch (error) {
       // Handle error, e.g., show an error message
+      console.error("General error:", error);
     } finally {
       setUploading(false);
     }
-    // Update progress after each successful upload
-    // setUploadProgress((uploadedCount / files.length) * 100);
-    // await Promise.all(uploadPromises);
 
     setIsCompleted(true);
     setUploading(false);
+  }, [files, setValue, includeInvalidImages]);
 
-    // removeAllFiles(); // You might want to keep the previews after upload
-  }, [files]);
+  if (loadingModels) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader />
+        <p className="ml-2">Loading face detection models...</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -175,6 +324,29 @@ export default function ImageUploader({
           {showGuidelines && <ImageUploadingGuideLines />}
           {!isCompleted ? (
             <div className="w-full mx-auto space-y-4 mt-6 transition-all">
+              {(includeInvalidImages || allowLessThanTen) && (
+                <div
+                  className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4"
+                  role="alert"
+                >
+                  <p className="font-bold">Warning</p>
+                  <p>
+                    {includeInvalidImages
+                      ? "You are including invalid images in your upload. "
+                      : allowLessThanTen
+                      ? "You are uploading fewer than 10 images. "
+                      : ""}
+                    This may make you ineligible for refunds or redos. Proceed
+                    with caution.
+                  </p>
+                </div>
+              )}
+              {processing && (
+                <div className="flex items-center justify-center p-4">
+                  <Loader />
+                  <p className="ml-2">Processing images...</p>
+                </div>
+              )}
               <div
                 {...getRootProps()}
                 className="dropzone cursor-pointer p-12 flex justify-center bg-white border border-dashed border-blue-600 rounded"
@@ -222,23 +394,25 @@ export default function ImageUploader({
                     <span className="font-medium text-blue-600 hover:text-blue-700">
                       {ALLOWED_IMAGE_TYPES.join(",").replaceAll("image/", " ")}
                     </span>
-                    .
+                    . Minimum resolution: {MIN_IMAGE_DIMENSION}x
+                    {MIN_IMAGE_DIMENSION} pixels.
                   </p>
                 </div>
               </div>
 
               {files.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {/* <div className="mt-4 space-y-2 empty:mt-0"> */}
                   {files.map((file, index) => (
                     <div
                       key={index}
-                      className="p-3 bg-white border border-solid border-gray-300 rounded"
+                      className={`p-3 bg-white border border-solid ${
+                        file.accepted ? "border-green-300" : "border-red-300"
+                      } rounded`}
                     >
                       <div className="mb-1 flex justify-between items-center">
                         <div className="flex items-center gap-x-3">
                           <span className="size-10 flex justify-center items-center border border-gray-200 text-gray-500 rounded-lg overflow-hidden">
-                            <Image
+                            <NextImage
                               width={40}
                               height={40}
                               src={file.preview}
@@ -249,34 +423,26 @@ export default function ImageUploader({
                           <div>
                             <p className="text-sm font-medium text-gray-800">
                               <span className="truncate inline-block max-w-[300px] align-bottom" />
-                              {file.name.slice(0, 10) +
+                              {file.file.name.slice(0, 10) +
                                 "...XXX." +
-                                file.type.split("/")[1]}
+                                file.file.type.split("/")[1]}
                               <span />
                             </p>
                             <span className="text-xs text-gray-500">
-                              {(file.size / 1048576).toFixed(2)} MB
+                              {(file.file.size / 1048576).toFixed(2)} MB
                             </span>
-                            {file.error && (
+                            {!file.accepted && (
                               <p className="text-xs text-red-500">
-                                We could not upload this file as it was not
-                                valid format, size, or type.
+                                {file.declineReason}
                               </p>
                             )}
                           </div>
                         </div>
                         <div className="flex items-center gap-x-2">
-                          {!uploading && isCompleted && (
-                            <HiCheckCircle className="shrink-0 size-4 text-blue-600" />
-                          )}
-                          {uploading && !isCompleted && (
-                            <div
-                              className="animate-spin inline-block size-4 border-[2px] border-current border-t-transparent text-blue-600 rounded-full"
-                              role="status"
-                              aria-label="uploading"
-                            >
-                              <span className="sr-only">uploading...</span>
-                            </div>
+                          {file.accepted ? (
+                            <HiCheckCircle className="shrink-0 size-4 text-green-600" />
+                          ) : (
+                            <HiExclamationCircle className="shrink-0 size-4 text-red-500" />
                           )}
                           {!uploading && !isCompleted && (
                             <button
@@ -292,36 +458,51 @@ export default function ImageUploader({
                           )}
                         </div>
                       </div>
-
-                      {/* <div className="flex items-center gap-x-3 whitespace-nowrap">
-                    <div
-                      className="flex w-full h-2 bg-gray-200 rounded-full overflow-hidden"
-                      role="progressbar"
-                      aria-valuenow={parseInt(uploadProgress)}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                    >
-                      {uploading && (
-                        <div
-                          className="flex flex-col justify-center rounded-full overflow-hidden bg-blue-600 text-xs text-white text-center whitespace-nowrap transition-all duration-500"
-                          style={{ width: `${parseInt(uploadProgress)}%` }}
-                        />
-                      )}
-                    </div>
-                    <div className="w-10 text-end">
-                      <span className="text-sm text-gray-800">
-                        <span>0</span>%
-                      </span>
-                    </div>
-                  </div> */}
                     </div>
                   ))}
                 </div>
               )}
 
+              {warningMessage && (
+                <div
+                  className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4"
+                  role="alert"
+                >
+                  <p className="font-bold">Warning</p>
+                  <p>{warningMessage}</p>
+                </div>
+              )}
+
+              {files.length > 0 && files.length < 10 && !allowLessThanTen && (
+                <Button
+                  onClick={() => setAllowLessThanTen(true)}
+                  variant="outline"
+                  className="mr-2"
+                >
+                  Upload Fewer Than 10 Images
+                </Button>
+              )}
+              {files.some((file) => !file.accepted) &&
+                !includeInvalidImages && (
+                  <Button
+                    onClick={() => setIncludeInvalidImages(true)}
+                    variant="outline"
+                    className="mr-2"
+                  >
+                    Include Invalid Images
+                  </Button>
+                )}
               {files.length > 0 && (
                 <div className="flex gap-x-4 justify-end items-center">
-                  <Button onClick={uploadFiles} disabled={uploading}>
+                  <Button
+                    onClick={uploadFiles}
+                    disabled={
+                      uploading ||
+                      (!includeInvalidImages &&
+                        !allowLessThanTen &&
+                        files.filter((file) => file.accepted).length < 10)
+                    }
+                  >
                     <HiArrowUpTray strokeWidth={2} />
                     {uploading ? "Uploading..." : "Upload"}
                   </Button>
@@ -349,11 +530,6 @@ export default function ImageUploader({
                 {errors["images"]?.message}
               </p>
             )}
-            <p className="text-sm text-red-400">
-              Attention: To qualify for refunds if you are unhappy with the
-              generated images, you must strictly follow all the guidelines for
-              uploading images shown above.
-            </p>
           </div>
         </div>
       )}

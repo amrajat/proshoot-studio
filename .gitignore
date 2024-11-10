@@ -9,6 +9,10 @@
 # testing
 /coverage
 
+#Local
+/app/dashboard/admin/
+/app/admin/
+
 # next.js
 /.next/
 /out/

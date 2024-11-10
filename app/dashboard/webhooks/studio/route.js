@@ -15,30 +15,76 @@ import Replicate from "replicate";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const CONCURRENCY_LIMIT = parseInt(process.env.CONCURRENCY_LIMIT, 10) || 5;
-const RETRY_LIMIT = parseInt(process.env.RETRY_LIMIT, 10) || 3;
-const RETRY_BACKOFF = parseInt(process.env.RETRY_BACKOFF, 10) || 300; // in ms
-const REQUEST_TIMEOUT = parseInt(process.env.REQUEST_TIMEOUT, 10) || 10000; // in ms, increased to 10 seconds
+const CONCURRENCY_LIMIT = 100;
+const RETRY_LIMIT = 3;
+const RETRY_BACKOFF = 300; // in ms
+const REQUEST_TIMEOUT = 60000; // in ms, increased to 10 seconds
 
 const limit = pLimit(CONCURRENCY_LIMIT);
 
+// Helper function to send error notifications
+async function notifyError(eMailClient, error, context = {}) {
+  try {
+    // First capture in Sentry
+    Sentry.captureException(error, { extra: context });
+
+    // Then send email notification
+    await eMailClient.sendMail({
+      from: {
+        address: "support@proshoot.co",
+        name: "Error Reporter",
+      },
+      to: [
+        {
+          email_address: {
+            address:
+              process.env.ERROR_NOTIFICATION_EMAIL || "support@proshoot.co",
+            name: "Developer",
+          },
+        },
+      ],
+      subject: "⚠️ Error in Studio Webhook",
+      htmlbody: `
+        <h2>Error Details:</h2>
+        <p><strong>Message:</strong> ${error.message}</p>
+        <p><strong>Stack:</strong> <pre>${error.stack}</pre></p>
+        <h3>Context:</h3>
+        <pre>${JSON.stringify(context, null, 2)}</pre>
+      `,
+    });
+  } catch (notificationError) {
+    // If notification fails, at least log it
+    console.error("Failed to send error notification:", notificationError);
+    Sentry.captureException(notificationError);
+  }
+}
+
 export async function POST(request) {
   const secret = process.env.REPLICATE_WEBHOOK_SIGNING_SECRET;
-
-  if (!secret) {
-    return NextResponse.json(
-      { detail: "Webhook received, but not validated." },
-      { status: 200 }
-    );
-  }
-
-  const webhookIsValid = await validateWebhook(request.clone(), secret);
-
-  if (!webhookIsValid) {
-    return NextResponse.json({ detail: "Webhook is invalid" }, { status: 401 });
-  }
+  let eMailClient;
 
   try {
+    // Initialize email client early for error reporting
+    const url = process.env.ZOHO_ZEPTOMAIL_URL;
+    const token = process.env.ZOHO_ZEPTOMAIL_TOKEN;
+    eMailClient = new SendMailClient({ url, token });
+
+    if (!secret) {
+      return NextResponse.json(
+        { detail: "Webhook received, but not validated." },
+        { status: 200 }
+      );
+    }
+
+    const webhookIsValid = await validateWebhook(request.clone(), secret);
+
+    if (!webhookIsValid) {
+      return NextResponse.json(
+        { detail: "Webhook is invalid" },
+        { status: 401 }
+      );
+    }
+
     const cookieStore = cookies();
     const query = request.nextUrl.searchParams;
     const user_email = query.get("user_email");
@@ -49,10 +95,6 @@ export async function POST(request) {
     const body = await request.text();
 
     Sentry.setUser({ email: user_email, id: user_id });
-
-    const url = process.env.ZOHO_ZEPTOMAIL_URL;
-    const token = process.env.ZOHO_ZEPTOMAIL_TOKEN;
-    const eMailClient = new SendMailClient({ url, token });
 
     const replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN,
@@ -79,25 +121,45 @@ export async function POST(request) {
     switch (event) {
       case "training":
         const trainingResponse = await JSON.parse(body);
-        await generateImagesUsingPrompts(
-          trainingResponse,
-          user_id,
-          user_email,
-          planName,
-          supabase,
-          replicate
-        );
-        // await sendTrainingCompleteEmail(
-        //   eMailClient,
-        //   user_email,
-        //   trainingResponse.id
-        // );
+        try {
+          await generateImagesUsingPrompts(
+            trainingResponse,
+            user_id,
+            user_email,
+            planName,
+            supabase,
+            replicate
+          );
+          await sendTrainingCompleteEmail(
+            eMailClient,
+            user_email,
+            trainingResponse.id
+          );
+        } catch (error) {
+          await notifyError(eMailClient, error, {
+            event: "training",
+            user_id,
+            user_email,
+            training_id: trainingResponse.id,
+          });
+          throw error;
+        }
         break;
 
       case "prediction":
         const { output: images } = await JSON.parse(body);
-        if (!images) break; // In case of error in prediction.
-        await handleImages(images, supabase, user_id, training_id);
+        if (!images) break;
+        try {
+          await handleImages(images, supabase, user_id, training_id);
+        } catch (error) {
+          await notifyError(eMailClient, error, {
+            event: "prediction",
+            user_id,
+            training_id,
+            imagesCount: images.length,
+          });
+          throw error;
+        }
         break;
 
       default:
@@ -110,7 +172,15 @@ export async function POST(request) {
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Error processing request", error);
-    Sentry.captureException(error);
+
+    // If we have email client initialized, notify about the error
+    if (eMailClient) {
+      await notifyError(eMailClient, error, {
+        endpoint: "POST /webhooks/studio",
+        requestBody: request.body,
+      });
+    }
+
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
@@ -143,10 +213,6 @@ async function generateImagesUsingPrompts(
         input: {
           model: "dev",
           prompt: availablePrompts[i],
-          // extra_lora:
-          //   studioAttributes.imageQuality === "realistic"
-          //     ? "huggingface.co/XLabs-AI/flux-RealismLora"
-          //     : null,
           extra_lora:
             "https://huggingface.co/XLabs-AI/flux-lora-collection/resolve/main/realism_lora_comfy_converted.safetensors",
           lora_scale: 1,
@@ -157,7 +223,7 @@ async function generateImagesUsingPrompts(
           output_quality: 100,
           prompt_strength: 0.8,
           extra_lora_scale: 1,
-          num_inference_steps: 28,
+          num_inference_steps: 50,
         },
         webhook: `${process.env.URL}/dashboard/webhooks/studio?user_id=${user_id}&user_email=${user_email}&event=prediction&training_id=${trainingResponse.id}`,
         webhook_events_filter: ["completed"],
@@ -243,6 +309,7 @@ async function fetchLogoBuffer() {
 async function processImageDual(imageURL, logoBuffer, supabase, training_id) {
   try {
     const imageResponse = await fetchWithRetry(imageURL);
+
     const buffer = await imageResponse.arrayBuffer();
 
     // Process and upload original image

@@ -148,17 +148,22 @@ export async function POST(request) {
 
       case "prediction":
         const { output: images } = await JSON.parse(body);
-        if (!images) break;
         try {
+          if (!images) {
+            throw new TypeError(
+              `Expected 'images' to be defined but got ${images}`
+            );
+          }
           await handleImages(images, supabase, user_id, training_id);
         } catch (error) {
           await notifyError(eMailClient, error, {
             event: "prediction",
             user_id,
             training_id,
-            imagesCount: images.length,
+            imagesCount: images?.length,
+            rawBody: body,
           });
-          throw error;
+          break;
         }
         break;
 

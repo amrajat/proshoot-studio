@@ -1,15 +1,7 @@
-import Heading from "@/components/shared/Heading";
-
 function SubProcessors() {
   return (
     <div className="space-y-4">
-      <Heading
-        as="h2"
-        id="sub-processors"
-        className="text-xl font-bold md:text-2xl"
-      >
-        Sub-Processors
-      </Heading>
+      <h1>Sub-Processors</h1>
 
       <section>
         <p>

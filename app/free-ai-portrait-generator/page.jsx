@@ -1,4 +1,3 @@
-import Heading from "@/components/shared/Heading";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/homepage/Footer";
 import Container from "@/components/dashboard/Container";
@@ -17,9 +16,7 @@ function FreeHeadshot() {
 
       <Container>
         <div className="space-y-5 md:space-y-8">
-          <Heading as="h3" variant={"hero"}>
-            Free Headshot Generator
-          </Heading>
+          <h1>Free Headshot Generator</h1>
           <p className="text-lg  pb-[4.5rem]">
             If you fall under these special categores of NGOs, Education,
             Influencer, Reviewer SaaS/AI/Other. Please email us at

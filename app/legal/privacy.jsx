@@ -1,11 +1,7 @@
-import Heading from "@/components/shared/Heading";
-
 function Privacy() {
   return (
     <div className="space-y-4">
-      <Heading as="h2" id="privacy" className="text-xl font-bold md:text-2xl">
-        Privacy Policy
-      </Heading>
+      <h1>Privacy Policy</h1>
 
       <p>
         Prime AI Company ("Prime AI," "we," "us," or "our") is committed to

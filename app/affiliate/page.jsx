@@ -3,7 +3,6 @@ import Footer from "@/components/homepage/Footer";
 import Container from "../../components/dashboard/Container";
 import { HiChevronRight } from "react-icons/hi2";
 import Link from "next/link";
-import Heading from "@/components/shared/Heading";
 import SectionParaHeading from "@/components/shared/section-para-heading";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

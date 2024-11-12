@@ -3,7 +3,6 @@ import Footer from "@/components/homepage/Footer";
 import Container from "@/components/dashboard/Container";
 
 import Link from "next/link";
-import Heading from "@/components/shared/Heading";
 
 export const metadata = {
   title: "About",
@@ -21,9 +20,7 @@ function About() {
         {/* Content */}
         <div className="space-y-5 md:space-y-8">
           {/* <div className="space-y-3"> */}
-          <Heading as="h1" variant="hero">
-            About Us
-          </Heading>
+          <h1>About Us</h1>
           <p className="text-lg text-gray-800 ">
             Prime AI Company is a Artificial Intelligence startup focused on
             revolutionizing the way professional headshots are generated. We are

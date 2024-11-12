@@ -1,15 +1,7 @@
-import Heading from "@/components/shared/Heading";
-
 function FairUsage() {
   return (
     <div className="space-y-4">
-      <Heading
-        as="h2"
-        id="fair-usage"
-        className="text-xl font-bold md:text-2xl"
-      >
-        Fair Usage Policy
-      </Heading>
+      <h1>Fair Usage Policy</h1>
 
       <section>
         <p>

@@ -1,7 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { HiCheck } from "react-icons/hi2";
-import Heading from "@/components/shared/Heading";
 export default function EthnicitySelector({
   isPending,
   register,
@@ -32,7 +31,7 @@ export default function EthnicitySelector({
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <Heading type="h4">my hair color is</Heading>
+        <h1>my hair color is</h1>
         <p className="mt-1 text-sm leading-6">
           You might be younger or older in realty, but here choose the ethnicity
           range that resembles you.

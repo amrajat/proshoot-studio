@@ -1,11 +1,7 @@
-import Heading from "@/components/shared/Heading";
-
 function Refunds() {
   return (
     <div className="space-y-4">
-      <Heading as="h2" id="refund" className="text-xl font-bold md:text-2xl">
-        Refund Policy
-      </Heading>
+      <h1>Refund Policy</h1>
 
       <section>
         <p>

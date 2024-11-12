@@ -1,11 +1,7 @@
-import Heading from "@/components/shared/Heading";
-
 function Terms() {
   return (
     <div className="space-y-4">
-      <Heading as="h2" id="terms">
-        Terms & Conditions
-      </Heading>
+      <h1>Terms & Conditions</h1>
 
       <p>
         Welcome to Proshoot.co! This document outlines the terms and conditions

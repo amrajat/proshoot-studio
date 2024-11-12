@@ -1,7 +1,6 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/homepage/Footer";
 import Container from "@/components/dashboard/Container";
-import Heading from "@/components/shared/Heading";
 
 import Terms from "@/app/legal/terms";
 import Privacy from "@/app/legal/privacy";
@@ -24,9 +23,7 @@ function Legal() {
 
       <Container>
         <div className="space-y-5 md:space-y-8">
-          <Heading as="h3" variant={"hero"}>
-            All Legal Polices
-          </Heading>
+          <h1>All Legal Polices</h1>
           <p>
             Please read our legal policies for better understanding and
             transparency.

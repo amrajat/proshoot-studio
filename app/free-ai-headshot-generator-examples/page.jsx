@@ -22,7 +22,7 @@ function Headshots() {
           <div className="bg-gradient-to-tl from-blue-50 via-blue-100 to-blue-50 blur-3xl w-[90rem] h-[50rem] roundeds origin-top-left -rotate-12 -translate-x-[15rem]   " />
         </div>
         {/* End Gradients */}
-        <div className="relative z-10">
+        <div className="relative">
           <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
             {/* Examples */}
             <AIHeadshotExamples />

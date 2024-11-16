@@ -63,12 +63,12 @@ function BottomCTA() {
             100% Money Back Guarantee
           </Badge>
           <div className="mt-8">
-            <Button asChild size="lg">
+            <Button asChild className="h-12 px-10">
               <Link
                 href="/dashboard/studio"
                 className="inline-flex items-center"
               >
-                Generate AI Headshots
+                Create AI Headshots
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>

@@ -10,44 +10,55 @@ const useCasesArray = [
   {
     id: "social-media",
     title: "Social Media",
+    heading:
+      "Boost Your Social Media Presence with Proshoot's AI Headshots Generator.",
     description:
-      "Stand out on platforms like LinkedIn, Facebook, and Instagram with a professional AI-generated headshot that captures your best self.",
+      "Create a unique business portrait to wear on social networks such as LinkedIn, Facebook, and Instagram that leaves an impact.",
     image: "/placeholder.svg",
   },
   {
     id: "teams",
     title: "Team Pages",
+    heading: "Unify Your Team with Consistent Proshoot's Company Headshots.",
     description:
-      "Create cohesive and professional team pages with AI-generated headshots that maintain a consistent style across your entire organization.",
+      "Create cohesive and professional team pages with AI-generated company headshots that maintain a consistent style across your entire organization.",
     image: "/placeholder.svg",
   },
   {
     id: "business-cards",
     title: "Business Cards",
+    heading:
+      "Make a Memorable First Impression with Business headshots on Cards.",
     description:
-      "Elevate your business cards with a striking AI-generated headshot that leaves a lasting impression on potential clients and partners.",
+      "Elevate your business cards with a stunning AI-generated headshot that captures your professional AI business photo.",
     image: "/placeholder.svg",
   },
   {
     id: "cv-resumes",
     title: "CV & Resumes",
+    heading:
+      "Get New Possibilities for Employment with Proshoot's AI-Based Headshots.",
     description:
-      "Enhance your CV or resume with a professional AI-generated headshot that helps you stand out to potential employers.",
-    image: "/placeholder.svg?height=400&width=600",
+      "Boost your cv or resume with a professional ai generated headshot that will help you impress your future employers.",
+    image: "/placeholder.svg",
   },
   {
     id: "email-signatures",
     title: "Email Signatures",
+    heading:
+      "Transform Your Email Signature with Proshoot's AI Headshots Generator.",
     description:
-      "Add a personal touch to your email communications with an AI-generated headshot in your signature, fostering better connections.",
-    image: "/placeholder.svg?height=400&width=600",
+      "Add a personal touch to your email communications and foster stronger connections with an AI business headshot in your signature.",
+    image: "/placeholder.svg",
   },
   {
     id: "personal-branding",
     title: "Personal Branding",
+    heading:
+      "Build a Strong Personal Brand with Proshoot's AI-Powered Headshots.",
     description:
-      "Establish a strong personal brand across all your online platforms with consistent, high-quality AI-generated headshots.",
-    image: "/placeholder.svg?height=400&width=600",
+      "Establish a strong personal brand across all your online platforms with consistent, high-quality Professional business headshots.",
+    image: "/placeholder.svg",
   },
 ];
 
@@ -59,10 +70,14 @@ export default function UseCases() {
       <div className="container mx-auto py-8 px-4">
         <SectionParaHeading
           badgeText={"Use cases"}
-          title={"Use Your AI Headshots everywhere, on the internet!"}
+          title={
+            "How you can use your AI Generated Headshots Everywhere on the Internet"
+          }
         >
-          use your ai generated professional headhots everywhere on the
-          internet, whenever you want, however you want.
+          Use your AI Professional Headshots everywhere on the internet,
+          whenever you want you can create AI business headshot photo and upload
+          it on different social media platforms, resumes, Email signatures, and
+          business cards let's see what it looks like.
         </SectionParaHeading>
         <Tabs
           defaultValue={useCasesArray[0].id}
@@ -102,7 +117,7 @@ export default function UseCases() {
                       </div>
                       <div className="w-full md:w-1/2 flex flex-col justify-center">
                         <h3 className="text-2xl font-semibold mb-4">
-                          {useCase.title}
+                          {useCase.heading}
                         </h3>
                         <p className="text-muted-foreground">
                           {useCase.description}

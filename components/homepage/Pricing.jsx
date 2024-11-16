@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { ArrowRight, Check, CheckCircle2, Star } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { ArrowRight, CheckCircle2, Star } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import {
   Card,
@@ -14,7 +14,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import SectionParaHeading from "@/components/shared/section-para-heading";
-import Tooltip from "@/components/shared/tooltip";
 
 const pricingPlans = [
   {
@@ -41,7 +40,6 @@ const pricingPlans = [
       "Ready within 2 Hours",
       "Money Back Guarantee",
       "1 Studio Redo",
-      "Priority Support",
     ],
   },
   {
@@ -54,9 +52,7 @@ const pricingPlans = [
       "20 Unique Backgrounds",
       "Ready within 2 Hours",
       "Money Back Guarantee",
-      "2 Studio Redos",
-      "Priority Support",
-      "Personal Branding Consultation",
+      "1 Studio Redo",
     ],
     popular: true,
   },
@@ -70,10 +66,7 @@ const pricingPlans = [
       "25 Unique Backgrounds",
       "Ready within 1 Hour",
       "Money Back Guarantee",
-      "3 Studio Redos",
-      "VIP Support",
-      "Personal Branding Consultation",
-      "Social Media Kit",
+      "1 Studio Redo",
     ],
   },
 ];
@@ -83,15 +76,15 @@ export default function Pricing() {
 
   return (
     // <section className="py-16 px-4 bg-background">
-    <section className="relative bg-gradient-to-b from-secondary to-background py-16 sm:py-24">
+    <section
+      id="pricing"
+      className="relative bg-gradient-to-b from-secondary to-background py-16 sm:py-24 px-4"
+    >
       <div className="container mx-auto">
-        <SectionParaHeading
-          badgeText={"One time fee"}
-          title={"Simple, Transparent Pricing"}
-        >
-          Choose the perfect plan for your needs. No hidden fees, no recurring
-          charges. You own your AI-generated headshots with full commercial
-          rights.
+        <SectionParaHeading badgeText={"One time fee"} title={"Pricing"}>
+          No recurring payments or hidden charges. You have complete ownership
+          and commercial rights to your images, allowing you to use them freely
+          without any restrictions.
         </SectionParaHeading>
 
         <div className="flex justify-center items-center space-x-4 mb-8">
@@ -172,10 +165,10 @@ export default function Pricing() {
             100% Satisfaction Guaranteed
           </h3>
           <p className="font-light text-foreground max-w-2xl mx-auto">
-            We're confident you'll love your AI-generated headshots. If you're
-            not completely satisfied, we offer a 30-day money-back guarantee. No
-            questions asked.{" "}
-            <Tooltip content="Read our refund policy better understanding and more transparency." />
+            We are certain you'll enjoy your AI Professional headshots created
+            using Proshoot AI Headshot Generator. However, in case of any
+            unsatisfactory experience, we request that you take advantage of our
+            7-days money-back promise.
           </p>
         </div>
       </div>

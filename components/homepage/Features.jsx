@@ -16,48 +16,50 @@ export default function Features() {
     () => [
       {
         title: "Highest Resemblance",
-        description: "Generate headshot images with close likeness to you.",
+        description:
+          "Our advanced AI algorithms ensure that your AI-generated headshots are a true reflection of you, preserving your distinctive features and personality.",
         icon: <Sparkles className="text-primary" aria-hidden="true" />,
       },
       {
         title: "Sharp Realistic",
         description:
-          "Generates ultra-realistic headshots without using harsh up-scalers that result in a plastic-like appearance.",
+          "Experience the sharpest, most realistic headshots. Our technology delivers high-resolution headshot photos with exceptional detail.",
         icon: <Camera className="text-primary" aria-hidden="true" />,
       },
       {
         title: "No Deformation",
-        description: "Ensures no distortions in your features.",
+        description:
+          "Say goodbye to unnatural deformations. Our best AI Headshot generator meticulously preserves your facial features, ensuring a natural and authentic look.",
         icon: <CheckCircle className="text-primary" aria-hidden="true" />,
       },
       {
         title: "High Resolution",
         description:
-          "Generates crisp, high-quality images. Read our faqs for better understanding headshot quality.",
+          "Whether you need headshots for LinkedIn, a resume, or a personal branding website, our high-resolution AI business Photo will impress.",
         icon: <ImageIcon className="text-primary" aria-hidden="true" />,
       },
       {
         title: "Maintains Ethnicity",
         description:
-          "Preserves your unique ethnic features. Read about our reddit contest to improve our ethnicity maintain feature.",
+          "Our AI respects and preserves your cultural identity, ensuring your business headshots accurately represent you.",
         icon: <Globe className="text-primary" aria-hidden="true" />,
       },
       {
-        title: "Ready within 2 Hours",
+        title: "Fast & Affordable",
         description:
-          "Fast delivery in under two hours. Read more in faqs for better understanding.",
+          "Get your AI professional headshots in as little as 2 hours. No more waiting weeks for a traditional photoshoot, at a fraction of the cost.",
         icon: <Clock className="text-primary" aria-hidden="true" />,
       },
       {
         title: "Money Back Guarantee",
         description:
-          "Guaranteed satisfaction or full refund. Please refer to our refund policy for better transparency.",
+          "We take pride in the reliability of AI-generated headshots. This is the reason why we offer a full money-back guarantee.",
         icon: <ShieldCheck className="text-primary" aria-hidden="true" />,
       },
       {
         title: "Many Variations",
         description:
-          "Offers diverse styles, poses, clothes, grooming hair styles and more options.",
+          "Explore a vast array of styles, backgrounds, and lighting options to create business headshots that perfectly align with your brand.",
         icon: <Layers className="text-primary" aria-hidden="true" />,
       },
     ],
@@ -68,13 +70,14 @@ export default function Features() {
     <section className="bg-gradient-to-b from-secondary to-background py-8 sm:py-16 md:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tighter lg:leading-[1.1] text-center mb-4">
-          AI is Improving Every Day, and so are We.
+          Effortless, Instant Professional Headshots
         </h2>
         <p className="text-base sm:text-lg font-light text-foreground mb-8 text-center max-w-4xl mx-auto">
-          Although AI is still in a developing phase, which it will always be
-          due to its learning nature, we continuously upgrade our image
-          generation models. This allows us to provide realistic professional
-          headshots with the highest level of resemblance available today.
+          Our AI Professional Business Headshots Generator is a testament to
+          this ongoing innovation. By harnessing the power of AI, we deliver
+          high-quality, AI professional headshots tailored to your unique needs.
+          As AI improves, so does our ability to create even more realistic and
+          stunning business headshots.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0 relative z-10 py-10 max-w-7xl mx-auto">
           {features.map((feature, index) => (

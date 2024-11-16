@@ -7,36 +7,59 @@ import { AvatarFallback } from "@radix-ui/react-avatar";
 import FooterCTA from "@/components/homepage/FooterCTA";
 
 const footerLinks = [
-  {
-    section: "Free Tools",
-    links: ["Pricing", "Blog", "Affiliate", "Examples"],
-  },
-  {
-    section: "Resources",
-    links: ["Pricing", "Blog", "Affiliate", "Examples"],
-  },
+  // {
+  //   section: "Free Tools",
+  //   links: [
+  //     { title: "Pricing", href: "/pricing" },
+  //     { title: "Blog", href: "/blog" },
+  //     { title: "Affiliate", href: "/affiliate" },
+  //     { title: "Examples", href: "/examples" },
+  //   ],
+  // },
+  // {
+  //   section: "Resources",
+  //   links: [
+  //     { title: "Pricing", href: "/pricing" },
+  //     { title: "Blog", href: "/blog" },
+  //     { title: "Affiliate", href: "/affiliate" },
+  //     { title: "Examples", href: "/examples" },
+  //   ],
+  // },
   {
     section: "Helpful Links",
-    links: ["Pricing", "Blog", "Affiliate", "Examples"],
+    links: [
+      { title: "Pricing", href: "/#pricing" },
+      { title: "Blog", href: "/blog" },
+      { title: "Affiliate", href: "/affiliate" },
+      { title: "Examples", href: "/free-ai-headshot-generator-examples" },
+    ],
   },
   {
     section: "Legals",
     links: [
-      "Terms & Conditions",
-      "Privacy Policy",
-      "Disclaimer",
-      "Refund Policy",
-      "Fair Usage Policy",
-      "Sub Processors",
+      { title: "Terms & Conditions", href: "/legal#terms" },
+      { title: "Privacy Policy", href: "/legal#privacy" },
+      { title: "Disclaimer", href: "/legal#disclaimer" },
+      { title: "Refund Policy", href: "/legal#refund" },
+      { title: "Fair Usage Policy", href: "/legal#fair-usage" },
+      { title: "Sub Processors", href: "/legal#sub-processors" },
     ],
   },
   {
     section: "Company",
-    links: ["Pricing", "Blog", "Affiliate", "Examples"],
+    links: [
+      { title: "About Us", href: "/about" },
+      { title: "Contact", href: "/contact" },
+    ],
   },
   {
     section: "Special Categories",
-    links: ["NGOs", "Education", "Influencer", "Reviewer SaaS/AI/Other"],
+    links: [
+      { title: "NGOs", href: "/free-ai-portrait-generator" },
+      { title: "Education", href: "/free-ai-portrait-generator" },
+      { title: "Influencer", href: "/free-ai-portrait-generator" },
+      { title: "Reviewer SaaS/AI/Other", href: "/free-ai-portrait-generator" },
+    ],
   },
 ];
 
@@ -44,11 +67,11 @@ export default function Footer() {
   return (
     <>
       <FooterCTA />
-      <footer className="bg-gradient-to-b from-secondary to-background py-16 px-4 sm:px-6 lg:px-8">
+      <footer className="bg-foreground py-16 px-4 sm:px-6 lg:px-8 text-muted-foreground">
         <div className="container mx-auto">
           <div className="flex flex-col lg:flex-row justify-between items-center mb-12 space-y-6 lg:space-y-0">
             <div className="flex flex-col items-center md:flex-row md:justify-center gap-4">
-              <Logo />
+              <Logo type="white" />
               <StarRatings />
               <div className="flex -space-x-2">
                 {[1, 2, 3].map((avatar, i) => (
@@ -64,40 +87,32 @@ export default function Footer() {
                   </Avatar>
                 ))}
               </div>
-              <p className="text-sm text-muted-foreground text-center">
+              <p className="text-sm text-center">
                 Trusted by{" "}
                 <span className="font-bold">7,000+ happy customers</span>
               </p>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold lg:max-w-2xl leading-tight tracking-tighter text-center md:text-4xl lg:leading-[1.1]">
-              Improve your personal brand. Today!
+            <h2 className="text-3xl sm:text-4xl font-bold lg:max-w-2xl leading-tight tracking-tighter text-center md:text-4xl lg:leading-[1.1] text-primary">
+              grow your online presence
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             {footerLinks.map((section, index) => (
               <div key={index} className="flex flex-col justify-self-start">
-                <h4 className="text-lg font-bold mb-4 leading-tight lg:leading-[1.1] h-10 flex items-center">
+                <h4 className="text-lg font-bold mb-4 leading-tight lg:leading-[1.1] h-10 flex items-center text-primary">
                   {section.section}
                 </h4>
                 <div className="flex flex-col gap-y-2">
                   {section.links.map((link, linkIndex) => (
                     <Button
                       key={linkIndex}
-                      variant={"link"}
-                      className="px-0 justify-start"
+                      variant="link"
+                      className="px-0 justify-start text-muted-foreground hover:text-primary"
                       asChild
                     >
-                      <Link href="/login">{link}</Link>
+                      <Link href={link.href}>{link.title}</Link>
                     </Button>
-
-                    // <Link
-
-                    //   href={"/"}
-                    //   className="text-md font-light text-foreground"
-                    // >
-                    //   {link}
-                    // </Link>
                   ))}
                 </div>
               </div>

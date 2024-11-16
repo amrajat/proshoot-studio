@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Upload, Sparkles, Download, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import SectionParaHeading from "@/components/shared/section-para-heading";
 import Link from "next/link";
 import Image from "next/image";
-import { Badge } from "../ui/badge";
+import { Badge } from "@/components/ui/badge";
+
 export default function HowItWorks() {
   const [activeStep, setActiveStep] = useState(0);
 
@@ -16,21 +16,21 @@ export default function HowItWorks() {
     {
       title: "Upload Your Images",
       description:
-        "Upload 10-20 selfies with varied expressions and angles. Use a plain background for best results.",
+        "Select and upload your best everyday photos to create your headshots.",
       icon: <Upload className="w-6 h-6 text-destructive" />,
       image: "/how-it-works.png",
     },
     {
       title: "AI Magic Happens",
       description:
-        "Our advanced AI analyzes your photos and generates a diverse set of professional headshots.",
+        "Our AI works its magic, creating a professional-grade headshot photo.",
       icon: <Sparkles className="w-6 h-6 text-destructive" />,
       image: "/how-it-works.png",
     },
     {
       title: "Download & Use",
       description:
-        "Choose your favorite AI-generated headshots. Perfect for LinkedIn, company websites, or personal branding!",
+        "Your professional headshots are available for download instantly.",
       icon: <Download className="w-6 h-6 text-destructive" />,
       image: "/how-it-works.png",
     },
@@ -41,28 +41,24 @@ export default function HowItWorks() {
       <div className="container mx-auto px-4">
         <SectionParaHeading
           badgeText={"How It Works"}
-          title={"Choose Our AI Headshots?"}
+          title={"How Proshoot Change Your Selfie into a Professional Headshot"}
         >
-          Transform your selfies into professional headshots with our
-          cutting-edge AI technology.
+          Save time and money with ProShoot's AI Headshot Generator. Eliminate
+          the inconvenience that comes with conventional photo shoots. In a
+          matter of minutes rather than hours create professional and quality
+          headshots.
         </SectionParaHeading>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="flex flex-col lg:flex-row gap-8">
           {steps.map((step, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.2 }}
-              className="flex"
-            >
+            <div key={index} className="flex">
               <Card
-                className={`flex flex-col cursor-pointer transition-all duration-300 hover:shadow-lg ${
+                className={`flex-1 flex flex-col cursor-pointer transition-all duration-300 hover:shadow-lg ${
                   activeStep === index ? "ring-2 ring-primary" : ""
                 }`}
                 onClick={() => setActiveStep(index)}
               >
-                <CardHeader className="flex-grow">
+                <CardHeader className="flex-grow flex flex-col justify-between">
                   <div className="flex items-center gap-4 mb-4">
                     <Badge className="px-4 py-0.8 text-lg font-bold">
                       {index + 1}
@@ -71,8 +67,8 @@ export default function HowItWorks() {
                   </div>
                   <p className="text-muted-foreground">{step.description}</p>
                 </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="relative h-48 bg-gray-200 rounded-md overflow-hidden group">
+                <CardContent className="pt-4 flex-shrink-0">
+                  <div className="relative h-48 lg:h-64 bg-gray-200 rounded-md overflow-hidden group">
                     <Image
                       src={step.image}
                       alt={`Step ${index + 1}`}
@@ -88,16 +84,11 @@ export default function HowItWorks() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </div>
           ))}
         </div>
 
-        <motion.div
-          className="mt-16 text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
+        <div className="mt-16 text-center">
           <Link
             href="/dashboard"
             className={buttonVariants({
@@ -108,10 +99,7 @@ export default function HowItWorks() {
             Generate AI Headshots
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
-          {/* <p className="mt-4 text-sm text-muted-foreground">
-            No credit card required | 100% satisfaction guaranteed
-          </p> */}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

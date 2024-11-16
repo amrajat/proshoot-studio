@@ -1,7 +1,5 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   CheckCircle2,
@@ -14,99 +12,103 @@ import SectionParaHeading from "@/components/shared/section-para-heading";
 import Image from "next/image";
 
 export default function Comparison() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
   const features = {
     better: [
       {
-        title: "Studio 4K quality, hyper-realistic",
+        title: "Ultra-Realistic, Professional Headshots",
         description:
-          "Professional-grade photos indistinguishable from traditional photography",
+          "Our AI-generated headshots are designed with precision to deliver high-quality, lifelike photos that rival traditional photography.",
         icon: CheckCircle2,
       },
       {
-        title: "Integrated face-matching protocol",
+        title: "Advanced Face-Matching Technology",
         description:
-          "Advanced AI ensures consistent identity across all generated photos",
+          "Our AI algorithms ensure consistent identity and high resemblance across all headshots, providing unmatched quality.",
         icon: CheckCircle2,
       },
       {
-        title: "Strict data protection policies",
+        title: "Robust Data Privacy and Protection",
         description:
-          "Enterprise-level security protecting your personal information",
+          "Your data is safeguarded with enterprise-level security, ensuring the utmost protection of your personal information.",
         icon: CheckCircle2,
       },
       {
-        title: "Guaranteed results",
-        description: "Option to redo, AI edits and Human Edits included",
+        title: "Satisfaction Guaranteed or Your Money Back",
+        description:
+          "We stand by our quality. If you're not satisfied, we offer options for re-edits or a full refund.",
         icon: CheckCircle2,
       },
       {
-        title: "Quick, perceptive customer service",
-        description: "24/7 support with real human assistance",
+        title: "24/7 Support from Real People",
+        description:
+          "Our dedicated team is here to help whenever you need it, with prompt, human-centered customer support.",
         icon: CheckCircle2,
       },
     ],
     alternatives: [
       {
-        title: "Low-quality, obviously AI generated",
-        description: "Inconsistent quality with visible artifacts",
+        title: "Low-Quality, Artificial Appearance",
+        description:
+          "Other providers often deliver headshots that look obviously AI-generated, lacking natural realism.",
         icon: XCircle,
       },
       {
-        title: "Randomly generated faces",
-        description: "Unreliable face matching leading to inconsistent results",
+        title: "Inconsistent Identity Across Photos",
+        description:
+          "Some services produce random, inconsistent results, making it hard to achieve a cohesive professional look.",
         icon: AlertCircle,
       },
       {
-        title: "Low-level data safety",
-        description: "Basic security measures putting your data at risk",
+        title: "Minimal Data Security Measures",
+        description:
+          "Basic security protocols leave your personal information vulnerable, risking data privacy.",
         icon: ShieldAlert,
       },
       {
-        title: "Issues with 'guaranteed' money-back",
-        description: "Complex refund processes with multiple conditions",
+        title: "Complicated Refund Policies",
+        description:
+          "Many alternatives have strict and complex refund policies, making it difficult to claim a guaranteed refund.",
         icon: XCircle,
       },
       {
-        title: "Long waiting periods, lack of real help",
-        description: "Automated responses and delayed support",
+        title: "Slow, Automated Customer Support",
+        description:
+          "Long wait times and automated responses can leave you without the support you need, when you need it.",
         icon: Clock,
       },
     ],
   };
 
   return (
-    <section
-      ref={ref}
-      className="bg-gradient-to-b from-secondary to-background py-16 sm:py-24"
-    >
+    <section className="bg-gradient-to-b from-secondary to-background py-16 sm:py-24 px-4">
       <div className="max-w-7xl mx-auto">
         <SectionParaHeading
           badgeText={"comparison"}
-          title={"Why Choose Our AI Headshots?"}
+          title={"Why Choose Proshoot AI Headshot Generator?"}
         >
-          See how our professional AI headshot generator stands out from the
-          competition.
+          Build your online presence with ProShoot's AI Headshot Generator.
+          Eliminate the hassle and costs of booking a professional photographer
+          while still getting impeccable results. Our best AI headshot generator
+          provides high-quality and tailor-made headshot Photos that are
+          suitable for LinkedIn, CVs, as well as personal branding. Take
+          headshots the advanced way, today.
         </SectionParaHeading>
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Proshoot Column */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
+          <div>
             <Card className="relative h-full overflow-hidden bg-primary/5 border-primary/10">
               <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
               <CardContent className="p-6">
                 <div className="mb-8">
-                  <h3 className="text-2xl font-bold text-primary mb-2">
-                    Proshoot.co
-                  </h3>
+                  <div className="flex gap-1 items-center mb-2">
+                    <CheckCircle2 className="w-6 h-6 text-primary shrink-0" />
+                    <h3 className="text-2xl font-bold text-primary">
+                      Proshoot.co{" "}
+                    </h3>
+                  </div>
                   <p className="text-muted-foreground">
-                    Professional AI Headshot Generation
+                    Proshoot Professional AI Headshots Generator.
                   </p>
                 </div>
 
@@ -129,14 +131,8 @@ export default function Comparison() {
                   </div>
 
                   <div className="space-y-6">
-                    {features.better.map((feature, i) => (
-                      <motion.div
-                        key={feature.title}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={isInView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
-                        className="flex gap-4"
-                      >
+                    {features.better.map((feature) => (
+                      <div key={feature.title} className="flex gap-4">
                         <feature.icon className="w-6 h-6 text-primary shrink-0" />
                         <div>
                           <h4 className="font-semibold mb-1">
@@ -146,28 +142,30 @@ export default function Comparison() {
                             {feature.description}
                           </p>
                         </div>
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
 
           {/* Alternatives Column */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
+          <div>
             <Card className="h-full border-muted bg-muted/5">
               <CardContent className="p-6">
                 <div className="mb-8">
-                  <h3 className="text-2xl font-bold text-muted-foreground mb-2">
-                    Known Alternatives
-                  </h3>
+                  <div className="flex gap-1 items-center mb-2">
+                    <XCircle
+                      className="w-6 h-6 text-destructive shrink-0"
+                      aria-hidden="true"
+                    />
+                    <h3 className="text-2xl font-bold text-muted-foreground">
+                      Known Alternatives
+                    </h3>
+                  </div>
                   <p className="text-muted-foreground">
-                    Common Issues with Other Solutions
+                    Common Issues with Other Solutions.
                   </p>
                 </div>
 
@@ -194,14 +192,8 @@ export default function Comparison() {
                   </div>
 
                   <div className="space-y-6">
-                    {features.alternatives.map((feature, i) => (
-                      <motion.div
-                        key={feature.title}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={isInView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.5, delay: 0.4 + i * 0.1 }}
-                        className="flex gap-4"
-                      >
+                    {features.alternatives.map((feature) => (
+                      <div key={feature.title} className="flex gap-4">
                         <feature.icon className="w-6 h-6 text-destructive shrink-0" />
                         <div>
                           <h4 className="font-semibold mb-1">
@@ -211,13 +203,13 @@ export default function Comparison() {
                             {feature.description}
                           </p>
                         </div>
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

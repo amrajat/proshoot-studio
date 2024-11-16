@@ -27,72 +27,44 @@ const headshots = [
   {
     title: "LinkedIn Headshots",
     href: "#",
-    description: "Our flagship product with cutting-edge features.",
+    description: "Boost your Linkedin Profile with Linkedin Headshots",
   },
   {
     title: "Model Headshots",
     href: "#",
-    description: "An affordable solution for small businesses.",
+    description: "Become Eye-Cating Model with Model Headshots.",
   },
   {
     title: "Realtor Headshots",
     href: "#",
-    description: "Enterprise-grade software for large organizations.",
+    description: "Best Realtor Headshots for home buyer and seller.",
   },
   {
     title: "Executive Headshots",
     href: "#",
-    description: "Customizable platform for unique business needs.",
+    description: "Make Executive Headshots for Leaders.",
   },
   {
     title: "Medical Headshots",
     href: "#",
-    description: "Customizable platform for unique business needs.",
+    description: "Get Your Quick Medical Headshots Now.",
   },
   {
     title: "Corporate Headshots",
     href: "#",
-    description: "Customizable platform for unique business needs.",
+    description: "Create High - Quality Corporate Headshots.",
   },
   {
     title: "Actor Headshots",
     href: "#",
-    description: "Customizable platform for unique business needs.",
-  },
-  {
-    title: "Tech Headshots",
-    href: "#",
-    description: "Customizable platform for unique business needs.",
-  },
-  {
-    title: "Creative Headshots",
-    href: "#",
-    description: "Customizable platform for unique business needs.",
+    description: "Become Inspiring with Actor Headshots.",
   },
   {
     title: "Eras Headshots",
     href: "#",
-    description: "Customizable platform for unique business needs.",
+    description: "Your Go to Professional ERAS Headshot.",
   },
 ];
-
-// const resources = [
-//   {
-//     title: "Documentation",
-//     href: "/docs",
-//     description: "Comprehensive guides and API references.",
-//   },
-//   {
-//     title: "Blog",
-//     href: "/blog",
-//     description: "Latest news, tips, and best practices.",
-//   },
-//   {
-//     title: "Community",
-//     href: "/community",
-//     description: "Join our vibrant community of developers.",
-//   },
-// ];
 
 export default function NavBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -135,38 +107,15 @@ export default function NavBar() {
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger>Headshot Type</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                        {headshots.map((component) => (
-                          <ListItem
-                            key={component.title}
-                            title={component.title}
-                            href={component.href}
-                          >
-                            {component.description}
-                          </ListItem>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
+                    <Link href="/" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        className={navigationMenuTriggerStyle()}
+                      >
+                        Home
+                      </NavigationMenuLink>
+                    </Link>
                   </NavigationMenuItem>
                   {/* <NavigationMenuItem>
-                    <NavigationMenuTrigger>Resources</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                        {resources.map((resource) => (
-                          <ListItem
-                            key={resource.title}
-                            title={resource.title}
-                            href={resource.href}
-                          >
-                            {resource.description}
-                          </ListItem>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem> */}
-                  <NavigationMenuItem>
                     <Link href="/company-headshots" legacyBehavior passHref>
                       <NavigationMenuLink
                         className={navigationMenuTriggerStyle()}
@@ -174,7 +123,7 @@ export default function NavBar() {
                         Company Headshots
                       </NavigationMenuLink>
                     </Link>
-                  </NavigationMenuItem>
+                  </NavigationMenuItem> */}
                   <NavigationMenuItem>
                     <Link href="/#pricing" legacyBehavior passHref>
                       <NavigationMenuLink
@@ -185,11 +134,16 @@ export default function NavBar() {
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
-                    <Link href="/examples" legacyBehavior passHref>
+                    <Link
+                      // href="/ai-generated-headshots-reviews"
+                      href="free-ai-headshot-generator-examples"
+                      legacyBehavior
+                      passHref
+                    >
                       <NavigationMenuLink
                         className={navigationMenuTriggerStyle()}
                       >
-                        Examples
+                        Reviews & Examples
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
@@ -203,26 +157,45 @@ export default function NavBar() {
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
-                    <Link href="/blog" legacyBehavior passHref>
+                    <Link href="/#faqs" legacyBehavior passHref>
                       <NavigationMenuLink
                         className={navigationMenuTriggerStyle()}
                       >
-                        Blog
+                        FAQs
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
+                  {/* <NavigationMenuItem>
+                    <NavigationMenuTrigger>Headshot Type</NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                        {headshots.map((component) => (
+                          <ListItem
+                            key={component.title}
+                            title={component.title}
+                            href={
+                              "/headshot-type/" +
+                              component.title.replaceAll(" ", "-").toLowerCase()
+                            }
+                          >
+                            {component.description}
+                          </ListItem>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem> */}
                 </NavigationMenuList>
               </NavigationMenu>
             </div>
             <div className="hidden lg:block">
               <Link
-                href="/dashboard"
+                href="/auth"
                 className={buttonVariants({
                   variant: "destructive",
                   size: "lg",
                 })}
               >
-                Generate <ArrowRight className="ml-2 h-5 w-5" />
+                Get Started <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </div>
             <div className="lg:hidden">
@@ -245,27 +218,32 @@ export default function NavBar() {
         {isMobileMenuOpen && (
           <div className="lg:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <MobileNavItem href="#" title="Headshot Type">
+              <MobileNavItem href="/" title="Home" />
+              {/* <MobileNavItem
+                href="/company-headshots"
+                title="Company Headshots"
+              /> */}
+              <MobileNavItem href="/#pricing" title="Pricing" />
+              <MobileNavItem
+                // href="/ai-generated-headshots-reviews"
+                href="free-ai-headshot-generator-examples"
+                title="Reviews & Examples"
+              />
+              <MobileNavItem href="/contact" title="Contact" />
+              <MobileNavItem href="/#faqs" title="FAQs" />
+
+              {/* <MobileNavItem href="#" title="Headshot Type">
                 {headshots.map((component) => (
                   <MobileNavSubItem
                     key={component.title}
-                    href={component.href}
+                    href={
+                      "/headshot-type/" +
+                      component.title.replaceAll(" ", "-").toLowerCase()
+                    }
                     title={component.title}
                   />
                 ))}
-              </MobileNavItem>
-              {/* <MobileNavItem href="#" title="Resources">
-                {resources.map((resource) => (
-                  <MobileNavSubItem
-                    key={resource.title}
-                    href={resource.href}
-                    title={resource.title}
-                  />
-                ))}
               </MobileNavItem> */}
-              <MobileNavItem href="/pricing" title="Pricing" />
-              <MobileNavItem href="/examples" title="Examples" />
-              <MobileNavItem href="/contact" title="Contact" />
             </div>
             <div className="pt-4 pb-3 border-t border-accent">
               <div className="px-2">

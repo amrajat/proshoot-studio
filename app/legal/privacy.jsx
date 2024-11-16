@@ -1,7 +1,9 @@
+import Heading from "@/components/shared/heading";
+
 function Privacy() {
   return (
     <div className="space-y-4">
-      <h1>Privacy Policy</h1>
+      <Heading variant={"subtitle"}>Privacy Policy</Heading>
 
       <p>
         Prime AI Company ("Prime AI," "we," "us," or "our") is committed to
@@ -15,16 +17,16 @@ function Privacy() {
         <p>We collect two types of information through Proshoot.co:</p>
         <ul>
           <li>
-            <strong>Personal Information:</strong> This includes information
-            that can identify you, such as your name and email address
-            (optional, for account creation). We only collect this information
-            if you choose to create an account on our platform.
+            Personal Information: This includes information that can identify
+            you, such as your name and email address (optional, for account
+            creation). We only collect this information if you choose to create
+            an account on our platform.
           </li>
           <li>
-            <strong>Non-Personal Information:</strong> This includes information
-            that cannot directly identify you, such as device information, IP
-            address, browsing activity on our Website, and the number of times
-            you use the Services to generate headshots.
+            Non-Personal Information: This includes information that cannot
+            directly identify you, such as device information, IP address,
+            browsing activity on our Website, and the number of times you use
+            the Services to generate headshots.
           </li>
         </ul>
       </section>

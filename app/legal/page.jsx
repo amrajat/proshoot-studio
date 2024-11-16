@@ -8,6 +8,7 @@ import Disclaimer from "@/app/legal/disclaimer";
 import Refunds from "@/app/legal/refunds";
 import FairUsage from "@/app/legal/fup";
 import SubProcessors from "@/app/legal/sub-processors";
+import Heading from "@/components/shared/heading";
 
 export const metadata = {
   title: { absolute: "Legal Policies" },
@@ -23,21 +24,20 @@ function Legal() {
 
       <Container>
         <div className="space-y-5 md:space-y-8">
-          <h1>All Legal Polices</h1>
+          <Heading variant={"hero"}>Legal Policies</Heading>
           <p>
             Please read our legal policies for better understanding and
             transparency.
           </p>
 
+          <Refunds />
           <Terms />
-
           <Privacy />
           <Disclaimer />
-          <Refunds />
           <FairUsage />
           <SubProcessors />
 
-          <p>Page Last Updated: Saturday, May 05, 2024</p>
+          <p>Page Last Updated: Saturday, Nov 16, 2024</p>
         </div>
       </Container>
       <Footer />

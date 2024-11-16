@@ -1,7 +1,9 @@
+import Heading from "@/components/shared/heading";
+
 function SubProcessors() {
   return (
     <div className="space-y-4">
-      <h1>Sub-Processors</h1>
+      <Heading variant={"subtitle"}>Sub-Processors</Heading>
 
       <section>
         <p>
@@ -40,8 +42,7 @@ function SubProcessors() {
         </p>
         <p>
           Proshoot customers wishing to sign a Data Processing Agreement (DPA)
-          can reach out via email at{" "}
-          <a href="mailto:legal@postcrafts.com">legal@postcrafts.com</a>.
+          can reach out via email at support@proshoot-dot-co.
         </p>
       </section>
 
@@ -68,64 +69,61 @@ function SubProcessors() {
           processing needs as required by the services.
         </p>
 
-        <table className="border-collapse border border-gray-300 w-full">
+        <table className="border-collapse border border-gray-300 w-full mt-2">
           <thead>
             <tr>
-              <th className="border border-gray-300 p-2">Entity Name</th>
-              <th className="border border-gray-300 p-2">Entity Type</th>
-              <th className="border border-gray-300 p-2">Entity Country</th>
+              <th className="border border-gray-300 p-2">Entity</th>
+              <th className="border border-gray-300 p-2">Type</th>
+              <th className="border border-gray-300 p-2">Country</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td className="border border-gray-300 p-2">Render</td>
+              <td className="border border-gray-300 p-2">Vercel, Inc.</td>
+              <td className="border border-gray-300 p-2">Cloud Data Center</td>
+              <td className="border border-gray-300 p-2">US</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 p-2">Supabase</td>
               <td className="border border-gray-300 p-2">
-                Cloud Computing/Data Center Hosting
+                Cloud Database and Storage
               </td>
               <td className="border border-gray-300 p-2">US</td>
             </tr>
             <tr>
-              <td className="border border-gray-300 p-2">
-                Google Cloud Platform
-              </td>
-              <td className="border border-gray-300 p-2">
-                Cloud Computing/Data Center Hosting
-              </td>
-              <td className="border border-gray-300 p-2">EU/US</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 p-2">MongoDB, Inc.</td>
-              <td className="border border-gray-300 p-2">
-                Cloud Database/Data Center Hosting
-              </td>
+              <td className="border border-gray-300 p-2">Replicate, Inc.</td>
+              <td className="border border-gray-300 p-2">AGI</td>
               <td className="border border-gray-300 p-2">US</td>
             </tr>
             <tr>
-              <td className="border border-gray-300 p-2">Replicate Inc.</td>
+              <td className="border border-gray-300 p-2">Cloudnary, Inc.</td>
               <td className="border border-gray-300 p-2">
-                AI Processing and Training
-              </td>
-              <td className="border border-gray-300 p-2">US</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 p-2">
-                Features & Labels (Fal.ai)
-              </td>
-              <td className="border border-gray-300 p-2">
-                AI Processing and Training
+                AI based Image Processing and Manipulation
               </td>
               <td className="border border-gray-300 p-2">US</td>
             </tr>
             <tr>
               <td className="border border-gray-300 p-2">Cloudflare Inc.</td>
-              <td className="border border-gray-300 p-2">Data Storage</td>
+              <td className="border border-gray-300 p-2">
+                Data Storage, CND and Security
+              </td>
               <td className="border border-gray-300 p-2">US</td>
             </tr>
             <tr>
               <td className="border border-gray-300 p-2">OpenAI</td>
+              <td className="border border-gray-300 p-2">AGI</td>
+              <td className="border border-gray-300 p-2">US</td>
+            </tr>
+            <tr>
+              <td className="border border-gray-300 p-2">Anthropic PBC</td>
+              <td className="border border-gray-300 p-2">AGI</td>
+              <td className="border border-gray-300 p-2">US</td>
+            </tr>
+            <tr>
               <td className="border border-gray-300 p-2">
-                AI Processing, Content Generation, and Vision
+                Amazon Web Services
               </td>
+              <td className="border border-gray-300 p-2">Cloud Data Center</td>
               <td className="border border-gray-300 p-2">US</td>
             </tr>
           </tbody>
@@ -141,107 +139,30 @@ function SubProcessors() {
           as indicated below.
         </p>
 
-        <table className="border-collapse border border-gray-300 w-full">
+        <table className="border-collapse border border-gray-300 w-full mt-2">
           <thead>
             <tr>
-              <th className="border border-gray-300 p-2">Entity Name</th>
+              <th className="border border-gray-300 p-2">Entity</th>
               <th className="border border-gray-300 p-2">Purpose</th>
-              <th className="border border-gray-300 p-2">Entity Country</th>
+              <th className="border border-gray-300 p-2">Country</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td className="border border-gray-300 p-2">Crisp, IM SAS</td>
-              <td className="border border-gray-300 p-2">Customer Support</td>
-              <td className="border border-gray-300 p-2">EU</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 p-2">
-                Bento, Backpack Internet Pty. Ltd
-              </td>
-              <td className="border border-gray-300 p-2">Email Marketing</td>
-              <td className="border border-gray-300 p-2">Australia</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 p-2">Posthog</td>
+              <td className="border border-gray-300 p-2">Google Analytics</td>
               <td className="border border-gray-300 p-2">Analytics</td>
               <td className="border border-gray-300 p-2">US</td>
             </tr>
             <tr>
-              <td className="border border-gray-300 p-2">Stripe</td>
-              <td className="border border-gray-300 p-2">Payment Processing</td>
-              <td className="border border-gray-300 p-2">US</td>
+              <td className="border border-gray-300 p-2">Zoho Corporation</td>
+              <td className="border border-gray-300 p-2">Customer Support</td>
+              <td className="border border-gray-300 p-2">India</td>
             </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section>
-        <h2>Content Delivery Networks (CDNs)</h2>
-        <p>
-          Proshoot may leverage content delivery networks (“CDNs”) to deliver
-          services, enhance security, and optimize performance. CDNs are
-          distributed systems that enable faster content delivery based on
-          geographic location. Content served to site visitors and domain
-          details may be stored within a CDN for quick access. Information
-          transmitted through a CDN may be accessed by that CDN to carry out its
-          functions. Below are the CDNs utilized by Proshoot’s services.
-        </p>
-
-        <table className="border-collapse border border-gray-300 w-full">
-          <thead>
-            <tr>
-              <th className="border border-gray-300 p-2">CDN Provider</th>
-              <th className="border border-gray-300 p-2">Services Using CDN</th>
-              <th className="border border-gray-300 p-2">
-                Description of CDN Services
-              </th>
-              <th className="border border-gray-300 p-2">CDN Location</th>
-            </tr>
-          </thead>
-          <tbody>
             <tr>
               <td className="border border-gray-300 p-2">
-                Google Cloud Platform
+                Lemon Squeezy & Stripe
               </td>
-              <td className="border border-gray-300 p-2">
-                All Proshoot Services
-              </td>
-              <td className="border border-gray-300 p-2">
-                Public website content for visitors is stored with Cloudflare,
-                Inc., and transmitted to expedite loading speeds.
-              </td>
-              <td className="border border-gray-300 p-2">Global</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section>
-        <h2>Advertising Partners</h2>
-        <p>
-          Proshoot uses third-party advertising services to provide targeted
-          advertisements. These services may collect and use customer data to
-          deliver customized advertising experiences.
-        </p>
-
-        <table className="border-collapse border border-gray-300 w-full">
-          <thead>
-            <tr>
-              <th className="border border-gray-300 p-2">Entity Name</th>
-              <th className="border border-gray-300 p-2">Purpose</th>
-              <th className="border border-gray-300 p-2">Entity Country</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border border-gray-300 p-2">Facebook</td>
-              <td className="border border-gray-300 p-2">Advertising</td>
-              <td className="border border-gray-300 p-2">US</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 p-2">Google LLC</td>
-              <td className="border border-gray-300 p-2">Advertising</td>
+              <td className="border border-gray-300 p-2">Payment Gateway</td>
               <td className="border border-gray-300 p-2">US</td>
             </tr>
           </tbody>

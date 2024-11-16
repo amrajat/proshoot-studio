@@ -1,7 +1,9 @@
+import Heading from "@/components/shared/heading";
+
 function Terms() {
   return (
     <div className="space-y-4">
-      <h1>Terms & Conditions</h1>
+      <Heading variant={"subtitle"}>Terms & Conditions</Heading>
 
       <p>
         Welcome to Proshoot.co! This document outlines the terms and conditions
@@ -20,12 +22,8 @@ function Terms() {
           utilizes artificial intelligence (AI) to generate professional-quality
           corporate portraits. The Services allow you to:
         </p>
-        <ul>
-          <li>Upload your photo</li>
-          <li>Select desired background and attire options</li>
-          <li>Generate multiple headshot variations</li>
-          <li>Download your chosen headshot(s)</li>
-        </ul>
+        Upload your photo, Select desired background and attire options,
+        Generate multiple headshot variations, Download your chosen headshot(s),
       </section>
 
       <section>

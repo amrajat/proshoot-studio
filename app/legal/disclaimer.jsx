@@ -1,7 +1,9 @@
+import Heading from "@/components/shared/heading";
+
 function Disclaimer() {
   return (
     <div className="space-y-4">
-      <>Disclaimer</>
+      <Heading variant={"subtitle"}>Disclaimer</Heading>
 
       <section>
         <h3>Limitations of Liability and Disclaimers</h3>

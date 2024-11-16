@@ -1,50 +1,9 @@
 "use client";
-import { ArrowRight, Check, Quote, Sparkles, X } from "lucide-react";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import Image from "next/image";
-import { useState } from "react";
+import { ArrowRight } from "lucide-react";
 import SectionParaHeading from "@/components/shared/section-para-heading";
 import StarRatings from "@/components/shared/star-ratings";
-
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import Link from "next/link";
 import Reviews from "@/components/shared/Reviews";
-
-// Mock data for reviews
-const mockReviews = Array(30)
-  .fill(null)
-  .map((_, i) => ({
-    id: i + 1,
-    name: `User ${i + 1}`,
-    rating: Math.floor(Math.random() * 5) + 1,
-    // Comment limit is already set so don't exceed this comment limit.
-    comment: `This is a sample review ${
-      i + 1
-    }. The product is great! I'd highly recommend everyone. The moment i got my images i was very happy`,
-    image: `/examples/ai-portrait-1.jpg`,
-  }));
-
-const aiSummary = {
-  id: "ai-summary",
-  name: "AI Summary",
-  rating: 5,
-  image: "/examples/ai-portrait-1.jpg",
-  comment: `Customers find the headshots easy to generate and appreciate
-                    the high resolution, realistic look, and accurate ethnicity
-                    representation. Many mention satisfaction with the strong
-                    resemblance to their features and the variety of style
-                    options available. They also highlight that the headshots
-                    consistently avoid deformations. However, several users note
-                    that the generation process takes considerable time, with
-                    some expressing that it could be faster.`,
-};
 
 function AIHeadshotExamples() {
   return (

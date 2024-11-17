@@ -6,8 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GeistSans } from "geist/font/sans";
 import { Toaster } from "@/components/ui/toaster";
 
-import PrelineScript from "@/components/PrelineScript";
-// import CookieBanner from "@/components/CookieBanner";
+import CookieBanner from "@/components/CookieBanner";
 import Script from "next/script";
 
 export const metadata: Metadata = {
@@ -31,11 +30,10 @@ export default function RootLayout({
       <body className={GeistSans.className + " antialiased" + " min-h-screen"}>
         {children}
         <Toaster />
-        {/* <CookieBanner /> */}
+        <CookieBanner />
         <Analytics />
         <SpeedInsights />
       </body>
-      <PrelineScript />
       <Script id="ls-affiliate">{`window.lemonSqueezyAffiliateConfig = { store: "proshoot" }`}</Script>
       <Script id="google-analytics">{`
         window.dataLayer = window.dataLayer || [];

@@ -9,10 +9,10 @@ export default function SignInPage() {
   const lastSignedInMethod = cookieJar.get("lastSignedInMethod")?.value;
 
   return (
-    <>
+    <div className="h-screen flex flex-col">
       <Header />
-      <div className="flex min-h-screen lg:h-[calc(100vh-100px)]">
-        <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 overflow-y-auto">
+      <div className="flex flex-1 min-h-0">
+        <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 overflow-y-auto">
           <div className="mx-auto w-full max-w-sm lg:w-96 bg-gradient-to-b from-secondary to-background">
             <div className="p-4 sm:p-7">
               <div className="text-center">
@@ -45,6 +45,6 @@ export default function SignInPage() {
         </div>
         <TestimonialSlider />
       </div>
-    </>
+    </div>
   );
 }

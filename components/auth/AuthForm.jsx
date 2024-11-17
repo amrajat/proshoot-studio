@@ -1,242 +1,134 @@
 "use client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import {
-  signInWithEmailOTP,
-  verifyEmailOTP,
-} from "@/lib/supabase/actions/server";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { z } from "zod";
-// FIXME: REPLACE YUP WITH ZOD VALIDATION and import supabase from client not server.
-function AuthForm({ lastSignedInMethod }) {
-  const [displayError, setDisplayError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [userEmail, setUserEmail] = useState(null);
 
+import { useState } from "react";
+import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useRouter } from "next/navigation";
+
+export default function SupabaseLogin() {
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState("email");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const emailSchema = z.object({
-    email: z
-      .string()
-      .email("Please use valid email.")
-      .min(1, "Email is required."),
-  });
+  const supabase = createSupabaseBrowserClient();
 
-  const tokenSchema = z.object({
-    token1: z.string().min(1).max(1, { message: "OTP is required." }),
-    token2: z.string().min(1).max(1, { message: "OTP is required." }),
-    token3: z.string().min(1).max(1, { message: "OTP is required." }),
-    token4: z.string().min(1).max(1, { message: "OTP is required." }),
-    token5: z.string().min(1).max(1, { message: "OTP is required." }),
-    token6: z.string().min(1).max(1, { message: "OTP is required." }),
-  });
+  const handleEmailSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-  const {
-    register: registerEmail,
-    handleSubmit: handleSubmitEmail,
-    formState: { errors: errorsEmail },
-  } = useForm({
-    resolver: zodResolver(emailSchema),
-  });
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
 
-  const {
-    register: registerToken,
-    handleSubmit: handleSubmitToken,
-    formState: { errors: errorsToken },
-  } = useForm({
-    resolver: zodResolver(tokenSchema),
-  });
-
-  async function signInWithEmail({ email }) {
-    try {
-      setIsLoading(true);
-      const { data, error } = await signInWithEmailOTP(email);
-      localStorage.setItem("email", email);
-      setUserEmail(email);
-      setDisplayError(null);
-    } catch (error) {
-      setDisplayError(error.message.slice("AuthApiError:".length).trim());
-    } finally {
-      setIsLoading(false);
+    if (error) {
+      setError(error.message);
+    } else {
+      setStep("otp");
     }
-  }
 
-  async function verifyEmailWithOTP({
-    token1,
-    token2,
-    token3,
-    token4,
-    token5,
-    token6,
-  }) {
-    try {
-      setIsLoading(true);
-      const token = token1 + token2 + token3 + token4 + token5 + token6;
-      const email = localStorage.getItem("email");
-      const { data, error } = await verifyEmailOTP(email, token);
-      localStorage.removeItem("email");
-      setDisplayError(null);
+    setLoading(false);
+  };
+
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token: otp,
+      type: "email",
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      // Redirect or update UI state on successful login
       router.push("/dashboard");
-    } catch (error) {
-      setDisplayError(error.message.slice("AuthApiError:".length).trim());
-    } finally {
-      setIsLoading(false);
     }
-  }
+
+    setLoading(false);
+  };
 
   return (
     <>
-      {/* EMAIL FORM START */}
-
-      <form
-        key={1}
-        action={handleSubmitEmail(signInWithEmail)}
-        disabled={isLoading}
-        className={`${userEmail ? "hidden" : ""}`}
-      >
-        <div className="grid gap-y-4">
-          {/* Form Group */}
-
-          <div className="relative">
-            <input
-              {...registerEmail("email")}
-              type="email"
-              id="hs-hero-signup-form-floating-input-email"
-              className="peer p-4 block w-full bg-gray-200 border-transparent rounded text-sm placeholder:text-transparent focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none
-              focus:pt-6
-              focus:pb-2
-              [&:not(:placeholder-shown)]:pt-6
-              [&:not(:placeholder-shown)]:pb-2
-              autofill:pt-6
-              autofill:pb-2"
-              placeholder="you@email.com"
-              autoComplete="email"
-              required
-            />
-            {lastSignedInMethod === "email" && (
-              <div className="absolute -translate-y-1/2 right-0 whitespace-nowrap ml-8 bg-blue-600/75 px-4 py-1 rounded text-xs text-white">
-                Last Used
+      <CardContent className="p-0 pb-6">
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        {step === "email" ? (
+          <form onSubmit={handleEmailSubmit}>
+            <div className="grid w-full items-center gap-4">
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
-            )}
-            <p className="text-xs text-red-600 mt-2" id="email-error">
-              {errorsEmail.email ? errorsEmail.email?.message : displayError}
-            </p>
-
-            <label
-              htmlFor="hs-hero-signup-form-floating-input-email"
-              className="absolute top-0 start-0 p-4 h-full text-sm truncate pointer-events-none transition ease-in-out duration-100 border border-transparent  peer-disabled:opacity-50 peer-disabled:pointer-events-none
-                  peer-focus:text-xs
-                  peer-focus:-translate-y-1.5
-                  peer-focus:text-gray-500
-                  peer-[:not(:placeholder-shown)]:text-xs
-                  peer-[:not(:placeholder-shown)]:-translate-y-1.5
-                  peer-[:not(:placeholder-shown)]:text-gray-500"
-            >
-              Email
-            </label>
-          </div>
-
-          {/* End Form Group */}
-          {/* End Checkbox */}
-          <button
-            type="submit"
-            className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none   "
-          >
-            {!isLoading ? "Continue with Email" : "Sending OTP"}
-          </button>
-        </div>
-      </form>
-
-      {/* EMAIL FORM END */}
-
-      {/* OTP INPUT FORM START */}
-
-      <form
-        key={2}
-        action={handleSubmitToken(verifyEmailWithOTP)}
-        className={`grid gap-y-4 ${!userEmail ? "hidden" : ""}`}
-      >
-        <p className="block text-xs mt-1">
-          Please enter 6 digit One Time Password (OTP) received on your email
-          inbox. Don&apos;t forget to check spam folder.
-        </p>
-        <div
-          id="pin-input"
-          className={`flex space-x-3 justify-evenly`}
-          data-hs-pin-input='{
-"availableCharsRE": "^[0-9]+$"
-}'
-        >
-          <input
-            {...registerToken("token1")}
-            type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
-            data-hs-pin-input-item=""
-            autoFocus={false}
-            disabled={isLoading || !userEmail}
-          />
-          <input
-            {...registerToken("token2")}
-            type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
-            data-hs-pin-input-item=""
-            disabled={isLoading || !userEmail}
-          />
-          <input
-            {...registerToken("token3")}
-            type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
-            data-hs-pin-input-item=""
-            disabled={isLoading || !userEmail}
-          />
-          <input
-            {...registerToken("token4")}
-            type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
-            data-hs-pin-input-item=""
-            disabled={isLoading || !userEmail}
-          />
-          <input
-            {...registerToken("token5")}
-            type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
-            data-hs-pin-input-item=""
-            disabled={isLoading || !userEmail}
-          />
-          <input
-            {...registerToken("token6")}
-            type="text"
-            className="block w-[38px] h-[38px] text-center bg-gray-200 border-transparent rounded text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none     "
-            data-hs-pin-input-item=""
-            disabled={isLoading || !userEmail}
-          />
-        </div>
-        <p className="text-xs text-red-600 mt-2" id="email-error">
-          {errorsToken.token6 ? errorsToken.token6?.message : displayError}
-        </p>
-        <Link
-          href={"#"}
-          className="text-right"
-          onClick={() => {
-            setUserEmail(null);
-          }}
-        >
-          &larr;&nbsp;Back
-        </Link>
-
-        <button
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={handleOtpSubmit}>
+            <div className="grid w-full items-center gap-4">
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="otp">One-Time Password</Label>
+                <Input
+                  id="otp"
+                  type="text"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+          </form>
+        )}
+      </CardContent>
+      <CardFooter className="flex flex-col gap-2 p-0">
+        <Button
           type="submit"
-          className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+          onClick={step === "email" ? handleEmailSubmit : handleOtpSubmit}
+          disabled={loading}
+          className="w-full self-stretch"
         >
-          {!isLoading ? "Login" : "Verifying OTP"}
-        </button>
-      </form>
-
-      {/* OTP INPUT FORM END */}
+          {loading
+            ? "Loading..."
+            : step === "email"
+            ? "Send OTP"
+            : "Verify OTP"}
+        </Button>
+        {step === "otp" && (
+          <Button variant="outline" onClick={() => setStep("email")}>
+            Back
+          </Button>
+        )}
+      </CardFooter>
     </>
   );
 }
-
-export default AuthForm;

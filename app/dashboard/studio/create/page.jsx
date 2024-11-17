@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import VariableSelector from "@/components/dashboard/studio/Forms/VariableSelector";
-import ProgressBar from "@/components/dashboard/studio/Forms/ProgressBar";
 import PlanSelector from "@/components/dashboard/studio/Forms/PlanSelector";
 import ImageUploader from "@/components/dashboard/studio/Forms/ImageUploader";
 import {
@@ -19,8 +18,8 @@ import { getCredits } from "@/lib/supabase/actions/client";
 import Error from "@/components/Error";
 import Loader from "@/components/Loader";
 import useSWR from "swr";
-import Button from "@/components/ui/Button";
-import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
@@ -49,7 +48,7 @@ const FileUploader = ({
   </div>
 );
 
-export default function Replicate() {
+export default function StudioCreate() {
   const [currentStep, setCurrentStep] = useState(0);
   const [previousStep, setPreviousStep] = useState(0);
   const [shouldValidate, setShouldValidate] = useState(false);
@@ -274,34 +273,26 @@ export default function Replicate() {
       }}
       className="max-w-7xl mx-auto mt-8"
     >
-      <div className="mb-6">
-        <div className="mb-4">
-          <ProgressBar
-            stepCompleted={currentStep + 1}
-            totalSteps={steps.length}
-          />
-        </div>
-        {renderStep(steps[currentStep])}
-      </div>
+      <div className="mb-6">{renderStep(steps[currentStep])}</div>
 
       <div className="flex justify-between">
         <Button
-          cls="disabled:opacity-50"
+          className="disabled:opacity-50"
           type="button"
           onClick={prev}
           disabled={currentStep === 0 || isSubmitting}
         >
-          <HiChevronLeft strokeWidth={2} />
+          <ChevronLeft strokeWidth={2} />
           Previous
         </Button>
         <Button
-          cls="disabled:opacity-50"
+          className="disabled:opacity-50"
           type={currentStep === steps.length - 1 ? "submit" : "button"}
           onClick={currentStep === steps.length - 1 ? undefined : next}
           disabled={isNextDisabled || isSubmitting}
         >
           {currentStep === steps.length - 1 ? "Create Studio" : "Next"}
-          <HiChevronRight strokeWidth={2} />
+          <ChevronRight strokeWidth={2} />
         </Button>
       </div>
     </form>

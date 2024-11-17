@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { GeistSans } from "geist/font/sans";
+import { Toaster } from "@/components/ui/toaster";
 
 import PrelineScript from "@/components/PrelineScript";
-import CookieBanner from "@/components/CookieBanner";
+// import CookieBanner from "@/components/CookieBanner";
 import Script from "next/script";
-
-const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${process.env.URL}`),
@@ -28,9 +28,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth min-h-screen">
-      <body className={inter.className + " antialiased" + " min-h-screen"}>
+      <body className={GeistSans.className + " antialiased" + " min-h-screen"}>
         {children}
-        <CookieBanner />
+        <Toaster />
+        {/* <CookieBanner /> */}
         <Analytics />
         <SpeedInsights />
       </body>

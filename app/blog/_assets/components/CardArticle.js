@@ -1,81 +1,69 @@
 import Link from "next/link";
 import Image from "next/image";
-import BadgeCategory from "./BadgeCategory";
-import Avatar from "./Avatar";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// This is the article card that appears in the home page, in the category page, and in the author's page
-const CardArticle = ({
-  article,
-  tag = "h2",
-  showCategory = true,
-  isImagePriority = false,
-}) => {
-  const TitleTag = tag;
-
+export default function CardArticle({ article, isImagePriority = false }) {
   return (
-    <article className="card bg-base-200 rounded-box overflow-hidden">
-      {article.image?.src && (
-        <Link
-          href={`/blog/${article.slug}`}
-          className="link link-hover hover:link-primary"
-          title={article.title}
-          rel="bookmark"
-        >
-          <figure className="rounded overflow-hidden">
-            <Image
-              src={article.image.src}
-              alt={article.image.alt}
-              width={600}
-              height={338}
-              priority={isImagePriority}
-              placeholder="blur"
-              className="aspect-video object-center object-cover hover:scale-[1.03] duration-200 ease-in-out"
-            />
-          </figure>
-        </Link>
-      )}
-      <div className="card-body mt-2">
-        {/* CATEGORIES */}
-        {showCategory && (
-          <div className="flex flex-wrap gap-2">
+    <Card className="overflow-hidden transition-all hover:shadow-lg">
+      <Link href={`/blog/${article.slug}`} className="block">
+        <div className="aspect-video relative overflow-hidden">
+          <Image
+            src={article.image.src}
+            alt={article.image.alt}
+            fill
+            className="object-cover transition-transform hover:scale-105"
+            priority={isImagePriority}
+          />
+        </div>
+        <CardHeader>
+          <div className="flex flex-wrap gap-2 mb-2">
             {article.categories.map((category) => (
-              <BadgeCategory category={category} key={category.slug} />
+              <Badge key={category.slug} variant="secondary">
+                {category.title}
+              </Badge>
             ))}
           </div>
-        )}
-
-        {/* TITLE WITH RIGHT TAG */}
-        <TitleTag className="mb-1 text-xl md:text-2xl font-bold">
-          <Link
-            href={`/blog/${article.slug}`}
-            className="link link-hover hover:link-primary"
-            title={article.title}
-            rel="bookmark"
-          >
+          <h2 className="text-xl font-semibold line-clamp-2">
             {article.title}
-          </Link>
-        </TitleTag>
-
-        <div className=" text-base-content/80 space-y-4">
-          {/* DESCRIPTION */}
-          <p className="">{article.description}</p>
-
-          {/* AUTHOR & DATE */}
-          <div className="flex items-center gap-4 text-sm">
-            <Avatar article={article} />
-
-            <span itemProp="datePublished">
-              {new Date(article.publishedAt).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
+          </h2>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground line-clamp-3">
+            {article.description}
+          </p>
+        </CardContent>
+        <CardFooter className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Avatar className="w-8 h-8">
+              <AvatarImage
+                src={article.author.avatar}
+                alt={article.author.name}
+              />
+              <AvatarFallback>{article.author.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <span className="text-sm text-muted-foreground">
+              {article.author.name}
             </span>
           </div>
-        </div>
-      </div>
-    </article>
+          <time
+            className="text-sm text-muted-foreground"
+            dateTime={article.publishedAt}
+          >
+            {new Date(article.publishedAt).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </time>
+        </CardFooter>
+      </Link>
+    </Card>
   );
-};
-
-export default CardArticle;
+}

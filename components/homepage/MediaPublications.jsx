@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Heading, { SubHeading } from "../ui/Heading";
 
 function MediaPublications() {
   return (
@@ -7,13 +6,13 @@ function MediaPublications() {
       <div className="max-w-[85rem] px-4 py-12 sm:px-6 lg:px-8 lg:pt-16 lg:pb-28 mx-auto">
         {/* Title */}
         <div className="mx-auto text-center mb-6 md:mb-12">
-          <Heading>Trusted by Employees of Multinational Enterprises</Heading>
+          <h1>Trusted by Employees of Multinational Enterprises</h1>
         </div>
-        <SubHeading>
+        <h2>
           We&apos;re proud to be the go-to solution for employees of
           multinational enterprises seeking exceptional AI generated corporate
           headshots.
-        </SubHeading>
+        </h2>
         {/* End Title */}
         {/* Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 lg:gap-6">

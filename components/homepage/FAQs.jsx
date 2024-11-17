@@ -1,5 +1,9 @@
-import { HiMiniPlus, HiMiniMinus } from "react-icons/hi2";
-import Heading from "../ui/Heading";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const faqsList = [
   {
@@ -16,7 +20,6 @@ const faqsList = [
   },
   {
     q: "What kind of photos should I upload?",
-    // a: "Please ensure to upload both portrait and full-body shots of the person. It is recommended to use 26 pictures of your subject, ideally cropped to a 1:1 aspect ratio. Out of these, 6 photos should showcase the full body or entire object, while 10 medium shot photos from the chest up and 10 close-ups should also be included. Variation is key in creating a comprehensive collection, so make sure to change body poses for every picture, and use pictures from different days, backgrounds, and lighting. Every picture of your subject should introduce new information about them. To prevent the model from learning unnecessary features, avoid uploading pictures taken at the same hour or day. For example, using multiple pictures with the same shirt will make the model learn the shirt as well as part of the subject. It is also important to always use a new background. Please do not upload pictures mixed with other people or funny faces.",
     a: "Just use minimum 3 camera facing everyday selfies/photos taken on different time and place. Don't worry! We will guide you at time of studio creation with our guidelines.",
   },
   {
@@ -60,93 +63,43 @@ const faqsList = [
     a: "You can always email us. support@proshoot.co",
   },
 ];
-const NUMBERS = [
-  "one",
-  "two",
-  "three",
-  "four",
-  "five",
-  "six",
-  "seven",
-  "eight",
-  "nine",
-  "ten",
-  "eleven",
-  "twelve",
-  "thirteen",
-  "fourteen",
-  "fifteen",
-];
 
-function FAQs() {
+export default function FAQs() {
   return (
-    <>
-      <div
-        id="faqs"
-        className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto"
-      >
-        {/* <!-- Grid --> */}
-        <div className="grid md:grid-cols-6 gap-6">
-          <div className="md:col-span-2">
-            <div className="max-w-xs">
-              <Heading>FAQs</Heading>
-              <p className="mt-1 hidden md:block">
-                Answers to the most frequently asked questions.
-              </p>
-            </div>
+    <section
+      id="faqs"
+      className="bg-gradient-to-b from-secondary to-background py-16 sm:py-24 md:py-16 lg:py-24"
+    >
+      <div className="container px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl">
+        <div className="grid gap-8 md:gap-12">
+          <div className="space-y-4 text-center md:text-left">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+              FAQs
+            </h2>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-prose mx-auto md:mx-0">
+              Answers to the most frequently asked questions.
+            </p>
           </div>
-          {/* <!-- End Col --> */}
-
-          <div className="md:col-span-4">
-            {/* <!-- Accordion --> */}
-            <div className="hs-accordion-group divide-y divide-gray-200">
-              {faqsList.map((faq, index) => {
-                return (
-                  <div
-                    key={index}
-                    className={`hs-accordion pb-3 ${
-                      index === 0 ? "active" : "pt-6"
-                    }`}
-                    id={`hs-basic-with-title-and-arrow-stretched-heading-${NUMBERS[index]}`}
-                  >
-                    <button
-                      className="hs-accordion-toggle group pb-3 inline-flex items-center justify-between gap-x-3 w-full md:text-lg font-semibold text-start rounded transition hover:text-gray-500     "
-                      aria-controls={`hs-basic-with-title-and-arrow-stretched-collapse-${NUMBERS[index]}`}
-                    >
-                      {faq.q}
-                      <HiMiniPlus
-                        width={24}
-                        height={24}
-                        className="hs-accordion-active:hidden block flex-shrink-0 w-5 h-5 group-hover:text-gray-500 "
-                      />
-
-                      <HiMiniMinus
-                        className="hs-accordion-active:block hidden flex-shrink-0 w-5 h-5 group-hover:text-gray-500 "
-                        width={24}
-                        height={24}
-                      />
-                    </button>
-                    <div
-                      id={`hs-basic-with-title-and-arrow-stretched-collapse-${NUMBERS[index]}`}
-                      className={`hs-accordion-content ${
-                        index === 0 ? "" : "hidden"
-                      } w-full overflow-hidden transition-[height] duration-300`}
-                      aria-labelledby={`hs-basic-with-title-and-arrow-stretched-heading-${NUMBERS[index]}`}
-                    >
-                      <p>{faq.a}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            {/* <!-- End Accordion --> */}
+          <div>
+            <Accordion type="single" collapsible className="w-full">
+              {faqsList.map((faq, index) => (
+                <AccordionItem
+                  key={index}
+                  value={`item-${index}`}
+                  className="border-b border-muted"
+                >
+                  <AccordionTrigger className="text-base sm:text-lg py-4 hover:no-underline text-left">
+                    {faq.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm sm:text-base text-muted-foreground pb-4">
+                    {faq.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
-          {/* <!-- End Col --> */}
         </div>
-        {/* <!-- End Grid --> */}
       </div>
-    </>
+    </section>
   );
 }
-
-export default FAQs;

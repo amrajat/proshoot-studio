@@ -1,8 +1,7 @@
-import Header from "@/components/homepage/Header";
+import Header from "@/components/layout/Header";
 import Footer from "@/components/homepage/Footer";
 import Container from "@/components/dashboard/Container";
 import Image from "next/image";
-import Heading from "@/components/ui/Heading";
 
 export const metadata = {
   title: { absolute: "Not Found!" },
@@ -18,7 +17,7 @@ function About() {
         {/* Content */}
         <div className="space-y-5 md:space-y-8">
           {/* <div className="space-y-3"> */}
-          <Heading type="h4">Houston, we have a problem...</Heading>
+          <h1>Houston, we have a problem...</h1>
 
           <h5 className="text-lg md:text-md ">
             Looks like you've drifted off course, Captain. Our scanners can't

@@ -1,30 +1,31 @@
-import Header from "@/components/homepage/Header";
-import Footer from "@/components/homepage/Footer";
-import FAQs from "@/components/homepage/FAQs";
+import Header from "@/components/layout/Header";
+import Hero from "@/components/homepage/Hero";
+import TrustedByCompanies from "@/components/homepage/TrustedByCompanies";
+import Examples from "@/components/homepage/Examples";
+import Features from "@/components/homepage/Features";
 import Pricing from "@/components/homepage/Pricing";
-import Testimonials from "@/components/homepage/Testimonials";
-import HeroParallax from "@/components/homepage/Hero";
-// import HowItWorks from "@/components/homepage/HowItWorks";
-import Detailed from "@/components/homepage/Detailed";
-import Compare from "@/components/homepage/Compare";
-import MediaPublications from "@/components/homepage/MediaPublications";
-import PhotographyCompare from "@/components/homepage/PhotographyCompare";
-import CardSlider from "@/components/homepage/CardSlider";
+import HowItWorks from "@/components/homepage/HowItWorks";
+import UseCases from "@/components/homepage/UseCases";
+import Comparison from "@/components/homepage/Comparison";
+import FAQs from "@/components/homepage/FAQs";
+import PhotographyCompared from "@/components/homepage/PhotographyCompared";
+import Footer from "@/components/homepage/Footer";
 
 export default function Home() {
   return (
     <>
       <main id="content" role="main">
         <Header />
-        <HeroParallax />
-        <PhotographyCompare />
-        <Detailed />
-        <Compare />
-        <Testimonials />
+        <Hero />
+        <Examples />
+        <Features />
+        <PhotographyCompared />
         <Pricing />
         {/* <HowItWorks /> */}
-        <MediaPublications />
-        <CardSlider />
+        {/* <UseCases /> */}
+        <Comparison />
+        {/* <TestimonialsCarousel /> */}
+        <TrustedByCompanies />
         <FAQs />
       </main>
       <Footer />

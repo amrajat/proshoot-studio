@@ -1,6 +1,7 @@
 import { categories, articles } from "../../_assets/content";
-import CardArticle from "../../_assets/components/CardArticle";
-import CardCategory from "../../_assets/components/CardCategory";
+import CardArticle from "@/app/blog/_assets/components/CardArticle";
+import CardCategory from "@/app/blog/_assets/components/CardCategory";
+
 import { getSEOTags } from "@/lib/seo";
 import config from "@/config";
 

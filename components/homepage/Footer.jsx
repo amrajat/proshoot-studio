@@ -1,311 +1,125 @@
+import { Button } from "@/components/ui/button";
 import Logo from "@/components/homepage/Logo";
-import BottomCTA from "@/components/homepage/BottomCTA";
 import Link from "next/link";
-import Heading from "../ui/Heading";
+import StarRatings from "@/components/shared/star-ratings";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { AvatarFallback } from "@radix-ui/react-avatar";
+import FooterCTA from "@/components/homepage/FooterCTA";
 
-function Footer() {
+const footerLinks = [
+  // {
+  //   section: "Free Tools",
+  //   links: [
+  //     { title: "Pricing", href: "/pricing" },
+  //     { title: "Blog", href: "/blog" },
+  //     { title: "Affiliate", href: "/affiliate" },
+  //     { title: "Examples", href: "/examples" },
+  //   ],
+  // },
+  // {
+  //   section: "Resources",
+  //   links: [
+  //     { title: "Pricing", href: "/pricing" },
+  //     { title: "Blog", href: "/blog" },
+  //     { title: "Affiliate", href: "/affiliate" },
+  //     { title: "Examples", href: "/examples" },
+  //   ],
+  // },
+  {
+    section: "Helpful Links",
+    links: [
+      { title: "Pricing", href: "/#pricing" },
+      { title: "Blog", href: "/blog" },
+      { title: "Affiliate", href: "/affiliate" },
+      { title: "Examples", href: "/free-ai-headshot-generator-examples" },
+    ],
+  },
+  {
+    section: "Legals",
+    links: [
+      { title: "Terms & Conditions", href: "/legal#terms" },
+      { title: "Privacy Policy", href: "/legal#privacy" },
+      { title: "Disclaimer", href: "/legal#disclaimer" },
+      { title: "Refund Policy", href: "/legal#refund" },
+      { title: "Fair Usage Policy", href: "/legal#fair-usage" },
+      { title: "Sub Processors", href: "/legal#sub-processors" },
+    ],
+  },
+  {
+    section: "Company",
+    links: [
+      { title: "About Us", href: "/about" },
+      { title: "Contact", href: "/contact" },
+    ],
+  },
+  {
+    section: "Special Categories",
+    links: [
+      { title: "NGOs", href: "/free-ai-portrait-generator" },
+      { title: "Education", href: "/free-ai-portrait-generator" },
+      { title: "Influencer", href: "/free-ai-portrait-generator" },
+      { title: "Reviewer SaaS/AI/Other", href: "/free-ai-portrait-generator" },
+    ],
+  },
+];
+
+export default function Footer() {
   return (
     <>
-      <BottomCTA />
-      <footer className="relative overflow-hidden bg-[#23282B]">
-        {/* Gradients */}
-        {/* <div aria-hidden="true" className="flex absolute start-0 -z-[1]">
-          <div className="bg-purple-200 opacity-10 blur-3xl w-[1036px] h-[600px]  " />
-          <div className="bg-slate-200 opacity-20 blur-3xl w-[577px] h-[300px] transform translate-y-32 " />
-        </div> */}
-        {/* End Gradients */}
-        <div className="w-full max-w-[85rem] py-10 px-4 sm:px-6 lg:px-8 mx-auto">
-          {/* Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-10">
-            <div className="col-span-full hidden lg:col-span-1 lg:block">
-              <Link className="flex-none" href="#">
-                <Logo type="white" />
-              </Link>
-              <p className="mt-3 text-xs sm:text-sm text-gray-200 ">
-                Most Realistic AI Headshot Generator with Highest Resemble.
+      <FooterCTA />
+      <footer className="bg-foreground py-16 px-4 sm:px-6 lg:px-8 text-muted-foreground">
+        <div className="container mx-auto">
+          <div className="flex flex-col lg:flex-row justify-between items-center mb-12 space-y-6 lg:space-y-0">
+            <div className="flex flex-col items-center md:flex-row md:justify-center gap-4">
+              <Logo type="white" />
+              <StarRatings />
+              <div className="flex -space-x-2">
+                {[1, 2, 3].map((avatar, i) => (
+                  <Avatar
+                    key={i}
+                    className="w-8 h-8 border-2 border-background"
+                  >
+                    <AvatarImage
+                      src={`/avatar-${avatar}.jpg`}
+                      alt={`User avatar ${i + 1}`}
+                    />
+                    <AvatarFallback>U{i + 1}</AvatarFallback>
+                  </Avatar>
+                ))}
+              </div>
+              <p className="text-sm text-center">
+                Trusted by{" "}
+                <span className="font-bold">7,000+ happy customers</span>
               </p>
             </div>
-            {/* End Col */}
-            <div>
-              <Heading type="h5" cls="text-white text-md xs:text-lg xl:text-xl">
-                Helpful Links
-              </Heading>
-              <div className="mt-3 grid space-y-3 text-sm">
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/#pricing"
-                  >
-                    Pricing
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/blog"
-                  >
-                    Blog
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/affiliate"
-                  >
-                    Affiliate
-                  </Link>
-                </p>
-
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-headshot-generator-examples"
-                  >
-                    Examples
-                  </Link>
-                </p>
-              </div>
-            </div>
-            {/* End Col */}
-            <div>
-              <Heading type="h5" cls="text-white text-md xs:text-lg xl:text-xl">
-                Headshots for
-              </Heading>
-              <div className="mt-3 grid space-y-3 text-sm">
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-headshot-generator-examples"
-                  >
-                    Legal Professionals
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-headshot-generator-examples"
-                  >
-                    Medical Professionals
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-headshot-generator-examples"
-                  >
-                    Financial Professionals
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-headshot-generator-examples"
-                  >
-                    Tech Professionals
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-headshot-generator-examples"
-                  >
-                    Education Professionals
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-headshot-generator-examples"
-                  >
-                    Creative Professionals
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-headshot-generator-examples"
-                  >
-                    Business Professionals
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-headshot-generator-examples"
-                  >
-                    Health &amp; Wellness Professionals
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-headshot-generator-examples"
-                  >
-                    Social Service Professionals
-                  </Link>
-                </p>
-              </div>
-            </div>
-            {/* End Col */}
-            <div>
-              <Heading type="h5" cls="text-white text-md xs:text-lg xl:text-xl">
-                Legals
-              </Heading>
-              <div className="mt-3 grid space-y-3 text-sm">
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/legal#terms"
-                  >
-                    Terms &amp; Conditions
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/legal#privacy"
-                  >
-                    Privacy Policy
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/legal#disclaimer"
-                  >
-                    Disclaimer
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/legal#refund"
-                  >
-                    Refund Policy
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/legal#fair-usage"
-                  >
-                    Fair Usage Policy
-                  </Link>
-                </p>
-              </div>
-            </div>
-            {/* End Col */}
-            <div>
-              <Heading type="h5" cls="text-white text-md xs:text-lg xl:text-xl">
-                Company
-              </Heading>
-              <div className="mt-3 grid space-y-3 text-sm">
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/about"
-                  >
-                    About
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/contact"
-                  >
-                    Contact
-                  </Link>
-                </p>
-              </div>
-              {/* <h4 className="mt-7 text-xs font-semibold text-white uppercase "> */}
-              <Heading
-                type="h5"
-                cls="mt-7 text-white text-md xs:text-lg xl:text-xl"
-              >
-                Special Categories&nbsp;
-                <span className="inline text-blue-600 text-xs">
-                  - 100% Off<sup>*</sup>
-                </span>
-              </Heading>
-              <div className="mt-3 grid space-y-3 text-sm">
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-portrait-generator"
-                  >
-                    NGOs
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-portrait-generator"
-                  >
-                    Education
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-portrait-generator"
-                  >
-                    Influencer
-                  </Link>
-                </p>
-                <p>
-                  <Link
-                    className="inline-flex gap-x-2 text-gray-200 hover:text-gray-300"
-                    href="/free-ai-portrait-generator"
-                  >
-                    Reviewer SaaS/AI/Other
-                  </Link>
-                </p>
-                <p className="inline-flex text-xs gap-x-2 text-gray-200     ">
-                  *upto 100% off on our Basic plan.
-                </p>
-              </div>
-            </div>
-            {/* End Col */}
+            <h2 className="text-3xl sm:text-4xl font-bold lg:max-w-2xl leading-tight tracking-tighter text-center md:text-4xl lg:leading-[1.1] text-primary">
+              grow your online presence
+            </h2>
           </div>
-          {/* End Grid */}
-          <div className="pt-5 mt-5 border-t border-gray-200 ">
-            <div className="sm:flex sm:justify-between sm:items-center">
-              <div className="flex items-center gap-x-3">
-                <div className="space-x-4 text-sm ms-4">
-                  <p className="mt-3 text-xs text-gray-200 ">
-                    © 2024. All Rights Reserved by Prime AI Company &amp;
-                    respected owners.
-                  </p>
-                  <p className="mt-3 text-xs text-gray-200 ">
-                    Trust & Safety - We will not use images without the
-                    customer&apos;s consent, nor will we sell your pictures to
-                    anyone. All photos will be deleted from the server within 30
-                    days. You may request immediate deletion of images by
-                    contacting us.
-                  </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            {footerLinks.map((section, index) => (
+              <div key={index} className="flex flex-col justify-self-start">
+                <h4 className="text-lg font-bold mb-4 leading-tight lg:leading-[1.1] h-10 flex items-center text-primary">
+                  {section.section}
+                </h4>
+                <div className="flex flex-col gap-y-2">
+                  {section.links.map((link, linkIndex) => (
+                    <Button
+                      key={linkIndex}
+                      variant="link"
+                      className="px-0 justify-start text-muted-foreground hover:text-primary"
+                      asChild
+                    >
+                      <Link href={link.href}>{link.title}</Link>
+                    </Button>
+                  ))}
                 </div>
               </div>
-              {/* <div className="flex justify-between items-center">
-                <div className="mt-3 sm:hidden">
-                  <Link
-                    className="flex-none text-xl font-semibold "
-                    href="#"
-                    aria-label="Brand"
-                  >
-                    <Logo />
-                  </Link>
-                  <p className="mt-1 text-xs sm:text-sm text-gray-200 ">
-                    Most Realistic AI Headshot Generator with Highest Resemble.
-                  </p>
-                </div>
-              </div> */}
-              {/* End Col */}
-            </div>
+            ))}
           </div>
         </div>
       </footer>
     </>
   );
 }
-
-export default Footer;

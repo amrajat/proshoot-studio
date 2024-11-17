@@ -3,7 +3,6 @@ import { getCurrentSession } from "@/lib/supabase/actions/server";
 import ProfileUpdateForm from "@/components/dashboard/profile/ProfileUpdateForm";
 import Spinner from "@/components/homepage/Spinner";
 import Container from "@/components/dashboard/Container";
-import Heading from "@/components/ui/Heading";
 
 async function Profile() {
   const { session } = await getCurrentSession();
@@ -12,7 +11,7 @@ async function Profile() {
     <Container>
       <div className="bg-white rounded shadow p-4 sm:p-7 ">
         <div className="mb-8">
-          <Heading type="h5">Profile</Heading>
+          <h1>Profile</h1>
           <p className="text-sm text-gray-600 ">
             Manage your profile and account settings.
           </p>

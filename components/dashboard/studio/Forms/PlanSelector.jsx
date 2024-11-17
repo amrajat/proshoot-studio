@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { HiCheck } from "react-icons/hi2";
-import Heading, { SubHeading } from "@/components/ui/Heading";
+import Heading from "@/components/shared/heading";
 import { v4 as uuidv4 } from "uuid";
 import { PLANS } from "@/lib/data";
 
@@ -46,10 +46,8 @@ export default function PlanSelector({
       <span className="text-xs uppercase font-bold pl-0 xs:pl-0 xl:pl-1 text-red-600">
         this field required.
       </span>
-      <Heading type="h3">{details.title}</Heading>
-      <SubHeading align="left" cls="pl-0 xs:pl-0 xl:pl-1">
-        {details.subtitle}
-      </SubHeading>
+      <Heading variant={"hero"}>{details.title}</Heading>
+      <h2 className="pl-0 xs:pl-0 xl:pl-1">{details.subtitle}</h2>
       <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
         <div className="col-span-full">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">

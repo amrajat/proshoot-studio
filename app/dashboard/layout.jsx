@@ -14,7 +14,11 @@ export const metadata = {
 async function DashboardLayout({ children }) {
   return (
     <>
-      <main id="content" role="main" className="min-h-screen">
+      <main
+        id="content"
+        role="main"
+        className="min-h-screen bg-gradient-to-b from-secondary to-background"
+      >
         <AppNav />
 
         <Container>{children}</Container>

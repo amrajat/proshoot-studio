@@ -1,9 +1,19 @@
-import Header from "@/components/homepage/Header";
+import Header from "@/components/layout/Header";
 import Footer from "@/components/homepage/Footer";
 import Container from "../../components/dashboard/Container";
 import { HiChevronRight } from "react-icons/hi2";
 import Link from "next/link";
-import Heading from "@/components/ui/Heading";
+import SectionParaHeading from "@/components/shared/section-para-heading";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  ArrowRight,
+  TrendingUp,
+  Megaphone,
+  MapPin,
+  CreditCard,
+} from "lucide-react";
+import { useMemo } from "react";
 
 export const metadata = {
   title: "Affiliate",
@@ -12,6 +22,35 @@ export const metadata = {
 };
 
 function Affiliate() {
+  const benefits = useMemo(
+    () => [
+      {
+        title: "High-Demand Product",
+        description:
+          "We provide cutting-edge AI headshot generation, a highly sought-after service.",
+        icon: <TrendingUp className="text-primary" aria-hidden="true" />,
+      },
+      {
+        title: "Easy to Promote",
+        description:
+          "Share your unique affiliate link with your audience and watch your commissions grow.",
+        icon: <Megaphone className="text-primary" aria-hidden="true" />,
+      },
+      {
+        title: "Real-time Tracking",
+        description:
+          "Monitor your performance and earnings through our user-friendly dashboard.",
+        icon: <MapPin className="text-primary" aria-hidden="true" />,
+      },
+      {
+        title: "Fast Payouts",
+        description:
+          "We make sure you get paid quickly and easily through your preferred method.",
+        icon: <CreditCard className="text-primary" aria-hidden="true" />,
+      },
+    ],
+    []
+  );
   return (
     <>
       <Header />
@@ -26,27 +65,24 @@ function Affiliate() {
           <div className="bg-gradient-to-tl from-blue-50 via-blue-100 to-blue-50 blur-3xl w-[90rem] h-[50rem] roundeds origin-top-left -rotate-12 -translate-x-[15rem]   " />
         </div>
         {/* End Gradients */}
-        <div className="relative z-10">
+        <div className="relative">
           <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
-            <div className="max-w-4xl text-center mx-auto">
+            {/* <div className="max-w-4xl text-center mx-auto">
               <p className="inline-block text-sm font-medium bg-clip-text bg-gradient-to-l from-blue-600 to-violet-500 text-transparent  ">
                 Proshoot: Affiliate Program
               </p>
-              {/* Title */}
               <div className="mt-5 max-w-4xl">
                 <Heading type="h2">
                   Become a Proshoot.co affiliate today & earn up to $17.70 on
                   each sale!
                 </Heading>
               </div>
-              {/* End Title */}
               <div className="mt-5 max-w-4xl">
                 <p className="text-lg  ">
                   Join the Proshoot.co Affiliate Program and earn a generous 30%
                   commission on every successful sale you refer.
                 </p>
               </div>
-              {/* Buttons */}
               <div className="mt-8 gap-3 flex justify-center">
                 <Link
                   href="https://proshoot.lemonsqueezy.com/affiliates"
@@ -56,138 +92,79 @@ function Affiliate() {
                   <HiChevronRight className="ml-2 h-4 w-4" strokeWidth={2} />
                 </Link>
               </div>
-              {/* End Buttons */}
+            </div> */}
+            <SectionParaHeading
+              badgeText={"Affiliates"}
+              title={
+                "Become a Proshoot.co affiliate today & earn up to $17.70 on each sale!"
+              }
+            >
+              Join the Proshoot.co Affiliate Program and earn a generous 30%
+              commission on every successful sale you refer.
+            </SectionParaHeading>
+            <div className="max-w-4xl text-center mx-auto">
+              <Link
+                href="https://proshoot.lemonsqueezy.com/affiliates"
+                className={buttonVariants({
+                  variant: "destructive",
+                  size: "lg",
+                })}
+              >
+                Join the Program
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
             </div>
           </div>
         </div>
         {/* Icon Blocks */}
         <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 items-center gap-12">
-            {/* Icon Block */}
-            <div>
-              <div className="relative flex justify-center items-center size-12 bg-white rounded before:absolute before:-inset-px before:-z-[1] before:bg-gradient-to-br before:from-blue-600 before:via-transparent before:to-violet-600 before:rounded ">
-                <svg
-                  className="flex-shrink-0 size-6 text-blue-600 "
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={24}
-                  height={24}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect width={10} height={14} x={3} y={8} rx={2} />
-                  <path d="M5 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-2.4" />
-                  <path d="M8 18h.01" />
-                </svg>
-              </div>
-              <div className="mt-5">
-                <h3 className="text-lg font-semibold  ">High-Demand Product</h3>
-                <p className="mt-1  ">
-                  We provide cutting-edge AI headshot generation, a highly
-                  sought-after service.
-                </p>
-              </div>
-            </div>
-            {/* End Icon Block */}
-            {/* Icon Block */}
-            <div>
-              <div className="relative flex justify-center items-center size-12 bg-white rounded before:absolute before:-inset-px before:-z-[1] before:bg-gradient-to-br before:from-blue-600 before:via-transparent before:to-violet-600 before:rounded ">
-                <svg
-                  className="flex-shrink-0 size-6 text-blue-600 "
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={24}
-                  height={24}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M20 7h-9" />
-                  <path d="M14 17H5" />
-                  <circle cx={17} cy={17} r={3} />
-                  <circle cx={7} cy={7} r={3} />
-                </svg>
-              </div>
-              <div className="mt-5">
-                <h3 className="text-lg font-semibold  ">Easy to Promote</h3>
-                <p className="mt-1  ">
-                  Share your unique affiliate link with your audience and watch
-                  your commissions grow.
-                </p>
-              </div>
-            </div>
-            {/* End Icon Block */}
-            {/* Icon Block */}
-            <div>
-              <div className="relative flex justify-center items-center size-12 bg-white rounded before:absolute before:-inset-px before:-z-[1] before:bg-gradient-to-br before:from-blue-600 before:via-transparent before:to-violet-600 before:rounded ">
-                <svg
-                  className="flex-shrink-0 size-6 text-blue-600 "
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={24}
-                  height={24}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                </svg>
-              </div>
-              <div className="mt-5">
-                <h3 className="text-lg font-semibold  ">Real-Time Tracking</h3>
-                <p className="mt-1  ">
-                  Monitor your performance and earnings through our
-                  user-friendly dashboard.
-                </p>
-              </div>
-            </div>
-            {/* End Icon Block */}
-            {/* Icon Block */}
-            <div>
-              <div className="relative flex justify-center items-center size-12 bg-white rounded before:absolute before:-inset-px before:-z-[1] before:bg-gradient-to-br before:from-blue-600 before:via-transparent before:to-violet-600 before:rounded ">
-                <svg
-                  className="flex-shrink-0 size-6 text-blue-600 "
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={24}
-                  height={24}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z" />
-                  <path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" />
-                </svg>
-              </div>
-              <div className="mt-5">
-                <h3 className="text-lg font-semibold  ">Fast Payouts</h3>
-                <p className="mt-1  ">
-                  We make sure you get paid quickly and easily through your
-                  preferred method.
-                </p>
-              </div>
-            </div>
-            {/* End Icon Block */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0 relative z-10 py-10 max-w-7xl mx-auto">
+            {benefits.map((benefit, index) => (
+              <Benefit key={benefit.title} {...benefit} index={index} />
+            ))}
           </div>
         </div>
         {/* End Icon Blocks */}
       </div>
       {/* End Hero */}
 
-      <Container></Container>
       <Footer />
     </>
   );
 }
 
 export default Affiliate;
+
+const Benefit = ({ title, description, icon, index }) => {
+  return (
+    <div
+      className={cn(
+        "flex flex-col lg:border-r lg:border-border py-6 sm:py-8 lg:py-10 relative group/feature",
+        (index === 0 || index === 4) && "lg:border-l",
+        index < 4 && "lg:border-b"
+      )}
+    >
+      {index < 4 && (
+        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-background to-transparent pointer-events-none" />
+      )}
+      {index >= 4 && (
+        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-b from-background to-transparent pointer-events-none" />
+      )}
+      <div
+        className="mb-4 relative z-10 px-6 sm:px-8 lg:px-10"
+        aria-hidden="true"
+      >
+        {icon}
+      </div>
+      <h3 className="text-lg font-bold mb-2 relative z-10 px-6 sm:px-8 lg:px-10">
+        <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-background group-hover/feature:bg-primary transition-all duration-200 origin-center" />
+        <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block">
+          {title}
+        </span>
+      </h3>
+      <p className="text-sm max-w-xs relative z-10 px-6 sm:px-8 lg:px-10">
+        {description}
+      </p>
+    </div>
+  );
+};

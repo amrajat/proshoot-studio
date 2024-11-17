@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 import { ArrowRight, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 
@@ -8,13 +9,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import StarRatings from "@/components/shared/star-ratings";
 import { REVIEWS_ARRAY } from "@/lib/reviews";
+import Autoplay from "embla-carousel-autoplay";
 
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import Tooltip from "@/components/shared/tooltip";
 
@@ -65,9 +65,9 @@ function Hero() {
               7-days money-back guarantee
             </span>
           </div>
+          <ReviewsCarousel />
           <UsedByHappyCustomers />
           <MediaLogos />
-          <ReviewsCarousel />
         </div>
       </div>
       <LeftImage />
@@ -111,43 +111,50 @@ const RightImage = () => {
 
 const ReviewsCarousel = () => {
   return (
-    <Carousel className="w-full max-w-4xl mt-2">
+    <Carousel
+      opts={{
+        align: "start",
+        loop: true,
+      }}
+      className="w-full max-w-4xl"
+      plugins={[
+        Autoplay({
+          delay: 4000,
+        }),
+      ]}
+    >
       <CarouselContent>
         {REVIEWS_ARRAY.filter((review) => review.comment.length > 1).map(
           (review) => (
             <CarouselItem key={review.id}>
-              <Card className="rounded bg-transparent">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-center mb-4">
-                    <StarRatings rating={review.rating} />
+              <Card className="bg-transparent border-none shadow-none">
+                <CardContent className="p-2">
+                  <div className="flex items-center justify-center">
+                    <StarRatings size="size-3" rating={review.rating} />
                   </div>
-                  <p className="text-base font-light text-accent-foreground text-center italic">
+                  <p className="text-sm font-light text-accent-foreground text-center italic my-2">
                     {review.comment}
                   </p>
-                  <div className="mt-4 mb-2 flex flex-col items-center justify-center space-y-2 md:flex-row md:space-x-2 md:space-y-0">
-                    <div className="flex -space-x-2">
-                      <Avatar className="w-8 h-8 border-2 border-background">
-                        <AvatarImage
-                          src={review.avatar}
-                          alt={`ai headshot generator review by ${review.name}}`}
-                        />
-                        <AvatarFallback>{review.name[0]}</AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <p className="text-sm text-muted-foreground text-center">
-                      {review.name},{" "}
-                    </p>
-                    <p className="text-sm text-muted-foreground text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <Avatar className="h-6 w-6 border border-background">
+                      <AvatarImage
+                        src={review.avatar}
+                        alt={`ai headshot generator review by ${review.name}}`}
+                      />
+                      <AvatarFallback>{review.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs text-muted-foreground">
+                      {review.name}
                       {review.position &&
                         review.company &&
-                        `${review.position} at ${review.company}`}
+                        `, ${review.position} at ${review.company}`}
                       {review.position &&
                         !review.company &&
-                        `${review.position}`}
+                        `, ${review.position}`}
                       {!review.position &&
                         !review.company &&
-                        "Proshoot Customer"}
-                    </p>
+                        ", Proshoot Customer"}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -155,8 +162,6 @@ const ReviewsCarousel = () => {
           )
         )}
       </CarouselContent>
-      <CarouselPrevious className="relative" />
-      <CarouselNext className="relative" />
     </Carousel>
   );
 };

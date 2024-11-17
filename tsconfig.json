@@ -31,7 +31,8 @@
     "app/api/uploadthing/core.js",
     "lib/utils.ts",
     "app/dashboard/flux/page.jsx",
-    "components/auth/AuthForm.jsx"
+    "components/auth/AuthForm.jsx",
+    "components/layout/Header.jsx"
   ],
   "exclude": ["node_modules"]
 }

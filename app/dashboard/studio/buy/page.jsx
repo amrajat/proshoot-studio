@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Autoplay from "embla-carousel-autoplay";
+
 import {
   Card,
   CardContent,
@@ -18,6 +20,14 @@ import { PLANS } from "@/lib/data";
 import { createCheckoutLS } from "@/lib/supabase/actions/server";
 import { Check, Minus, Plus, ShieldCheck, TrendingUp } from "lucide-react";
 import ToolTip from "@/components/shared/tooltip";
+import { REVIEWS_ARRAY } from "@/lib/reviews";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import StarRatings from "@/components/shared/star-ratings";
 
 const planIcons = {
   Basic: (
@@ -291,6 +301,7 @@ export default function BuyStudio() {
           </div>
         </form>
 
+        {/* <ReviewsCarousel /> */}
         <div className="mt-6 space-y-2 text-xs text-muted-foreground">
           <p className="flex items-center justify-center">
             After payment, you'll be redirected to create your headshots.
@@ -303,3 +314,60 @@ export default function BuyStudio() {
     </Card>
   );
 }
+
+const ReviewsCarousel = () => {
+  return (
+    <Carousel
+      opts={{
+        align: "start",
+        loop: true,
+      }}
+      className="w-full max-w-4xl"
+      plugins={[
+        Autoplay({
+          delay: 4000,
+        }),
+      ]}
+    >
+      <CarouselContent>
+        {REVIEWS_ARRAY.filter((review) => review.comment.length > 1).map(
+          (review) => (
+            <CarouselItem key={review.id}>
+              <Card className="bg-transparent border-none shadow-none">
+                <CardContent className="p-2">
+                  <div className="flex items-center justify-center">
+                    <StarRatings size="size-3" rating={review.rating} />
+                  </div>
+                  <p className="text-sm font-light text-accent-foreground text-center italic my-2">
+                    {review.comment}
+                  </p>
+                  <div className="flex items-center justify-center gap-2">
+                    <Avatar className="h-6 w-6 border border-background">
+                      <AvatarImage
+                        src={review.avatar}
+                        alt={`ai headshot generator review by ${review.name}}`}
+                      />
+                      <AvatarFallback>{review.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs text-muted-foreground">
+                      {review.name}
+                      {review.position &&
+                        review.company &&
+                        `, ${review.position} at ${review.company}`}
+                      {review.position &&
+                        !review.company &&
+                        `, ${review.position}`}
+                      {!review.position &&
+                        !review.company &&
+                        ", Proshoot Customer"}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          )
+        )}
+      </CarouselContent>
+    </Carousel>
+  );
+};

@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { PLANS } from "@/lib/data";
+import config from "@/config";
 import { createCheckoutLS } from "@/lib/supabase/actions/server";
 import { Check, Minus, Plus, ShieldCheck, TrendingUp } from "lucide-react";
 import ToolTip from "@/components/shared/tooltip";
@@ -172,7 +172,7 @@ export default function BuyStudio() {
   async function checkout() {
     startTransaction(async () => {
       try {
-        await createCheckoutLS(plan, quantity, PLANS[plan].variantId);
+        await createCheckoutLS(plan, quantity, config.PLANS[plan].variantId);
       } catch (error) {
         console.error("Checkout Error:", error);
       }
@@ -202,7 +202,7 @@ export default function BuyStudio() {
             onValueChange={setPlan}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
-            {Object.entries(PLANS).map(([key, value]) => (
+            {Object.entries(config.PLANS).map(([key, value]) => (
               <Label
                 key={key}
                 className={`relative flex flex-col items-start p-6 border-2 rounded cursor-pointer transition-all duration-200 hover:border-primary hover:bg-primary/5 ${
@@ -210,11 +210,9 @@ export default function BuyStudio() {
                 }`}
               >
                 <RadioGroupItem value={key} className="sr-only" />
-                {/* <div className="flex items-center justify-between w-full mb-4"> */}
                 <div className="flex items-center space-x-2">
                   {planIcons[key]}
                   <span className="text-lg font-semibold">{key}</span>
-                  {/* </div> */}
                 </div>
                 <span className="text-2xl font-bold mb-2">
                   $ {value.planPrice}
@@ -282,7 +280,9 @@ export default function BuyStudio() {
           <div className="space-y-4">
             <div className="flex justify-between text-lg font-semibold">
               <span>Total</span>
-              <span>${Math.trunc(quantity * PLANS[plan].planPrice)}</span>
+              <span>
+                ${Math.trunc(quantity * config.PLANS[plan].planPrice)}
+              </span>
             </div>
             <Button
               type="submit"
@@ -292,7 +292,9 @@ export default function BuyStudio() {
             >
               {pending
                 ? "Processing..."
-                : `Pay $${Math.trunc(quantity * PLANS[plan]["planPrice"])}`}
+                : `Pay $${Math.trunc(
+                    quantity * config.PLANS[plan]["planPrice"]
+                  )}`}
             </Button>
             <span className="text-muted-foreground text-sm flex items-center justify-center">
               <ShieldCheck className="mr-2 size-5 text-success" />

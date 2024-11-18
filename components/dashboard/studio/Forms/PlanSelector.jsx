@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { HiCheck } from "react-icons/hi2";
 import Heading from "@/components/shared/heading";
 import { v4 as uuidv4 } from "uuid";
-import { PLANS } from "@/lib/data";
+import config from "@/config";
 
 export default function PlanSelector({
   data,
@@ -85,7 +85,7 @@ export default function PlanSelector({
                       {remainingCredits} credits available.
                     </span>
                     <span className="text-xs">
-                      {PLANS[planName]?.headshots} Headshots.
+                      {config.PLANS[planName]?.headshots} Headshots.
                     </span>
                   </span>
                 </label>

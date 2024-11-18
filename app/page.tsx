@@ -4,8 +4,8 @@ import TrustedByCompanies from "@/components/homepage/TrustedByCompanies";
 import Examples from "@/components/homepage/Examples";
 import Features from "@/components/homepage/Features";
 import Pricing from "@/components/homepage/Pricing";
-import HowItWorks from "@/components/homepage/HowItWorks";
-import UseCases from "@/components/homepage/UseCases";
+// import HowItWorks from "@/components/homepage/HowItWorks";
+// import UseCases from "@/components/homepage/UseCases";
 import Comparison from "@/components/homepage/Comparison";
 import FAQs from "@/components/homepage/FAQs";
 import PhotographyCompared from "@/components/homepage/PhotographyCompared";
@@ -24,7 +24,6 @@ export default function Home() {
         {/* <HowItWorks /> */}
         {/* <UseCases /> */}
         <Comparison />
-        {/* <TestimonialsCarousel /> */}
         <TrustedByCompanies />
         <FAQs />
       </main>

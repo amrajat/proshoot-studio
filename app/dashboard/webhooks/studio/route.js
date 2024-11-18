@@ -8,7 +8,7 @@ import { SendMailClient } from "zeptomail";
 import pLimit from "p-limit";
 import * as Sentry from "@sentry/nextjs";
 import { validateWebhook } from "replicate";
-import { PLANS } from "@/lib/data";
+import config from "@/config";
 import generatePrompts from "@/lib/prompts";
 import Replicate from "replicate";
 
@@ -207,7 +207,7 @@ async function generateImagesUsingPrompts(
       user_id,
       supabase
     );
-    const numPrompts = parseInt(PLANS[planName].headshots / 4);
+    const numPrompts = parseInt(config.PLANS[planName].headshots / 4);
     const availablePrompts = generatePrompts(studioAttributes).slice(
       0,
       numPrompts

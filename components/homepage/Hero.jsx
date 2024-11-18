@@ -98,7 +98,7 @@ const RightImage = () => {
     <div className="absolute right-5 top-10 hidden w-1/6 max-w-[250] justify-self-start xl:block">
       <div className="relative aspect-[2/3] border shadow-xl overflow-hidden rounded">
         <Image
-          src="/examples/ai-portrait-3.jpg"
+          src="/examples/ai-portrait-15.jpg"
           alt="ai headshot"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

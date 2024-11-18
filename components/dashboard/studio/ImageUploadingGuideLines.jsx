@@ -1,6 +1,5 @@
 import Image from "next/image";
-import { HiCheck, HiXMark } from "react-icons/hi2";
-import { LuBadgeCheck, LuBadgeAlert } from "react-icons/lu";
+import { BadgeCheck, BadgeAlert, Check, X } from "lucide-react";
 
 function ImageUploadingGuideLines() {
   return (
@@ -12,7 +11,7 @@ function ImageUploadingGuideLines() {
         <div className="flex">
           <div className="flex-shrink-0">
             <span className="inline-flex justify-center items-center size-8 rounded border-4 border-blue-100 bg-blue-600 text-white shadow-sm   ">
-              <LuBadgeCheck className="flex-shrink-0 size-4" />
+              <BadgeCheck className="flex-shrink-0 size-4" />
             </span>
           </div>
           <div className="ms-3">
@@ -50,7 +49,7 @@ function ImageUploadingGuideLines() {
         <div className="flex w-full flex-wrap gap-2 mt-4 justify-center">
           <div className="relative rounded overflow-hidden">
             <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-blue-100 bg-blue-600 text-white shadow-sm   ">
-              <HiCheck className="flex-shrink-0 size-2" />
+              <Check className="flex-shrink-0 size-2" />
             </span>
             <Image
               alt="image uploading guidlines"
@@ -61,7 +60,7 @@ function ImageUploadingGuideLines() {
           </div>
           <div className="relative rounded overflow-hidden">
             <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-blue-100 bg-blue-600 text-white shadow-sm   ">
-              <HiCheck className="flex-shrink-0 size-2" />
+              <Check className="flex-shrink-0 size-2" />
             </span>
             <Image
               alt="image uploading guidlines"
@@ -72,7 +71,7 @@ function ImageUploadingGuideLines() {
           </div>
           <div className="relative rounded overflow-hidden">
             <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-blue-100 bg-blue-600 text-white shadow-sm   ">
-              <HiCheck className="flex-shrink-0 size-2" />
+              <Check className="flex-shrink-0 size-2" />
             </span>
             <Image
               alt="image uploading guidlines"
@@ -83,7 +82,7 @@ function ImageUploadingGuideLines() {
           </div>
           <div className="relative rounded overflow-hidden">
             <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-blue-100 bg-blue-600 text-white shadow-sm   ">
-              <HiCheck className="flex-shrink-0 size-2" />
+              <Check className="flex-shrink-0 size-2" />
             </span>
             <Image
               alt="image uploading guidlines"
@@ -94,7 +93,7 @@ function ImageUploadingGuideLines() {
           </div>
           <div className="relative rounded overflow-hidden">
             <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-blue-100 bg-blue-600 text-white shadow-sm   ">
-              <HiCheck className="flex-shrink-0 size-2" />
+              <Check className="flex-shrink-0 size-2" />
             </span>
             <Image
               alt="image uploading guidlines"
@@ -105,7 +104,7 @@ function ImageUploadingGuideLines() {
           </div>
           <div className="relative rounded overflow-hidden">
             <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-blue-100 bg-blue-600 text-white shadow-sm   ">
-              <HiCheck className="flex-shrink-0 size-2" />
+              <Check className="flex-shrink-0 size-2" />
             </span>
             <Image
               alt="image uploading guidlines"
@@ -123,7 +122,7 @@ function ImageUploadingGuideLines() {
         <div className="flex">
           <div className="flex-shrink-0">
             <span className="inline-flex justify-center items-center size-8 rounded border-4 border-red-100 bg-red-600 text-white shadow-sm   ">
-              <LuBadgeAlert className="flex-shrink-0 size-4" />
+              <BadgeAlert className="flex-shrink-0 size-4" />
             </span>
           </div>
           <div className="ms-3">
@@ -165,7 +164,7 @@ function ImageUploadingGuideLines() {
         <div className="flex w-full flex-wrap gap-2 mt-4 justify-center">
           <div className="relative rounded overflow-hidden">
             <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-red-100 bg-red-600 text-white shadow-sm   ">
-              <HiXMark className="flex-shrink-0 size-2" />
+              <X className="flex-shrink-0 size-2" />
             </span>
             <Image
               alt="image uploading guidlines"
@@ -176,7 +175,7 @@ function ImageUploadingGuideLines() {
           </div>
           <div className="relative rounded overflow-hidden">
             <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-red-100 bg-red-600 text-white shadow-sm   ">
-              <HiXMark className="flex-shrink-0 size-2" />
+              <X className="flex-shrink-0 size-2" />
             </span>
             <Image
               alt="image uploading guidlines"
@@ -187,7 +186,7 @@ function ImageUploadingGuideLines() {
           </div>
           <div className="relative rounded overflow-hidden">
             <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-red-100 bg-red-600 text-white shadow-sm   ">
-              <HiXMark className="flex-shrink-0 size-2" />
+              <X className="flex-shrink-0 size-2" />
             </span>
             <Image
               alt="image uploading guidlines"
@@ -198,7 +197,7 @@ function ImageUploadingGuideLines() {
           </div>
           <div className="relative rounded overflow-hidden">
             <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-red-100 bg-red-600 text-white shadow-sm   ">
-              <HiXMark className="flex-shrink-0 size-2" />
+              <X className="flex-shrink-0 size-2" />
             </span>
             <Image
               alt="image uploading guidlines"
@@ -209,7 +208,7 @@ function ImageUploadingGuideLines() {
           </div>
           <div className="relative rounded overflow-hidden">
             <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-red-100 bg-red-600 text-white shadow-sm   ">
-              <HiXMark className="flex-shrink-0 size-2" />
+              <X className="flex-shrink-0 size-2" />
             </span>
             <Image
               alt="image uploading guidlines"
@@ -220,7 +219,7 @@ function ImageUploadingGuideLines() {
           </div>
           <div className="relative rounded overflow-hidden">
             <span className="absolute right-1 top-1 inline-flex justify-center items-center size-4 rounded border-2 border-red-100 bg-red-600 text-white shadow-sm   ">
-              <HiXMark className="flex-shrink-0 size-2" />
+              <X className="flex-shrink-0 size-2" />
             </span>
             <Image
               alt="image uploading guidlines"

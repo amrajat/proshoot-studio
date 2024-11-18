@@ -1,4 +1,4 @@
-import { LuFrown } from "react-icons/lu";
+import { OctagonAlert } from "lucide-react";
 
 function Error({ message }) {
   return (
@@ -7,7 +7,7 @@ function Error({ message }) {
         <div className="flex-shrink-0">
           {/* Icon */}
           <span className="inline-flex justify-center items-center size-8 rounded border-4 border-red-100 bg-red-200 text-red-800   ">
-            <LuFrown className="flex-shrink-0 size-4" />
+            <OctagonAlert className="flex-shrink-0 size-4" />
           </span>
           {/* End Icon */}
         </div>

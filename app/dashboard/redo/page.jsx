@@ -1,16 +1,11 @@
 "use client";
 import ImageUploadingGuideLines from "@/components/dashboard/studio/ImageUploadingGuideLines";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { useState, useCallback, useRef } from "react";
 import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
 import { v4 as uuidv4 } from "uuid";
 
-import {
-  HiCloudArrowUp,
-  HiOutlinePaperClip,
-  HiTrash,
-  HiXMark,
-} from "react-icons/hi2";
+import { ArrowUp, Paperclip, Trash, X } from "lucide-react";
 import Image from "next/image";
 
 const supabase = createSupabaseBrowserClient();
@@ -125,7 +120,7 @@ export default function Component() {
             disabled={uploading}
             className="py-3 px-4 inline-flex justify-center items-center gap-x-2 text-base font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
           >
-            <HiOutlinePaperClip strokeWidth={2} />
+            <Paperclip strokeWidth={2} />
             Select Images
           </button>
 
@@ -146,10 +141,7 @@ export default function Component() {
                     className="absolute top-2 right-2"
                     onClick={() => removeFile(index)}
                   >
-                    <HiXMark
-                      className="h-4 w-4 text-red-600"
-                      strokeWidth={1.25}
-                    />
+                    <X className="h-4 w-4 text-red-600" strokeWidth={1.25} />
                   </button>
                 </div>
               ))}
@@ -162,15 +154,15 @@ export default function Component() {
                 onClick={uploadFiles}
                 disabled={uploading || files.length < 1}
               >
-                <HiCloudArrowUp />
+                <ArrowUp />
                 {uploading ? "Uploading..." : "Upload & Create Studio"}
               </Button>
               <Button
                 onClick={removeAllFiles}
-                cls="bg-red-600 hover:bg-red-700"
+                variant={"destructive"}
                 disabled={uploading}
               >
-                <HiTrash />
+                <Trash />
                 Remove All Images
               </Button>
             </div>

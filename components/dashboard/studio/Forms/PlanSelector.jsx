@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { HiCheck } from "react-icons/hi2";
+import { Check } from "lucide-react";
 import Heading from "@/components/shared/heading";
 import { v4 as uuidv4 } from "uuid";
 import config from "@/config";
@@ -71,7 +71,7 @@ export default function PlanSelector({
                   />
                   <span className="peer-checked:flex hidden absolute top-4 end-4">
                     <span className="w-5 h-5 flex justify-center items-center rounded bg-blue-600">
-                      <HiCheck
+                      <Check
                         className="flex-shrink-0 w-3 h-3 text-white"
                         width={24}
                         height={24}

@@ -5,12 +5,9 @@ import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
 import { v4 as uuidv4 } from "uuid";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
-import {
-  HiArrowUpTray,
-  HiCheckCircle,
-  HiOutlinePhoto,
-  HiOutlineTrash,
-} from "react-icons/hi2";
+
+import { Upload, CheckCircle, Photo, Trash } from "lucide-react";
+
 import JSZip from "jszip";
 import Heading from "@/components/shared/heading";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
@@ -190,7 +187,7 @@ export default function ImageUploader({
                 />
                 <div className="text-center">
                   <span className="inline-flex justify-center items-center size-16 bg-gray-100 text-gray-800 rounded-full">
-                    <HiOutlinePhoto
+                    <Photo
                       className="shrink-0 size-6"
                       width={24}
                       height={24}
@@ -267,7 +264,7 @@ export default function ImageUploader({
                         </div>
                         <div className="flex items-center gap-x-2">
                           {!uploading && isCompleted && (
-                            <HiCheckCircle className="shrink-0 size-4 text-blue-600" />
+                            <CheckCircle className="shrink-0 size-4 text-blue-600" />
                           )}
                           {uploading && !isCompleted && (
                             <div
@@ -284,7 +281,7 @@ export default function ImageUploader({
                               onClick={() => removeFile(index)}
                               className="text-gray-500 hover:text-gray-800 focus:outline-none focus:text-gray-800"
                             >
-                              <HiOutlineTrash
+                              <Trash
                                 className="shrink-0 size-4 text-red-500 hover:text-red-600"
                                 strokeWidth={2}
                               />
@@ -322,7 +319,7 @@ export default function ImageUploader({
               {files.length > 0 && (
                 <div className="flex gap-x-4 justify-end items-center">
                   <Button onClick={uploadFiles} disabled={uploading}>
-                    <HiArrowUpTray strokeWidth={2} />
+                    <Upload strokeWidth={2} />
                     {uploading ? "Uploading..." : "Upload"}
                   </Button>
                   {!uploading && !isCompleted && (
@@ -330,7 +327,7 @@ export default function ImageUploader({
                       onClick={removeAllFiles}
                       className="flex items-center gap-x-2 text-sm text-red-600 hover:text-red-700 cursor-pointer disabled:cursor-not-allowed"
                     >
-                      <HiOutlineTrash />
+                      <Trash />
                       Remove All
                     </p>
                   )}

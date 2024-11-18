@@ -1,4 +1,4 @@
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { LoaderCircle } from "lucide-react";
 
 function Spinner() {
   return (
@@ -8,7 +8,7 @@ function Spinner() {
       aria-label="loading"
     >
       <span className="sr-only">Loading...</span>
-      <AiOutlineLoading3Quarters />
+      <LoaderCircle />
     </div>
   );
 }

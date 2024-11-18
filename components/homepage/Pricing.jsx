@@ -147,7 +147,7 @@ export default function Pricing() {
               </CardContent>
               <CardFooter>
                 <Link
-                  href="/dashboard"
+                  href="/auth"
                   className={`w-full border-primary ${buttonVariants({
                     variant: plan.popular ? "default" : "outline",
                   })}`}

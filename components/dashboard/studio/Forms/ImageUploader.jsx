@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 
-import { Upload, CheckCircle, Photo, Trash } from "lucide-react";
+import { Upload, CheckCircle, Image as ImageIcon, Trash } from "lucide-react";
 
 import JSZip from "jszip";
 import Heading from "@/components/shared/heading";
@@ -187,7 +187,7 @@ export default function ImageUploader({
                 />
                 <div className="text-center">
                   <span className="inline-flex justify-center items-center size-16 bg-gray-100 text-gray-800 rounded-full">
-                    <Photo
+                    <ImageIcon
                       className="shrink-0 size-6"
                       width={24}
                       height={24}

@@ -64,10 +64,7 @@ function BottomCTA() {
           </Badge>
           <div className="mt-8">
             <Button asChild className="h-12 px-10">
-              <Link
-                href="/dashboard/studio"
-                className="inline-flex items-center"
-              >
+              <Link href="/auth" className="inline-flex items-center">
                 Create AI Headshots
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

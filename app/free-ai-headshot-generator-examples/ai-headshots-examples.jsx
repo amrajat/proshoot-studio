@@ -4,6 +4,7 @@ import SectionParaHeading from "@/components/shared/section-para-heading";
 import StarRatings from "@/components/shared/star-ratings";
 import Link from "next/link";
 import Reviews from "@/components/shared/Reviews";
+import { buttonVariants } from "@/components/ui/button";
 
 function AIHeadshotExamples() {
   return (

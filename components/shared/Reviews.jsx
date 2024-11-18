@@ -103,8 +103,9 @@ function Reviews() {
                     "Resemblance",
                     "Style",
                     "No Deformation",
-                  ].map((title) => (
+                  ].map((title, index) => (
                     <Badge
+                      key={index}
                       variant="secondary"
                       className="flex items-center gap-1"
                     >

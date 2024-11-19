@@ -25,7 +25,9 @@ function ImageUploadingGuideLines() {
                 Clear and frontal face in good lighting and Remember good input
                 = good output.
               </li>
-              <li>Use plain backgrounds if possible.</li>
+              <li>
+                Use plain backgrounds if possible without any background noise.
+              </li>
               <li>
                 Please upload at-least 10 camera facing photos taken on
                 different time and place if possible.

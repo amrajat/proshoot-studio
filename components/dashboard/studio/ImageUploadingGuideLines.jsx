@@ -22,21 +22,13 @@ function ImageUploadingGuideLines() {
               className="marker:text-blue-600 list-disc ps-4 space-y-2 text-sm"
             >
               <li>
-                Clear view of face in good lighting and Remember good input =
-                good output.
+                Clear and frontal face in good lighting and Remember good input
+                = good output.
               </li>
+              <li>Use plain backgrounds if possible.</li>
               <li>
                 Please upload at-least 10 camera facing photos taken on
                 different time and place if possible.
-              </li>
-              <li>
-                Please upload at-least 2 extra (10 camera facing + 2 side view)
-                slightly side view images.
-              </li>
-              <li>
-                Vary the poses, outfits, background, and lighting for each
-                picture so each picture should introduce new information about
-                the person.
               </li>
               <li>Use photos from different days to avoid repetition.</li>
               <li>
@@ -155,8 +147,8 @@ function ImageUploadingGuideLines() {
                 don’t use angled selfies or photos with face distortions.
               </li>
               <li>
-                Avoid uploading many similar photos with the same outfit or
-                background. Use a variety instead.
+                Avoid uploading many similar photos with the same outfit. Use a
+                variety instead.
               </li>
             </ul>
           </div>

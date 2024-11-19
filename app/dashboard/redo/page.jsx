@@ -1,6 +1,6 @@
 "use client";
 import ImageUploadingGuideLines from "@/components/dashboard/studio/ImageUploadingGuideLines";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { useState, useCallback, useRef } from "react";
 import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
 import { v4 as uuidv4 } from "uuid";

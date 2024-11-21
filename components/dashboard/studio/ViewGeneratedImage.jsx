@@ -41,11 +41,12 @@ function ViewGeneratedImage({
           #{imageNumber}
         </div>
         <Image
+          unoptimized={true}
           src={image}
           alt={`AI generated image ${imageNumber}`}
-          width={400}
-          height={400}
-          className="w-full h-[300px] object-cover"
+          width={1024}
+          height={1024}
+          className="w-full aspect-square object-cover"
         />
       </CardContent>
       <CardFooter className="grid grid-cols-2 gap-2 p-2">

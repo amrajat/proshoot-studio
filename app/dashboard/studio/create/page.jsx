@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import VariableSelector from "@/components/dashboard/studio/Forms/VariableSelector";
 import PlanSelector from "@/components/dashboard/studio/Forms/PlanSelector";
-import ImageUploader2 from "@/components/dashboard/studio/Forms/ImageUploader2";
+import ImageUploader from "@/components/dashboard/studio/Forms/ImageUploader";
 import {
   formSchema,
   GENDERS,
@@ -39,7 +39,7 @@ const FileUploader = ({
       {...register("images", { required: "Please upload a file" })}
     />
     {errors.file && <p className="text-red-500 mt-2">{errors.file.message}</p>}
-    <ImageUploader2
+    <ImageUploader
       setValue={setValue}
       errors={errors}
       isSubmitting={isSubmitting}

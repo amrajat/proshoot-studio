@@ -175,7 +175,7 @@ function Reviews() {
                         <p className="text-base font-normal text-muted">
                           {review.name}
                         </p>
-                        <p className="text-xs text-muted">
+                        {/* <p className="text-xs text-muted">
                           {review.position &&
                             review.company &&
                             `${review.position} at ${review.company}`}
@@ -185,7 +185,7 @@ function Reviews() {
                           {!review.position &&
                             !review.company &&
                             "Proshoot Customer"}
-                        </p>
+                        </p> */}
                       </div>
                     </div>
                   </blockquote>

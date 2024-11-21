@@ -145,7 +145,7 @@ const ReviewsCarousel = () => {
                     </Avatar>
                     <span className="text-xs text-muted-foreground">
                       {review.name}
-                      {review.position &&
+                      {/* {review.position &&
                         review.company &&
                         `, ${review.position} at ${review.company}`}
                       {review.position &&
@@ -153,7 +153,7 @@ const ReviewsCarousel = () => {
                         `, ${review.position}`}
                       {!review.position &&
                         !review.company &&
-                        ", Proshoot Customer"}
+                        ", Proshoot Customer"} */}
                     </span>
                   </div>
                 </CardContent>

@@ -38,7 +38,7 @@ function TestimonialSlider() {
           <p className="font-semibold">
             {REVIEWS_ARRAY[currentTestimonial].name}
           </p>
-          <p>
+          {/* <p>
             {REVIEWS_ARRAY[currentTestimonial].position &&
               REVIEWS_ARRAY[currentTestimonial].company &&
               `${REVIEWS_ARRAY[currentTestimonial].position} at ${REVIEWS_ARRAY[currentTestimonial].company}`}
@@ -48,7 +48,7 @@ function TestimonialSlider() {
             {!REVIEWS_ARRAY[currentTestimonial].position &&
               !REVIEWS_ARRAY[currentTestimonial].company &&
               "Proshoot Customer"}
-          </p>
+          </p> */}
         </div>
         <div className="flex items-center mt-4">
           <StarRatings rating={REVIEWS_ARRAY[currentTestimonial].rating} />

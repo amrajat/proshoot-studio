@@ -351,7 +351,7 @@ const ReviewsCarousel = () => {
                       />
                       <AvatarFallback>{review.name[0]}</AvatarFallback>
                     </Avatar>
-                    <span className="text-xs text-muted-foreground">
+                    {/* <span className="text-xs text-muted-foreground">
                       {review.name}
                       {review.position &&
                         review.company &&
@@ -362,7 +362,7 @@ const ReviewsCarousel = () => {
                       {!review.position &&
                         !review.company &&
                         ", Proshoot Customer"}
-                    </span>
+                    </span> */}
                   </div>
                 </CardContent>
               </Card>

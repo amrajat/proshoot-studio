@@ -68,6 +68,14 @@ function Refunds() {
           confirmation email once your refund is complete.
         </p>
       </section>
+      <section>
+        <h3>Follow Image Guidelines:</h3>
+        <p>
+          If you do not follow the image guidelines correctly, you will not be
+          eligible for refunds. Our face detection model will help you upload
+          quality images.
+        </p>
+      </section>
 
       <section>
         <h3>Our Commitment to Satisfaction:</h3>

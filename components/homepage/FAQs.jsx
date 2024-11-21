@@ -20,7 +20,7 @@ const faqsList = [
   },
   {
     q: "What kind of photos should I upload?",
-    a: "Just use minimum 3 camera facing everyday selfies/photos taken on different time and place. Don't worry! We will guide you at time of studio creation with our guidelines.",
+    a: "Just use some(We recommend 10-12 good images for best results.) camera facing photos taken on different time and place. Don't worry! We will guide you at time of studio creation with our face detection ai tools that will help you to choose perfect photos.",
   },
   {
     q: "Is it possible for me to delete my data?",
@@ -40,7 +40,7 @@ const faqsList = [
   },
   {
     q: "How many high-quality and realistic photos I can expect?",
-    a: "Our photography service strives to provide you with the best possible experience, however, just like a real photo shoot, not every photo will turn out perfect. You may come across some photos with distortions. Nonetheless, we guarantee to deliver 4-10 exceptional profile-worthy headshots per order.",
+    a: "Our photography service strives to provide you with the best possible experience, however, just like a real photo shoot, not every photo will turn out perfect. You may come across some photos with distortions. Nonetheless, we guarantee to deliver 1-5 exceptional profile-worthy headshots per order.",
   },
   {
     q: "Who has the ownership of the generated images?",
@@ -56,7 +56,7 @@ const faqsList = [
   },
   {
     q: "What formats of photos can I upload to your platform?",
-    a: "We only support the following image formats: JPG, JPEG, PNG, HEIC, and WebP. If needed, you can easily convert your images to these formats using free online tools.",
+    a: "We only support the following image formats: JPG, JPEG, and PNG. If needed, you can easily convert your images to these formats using free online tools.",
   },
   {
     q: "My question is not listed above.",

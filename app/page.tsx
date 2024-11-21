@@ -1,6 +1,6 @@
 import Header from "@/components/layout/Header";
 import Hero from "@/components/homepage/Hero";
-import TrustedByCompanies from "@/components/homepage/TrustedByCompanies";
+// import TrustedByCompanies from "@/components/homepage/TrustedByCompanies";
 import Examples from "@/components/homepage/Examples";
 import Features from "@/components/homepage/Features";
 import Pricing from "@/components/homepage/Pricing";
@@ -24,7 +24,7 @@ export default function Home() {
         {/* <HowItWorks /> */}
         {/* <UseCases /> */}
         <Comparison />
-        <TrustedByCompanies />
+        {/* <TrustedByCompanies /> */}
         <FAQs />
       </main>
       <Footer />

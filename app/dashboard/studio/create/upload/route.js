@@ -22,6 +22,7 @@ export async function POST(request) {
     }
 
     const studioData = await request.json();
+
     if (studioData.error)
       NextResponse.json(
         { message: "We couldn't process your request." },

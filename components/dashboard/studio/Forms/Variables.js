@@ -249,7 +249,9 @@ export const formSchema = z.object({
   // cameraType: z.string().nullable().optional(),
   // lensType: z.string().nullable().optional(),
   // aperture: z.string().nullable().optional(),
-  images: z.string().url({ message: "Please upload minimum 10 good images." }), // Since you're uploading a zip, validate the signed URL string
+  images: z
+    .string()
+    .url({ message: "Please upload images first to create studio." }), // Since you're uploading a zip, validate the signed URL string
   // imageQualityType: z.string().min(1, "Please select image generation mode."),
   studioName: z.string().min(1, "Please enter your studio name."),
 });

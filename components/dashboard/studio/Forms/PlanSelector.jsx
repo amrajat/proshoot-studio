@@ -1,9 +1,14 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { Check } from "lucide-react";
-import Heading from "@/components/shared/heading";
 import { v4 as uuidv4 } from "uuid";
 import config from "@/config";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import Heading from "@/components/shared/heading";
 
 export default function PlanSelector({
   data,
@@ -42,68 +47,58 @@ export default function PlanSelector({
   const currentValue = watch ? watch(details.fieldName) : localValue;
 
   return (
-    <fieldset disabled={isPending}>
-      <span className="text-xs uppercase font-bold pl-0 xs:pl-0 xl:pl-1 text-red-600">
-        this field required.
-      </span>
+    <fieldset disabled={isPending} className="space-y-4">
+      <Badge variant="destructive" className="mb-2 uppercase">
+        This field is required
+      </Badge>
       <Heading variant={"hero"}>{details.title}</Heading>
-      <h2 className="pl-0 xs:pl-0 xl:pl-1">{details.subtitle}</h2>
-      <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-        <div className="col-span-full">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-            {options.map(([planName, remainingCredits]) => {
-              const randomKey = uuidv4();
-              return (
-                <label
-                  key={randomKey}
+      <p className="text-muted-foreground">{details.subtitle}</p>
+      <RadioGroup
+        onValueChange={handleRadioChange}
+        value={currentValue}
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+      >
+        {options.map(([planName, remainingCredits]) => {
+          const randomKey = uuidv4();
+          return (
+            <Card
+              key={randomKey}
+              className={`relative rounded ${
+                currentValue === planName ? "border-primary" : "border-border"
+              }`}
+            >
+              <CardContent className="p-4">
+                <RadioGroupItem
+                  value={planName}
+                  id={randomKey}
+                  disabled={remainingCredits < 1}
+                  className="peer sr-only"
+                />
+                <Label
                   htmlFor={randomKey}
-                  className="relative py-3 px-4 flex border-2 border-transparent rounded cursor-pointer focus:outline-none"
+                  className="flex flex-col space-y-1 cursor-pointer"
                 >
-                  <input
-                    type="radio"
-                    id={randomKey}
-                    value={planName}
-                    disabled={remainingCredits < 1}
-                    onChange={() => handleRadioChange(planName)}
-                    checked={currentValue === planName}
-                    name={details.fieldName}
-                    className="peer disabled:cursor-not-allowed absolute top-0 start-0 w-full h-full bg-transparent border border-gray-300 rounded cursor-pointer appearance-none focus:ring-white checked:border-2 checked:border-blue-600 checked:hover:border-blue-600 checked:focus:border-blue-600 checked:bg-none checked:text-transparent pointer-events-none before:content-[''] before:top-3.5 before:start-3.5 before:border-blue-600 before:h-5 before:rounded"
-                  />
-                  <span className="peer-checked:flex hidden absolute top-4 end-4">
-                    <span className="w-5 h-5 flex justify-center items-center rounded bg-blue-600">
-                      <Check
-                        className="flex-shrink-0 w-3 h-3 text-white"
-                        width={24}
-                        height={24}
-                        strokeWidth={2}
-                      />
-                    </span>
+                  <span className="font-medium">{planName}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {remainingCredits} credits available
                   </span>
-                  <span className="flex flex-col w-full">
-                    <span>{planName}</span>
-                    <span className="text-xs">
-                      {remainingCredits} credits available.
-                    </span>
-                    <span className="text-xs">
-                      {config.PLANS[planName]?.headshots} Headshots.
-                    </span>
+                  <span className="text-sm text-muted-foreground">
+                    {config.PLANS[planName]?.headshots} Headshots
                   </span>
-                </label>
-              );
-            })}
-          </div>
-
-          <div className="mt-2">
-            {shouldValidate &&
-              errors &&
-              errors[details?.fieldName]?.message && (
-                <p className="mt-2 text-sm text-red-400">
-                  {errors[details?.fieldName].message}
-                </p>
-              )}
-          </div>
-        </div>
-      </div>
+                </Label>
+                {currentValue === planName && (
+                  <Check className="absolute top-4 right-4 text-primary" />
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </RadioGroup>
+      {shouldValidate && errors && errors[details?.fieldName]?.message && (
+        <p className="text-sm text-destructive">
+          {errors[details?.fieldName].message}
+        </p>
+      )}
     </fieldset>
   );
 }

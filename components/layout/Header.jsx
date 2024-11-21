@@ -247,9 +247,18 @@ export default function NavBar() {
             </div>
             <div className="pt-4 pb-3 border-t border-accent">
               <div className="px-2">
-                <Button variant="destructive" className="w-full">
-                  Get Started <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+                <Link
+                  href="/auth"
+                  className={
+                    "w-full " +
+                    buttonVariants({
+                      variant: "destructive",
+                    })
+                  }
+                >
+                  Create Your AI Headshots
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
               </div>
             </div>
           </div>

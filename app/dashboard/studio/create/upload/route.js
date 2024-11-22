@@ -56,7 +56,7 @@ export async function POST(request) {
     const trainingResponse = await replicate.trainings.create(
       "ostris",
       "flux-dev-lora-trainer",
-      "d995297071a44dcb72244e6c19462111649ec86a9646c32df56daa7f14801944",
+      "e440909d3512c31646ee2e0c7d6f6f4923224863a6a10c494606e79fb5844497",
       {
         destination: "prime-ai-co/headshots",
         input: {

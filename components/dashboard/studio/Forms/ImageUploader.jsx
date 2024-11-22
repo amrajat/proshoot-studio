@@ -422,7 +422,8 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                 </div>
               )}
               {uploading && (
-                <Progress value={uploadProgress} max={100} className="w-full" />
+                // <Progress value={uploadProgress} max={100} className="w-full" />
+                <Loader />
               )}
             </div>
           ) : (

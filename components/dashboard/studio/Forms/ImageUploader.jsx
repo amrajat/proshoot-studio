@@ -158,11 +158,13 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     });
   }, []);
 
-  const { getRootProps, getInputProps } = useDropzone({
+  const { getRootProps, getInputProps, open } = useDropzone({
     onDrop,
     accept: ACCEPTED_IMAGE_TYPES,
     maxSize: MAX_FILE_SIZE,
     maxFiles: MAX_NUM_IMAGES,
+    noClick: true,
+    noKeyboard: true,
   });
 
   const handleFileChange = useCallback(
@@ -278,8 +280,9 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
               <div
                 {...getRootProps()}
                 className="cursor-pointer p-12 flex justify-center bg-background border-2 border-dashed border-primary rounded-lg"
+                onClick={open}
               >
-                <input {...getInputProps()} ref={fileInputRef} />
+                <input {...getInputProps()} onChange={handleFileChange} />
                 <div className="text-center">
                   <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                   <h3 className="mt-2 text-sm font-semibold text-foreground">
@@ -288,6 +291,10 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                   </h3>
                   <p className="mt-1 text-xs text-muted-foreground">
                     Upload up to {MAX_NUM_IMAGES} images, each up to{" "}
+                    {(MAX_FILE_SIZE / 1048576).toFixed(0)} MB,
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    and combined size of all images lesser than{" "}
                     {(MAX_FILE_SIZE / 1048576).toFixed(0)} MB
                   </p>
                 </div>
@@ -299,9 +306,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                     <Card
                       key={index}
                       className={
-                        file.accepted
-                          ? "border-green-500"
-                          : "border-destructive"
+                        file.accepted ? "border-success" : "border-destructive"
                       }
                     >
                       <CardContent className="p-4 flex items-center justify-between">
@@ -332,7 +337,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                         </div>
                         <div className="flex items-center space-x-2">
                           {file.accepted ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <CheckCircle className="h-4 w-4 text-success" />
                           ) : (
                             <CircleAlert className="h-4 w-4 text-destructive" />
                           )}

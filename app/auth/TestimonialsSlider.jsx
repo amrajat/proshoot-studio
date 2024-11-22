@@ -24,13 +24,15 @@ function TestimonialSlider() {
   return (
     <div className="relative hidden w-0 flex-1 lg:block">
       <Image
-        className="absolute inset-0 h-full w-full object-cover object-top"
-        src={REVIEWS_ARRAY[currentTestimonial].headshot}
+        className="absolute aspect-square inset-0 h-full w-full object-cover"
+        src={REVIEWS_ARRAY[currentTestimonial].squareImage}
         alt="Background"
         width={832}
-        height={1216}
+        height={832}
+        quality={100}
       />
-      <div className="absolute inset-0 bg-black bg-opacity-50 flex lg:flex-none flex-col justify-end p-12">
+      <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 to-transparent bg-opacity-10 flex lg:flex-none flex-col justify-end p-12">
+        {/* <div className="absolute inset-0 bottom-0 bg-gradient-to-t from-foreground to-transparent p-12"> */}
         <blockquote className="text-white text-2xl font-medium mb-4">
           {REVIEWS_ARRAY[currentTestimonial].comment}
         </blockquote>

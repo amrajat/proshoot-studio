@@ -4,19 +4,12 @@ import { useState } from "react";
 import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
 
-export default function SupabaseLogin() {
+export default function AuthForm() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState("email");
@@ -118,9 +111,9 @@ export default function SupabaseLogin() {
           className="w-full self-stretch"
         >
           {loading
-            ? "Loading..."
+            ? "Sending OTP..."
             : step === "email"
-            ? "Send OTP"
+            ? "Continue with Email"
             : "Verify OTP"}
         </Button>
         {step === "otp" && (

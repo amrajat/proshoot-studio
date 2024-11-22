@@ -12,8 +12,8 @@ export default function SignInPage() {
     <div className="h-screen flex flex-col">
       <Header />
       <div className="flex flex-1 min-h-0">
-        <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 overflow-y-auto">
-          <div className="mx-auto w-full max-w-sm lg:w-96 bg-gradient-to-b from-secondary to-background">
+        <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 overflow-y-auto bg-secondary">
+          <div className="mx-auto w-full max-w-sm lg:w-96 bg-background shadow-md">
             <div className="p-4 sm:p-7">
               <div className="text-center">
                 <h1 className="block text-2xl font-bold mt-6">Get Started</h1>

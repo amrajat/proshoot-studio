@@ -4,6 +4,7 @@ import { signInWithOAuth } from "@/lib/supabase/actions/server";
 import { cookies } from "next/headers";
 import { Button } from "@/components/ui/button";
 import { GoogleIcon, LinkedInIcon } from "@/components/shared/icons";
+import { Badge } from "@/components/ui/badge";
 
 async function OAuth({ provider }) {
   const cookieJar = cookies();
@@ -37,11 +38,7 @@ async function OAuth({ provider }) {
       >
         {icon}
         {text}
-        {lastSignedInMethod === provider && (
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary/75 px-2 py-1 rounded text-xs text-primary-foreground">
-            Last Used
-          </span>
-        )}
+        {lastSignedInMethod === provider && <Badge>last used</Badge>}
       </Button>
     </form>
   );

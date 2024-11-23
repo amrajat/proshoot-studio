@@ -22,43 +22,6 @@ const REQUEST_TIMEOUT = 300000; // in ms, increased to 10 seconds
 
 const limit = pLimit(CONCURRENCY_LIMIT);
 
-// Helper function to send error notifications
-async function notifyError(eMailClient, error, context = {}) {
-  try {
-    // First capture in Sentry
-    Sentry.captureException(error, { extra: context });
-
-    // Then send email notification
-    await eMailClient.sendMail({
-      from: {
-        address: "support@proshoot.co",
-        name: "Error Reporter",
-      },
-      to: [
-        {
-          email_address: {
-            address:
-              process.env.ERROR_NOTIFICATION_EMAIL || "support@proshoot.co",
-            name: "Developer",
-          },
-        },
-      ],
-      subject: "⚠️ Error in Studio Webhook",
-      htmlbody: `
-        <h2>Error Details:</h2>
-        <p><strong>Message:</strong> ${error.message}</p>
-        <p><strong>Stack:</strong> <pre>${error.stack}</pre></p>
-        <h3>Context:</h3>
-        <pre>${JSON.stringify(context, null, 2)}</pre>
-      `,
-    });
-  } catch (notificationError) {
-    // If notification fails, at least log it
-    console.error("Failed to send error notification:", notificationError);
-    Sentry.captureException(notificationError);
-  }
-}
-
 export async function POST(request) {
   const secret = process.env.REPLICATE_WEBHOOK_SIGNING_SECRET;
   let eMailClient;
@@ -136,12 +99,6 @@ export async function POST(request) {
             trainingResponse.id
           );
         } catch (error) {
-          await notifyError(eMailClient, error, {
-            event: "training",
-            user_id,
-            user_email,
-            training_id: trainingResponse.id,
-          });
           throw error;
         }
         break;
@@ -156,13 +113,6 @@ export async function POST(request) {
           }
           await handleImages(images, supabase, user_id, training_id);
         } catch (error) {
-          await notifyError(eMailClient, error, {
-            event: "prediction",
-            user_id,
-            training_id,
-            imagesCount: images?.length,
-            rawBody: body,
-          });
           break;
         }
         break;
@@ -177,14 +127,6 @@ export async function POST(request) {
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Error processing request", error);
-
-    // If we have email client initialized, notify about the error
-    if (eMailClient) {
-      await notifyError(eMailClient, error, {
-        endpoint: "POST /webhooks/studio",
-        requestBody: request.body,
-      });
-    }
 
     return NextResponse.json(
       { success: false, error: error.message },
@@ -375,52 +317,28 @@ async function updateUserPreviews(
   supabase
 ) {
   try {
-    const { data: userData, error: perror } = await supabase
-      .from("users")
-      .select("preview")
-      .eq("id", user_id)
-      .single();
+    const { data, error } = await supabase.rpc("append_preview_image_urls", {
+      tune_id,
+      image_urls: previewImageArray,
+      user_id,
+    });
 
-    if (perror) throw new Error(perror.message);
-
-    const userPreview = userData?.preview || {};
-    userPreview[tune_id] = [
-      ...(userPreview[tune_id] || []),
-      ...previewImageArray,
-    ];
-
-    const { error: updateError } = await supabase
-      .from("users")
-      .update({ preview: userPreview })
-      .eq("id", user_id);
-
-    if (updateError) throw new Error(updateError.message);
+    if (error) throw new Error(error.message);
   } catch (error) {
-    console.error("Error updating user previews", error);
+    console.error("Error updating preview column", error);
     Sentry.captureException(error);
     throw error;
   }
 }
-
 async function updateResultsColumn(user_id, tune_id, imageUrls, supabase) {
   try {
-    const { data: userData, error: resultsError } = await supabase
-      .from("users")
-      .select("results")
-      .eq("id", user_id)
-      .single();
+    const { data, error } = await supabase.rpc("append_results_image_urls", {
+      tune_id,
+      image_urls: imageUrls,
+      user_id,
+    });
 
-    if (resultsError) throw new Error(resultsError.message);
-
-    const userResults = userData?.results || {};
-    userResults[tune_id] = [...(userResults[tune_id] || []), ...imageUrls];
-
-    const { error: updateError } = await supabase
-      .from("users")
-      .update({ results: userResults })
-      .eq("id", user_id);
-
-    if (updateError) throw new Error(updateError.message);
+    if (error) throw new Error(error.message);
   } catch (error) {
     console.error("Error updating results column", error);
     Sentry.captureException(error);

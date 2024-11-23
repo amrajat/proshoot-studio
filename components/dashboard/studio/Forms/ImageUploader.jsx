@@ -398,6 +398,16 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                   correct. If you believe your images are valid, please upload
                   images despite any warnings.
                 </p>
+
+                {files
+                  .filter((file) => file.accepted)
+                  .reduce((acc, file) => acc + (file.file.size || 0), 0) >=
+                  MAX_FILE_SIZE && (
+                  <p className="text-sm text-destructive">
+                    Warning: Can't upload images, The total size of the images
+                    exceeds the maximum limit of 50MB!
+                  </p>
+                )}
               </div>
               {files.length > 0 && (
                 <div className="flex justify-between items-center">

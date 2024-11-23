@@ -42,6 +42,8 @@ const avoidGuidelines = [
     image: "/image-uploading-guidelines/avoid/avoid-1.jpg",
     description: [
       "Avoid using multiple similar photos from the same outfit and/or same background, as the AI needs diverse samples to function properly. Using several similar images will limit the AI's ability to learn your appearance. The AI functions better with diverse sample photos.",
+      "Avoid same pose or style, this will be critical factor generating poses for your headshots.",
+      "Always remember variety of images are the key, good input = good output.",
     ],
   },
   {

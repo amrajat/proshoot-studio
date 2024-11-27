@@ -160,8 +160,9 @@ async function generateImagesUsingPrompts(
         input: {
           model: "dev",
           prompt: availablePrompts[i],
-          extra_lora:
-            "https://huggingface.co/XLabs-AI/flux-lora-collection/resolve/main/realism_lora_comfy_converted.safetensors",
+          go_fast: false,
+          extra_lora: "https://huggingface.co/XLabs-AI/flux-RealismLora",
+          //   "https://huggingface.co/XLabs-AI/flux-lora-collection/resolve/main/realism_lora_comfy_converted.safetensors",
           lora_scale: 1,
           num_outputs: 4,
           aspect_ratio: "1:1",

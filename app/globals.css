@@ -81,6 +81,19 @@ body {
     @apply bg-background text-foreground;
   }
 }
+/* .animate-scroll is added for CardSlider.jsx */
+@layer utilities {
+  .animate-scroll {
+    animation: scroll var(--animation-duration) linear infinite;
+    animation-direction: var(--animation-direction);
+  }
 
-/* --success: 142, 76%, 36%;
---success-foreground: 60 9.1% 97.8%; */
+  @keyframes scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(calc(-50%));
+    }
+  }
+}

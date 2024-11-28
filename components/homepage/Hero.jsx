@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { ArrowRight, ShieldCheck, Sparkles, Trophy } from "lucide-react";
+import { ArrowRight, ShieldCheck, Sparkles, Trophy, Quote } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import StarRatings from "@/components/shared/star-ratings";
 import { REVIEWS_ARRAY } from "@/lib/reviews";
 import Autoplay from "embla-carousel-autoplay";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 import {
   Carousel,
@@ -23,13 +24,13 @@ function Hero() {
     <section className="relative bg-gradient-to-b from-secondary to-background py-16 sm:py-24 pb-0 sm:pb-0">
       <div className="container mx-auto px-4 py-8 pb-0">
         <div className="max-w-4xl mx-auto text-center mb-16">
-          <h5 className="py-1 px-2 rounded-lg flex text-xs font-normal gap-1 items-center text-foreground bg-success/15 justify-self-center mb-2 sm:text-sm lg:text-base">
+          <h5 className="py-1 px-2 rounded-lg inline-flex text-xs font-normal gap-1 items-center text-foreground bg-success/15 mx-auto mb-2 sm:text-sm lg:text-base">
             <Sparkles className="text-success" /> New AI Headshot Model Upgraded
             on November, 2024{" "}
             <Tooltip content="This newer model produces ultra-realistic ai headshots with the highest resemblance possible to date." />
           </h5>
 
-          <h5 className="py-1 px-2 rounded-lg flex text-xs font-normal gap-1 items-center text-foreground bg-success/15 justify-self-center mb-6 sm:text-sm lg:text-base">
+          <h5 className="py-1 px-2 rounded-lg inline-flex text-xs font-normal gap-1 items-center text-foreground bg-success/15 mx-auto mb-6 sm:text-sm lg:text-base">
             <Trophy className="text-success" />
             The #1 Realistic Professional Headshots Generator{" "}
             <Tooltip content="We do not use any harsh upscaler that makes your face look plastic. We focus on realism and resemblance." />
@@ -80,31 +81,103 @@ export default Hero;
 
 const LeftImage = () => {
   return (
-    <div className="absolute left-5 top-10 hidden w-1/6 max-w-[250] justify-self-start xl:block">
-      <div className="relative aspect-[2/3] border shadow-xl overflow-hidden rounded">
-        <Image
-          src="/examples/ai-portrait-2.jpg"
-          alt="ai headshot"
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          style={{ objectFit: "cover" }}
-        />
+    <div className="absolute left-5 top-10 hidden w-1/6 max-w-[250] justify-self-start xl:block shadow-md">
+      <div className="relative overflow-hidden rounded-lg shadow-md">
+        <AspectRatio ratio={2 / 3} className="relative rounded">
+          <Image
+            src="/examples/ai-portrait-2.jpg"
+            alt="ai headshot"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            style={{ objectFit: "cover" }}
+          />
+
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-foreground to-transparent"></div>
+          <div className="absolute top-2.5 left-2.5">
+            <span className="px-3 py-1 flex gap-1 items-center text-xs font-normal text-muted rounded bg-foreground">
+              <Sparkles className="text-destructive" strokeWidth={1.5} />
+              AI <span className="italic">Generated</span>
+            </span>
+          </div>
+          <div className="absolute inset-x-0 bottom-0 p-2.5">
+            <div className="flex items-center gap-4 mt-3">
+              <div className="flex-1 min-w-0 mb-1">
+                <p className="text-base font-normal text-muted">my name</p>
+                <p className="text-xs text-muted">IIT-B, M. Tech.</p>
+              </div>
+            </div>
+            <StarRatings size="size-3" rating={5} />
+          </div>
+        </AspectRatio>
       </div>
+
+      <Image
+        className="absolute top-full right-0 translate-y-1/2 -translate-x-2/3 rounded shadow-sm object-cover border"
+        src={"/selfie.jpg"}
+        width={100}
+        height={100}
+        alt="hi"
+      />
+      <Image
+        className="absolute -translate-x-1/2 translate-y-full scale-x-[-1] rotate-45 bottom-0 right-0 opacity-100"
+        src={"/arrow.svg"}
+        width={100}
+        height={100}
+        alt="arrow"
+      />
     </div>
   );
 };
 const RightImage = () => {
   return (
-    <div className="absolute right-5 top-10 hidden w-1/6 max-w-[250] justify-self-start xl:block">
-      <div className="relative aspect-[2/3] border shadow-xl overflow-hidden rounded">
-        <Image
-          src="/examples/ai-portrait-15.jpg"
-          alt="ai headshot"
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          style={{ objectFit: "cover" }}
-        />
+    <div className="absolute right-5 top-10 hidden w-1/6 max-w-[250] justify-self-start xl:block shadow-md">
+      <div className="relative overflow-hidden rounded-lg shadow-md">
+        <AspectRatio ratio={2 / 3} className="relative rounded">
+          <Image
+            src="/examples/ai-portrait-3.jpg"
+            alt="ai headshot"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            style={{ objectFit: "cover" }}
+          />
+
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-foreground to-transparent"></div>
+          <div className="absolute top-2.5 right-2.5">
+            <span className="px-3 py-1 flex gap-1 items-center text-xs font-normal text-muted rounded bg-foreground">
+              <Sparkles className="text-destructive" strokeWidth={1.5} />
+              AI <span className="italic">Generated</span>
+            </span>
+          </div>
+          <div className="absolute flex flex-col self-end justify-self-end inset-x-0 bottom-0 p-2.5">
+            <div className="flex justify-self-end items-center gap-4 mt-3">
+              <div className="flex-1 min-w-0 mb-1">
+                <p className="text-base justify-self-end font-normal text-muted">
+                  my name
+                </p>
+                <p className="text-xs justify-self-end text-muted">
+                  IIT-B, M. Tech.
+                </p>
+              </div>
+            </div>
+            <StarRatings size="size-3" rating={5} />
+          </div>
+        </AspectRatio>
       </div>
+
+      <Image
+        className="absolute top-full left-0 translate-y-1/2 translate-x-2/3 rounded shadow-sm object-cover border"
+        src={"/selfie.jpg"}
+        width={100}
+        height={100}
+        alt="hi"
+      />
+      <Image
+        className="absolute translate-x-1/2 -scale-x-[-1] translate-y-full -rotate-45 bottom-0 left-0 opacity-100"
+        src={"/arrow.svg"}
+        width={100}
+        height={100}
+        alt="arrow"
+      />
     </div>
   );
 };

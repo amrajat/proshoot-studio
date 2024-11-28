@@ -6,11 +6,12 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { REVIEWS_ARRAY } from "@/lib/reviews";
 import { Sparkles } from "lucide-react";
+import SectionParaHeading from "../shared/section-para-heading";
 
 export default function CardSlider({
   items = REVIEWS_ARRAY,
   direction = "left",
-  speed = "normal",
+  speed = "slow",
   pauseOnHover = true,
   className,
 }) {
@@ -63,6 +64,27 @@ export default function CardSlider({
         className
       )}
     >
+      {" "}
+      <div className="container mx-auto px-6 sm:px-6 lg:px-8">
+        <SectionParaHeading
+          badgeText={"Affiliates"}
+          title={"upload your photos to create ai headshots"}
+        >
+          this will be written later by our content writer.
+        </SectionParaHeading>
+      </div>
+      <div className="flex justify-center items-center -space-x-4">
+        {[1, 2, 3].map((i) => (
+          <Image
+            key={i}
+            width={48}
+            height={48}
+            className="relative inline-block h-12 w-12 rounded-full border-2 border-white object-cover"
+            src={`/avatar-${i}.jpg`}
+            alt={`Avatar ${i}`}
+          />
+        ))}
+      </div>
       <ul
         ref={scrollerRef}
         className={cn(
@@ -71,14 +93,16 @@ export default function CardSlider({
           pauseOnHover && "hover:[animation-play-state:paused]"
         )}
       >
-        {items.map((item) => (
-          <li key={item.id} className="w-[300px] flex-shrink-0">
+        {[...Array(38).keys()].map((item, index) => (
+          <li key={index} className="w-[300px] flex-shrink-0">
             <Card className="relative overflow-hidden h-full rounded shadow-none border-none">
               <CardContent className="p-0 h-full">
                 <Image
-                  src={item.headshot}
+                  // FIXME:
+                  unoptimized={true}
+                  src={`/one/fdfv-gdahh-hfahh-shhs-fggjh-nkzd-${index + 1}.jpg`}
                   width={300}
-                  height={450}
+                  height={300}
                   className="w-full h-full rounded object-cover"
                   alt={item.name}
                 />

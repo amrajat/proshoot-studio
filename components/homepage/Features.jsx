@@ -10,6 +10,7 @@ import {
   Layers,
 } from "lucide-react";
 import { useMemo } from "react";
+import SectionParaHeading from "../shared/section-para-heading";
 
 export default function Features() {
   const features = useMemo(
@@ -17,50 +18,50 @@ export default function Features() {
       {
         title: "Highest Resemblance",
         description:
-          "Our advanced AI algorithms ensure that your AI-generated headshots are a true reflection of you, preserving your distinctive features and personality.",
+          "Our AI fine-tuning techniques preserve your true identity without relying on harsh upscaling that creates artifacts or a waxy, plastic-like appearance.",
         icon: <Sparkles className="text-primary" aria-hidden="true" />,
       },
       {
         title: "Sharp Realistic",
         description:
-          "Experience the sharpest, most realistic headshots. Our technology delivers high-resolution headshot photos with exceptional detail.",
+          "Our advanced AI pipeline ensures no deformations or artifacts, delivering sharp, detailed, professional-grade headshots.",
         icon: <Camera className="text-primary" aria-hidden="true" />,
       },
       {
         title: "No Deformation",
         description:
-          "Say goodbye to unnatural deformations. Our best AI Headshot generator meticulously preserves your facial features, ensuring a natural and authentic look.",
+          "Our AI meticulously preserves your facial features, ensuring a natural and authentic appearance.",
         icon: <CheckCircle className="text-primary" aria-hidden="true" />,
       },
       {
         title: "High Resolution",
         description:
-          "Whether you need headshots for LinkedIn, a resume, or a personal branding website, our high-resolution AI business Photo will impress.",
+          "Whether you need headshots for LinkedIn, a resume, or personal branding, our high-resolution images will look great everywhere.",
         icon: <ImageIcon className="text-primary" aria-hidden="true" />,
       },
       {
         title: "Maintains Ethnicity",
         description:
-          "Our AI respects and preserves your cultural identity, ensuring your business headshots accurately represent you.",
+          "Our AI respects and preserves your cultural identity, ensuring your ai headshots accurately represent you.",
         icon: <Globe className="text-primary" aria-hidden="true" />,
       },
       {
         title: "Fast & Affordable",
         description:
-          "Get your AI professional headshots in as little as 2 hours. No more waiting weeks for a traditional photoshoot, at a fraction of the cost.",
+          "Get your professional headshots in as little as 2 hours, no more waiting weeks for a traditional photoshoot, and at a fraction of the cost.",
         icon: <Clock className="text-primary" aria-hidden="true" />,
-      },
-      {
-        title: "Money Back Guarantee",
-        description:
-          "We take pride in the reliability of AI-generated headshots. This is the reason why we offer a full money-back guarantee.",
-        icon: <ShieldCheck className="text-primary" aria-hidden="true" />,
       },
       {
         title: "Many Variations",
         description:
-          "Explore a vast array of styles, backgrounds, and lighting options to create business headshots that perfectly align with your brand.",
+          "Explore a wide variety of styles, outfits, backgrounds, and lighting options to create professional headshots that perfectly match your needs/brand.",
         icon: <Layers className="text-primary" aria-hidden="true" />,
+      },
+      {
+        title: "Money Back Guarantee",
+        description:
+          "We're confident you'll love your AI-generated headshots. If not, we'll refund you the full amount.",
+        icon: <ShieldCheck className="text-primary" aria-hidden="true" />,
       },
     ],
     []
@@ -69,16 +70,18 @@ export default function Features() {
   return (
     <section className="bg-gradient-to-b from-secondary to-background py-8 sm:py-16 md:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tighter lg:leading-[1.1] text-center mb-4">
-          Effortless, Instant Professional Headshots
-        </h2>
-        <p className="text-base sm:text-lg font-light text-foreground mb-8 text-center max-w-4xl mx-auto">
-          Our AI Professional Business Headshots Generator is a testament to
-          this ongoing innovation. By harnessing the power of AI, we deliver
-          high-quality, AI professional headshots tailored to your unique needs.
-          As AI improves, so does our ability to create even more realistic and
-          stunning business headshots.
-        </p>
+        <SectionParaHeading
+          badgeText={"One time fee"}
+          title={"Effortless, Instant Professional Headshots"}
+        >
+          Every person is unique, and so are their headshots. That's why we
+          avoid harsh upscaling, which can make your face look obviously
+          "AI-generated". The more an image is upscaled, the more it loses your
+          distinct features. Our focus is on preserving your authentic look and
+          true identity, delivering headshots that resemble your face exactly,
+          without any deformations or artifacts.
+        </SectionParaHeading>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0 relative z-10 py-10 max-w-7xl mx-auto">
           {features.map((feature, index) => (
             <Feature key={feature.title} {...feature} index={index} />

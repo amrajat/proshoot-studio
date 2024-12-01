@@ -20,7 +20,7 @@ function BottomCTA() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-background to-primary/10 py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-5xl mx-auto overflow-hidden">
+        <Card className="w-full max-w-5xl mx-auto overflow-hidden shadow-none rounded">
           <CardContent className="p-6 sm:p-10">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12">
               {stats.map((stat, index) => (
@@ -56,7 +56,7 @@ function BottomCTA() {
             get your <span className="text-primary">AI Headshots</span>
           </Heading>
           <p className="mt-4 text-lg text-muted-foreground">
-            Elevate your professional image with our cutting-edge AI technology.
+            and upgrade your professional presence.
           </p>
           <Badge variant="outline" className="mt-6">
             <ShieldCheck className="size-4 mr-2 text-success" />

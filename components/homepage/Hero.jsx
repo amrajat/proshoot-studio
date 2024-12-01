@@ -24,27 +24,79 @@ function Hero() {
     <section className="relative bg-gradient-to-b from-secondary to-background py-16 sm:py-24 pb-0 sm:pb-0">
       <div className="container mx-auto px-4 py-8 pb-0">
         <div className="max-w-4xl mx-auto text-center mb-16">
-          <h5 className="py-1 px-2 rounded-lg inline-flex text-xs font-normal gap-1 items-center text-foreground bg-success/15 mx-auto mb-2 sm:text-sm lg:text-base">
+          <h1 className="py-1 px-2 rounded-lg inline-flex text-xs font-normal gap-1 items-center text-foreground bg-success/15 mx-auto mb-2 sm:text-sm lg:text-base">
+            <Trophy className="text-success" />
+            Best AI Headshot Generator for Hyper-Realistic Professional
+            Headshots{" "}
+            <Tooltip content="We do not use any harsh upscaler that makes your face look plastic. We focus on realism and resemblance." />
+          </h1>
+          <h5 className="py-1 px-2 rounded-lg inline-flex text-xs font-normal gap-1 items-center text-foreground bg-success/15 mx-auto mb-6 sm:text-sm lg:text-base">
             <Sparkles className="text-success" /> New AI Headshot Model Upgraded
             on November, 2024{" "}
             <Tooltip content="This newer model produces ultra-realistic ai headshots with the highest resemblance possible to date." />
           </h5>
-
-          <h5 className="py-1 px-2 rounded-lg inline-flex text-xs font-normal gap-1 items-center text-foreground bg-success/15 mx-auto mb-6 sm:text-sm lg:text-base">
-            <Trophy className="text-success" />
-            The #1 Realistic Professional Headshots Generator{" "}
-            <Tooltip content="We do not use any harsh upscaler that makes your face look plastic. We focus on realism and resemblance." />
-          </h5>
-          <h2 className="text-4xl font-bold leading-tight tracking-tighter md:text-5xl lg:leading-[1.1] mb-6">
-            Create Professional Headshots from Everyday Photos with AI Headshot
-            Generator
-          </h2>
+          <div className="relative">
+            <h2 className="text-4xl font-bold leading-tight tracking-tighter md:text-5xl lg:leading-[1.1] mb-6 lowercase">
+              Create{" "}
+              <span className="relative">
+                Hyper-Realistic
+                <svg
+                  className="absolute -bottom-1 left-0 w-full"
+                  viewBox="0 0 100 10"
+                  preserveAspectRatio="none"
+                >
+                  <path
+                    d="M0,5 Q25,8 50,5 T100,5"
+                    fill="none"
+                    stroke="hsl(var(--destructive))"
+                    strokeWidth="2"
+                    className="opacity-50"
+                  />
+                </svg>
+              </span>{" "}
+              Professional Headshots from Everyday Photos
+            </h2>
+            {/* Add this new circular label */}
+            <div className="absolute left-0 -translate-y-1/2 top-0 hidden lg:block">
+              <div className="relative w-32 h-32">
+                {/* Center circle with "NO UPSCALER" text */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="p-10 bg-destructive/10 rounded-full w-16 h-16 flex items-center justify-center">
+                    <span className="text-xs font-semibold text-destructive text-center leading-tight">
+                      NO HARSH
+                      <br />
+                      UPSCALER
+                    </span>
+                  </div>
+                </div>
+                {/* Rotating text around the circle */}
+                <div className="absolute inset-0 animate-spin-slow">
+                  <svg className="w-full h-full" viewBox="0 0 100 100">
+                    <path
+                      id="circlePath"
+                      d="M 50,50 m -37,0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0"
+                      fill="none"
+                    />
+                    <text className="text-[8px]">
+                      <textPath
+                        href="#circlePath"
+                        className="text-muted-foreground uppercase"
+                      >
+                        {}· no use of upscalers that makes face looks plastic
+                      </textPath>
+                    </text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            {/* end circular table */}
+          </div>
 
           <p className="text-lg font-light text-foreground mb-8">
-            Effortlessly create high-quality, professional headshots with the
-            best AI headshot generator. Perfect for social media, business
-            cards, team pages, and online presence. Trusted by businesses &
-            individuals worldwide.
+            Effortlessly generate hyper-realistic, studio-grade professional
+            headshots by uploading everyday photos or selfies. Receive hundreds
+            of professional headshots in various styles, poses, and outfits that
+            are indistinguishable from real ones.
           </p>
 
           <div className="flex flex-col items-center justify-center mb-8 gap-4">
@@ -68,7 +120,7 @@ function Hero() {
           </div>
           <ReviewsCarousel />
           <UsedByHappyCustomers />
-          <MediaLogos />
+          {/* <MediaLogos /> */}
         </div>
       </div>
       <LeftImage />
@@ -86,7 +138,7 @@ const LeftImage = () => {
         <AspectRatio ratio={2 / 3} className="relative rounded">
           <Image
             src="/examples/ai-portrait-2.jpg"
-            alt="ai headshot"
+            alt="ai headshot of customer Valerie Leavy"
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             style={{ objectFit: "cover" }}
@@ -102,8 +154,10 @@ const LeftImage = () => {
           <div className="absolute inset-x-0 bottom-0 p-2.5">
             <div className="flex items-center gap-4 mt-3">
               <div className="flex-1 min-w-0 mb-1">
-                <p className="text-base font-normal text-muted">my name</p>
-                <p className="text-xs text-muted">IIT-B, M. Tech.</p>
+                <p className="text-base font-normal text-muted">
+                  Valerie Leavy
+                </p>
+                <p className="text-xs text-muted">Proshoot Customer</p>
               </div>
             </div>
             <StarRatings size="size-3" rating={5} />
@@ -113,17 +167,17 @@ const LeftImage = () => {
 
       <Image
         className="absolute top-full right-0 translate-y-1/2 -translate-x-2/3 rounded shadow-sm object-cover border"
-        src={"/selfie.jpg"}
+        src={"/selfie-4.jpg"}
         width={100}
         height={100}
-        alt="hi"
+        alt="selfie of customer valerie leavy"
       />
       <Image
         className="absolute -translate-x-1/2 translate-y-full scale-x-[-1] rotate-45 bottom-0 right-0 opacity-100"
         src={"/arrow.svg"}
         width={100}
         height={100}
-        alt="arrow"
+        alt="arrow svg icon, pointing to downside"
       />
     </div>
   );
@@ -134,8 +188,8 @@ const RightImage = () => {
       <div className="relative overflow-hidden rounded-lg shadow-md">
         <AspectRatio ratio={2 / 3} className="relative rounded">
           <Image
-            src="/examples/ai-portrait-3.jpg"
-            alt="ai headshot"
+            src="/examples/ai-portrait-26.jpg"
+            alt="ai headshot of customer Pranay Airan"
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             style={{ objectFit: "cover" }}
@@ -152,10 +206,10 @@ const RightImage = () => {
             <div className="flex justify-self-end items-center gap-4 mt-3">
               <div className="flex-1 min-w-0 mb-1">
                 <p className="text-base justify-self-end font-normal text-muted">
-                  my name
+                  Pranay Airan
                 </p>
                 <p className="text-xs justify-self-end text-muted">
-                  IIT-B, M. Tech.
+                  IIIT, Bangalore
                 </p>
               </div>
             </div>
@@ -166,17 +220,17 @@ const RightImage = () => {
 
       <Image
         className="absolute top-full left-0 translate-y-1/2 translate-x-2/3 rounded shadow-sm object-cover border"
-        src={"/selfie.jpg"}
+        src={"/selfie-3.jpg"}
         width={100}
         height={100}
-        alt="hi"
+        alt="selfie of customer pranay airan"
       />
       <Image
         className="absolute translate-x-1/2 -scale-x-[-1] translate-y-full -rotate-45 bottom-0 left-0 opacity-100"
         src={"/arrow.svg"}
         width={100}
         height={100}
-        alt="arrow"
+        alt="arrow svg icon, pointing to upside"
       />
     </div>
   );

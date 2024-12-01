@@ -221,7 +221,7 @@ export const STUDIO_NAME_SELECTOR = [
   },
   {
     isRequired: true,
-    placeholderText: "elonmusk2",
+    placeholderText: "yourname",
     helpText:
       "Just use your first name without any space or any special character.",
     regexPattern: null,

@@ -1,11 +1,6 @@
-import { Metadata } from "next";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -28,7 +23,7 @@ export const metadata = {
     siteName: config.appName,
     images: [
       {
-        url: `${config.baseUrl}/og-image.jpg`,
+        url: `${config.baseUrl}/og-image.jpg`, // Make sure this image exists in your public folder
         width: 1200,
         height: 630,
       },
@@ -41,7 +36,7 @@ export const metadata = {
     title: `${config.appName} Blog | Best AI Headshot Generator`,
     description:
       "Learn how to utilize artificial intelligence for your business needs to grow faster in your career. We also share information about AI headshots.",
-    images: [`${config.baseUrl}/og-image.jpg`],
+    images: [`${config.baseUrl}/og-image.jpg`], // Make sure this image exists in your public folder
   },
   alternates: {
     canonical: `${config.baseUrl}/blog`,

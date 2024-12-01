@@ -84,14 +84,13 @@ export default function Comparison() {
       <div className="max-w-7xl mx-auto">
         <SectionParaHeading
           badgeText={"comparison"}
-          title={"Why Choose Proshoot AI Headshot Generator?"}
+          title={"highest face resemblance & realism"}
         >
-          Build your online presence with ProShoot's AI Headshot Generator.
-          Eliminate the hassle and costs of booking a professional photographer
-          while still getting impeccable results. Our best AI headshot generator
-          provides high-quality and tailor-made headshot Photos that are
-          suitable for LinkedIn, CVs, as well as personal branding. Take
-          headshots the advanced way, today.
+          We generate your headshots without relying on harsh upscaling that
+          makes your face look unnatural. Our advanced face-matching fine-tuning
+          ensures the highest level of resemblance, focusing on the true essence
+          of your features. This technique sets us apart from the competition by
+          delivering authentic, realistic results.
         </SectionParaHeading>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -114,7 +113,7 @@ export default function Comparison() {
 
                 <div className="grid gap-6">
                   <div className="grid grid-cols-3 gap-4">
-                    {[1, 2, 3].map((i) => (
+                    {[26, 4, 2].map((i) => (
                       <div
                         key={i}
                         className="aspect-square rounded-lg overflow-hidden bg-gray-100 hover:scale-105 transition-transform"
@@ -122,7 +121,7 @@ export default function Comparison() {
                         <Image
                           width={300}
                           height={300}
-                          src={`/examples/ai-portrait-${i}.jpg`}
+                          src={`/examples/square/ai-portrait-${i}.jpg`}
                           alt={`Professional headshot example ${i}`}
                           className="w-full h-full object-cover object-top"
                         />

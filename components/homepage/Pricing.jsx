@@ -81,7 +81,10 @@ export default function Pricing() {
       className="relative bg-gradient-to-b from-secondary to-background py-16 sm:py-24 px-4"
     >
       <div className="container mx-auto">
-        <SectionParaHeading badgeText={"One time fee"} title={"Pricing"}>
+        <SectionParaHeading
+          badgeText={"One time fee"}
+          title={"Simple, One-Time Payment"}
+        >
           No recurring payments or hidden charges. You have complete ownership
           and commercial rights to your images, allowing you to use them freely
           without any restrictions.
@@ -161,14 +164,12 @@ export default function Pricing() {
         </div>
 
         <div className="mt-12 text-center">
-          <h3 className="text-2xl font-bold leading-tight tracking-tighter md:text-3xl lg:leading-[1.1] text-center mb-4">
-            100% Satisfaction Guaranteed
+          <h3 className="text-2xl font-bold leading-tight tracking-tighter md:text-3xl lg:leading-[1.1] text-center mb-4 lowercase">
+            Love It or Get Your Money Back
           </h3>
           <p className="font-light text-foreground max-w-2xl mx-auto">
-            We are certain you'll enjoy your AI Professional headshots created
-            using Proshoot AI Headshot Generator. However, in case of any
-            unsatisfactory experience, we request that you take advantage of our
-            7-days money-back promise.
+            Love your AI headshots or get a full refund, our 7-days money-back
+            guarantee ensures a risk-free experience.
           </p>
         </div>
       </div>

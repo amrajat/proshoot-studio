@@ -10,55 +10,42 @@ const useCasesArray = [
   {
     id: "social-media",
     title: "Social Media",
-    heading:
-      "Boost Your Social Media Presence with Proshoot's AI Headshots Generator.",
+    heading: "Boost your social media presence.",
     description:
       "Create a unique business portrait to wear on social networks such as LinkedIn, Facebook, and Instagram that leaves an impact.",
-    image: "/placeholder.svg",
+    image: "/linkedin.png",
   },
   {
     id: "teams",
     title: "Team Pages",
-    heading: "Unify Your Team with Consistent Proshoot's Company Headshots.",
+    heading: "Consistent company headshots",
     description:
       "Create cohesive and professional team pages with AI-generated company headshots that maintain a consistent style across your entire organization.",
-    image: "/placeholder.svg",
-  },
-  {
-    id: "business-cards",
-    title: "Business Cards",
-    heading:
-      "Make a Memorable First Impression with Business headshots on Cards.",
-    description:
-      "Elevate your business cards with a stunning AI-generated headshot that captures your professional AI business photo.",
-    image: "/placeholder.svg",
+    image: "/team-page.png",
   },
   {
     id: "cv-resumes",
     title: "CV & Resumes",
-    heading:
-      "Get New Possibilities for Employment with Proshoot's AI-Based Headshots.",
+    heading: "New possibilities for employment.",
     description:
       "Boost your cv or resume with a professional ai generated headshot that will help you impress your future employers.",
-    image: "/placeholder.svg",
+    image: "/cv-resume.png",
   },
   {
     id: "email-signatures",
     title: "Email Signatures",
-    heading:
-      "Transform Your Email Signature with Proshoot's AI Headshots Generator.",
+    heading: "Professional emails and business cards.",
     description:
       "Add a personal touch to your email communications and foster stronger connections with an AI business headshot in your signature.",
-    image: "/placeholder.svg",
+    image: "/email-sign.png",
   },
   {
     id: "personal-branding",
     title: "Personal Branding",
-    heading:
-      "Build a Strong Personal Brand with Proshoot's AI-Powered Headshots.",
+    heading: "Personal branding and online presence.",
     description:
       "Establish a strong personal brand across all your online platforms with consistent, high-quality Professional business headshots.",
-    image: "/placeholder.svg",
+    image: "/tweet.png",
   },
 ];
 
@@ -70,14 +57,13 @@ export default function UseCases() {
       <div className="container mx-auto py-8 px-4">
         <SectionParaHeading
           badgeText={"Use cases"}
-          title={
-            "How you can use your AI Generated Headshots Everywhere on the Internet"
-          }
+          title={"Upgrade Your Professional Presence"}
         >
-          Use your AI Professional Headshots everywhere on the internet,
-          whenever you want you can create AI business headshot photo and upload
-          it on different social media platforms, resumes, Email signatures, and
-          business cards let's see what it looks like.
+          Upgrade your professional presence with our AI headshot generator.
+          Instantly create high-quality, realistic headshots that reflect your
+          true personality, ready to enhance your presence across LinkedIn,
+          resumes, email signatures, and more. No waiting, no hassle, just a
+          perfect headshot in no time.
         </SectionParaHeading>
         <Tabs
           defaultValue={useCasesArray[0].id}
@@ -102,7 +88,7 @@ export default function UseCases() {
                 value={useCase.id}
                 className="outline-none"
               >
-                <Card>
+                <Card className="shadow-none rounded">
                   <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row gap-6">
                       <div className="w-full md:w-1/2">

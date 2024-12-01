@@ -32,7 +32,7 @@ export default function Component() {
         icon: CheckCircle2,
       },
       {
-        title: "Multiple Styles and Backgrounds",
+        title: "Multiple Styles, Outfits and Backgrounds",
         description:
           "Choose from diverse styles and backgrounds to match your professional or personal branding, all with fast delivery.",
         icon: CheckCircle2,
@@ -95,13 +95,14 @@ export default function Component() {
       <div className="max-w-7xl mx-auto">
         <SectionParaHeading
           badgeText={"AI vs Traditional Photography"}
-          title={
-            "Why AI Headshot Generator is more popular than Traditional Photography?"
-          }
+          title={"The Future of Professional Photography"}
         >
-          See how our AI Professional Headshot Generator is making big financial
-          disruptions in the photography market by producing ultra-realistic
-          headshot photos at a fraction of the cost of traditional photography.
+          AI headshots are quickly becoming the go-to solution for
+          professionals. Unlike traditional photography, they offer faster
+          delivery, incredible realism, and more affordable pricing, all without
+          compromising quality. With AI, you get a perfect headshot in minutes,
+          tailored to your unique look and style, all while saving time and
+          money. It’s the smart, modern way to upgrade your professional image.
         </SectionParaHeading>
 
         <div className="grid md:grid-cols-2 gap-8">

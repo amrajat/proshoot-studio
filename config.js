@@ -6,6 +6,7 @@ const config = {
     "Create high-quality, professional AI headshots in seconds using Proshoot.co's cutting-edge AI technology. Save time and money, get the perfect AI headshot.",
   // REQUIRED (no https://, not trialing slash at the end, just the naked domain)
   domainName: "www.proshoot.co",
+  baseUrl: "https://www.proshoot.co",
 
   PLANS: {
     Basic: {

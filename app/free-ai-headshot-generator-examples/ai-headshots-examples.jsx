@@ -13,10 +13,10 @@ function AIHeadshotExamples() {
         <StarRatings />
       </div>
 
-      <SectionParaHeading badgeText={"Trust"} title={"See our AI Headshots"}>
-        Curious about the quality of headshots Proshoot.co can generate? Take a
-        look at these examples and discover the potential for professional,
-        personalized portraits created.
+      <SectionParaHeading badgeText={"Trust"} title={"examples and reviews"}>
+        Curious about the quality of headshots we can generate? Check out these
+        examples to explore ultra-realistic professional headshots generated
+        using our AI headshot generator.
       </SectionParaHeading>
       <div className="container text-center mx-auto">
         <div className="mt-8 gap-3 flex justify-center flex-col">

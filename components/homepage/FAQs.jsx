@@ -15,24 +15,20 @@ const faqsList = [
     a: "Yes we do! Please email us at support@proshoot.co",
   },
   {
-    q: "Could you please provide me with an invoice?",
-    a: "Certainly, you can obtain an invoice for your purchase. You will get email with invoice.pdf from our payment partner Lemon Squeezy.",
-  },
-  {
     q: "What kind of photos should I upload?",
-    a: "Just use some(We recommend 10-12 good images for best results.) camera facing photos taken on different time and place. Don't worry! We will guide you at time of studio creation with our face detection ai tools that will help you to choose perfect photos.",
+    a: "We recommend taking 5 to 10 camera-facing photos or selfies at different times and locations for the best results, with more photos being preferable. A more detailed version of this information will be available, along with our face detection tool, which will assist you in uploading suitable images.",
   },
   {
     q: "Is it possible for me to delete my data?",
-    a: "After 30 days from the date of creating your studio, we will delete it along with any images from our database. You can also request deletion of your studio at any time by emailing us manually.",
+    a: "After 30 days, we will delete your training images from our database. We use signed encryption to secure your images, ensuring they cannot be accessed by anyone. You also have the option to request the deletion of your studio/account at any time by sending us an email.",
   },
   {
-    q: "Could you please inform me about the location of my data storage?",
-    a: "Data is stored securely on servers in the United States by highly secure third-party partners who undergo a thorough vetting process.",
+    q: "Where is my data stored?",
+    a: "Data is stored securely on servers in the United States by highly vetted third-party partners who maintain thorough security standards.",
   },
   {
     q: "What happens to my photos after they are used for training purposes?",
-    a: "We use input photos to train our AI model, create headshots, and delete all data within 30 days of studio creation. You can email us anytime to have your data deleted.",
+    a: "We use the photos to train a personal model that generates images of you alone. Additionally, your training images are encrypted, so they remain secure and are not accessible to anyone else. They are not used for any other purpose after the training process and get deleted after 30 days.",
   },
   {
     q: "Is the payment process secure?",
@@ -40,7 +36,7 @@ const faqsList = [
   },
   {
     q: "How many high-quality and realistic photos I can expect?",
-    a: "Our photography service strives to provide you with the best possible experience, however, just like a real photo shoot, not every photo will turn out perfect. You may come across some photos with distortions. Nonetheless, we guarantee to deliver 1-5 exceptional profile-worthy headshots per order.",
+    a: "We guarantee at least 1 to 5 profile-worthy headshots per order. If you can't find at least one usable image, please take advantage of our 100% money-back guarantee, and we will refund the full amount.",
   },
   {
     q: "Who has the ownership of the generated images?",

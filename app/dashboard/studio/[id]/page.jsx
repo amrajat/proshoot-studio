@@ -42,9 +42,26 @@ async function ViewStudio({ params }) {
   return (
     <div className="container mx-auto py-8">
       {!alreadyDownloaded && (
-        <p className="mb-6 text-lg font-light">
-          Note: These images are compressed for preview. The downloaded version
-          will show the full original image quality.
+        <p className="mb-6 text-sm font-light">
+          + These images are compressed for preview and protected with
+          watermarks. Clicking the '<strong>Preview</strong>' button will open
+          the image in a new window, still in a compressed format. <br></br>+
+          Clicking the '<strong>Download</strong>' button will provide the image
+          in full quality, and all watermarks will be automatically removed from
+          all images, which will then be considered as downloaded.
+          <br></br>+{" "}
+          <strong>
+            If you require headshots with custom outfits or backgrounds, feel
+            free to reach out to us -- chat/email. We’ll do our best to generate
+            them for you at no additional cost.
+          </strong>
+        </p>
+      )}
+      {alreadyDownloaded && (
+        <p className="mb-6 text-sm font-light">
+          + If you require headshots with custom outfits or backgrounds, feel
+          free to reach out. We’ll do our best to generate them for you at no
+          additional cost.
         </p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

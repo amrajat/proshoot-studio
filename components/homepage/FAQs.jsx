@@ -16,7 +16,7 @@ const faqsList = [
   },
   {
     q: "What kind of photos should I upload?",
-    a: "We recommend taking 5 to 10 camera-facing photos or selfies at different times and locations for the best results, with more photos being preferable. A more detailed version of this information will be available, along with our face detection tool, which will assist you in uploading suitable images.",
+    a: "Upload minimum 4-10 (we recommend 10 or more) clearly visible, frontal face photos taken at different times, with different outfits, and maximum background variations with no noise if possible. A more detailed version of this information will be available, along with our face detection tool, which will assist you in uploading suitable images.",
   },
   {
     q: "Is it possible for me to delete my data?",

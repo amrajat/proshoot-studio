@@ -295,7 +295,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     and combined size of all images lesser than{" "}
-                    {(MAX_FILE_SIZE / 1048576).toFixed(0)} MB
+                    {((MAX_FILE_SIZE / 1048576) * 10).toFixed(0)} MB
                   </p>
                 </div>
               </div>
@@ -399,7 +399,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                   images despite any warnings.
                 </p>
 
-                {files
+                {/* {files
                   .filter((file) => file.accepted)
                   .reduce((acc, file) => acc + (file.file.size || 0), 0) >=
                   MAX_FILE_SIZE && (
@@ -407,7 +407,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                     Warning: Can't upload images, The total size of the images
                     exceeds the maximum limit of 50MB!
                   </p>
-                )}
+                )} */}
               </div>
               {files.length > 0 && (
                 <div className="flex justify-between items-center">

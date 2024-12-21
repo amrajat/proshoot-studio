@@ -13,7 +13,7 @@ import generatePrompts from "@/lib/prompts";
 import Replicate from "replicate";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 const CONCURRENCY_LIMIT = 100;
 const RETRY_LIMIT = 3;

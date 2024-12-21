@@ -7,83 +7,147 @@ function Refunds() {
 
       <section>
         <p>
-          Proshoot.co is committed to exceeding your expectations. However, we
-          understand that achieving the perfect headshot can be a subjective
-          process. This policy outlines the conditions under which a full refund
-          may be requested.
+          We're committed to exceeding your expectations. However, we understand
+          that achieving the perfect headshot is a subjective process. This
+          policy outlines the conditions under which a full refund may be
+          requested.
         </p>
       </section>
 
       <section>
-        <h3>Eligibility for Refund:</h3>
-        <p>
-          A full refund of your purchase price is available if the following
-          criteria are met:
+        <p className="italic">
+          We’ve kept everything as simple and jargon-free as possible. If you
+          feel there’s room for improvement or greater transparency, please
+          don’t hesitate to reach out and share your thoughts with us.
+        </p>
+      </section>
+
+      <section>
+        <p className="font-medium">
+          You are eligible for a full refund if the following criteria are met:
         </p>
         <blockquote className="relative mt-2">
           <p>
-            Downloaded: False on the Studio page means you are eligible for a
-            refund, indicating that you have not downloaded any images yet or
-            that the 7-day window is still open.
+            + If the{" "}
+            <span className="font-medium underline">downloaded status</span> is{" "}
+            <span className="font-medium underline">false</span> on the Studio
+            page, it means you{" "}
+            <span className="font-medium underline">
+              are eligible for a refund
+            </span>
+            .
             <br />
-            Downloaded: True on the Studio page means you are not eligible for a
-            refund, indicating that you have downloaded images or that the 7-day
-            window is closed.
+            <span className="text-sm italic">
+              This indicates that you have not downloaded any images, and the
+              7-day window is still open.
+            </span>
+            <br />+ If the{" "}
+            <span className="font-medium underline">downloaded status</span> is{" "}
+            <span className="font-medium underline">true</span> on the Studio
+            page, it means you{" "}
+            <span className="font-medium underline">
+              are not eligible for a refund
+            </span>
+            .
+            <br />
+            <span className="text-sm italic">
+              This indicates that you have downloaded some or all images, or the
+              7-day window has passed.
+            </span>
           </p>
         </blockquote>
       </section>
 
       <section>
-        <h3>Unutilized Headshots:</h3>
+        <h3 className="font-medium">
+          What are the Preview and Download buttons?
+        </h3>
         <p>
-          You have not downloaded any of the AI-generated headshots from your
-          order. You can download the images by clicking or tapping on the
-          "Download" button.
+          Our dashboard includes two buttons for your convenience: "
+          <span className="font-medium underline">Preview</span>" and "
+          <span className="font-medium underline">Download</span>".
+          <br />
+          <span className="font-medium underline">Preview</span>: Clicking the "
+          <span className="font-medium underline">Preview</span>" button opens
+          your headshots in a new window, where they remain compressed and
+          watermarked. This allows you to examine each generated headshot before
+          downloading.
+          <br />
+          <span className="font-medium underline">Download</span>: Clicking the
+          "<span className="font-medium underline">Download</span>" button
+          provides the images in full quality, with all watermarks removed. By
+          clicking "<span className="font-medium underline">Download</span>",
+          you confirm your satisfaction with the results, and the images will be
+          marked as downloaded.
+        </p>
+        <br />
+        <p className="font-medium underline">
+          If you need headshots with custom outfits or backgrounds, feel free to
+          reach out to us via chat or email. We’ll do our best to accommodate
+          your request at no additional cost.
         </p>
       </section>
 
       <section>
-        <h3>Time Limit:</h3>
         <p>
-          Your refund request must be submitted within seven (7) days of the
-          Studio Creation Date (not the order placement date) for your
-          convenience.
+          + Refund requests must be submitted within seven (7) days of the
+          Studio Creation Date (not the order placement date){" "}
+          <span className="font-medium underline">for your convenience</span>.
         </p>
       </section>
 
       <section>
-        <h3>Refund Process:</h3>
         <p>
-          You're not eligible for a refund if you redo the studio or do not
-          follow the image uploading guidelines shown on the studio creation
-          page. To request a refund, please email us at support@proshoot.co.
+          + Refunds are not eligible if you redo the studio or fail to follow
+          the image uploading guidelines (
+          <span className="font-medium underline">
+            see our Simple Guidelines below
+          </span>
+          ) displayed on the studio creation page. To request a refund, please
+          email us at support@proshoot.co.
         </p>
       </section>
 
       <section>
-        <h3>Processing Times:</h3>
         <p>
-          Refunds submitted through the self-service portal are typically
-          processed within fourteen (14) business days. You will receive a
-          confirmation email once your refund is complete.
-        </p>
-      </section>
-      <section>
-        <h3>Follow Image Guidelines:</h3>
-        <p>
-          If you do not follow the image guidelines correctly, you will not be
-          eligible for refunds. Our face detection model will help you upload
-          quality images.
+          <span className="font-medium underline">+ Processing Times:</span>{" "}
+          Refunds submitted through the self-service portal or via email are
+          typically processed within{" "}
+          <span className="font-medium underline">
+            one to two (1-2) business days
+          </span>
+          . You will receive a confirmation email once your refund is complete.
         </p>
       </section>
 
       <section>
-        <h3>Our Commitment to Satisfaction:</h3>
+        <span className="font-medium underline">
+          What are the image uploading guidelines? Is it too complicated?
+        </span>
         <p>
-          At Proshoot.co, your satisfaction is our top priority. This refund
-          policy reflects our dedication to providing a positive user
-          experience. If you have any questions or concerns, please feel free to
-          reach out to our support team via email.
+          Please follow our{" "}
+          <span className="font-medium underline">Simple Guidelines</span> for
+          refund eligibility. Our face detection model will assist you in
+          uploading quality images.
+        </p>
+        <p>
+          <br />
+          <span className="font-medium underline">Simple Guidelines:</span> To
+          make it easy for you,{" "}
+          <span className="font-medium underline">
+            upload minimum 10 clearly visible, frontal face photos taken at
+            different times, with different outfits, and maximum background
+            variations if possible.
+          </span>
+        </p>
+      </section>
+
+      <section>
+        <p>
+          Your satisfaction is our top priority. This refund policy reflects our
+          commitment to providing a positive user experience. If you have any
+          questions or concerns, please don’t hesitate to contact our support
+          team via email.
         </p>
       </section>
     </div>

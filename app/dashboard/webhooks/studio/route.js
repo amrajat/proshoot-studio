@@ -170,7 +170,7 @@ async function generateImagesUsingPrompts(
           guidance_scale: 3.5,
           output_quality: 100,
           prompt_strength: 0.8,
-          extra_lora_scale: 1,
+          extra_lora_scale: 0.5,
           num_inference_steps: 50,
         },
         webhook: `${process.env.URL}/dashboard/webhooks/studio?user_id=${user_id}&user_email=${user_email}&event=prediction&training_id=${trainingResponse.id}`,

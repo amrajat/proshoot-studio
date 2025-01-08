@@ -104,10 +104,6 @@ export default function ImageUploadingGuideLines() {
           Existing professional headshots are great to use, as long as they
           don't have any filters or post-processing.
         </li>
-        <li>
-          Follow these guidelines to be eligible for refunds if the generated
-          images do not meet your expectations.
-        </li>
       </ul>
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
         <Card className="rounded shadow-sm">

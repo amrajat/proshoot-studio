@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import BuyStudio from "../buy/page";
+import Link from "next/link";
 
 const FileUploader = ({
   register,
@@ -295,6 +296,15 @@ export default function StudioCreate() {
           <ChevronRight strokeWidth={2} />
         </Button>
       </div>
+      <p className="text-base mt-2 ">
+        If you're having issues uploading the images please{" "}
+        <Link
+          className="text-destructive underline"
+          href={"/dashboard/studio/create2"}
+        >
+          click here.
+        </Link>
+      </p>
     </form>
   );
 }

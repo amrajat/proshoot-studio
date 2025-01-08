@@ -11,7 +11,6 @@ import {
   Trash,
   CircleAlert,
 } from "lucide-react";
-import * as faceapi from "face-api.js";
 import JSZip from "jszip";
 
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,14 @@ import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
 import Loader from "@/components/Loader";
 import Heading from "@/components/shared/heading";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const supabase = createSupabaseBrowserClient();
 
@@ -44,7 +51,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   const [uploading, setUploading] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
-  const [loadingModels, setLoadingModels] = useState(true);
+  // Removed loadingModels state since we no longer use face-api
   const [processing, setProcessing] = useState(false);
   const [includeInvalidImages, setIncludeInvalidImages] = useState(false);
   const [allowLessThanTen, setAllowLessThanTen] = useState(false);
@@ -53,27 +60,19 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    Promise.all([
-      faceapi.loadTinyFaceDetectorModel("/models"),
-      faceapi.loadFaceLandmarkModel("/models"),
-    ]).then(() => {
-      setLoadingModels(false);
-    });
-  }, []);
-
-  useEffect(() => {
     const validFiles = files.filter((file) => !file.error && file.accepted);
     if (validFiles.length > 0 && validFiles.length < 10) {
       setWarningMessage(
-        `You have uploaded ${validFiles.length} valid image${
+        `You are uploading ${validFiles.length} valid image${
           validFiles.length !== 1 ? "s" : ""
-        }. If you upload fewer than 10 images, you will not be eligible for refunds or redos. Please follow the guidelines and upload at least 10 images where your face is clearly visible.`
+        }. We suggest that you upload at least 10 images for best outputs.`
       );
     } else {
       setWarningMessage("");
     }
   }, [files]);
 
+  // Simplified image processing without face detection
   const processImage = async (file) => {
     return new Promise((resolve) => {
       const img = new window.Image();
@@ -81,47 +80,13 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
         let accepted = true;
         let declineReason = "";
 
+        // Only check image dimensions
         if (
           img.width < MIN_IMAGE_DIMENSION ||
           img.height < MIN_IMAGE_DIMENSION
         ) {
           accepted = false;
           declineReason = `Image is too small. Minimum size is ${MIN_IMAGE_DIMENSION}x${MIN_IMAGE_DIMENSION} pixels.`;
-        } else {
-          const detections = await faceapi
-            .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks();
-
-          if (detections.length > 1) {
-            accepted = false;
-            declineReason = "Multiple faces detected";
-          } else if (detections.length === 0) {
-            accepted = false;
-            declineReason = "No face detected";
-          } else if (
-            detections[0].detection.box.width /
-              detections[0].detection.imageWidth <
-            0.1
-          ) {
-            accepted = false;
-            declineReason = "Face is too small";
-          } else {
-            // Check if the face is frontal
-            const landmarks = detections[0].landmarks;
-            const leftEye = landmarks.getLeftEye();
-            const rightEye = landmarks.getRightEye();
-            const nose = landmarks.getNose();
-
-            const eyeDistance = Math.abs(leftEye[0].x - rightEye[3].x);
-            const noseDeviation = Math.abs(
-              nose[3].x - (leftEye[0].x + rightEye[3].x) / 2
-            );
-
-            if (noseDeviation / eyeDistance > 0.2) {
-              accepted = false;
-              declineReason = "Face is not sufficiently frontal";
-            }
-          }
         }
 
         resolve({
@@ -238,15 +203,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     }
   }, [files, setValue, includeInvalidImages]);
 
-  if (loadingModels) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader />
-        <p className="ml-2">Loading face detection models...</p>
-      </div>
-    );
-  }
-
+  // Removed loadingModels check since we no longer use face-api
   return (
     <>
       {isSubmitting || studioMessage ? (
@@ -268,7 +225,19 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           <p className="text-muted-foreground">
             Please follow the image uploading guidelines for best results.{" "}
           </p>
-          <ImageUploadingGuideLines />
+          {/* <ImageUploadingGuideLines /> */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="mr-2">Show Image Guidelines</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-7xl overflow-x-auto max-h-screen">
+              <DialogHeader>
+                <DialogTitle>Guidelines</DialogTitle>
+              </DialogHeader>
+              <ImageUploadingGuideLines />
+              <DialogFooter></DialogFooter>
+            </DialogContent>
+          </Dialog>
           {!isCompleted ? (
             <div className="space-y-4">
               {processing && (
@@ -365,7 +334,8 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                       : allowLessThanTen
                       ? "You are uploading fewer than 10 images. "
                       : ""}
-                    This may make you ineligible for refunds or redos.
+                    We suggest that you upload at least 1024*1024 resolution for
+                    best outputs.
                   </AlertDescription>
                 </Alert>
               )}
@@ -394,20 +364,10 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                     </Button>
                   )}
                 <p className="text-sm text-muted-foreground">
-                  AI face detector may make mistakes, even if your images are
-                  correct. If you believe your images are valid, please upload
-                  images despite any warnings.
+                  Please ensure your images meet the minimum size requirements.
+                  If you believe your images are valid, you can include them
+                  despite any warnings.
                 </p>
-
-                {/* {files
-                  .filter((file) => file.accepted)
-                  .reduce((acc, file) => acc + (file.file.size || 0), 0) >=
-                  MAX_FILE_SIZE && (
-                  <p className="text-sm text-destructive">
-                    Warning: Can't upload images, The total size of the images
-                    exceeds the maximum limit of 50MB!
-                  </p>
-                )} */}
               </div>
               {files.length > 0 && (
                 <div className="flex justify-between items-center">
@@ -431,10 +391,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                   )}
                 </div>
               )}
-              {uploading && (
-                // <Progress value={uploadProgress} max={100} className="w-full" />
-                <Loader />
-              )}
+              {uploading && <Loader />}
             </div>
           ) : (
             <Alert>

@@ -46,6 +46,7 @@ export const AGES = [
     "Late 60s": "late 60s",
     "70s": "70s",
     "80s": "80s",
+    "90s": "90s",
   },
   {
     isRequired: true,
@@ -65,16 +66,16 @@ export const ETHNICITIES = [
     fieldName: "ethnicity",
   },
   {
-    "African American": "african american",
-    Caucasian: "caucasian",
-    "East Asian": "east asian",
-    "Hispanic/Latino": "hispanic latino",
-    "Middle Eastern": "middle eastern",
-    "Mixed race": "mixed race",
-    "Native American": "native american",
-    "Pacific Islander": "pacific islander",
-    "South Asian": "south asian",
-    "Southeast Asian": "southeast asian",
+    "African American": "African American",
+    Caucasian: "Caucasian",
+    "East Asian": "East Asian",
+    "Hispanic/Latino": "Hispanic Latino",
+    "Middle Eastern": "Middle Eastern",
+    "Mixed race": "mixed-race",
+    "Native American": "Native American",
+    "Pacific Islander": "Pacific Islander",
+    "South Asian": "South Asian",
+    "Southeast Asian": "Southeast Asian",
   },
   {
     isRequired: true,
@@ -163,48 +164,24 @@ export const EYE_COLORS = [
   },
 ];
 
-export const GROOMING = [
+export const GLASSES = [
   {
-    title: "Please select your grooming style.",
-    subtitle: "If none of the options fit, feel free to enter a custom value.",
-    fieldName: "grooming",
+    title: "Do you want glasses in your headshots?",
+    subtitle:
+      "This will only work if you are wearing glasses in your reference images.",
+    fieldName: "glasses",
   },
   {
-    "Clean-shaven": "clean shaven with a smooth, polished look",
-    "Full beard": "full, well-maintained beard with sharp edges",
-    Goatee: "well-groomed goatee with clean lines",
-    "Minimal makeup":
-      "minimal makeup, enhancing natural features with subtle application",
-    Mustache: "neatly trimmed mustache with a clean and defined shape",
-    "Natural makeup": "natural makeup for a fresh and polished appearance",
-    "No visible makeup": "no visible makeup for a clean and professional look",
-    "Professional makeup":
-      "professional makeup with well-defined eyes and subtle contouring",
-    "Short beard": "short, neatly trimmed beard with precise lines",
-    Stubble: "subtle stubble for a clean yet rugged look",
-    "Well-groomed eyebrows":
-      "well-groomed eyebrows with a clean and defined shape",
-    "Light makeup": "light makeup with a focus on enhancing natural features",
-    "Glossy lips with minimal eye makeup":
-      "glossy lips paired with minimal eye makeup for a soft, professional look",
-    "Bold lipstick with subtle eye makeup":
-      "bold lipstick balanced by subtle eye makeup for a confident appearance",
-    "Well-defined eyebrows with soft blush":
-      "well-defined eyebrows complemented by soft blush for a natural look",
-    "Fresh-faced with neutral makeup":
-      "fresh-faced with neutral makeup that emphasizes a healthy complexion",
-    "No makeup with radiant skin":
-      "no makeup for a clean, fresh look with radiant skin",
+    True: "Yes",
+    False: "No",
   },
-
   {
     isRequired: true,
     placeholderText: null,
-    helpText:
-      "Please make sure you provide text in the style of available options above..",
+    helpText: null,
     regexPattern: null,
     radioOptions: true,
-    customOption: true,
+    customOption: false,
   },
 ];
 
@@ -238,9 +215,9 @@ export const formSchema = z.object({
   ethnicity: z.string().min(1, { message: "Please select your ethnicity." }),
   hairStyle: z.string().min(1, { message: "Please select your hair style." }),
   eyeColor: z.string().min(1, { message: "Please select your eye color." }),
-  grooming: z
+  glasses: z
     .string()
-    .min(1, { message: "Please select your grooming style." }),
+    .min(1, { message: "Please choose your glass preference." }),
   // clothing: z.string().nullable().optional(),
   // gazeDirection: z.string().nullable().optional(),
   // expression: z.string().nullable().optional(),

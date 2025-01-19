@@ -11,7 +11,7 @@ import {
   ETHNICITIES,
   HAIR_STYLES,
   EYE_COLORS,
-  GROOMING,
+  GLASSES,
   STUDIO_NAME_SELECTOR,
 } from "@/components/dashboard/studio/Forms/Variables";
 import { getCredits } from "@/lib/supabase/actions/client";
@@ -73,7 +73,7 @@ export default function StudioCreate() {
       ethnicity: "",
       hairStyle: "",
       eyeColor: "",
-      grooming: "",
+      glasses: "No",
       images: "",
       studioName: "",
     },
@@ -127,7 +127,7 @@ export default function StudioCreate() {
     { id: "Step 2", component: "VariableSelector", data: ETHNICITIES },
     { id: "Step 3", component: "VariableSelector", data: HAIR_STYLES },
     { id: "Step 4", component: "VariableSelector", data: EYE_COLORS },
-    { id: "Step 5", component: "VariableSelector", data: GROOMING },
+    { id: "Step 5", component: "VariableSelector", data: GLASSES },
     {
       id: "Step 6",
       component: "VariableSelector",
@@ -169,6 +169,7 @@ export default function StudioCreate() {
     try {
       setIsSubmitting(true);
       const sanitizedData = formSchema.parse(data);
+      sanitizedData.glasses = sanitizedData.glasses === "Yes" ? true : false;
 
       const isValid = await trigger();
       if (!isValid) {

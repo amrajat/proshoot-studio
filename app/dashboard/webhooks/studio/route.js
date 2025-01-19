@@ -161,7 +161,7 @@ async function generateImagesUsingPrompts(
           model: "dev",
           prompt: availablePrompts[i],
           go_fast: false,
-          extra_lora: "https://huggingface.co/XLabs-AI/flux-RealismLora",
+          // extra_lora: "https://huggingface.co/XLabs-AI/flux-RealismLora",
           //   "https://huggingface.co/XLabs-AI/flux-lora-collection/resolve/main/realism_lora_comfy_converted.safetensors",
           lora_scale: 1,
           num_outputs: 4,
@@ -170,8 +170,8 @@ async function generateImagesUsingPrompts(
           guidance_scale: 3.5,
           output_quality: 100,
           prompt_strength: 0.8,
-          extra_lora_scale: 0.5,
-          num_inference_steps: 50,
+          // extra_lora_scale: 0.5,
+          num_inference_steps: 40,
         },
         webhook: `${process.env.URL}/dashboard/webhooks/studio?user_id=${user_id}&user_email=${user_email}&event=prediction&training_id=${trainingResponse.id}`,
         webhook_events_filter: ["completed"],
@@ -200,7 +200,17 @@ async function sendTrainingCompleteEmail(eMailClient, user_email, studioID) {
         },
       ],
       subject: "Your Studio is Ready! 🎉",
-      htmlbody: `<p>Your Studio is Ready! <a href="https://www.proshoot.co/dashboard/studio/${studioID}">Click here.</a></p>`,
+      htmlbody: `
+        <p>Dear User,</p>
+        <p>We are excited to let you know that the AI Studio training is now completed. 
+        You can access it by clicking the link below:</p>
+        <p><a href="https://www.proshoot.co/dashboard/studio/${studioID}" style="color: #007bff; text-decoration: underline;">Access Your Studio</a></p>
+        <p>If you still see the message 'Your headshots are being generated,' it may take another 2-4 minutes to complete the process. 
+        In case the issue persists, please reach out to our support team for assistance.</p>
+        <p>You can email us at <a href="mailto:support@proshoot.co" style="color: #007bff; text-decoration: underline;">support@proshoot.co</a>.</p>
+        <p>Best Regards,</p>
+        <p><strong>ProShoot, Prime AI Company</strong></p>
+      `,
     });
   } catch (error) {
     console.error("Failed to send tune ready email", error);

@@ -61,8 +61,8 @@ export async function POST(request) {
         destination: "prime-ai-co/headshots",
         input: {
           steps: 1500,
-          lora_rank: 16,
-          optimizer: "adamw8bit",
+          lora_rank: 32,
+          optimizer: "adamw",
           batch_size: 1,
           resolution: "512,768,1024",
           autocaption: true,

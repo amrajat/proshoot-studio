@@ -363,11 +363,11 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                       Include Invalid Images
                     </Button>
                   )}
-                <p className="text-sm text-muted-foreground">
+                {/* <p className="text-sm text-muted-foreground">
                   Please ensure your images meet the minimum size requirements.
                   If you believe your images are valid, you can include them
                   despite any warnings.
-                </p>
+                </p> */}
               </div>
               {files.length > 0 && (
                 <div className="flex justify-between items-center">

@@ -37,7 +37,7 @@ function Legal() {
           <FairUsage />
           <SubProcessors />
 
-          <p>Page Last Updated: Saturday, Nov 16, 2024</p>
+          <p>Page Last Updated: Wednesday, January 29, 2025</p>
         </div>
       </Container>
       <Footer />

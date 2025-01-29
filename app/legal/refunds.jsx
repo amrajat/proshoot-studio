@@ -90,9 +90,8 @@ function Refunds() {
 
       <section>
         <p>
-          + Refund requests must be submitted within seven (7) days of the
-          Studio Creation Date (not the order placement date){" "}
-          <span className="font-medium underline">for your convenience</span>.
+          + Refund requests must be submitted within seven (7) days of the the
+          order placement date.
         </p>
       </section>
 

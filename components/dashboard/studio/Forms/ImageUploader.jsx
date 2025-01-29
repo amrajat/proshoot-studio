@@ -72,6 +72,20 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     }
   }, [files]);
 
+  // Add this effect to reset the component state when stepping back
+  useEffect(() => {
+    return () => {
+      // Cleanup function that runs when component unmounts
+      setFiles([]);
+      setIsCompleted(false);
+      setUploading(false);
+      setProcessing(false);
+      setUploadProgress(0);
+      setWarningMessage("");
+      setValue("images", ""); // Reset the form value
+    };
+  }, [setValue]);
+
   // Simplified image processing without face detection
   const processImage = async (file) => {
     return new Promise((resolve) => {

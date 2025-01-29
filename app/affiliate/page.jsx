@@ -2,7 +2,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/homepage/Footer";
 import Link from "next/link";
 import SectionParaHeading from "@/components/shared/section-para-heading";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants, Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
@@ -101,7 +101,7 @@ function Affiliate() {
               commission on every successful sale you refer.
             </SectionParaHeading>
             <div className="max-w-4xl text-center mx-auto">
-              <Link
+              {/* <Link
                 href="https://proshoot.lemonsqueezy.com/affiliates"
                 className={buttonVariants({
                   variant: "destructive",
@@ -110,7 +110,10 @@ function Affiliate() {
               >
                 Join the Program
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
+              </Link> */}
+              <Button variant={"destructive"} size={"lg"}>
+                Coming Soon!
+              </Button>
             </div>
           </div>
         </div>

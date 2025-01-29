@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import VariableSelector from "@/components/dashboard/studio/Forms/VariableSelector";
 import PlanSelector from "@/components/dashboard/studio/Forms/PlanSelector";
@@ -19,12 +19,13 @@ import Error from "@/components/Error";
 import Loader from "@/components/Loader";
 import useSWR from "swr";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import BuyStudio from "../buy/page";
 import Link from "next/link";
+import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary";
 
 const FileUploader = ({
   register,
@@ -50,11 +51,28 @@ const FileUploader = ({
 );
 
 export default function StudioCreate() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedStep = localStorage.getItem("currentFormStep");
+      return savedStep ? parseInt(savedStep, 10) : 0;
+    }
+    return 0;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("currentFormStep", currentStep.toString());
+    }
+  }, [currentStep]);
+
   const [previousStep, setPreviousStep] = useState(0);
   const [shouldValidate, setShouldValidate] = useState(false);
   const [studioMessage, setStudioMessage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const savedFormValues =
+    typeof window !== "undefined" ? localStorage.getItem("formValues") : null;
 
   const {
     register,
@@ -64,6 +82,7 @@ export default function StudioCreate() {
     formState: { errors },
     clearErrors,
     trigger,
+    reset,
   } = useForm({
     mode: "onChange",
     resolver: zodResolver(formSchema),
@@ -76,26 +95,43 @@ export default function StudioCreate() {
       glasses: "No",
       images: "",
       studioName: "",
+      plan: "",
+      ...(savedFormValues ? JSON.parse(savedFormValues) : {}),
     },
   });
 
+  const formValues = watch();
   const selectedPlan = watch("plan");
-  const router = useRouter();
 
-  async function fetcher() {
+  const {
+    data: credits,
+    error: creditsError,
+    isLoading,
+  } = useSWR("credits", async () => {
     try {
       const [{ credits }] = await getCredits();
       return credits;
     } catch (error) {
       throw new Error(error.message || "Unable to fetch credits");
     }
-  }
+  });
 
-  const {
-    data: credits,
-    error: creditsError,
-    isLoading,
-  } = useSWR("credits", fetcher);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("formValues", JSON.stringify(formValues));
+    }
+  }, [formValues]);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined") {
+        if (isSubmitting) {
+          localStorage.removeItem("formValues");
+          localStorage.removeItem("currentFormStep");
+        }
+      }
+    };
+  }, [isSubmitting]);
 
   if (isLoading) return <Loader />;
   if (creditsError) return <Error message={creditsError.message} />;
@@ -141,18 +177,26 @@ export default function StudioCreate() {
     const currentStepData = steps[currentStep];
     let isValid = false;
 
-    if (
-      currentStepData.component === "VariableSelector" ||
-      currentStepData.component === "PlanSelector"
-    ) {
-      isValid = await trigger(currentStepData.data[0].fieldName);
-    } else {
-      isValid = await trigger();
-    }
+    try {
+      if (
+        currentStepData.component === "VariableSelector" ||
+        currentStepData.component === "PlanSelector"
+      ) {
+        isValid = await trigger(currentStepData.data[0].fieldName);
+      } else if (currentStepData.component === "FileUploader") {
+        const values = formValues;
+        isValid = Boolean(values.images);
+      } else {
+        isValid = await trigger();
+      }
 
-    if (isValid && currentStep < steps.length - 1) {
-      setPreviousStep(currentStep);
-      setCurrentStep((step) => step + 1);
+      if (isValid && currentStep < steps.length - 1) {
+        setPreviousStep(currentStep);
+        setCurrentStep((step) => step + 1);
+        setShouldValidate(false);
+      }
+    } catch (error) {
+      console.error("Validation error:", error);
       setShouldValidate(false);
     }
   };
@@ -169,11 +213,11 @@ export default function StudioCreate() {
     try {
       setIsSubmitting(true);
       const sanitizedData = formSchema.parse(data);
-      sanitizedData.glasses = sanitizedData.glasses === "Yes" ? true : false;
+      sanitizedData.glasses = sanitizedData.glasses === "Yes";
 
       const isValid = await trigger();
       if (!isValid) {
-        console.error("Form validation failed");
+        setStudioMessage("Please check all required fields");
         return;
       }
 
@@ -186,35 +230,34 @@ export default function StudioCreate() {
       });
 
       if (!response.ok) {
-        setStudioMessage(
-          "We could not create studio. Please contact our support team."
-        );
-        throw new Error("Submission failed!");
+        throw new Error(await response.text());
       }
+
       const result = await response.json();
+
+      localStorage.removeItem("currentFormStep");
+      localStorage.removeItem("formValues");
+
       setStudioMessage(result.message);
       router.push("/dashboard/studio/" + result.studioId);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        console.error("Zod validation errors:", error.errors);
-
-        // Display Zod errors to the user (e.g., using formState.errors)
-        error.issues.forEach((issue) => {
-          setError(issue.path[0], { type: "manual", message: issue.message });
-        });
-        setStudioMessage(
-          "We could not create studio. Please contact our support team."
-        );
-      } else {
-        // Handle other errors
-        setStudioMessage(
-          "We could not create studio. Please contact our support team."
-        );
-        // Display a generic error message to the user
-      }
-    } finally {
+      console.error("Submission error:", error);
+      setStudioMessage(
+        error instanceof z.ZodError
+          ? "Please check all form fields"
+          : "We could not create studio. Please contact our support team."
+      );
       setIsSubmitting(false);
     }
+  };
+
+  const handleReset = () => {
+    localStorage.removeItem("formValues");
+    localStorage.removeItem("currentFormStep");
+    reset(); // Reset form values
+    setCurrentStep(0); // Reset to first step
+    setStudioMessage(false);
+    setIsSubmitting(false);
   };
 
   const renderStep = (step) => {
@@ -275,37 +318,74 @@ export default function StudioCreate() {
       }}
       className="max-w-7xl mx-auto mt-8"
     >
-      <div className="mb-6">{renderStep(steps[currentStep])}</div>
+      <ReactErrorBoundary
+        fallback={<Error message="Something went wrong. Please try again." />}
+      >
+        <div className="mb-6">{renderStep(steps[currentStep])}</div>
 
-      <div className="flex justify-between">
-        <Button
-          className="disabled:opacity-50"
-          type="button"
-          onClick={prev}
-          disabled={currentStep === 0 || isSubmitting}
-        >
-          <ChevronLeft strokeWidth={2} />
-          Previous
-        </Button>
-        <Button
-          className="disabled:opacity-50"
-          type={currentStep === steps.length - 1 ? "submit" : "button"}
-          onClick={currentStep === steps.length - 1 ? undefined : next}
-          disabled={isNextDisabled || isSubmitting}
-        >
-          {currentStep === steps.length - 1 ? "Create Studio" : "Next"}
-          <ChevronRight strokeWidth={2} />
-        </Button>
-      </div>
-      <p className="text-base mt-2 ">
-        If you're having issues uploading the images please{" "}
-        <Link
-          className="text-destructive underline"
-          href={"/dashboard/studio/create2"}
-        >
-          click here.
-        </Link>
-      </p>
+        <div className="flex justify-between items-center">
+          <Button
+            className="disabled:opacity-50"
+            type="button"
+            onClick={prev}
+            disabled={currentStep === 0 || isSubmitting}
+          >
+            <ChevronLeft strokeWidth={2} />
+            Previous
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleReset}
+            disabled={isSubmitting}
+          >
+            <RotateCcw />
+            Reset
+          </Button>
+
+          <Button
+            className="disabled:opacity-50"
+            type={currentStep === steps.length - 1 ? "submit" : "button"}
+            onClick={currentStep === steps.length - 1 ? undefined : next}
+            disabled={isNextDisabled || isSubmitting}
+          >
+            {currentStep === steps.length - 1 ? "Create Studio" : "Next"}
+            <ChevronRight strokeWidth={2} />
+          </Button>
+        </div>
+        <p className="text-sm mt-2 ">
+          If you're having issues uploading the images please{" "}
+          <Link
+            className="text-destructive underline"
+            href={"/dashboard/studio/create2"}
+          >
+            click here.
+          </Link>
+        </p>
+      </ReactErrorBoundary>
     </form>
   );
+}
+
+class CustomErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Form error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
 }

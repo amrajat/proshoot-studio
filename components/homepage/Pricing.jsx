@@ -90,7 +90,7 @@ export default function Pricing() {
           without any restrictions.
         </SectionParaHeading>
 
-        <div className="flex justify-center items-center space-x-4 mb-8">
+        {/* <div className="flex justify-center items-center space-x-4 mb-8">
           <span
             className={`text-sm font-medium ${
               !isAnnual ? "text-primary" : "text-muted-foreground"
@@ -104,14 +104,14 @@ export default function Pricing() {
               isAnnual ? "text-primary" : "text-muted-foreground"
             }`}
           >
-            Teams{" "}
-            {/* {
+            Teams{" "} */}
+        {/* {
               <Badge variant="outline" className="ml-2">
                 {isAnnual && "minimum team of 10 people."}
               </Badge>
             } */}
-          </span>
-        </div>
+        {/* </span> */}
+        {/* </div> */}
 
         <div className="mt-6 md:mt-12 grid sm:grid-cols-2 lg:grid-cols-2 min-[1170px]:grid-cols-4 gap-3 md:gap-6 lg:gap-3 xl:gap-6 lg:items-center">
           {pricingPlans.map((plan) => (

@@ -7,6 +7,7 @@ import { GeistSans } from "geist/font/sans";
 
 import CookieBanner from "@/components/CookieBanner";
 import Script from "next/script";
+import { CSPostHogProvider } from "./providers";
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${process.env.URL}`),
@@ -26,23 +27,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth min-h-screen">
-      <body className={GeistSans.className + " antialiased" + " min-h-screen"}>
-        {children}
-        <CookieBanner />
-        <Analytics />
-        <SpeedInsights />
-      </body>
-      <Script id="ls-affiliate">{`window.lemonSqueezyAffiliateConfig = { store: "proshoot" }`}</Script>
-      <Script id="google-analytics">{`
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-8XCVHBFX54');`}</Script>
-      <Script src="https://lmsqueezy.com/affiliate.js" defer></Script>
-      <Script
-        async
-        src="https://www.googletagmanager.com/gtag/js?id=G-8XCVHBFX54"
-      ></Script>
+      <CSPostHogProvider>
+        <body
+          className={GeistSans.className + " antialiased" + " min-h-screen"}
+        >
+          {children}
+          <CookieBanner />
+          <Analytics />
+          <SpeedInsights />
+        </body>
+      </CSPostHogProvider>
     </html>
   );
 }

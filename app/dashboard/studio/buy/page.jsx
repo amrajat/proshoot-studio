@@ -170,9 +170,20 @@ export default function BuyStudio() {
   };
 
   async function checkout() {
+    const firstPromoterReference =
+      document.cookie.match(/_fprom_ref=([^;]+)/)?.[1] || null;
+    const firstPromoterTID =
+      document.cookie.match(/_fprom_tid=([^;]+)/)?.[1] || null;
+
     startTransaction(async () => {
       try {
-        await createCheckoutLS(plan, quantity, config.PLANS[plan].variantId);
+        await createCheckoutLS(
+          plan,
+          quantity,
+          config.PLANS[plan].variantId,
+          firstPromoterReference,
+          firstPromoterTID
+        );
       } catch (error) {
         console.error("Checkout Error:", error);
       }

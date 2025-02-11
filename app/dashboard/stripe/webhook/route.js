@@ -2,103 +2,7 @@ import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
-// async function processEvent(event) {
-//   let processingError = "";
 
-//   const customData = event.body["meta"]["custom_data"] || null;
-
-//   if (!customData || !customData["user_id"]) {
-//     processingError = "No user ID, can't process";
-//   } else {
-//     const obj = event.body["data"];
-
-//     if (event.eventName.startsWith("subscription_payment_")) {
-//       // Save subscription invoices; obj is a "Subscription invoice"
-//       /* Not implemented */
-//     } else if (event.eventName.startsWith("subscription_")) {
-//       // Save subscriptions; obj is a "Subscription"
-
-//       const data = obj["attributes"];
-
-//       // We assume the Plan table is up to date
-//       const plan = await prisma.plan.findUnique({
-//         where: {
-//           variantId: data["variant_id"],
-//         },
-//       });
-
-//       if (!plan) {
-//         processingError =
-//           "Plan not found in DB. Could not process webhook event.";
-//       } else {
-//         // Update the subscription
-
-//         const lemonSqueezyId = parseInt(obj["id"]);
-
-//         // Get subscription's Price object
-//         // We save the Price value to the subscription so we can display it in the UI
-//         let priceData = await ls.getPrice({
-//           id: data["first_subscription_item"]["price_id"],
-//         });
-
-//         const updateData = {
-//           orderId: data["order_id"],
-//           name: data["user_name"],
-//           email: data["user_email"],
-//           status: data["status"],
-//           renewsAt: data["renews_at"],
-//           endsAt: data["ends_at"],
-//           trialEndsAt: data["trial_ends_at"],
-//           planId: plan["id"],
-//           userId: customData["user_id"],
-//           price: priceData["data"]["attributes"]["unit_price"],
-//           subscriptionItemId: data["first_subscription_item"]["id"],
-//           // Save this for usage-based billing reporting; no need to if you use quantity-based billing
-//           isUsageBased: data["first_subscription_item"]["is_usage_based"],
-//         };
-
-//         const createData = updateData;
-//         createData.lemonSqueezyId = lemonSqueezyId;
-//         createData.price = plan.price;
-
-//         try {
-//           // Create/update subscription
-//           await prisma.subscription.upsert({
-//             where: {
-//               lemonSqueezyId: lemonSqueezyId,
-//             },
-//             update: updateData,
-//             create: createData,
-//           });
-//         } catch (error) {
-//           processingError = error;
-//           console.log(error);
-//         }
-//       }
-//     } else if (event.eventName.startsWith("order_")) {
-//       // Save orders; obj is a "Order"
-//       /* Not implemented */
-//     } else if (event.eventName.startsWith("license_")) {
-//       // Save license keys; obj is a "License key"
-//       /* Not implemented */
-//     }
-
-//     try {
-//       // Mark event as processed
-//       await prisma.webhookEvent.update({
-//         where: {
-//           id: event.id,
-//         },
-//         data: {
-//           processed: true,
-//           processingError,
-//         },
-//       });
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   }
-// }
 export const dynamic = "force-dynamic";
 
 export async function POST(request) {
@@ -140,7 +44,14 @@ export async function POST(request) {
   // Now save the event
 
   const bodyObject = JSON.parse(rawBody);
-  const { plan, quantity, user, email_id } = bodyObject["meta"]["custom_data"];
+  const {
+    plan,
+    quantity,
+    user,
+    email_id,
+    firstPromoterReference,
+    firstPromoterTID,
+  } = bodyObject["meta"]["custom_data"];
 
   // Start....First check if payment id is not already updated to avoid duplicate entries/credits to the database.
 
@@ -186,10 +97,55 @@ export async function POST(request) {
     }
   }
 
-  // Process the event
-  // This could be done out of the main thread
+  // Send post request to first-promoter
 
-  // processEvent(event);
+  const params = new URLSearchParams();
+  params.append("uid", user);
+  params.append("amount", bodyObject["data"]["attributes"]["total"]);
+  params.append("event_id", bodyObject["data"]["id"]);
+  params.append("ref_id", firstPromoterReference);
+  params.append("tid", firstPromoterTID);
+
+  const trackSale = async () => {
+    try {
+      const response = await fetch(
+        "https://firstpromoter.com/api/v1/track/sale",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "x-api-key": process.env.FIRSTPROMOTER_API_KEY,
+          },
+          body: params.toString(),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+        return;
+      }
+
+      // Handle empty response
+      const text = await response.text();
+      if (!text) {
+        console.log("FirstPromoter tracking successful (empty response)");
+        return;
+      }
+
+      try {
+        const data = JSON.parse(text);
+        console.log("FirstPromoter tracking successful:", data);
+      } catch (parseError) {
+        console.error("Failed to parse FirstPromoter response:", text);
+      }
+    } catch (error) {
+      console.error("FirstPromoter tracking failed:", error);
+      // Continue execution - don't let tracking failures affect the main flow
+    }
+  };
+
+  // Call the function
+  await trackSale();
 
   return new Response("Done");
 }

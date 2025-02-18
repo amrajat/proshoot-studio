@@ -3,26 +3,33 @@
 import Image from "next/image";
 import { Check, X, Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import Heading from "@/components/shared/heading";
 
 const followGuidelines = [
   {
     id: 1,
     title: "Clear Frontal Face",
     image: "/image-uploading-guidelines/follow/follow-1.jpg",
-    description: ["Range of outfits and backgrounds."],
+    description: [
+      "Variety is the key, range of outfits and backgrounds.",
+      "Upload photos taken from a good distance, ideally an arms-length away.",
+    ],
   },
   {
     id: 2,
     title: "Plain Background",
     image: "/image-uploading-guidelines/follow/follow-2.jpg",
-    description: ["Your Face is focus of photo without any background noise."],
+    description: [
+      "Your face is focus of photo, free from background distractions.",
+      "Upload photos, ideally from the chest or waist up.",
+    ],
   },
   {
     id: 3,
     title: "Multiple Photos",
     image: "/image-uploading-guidelines/follow/follow-3.jpg",
     description: [
-      "Large, high-resolution clear frontal face in good lighting (min. 1024x1024 pixels).",
+      "Upload high-quality, well-lit photos with a clear frontal view.",
     ],
   },
   {
@@ -30,7 +37,7 @@ const followGuidelines = [
     title: "High Resolution",
     image: "/image-uploading-guidelines/follow/follow-4.jpg",
     description: [
-      "Photos taken with a professional camera/good camera smartphone not any random selfies.",
+      "Use images taken with a professional camera or a good smartphone.",
     ],
   },
 ];
@@ -41,9 +48,9 @@ const avoidGuidelines = [
     title: "Same Day Photos",
     image: "/image-uploading-guidelines/avoid/avoid-1.jpg",
     description: [
-      "Avoid using multiple similar photos from the same outfit and/or same background, as the AI needs diverse samples to function properly. Using several similar images will limit the AI's ability to learn your appearance. The AI functions better with diverse sample photos.",
-      "Avoid same pose or style, this will be critical factor generating poses for your headshots.",
-      "Always remember variety of images are the key, good input = good output.",
+      "Do not upload multiple similar photos with the same outfit or taken in the same setting.",
+      // "Ensure images are high-quality & sharp, no blurriness, poor lighting, or noise.",
+      // "Avoid full-body shots.",
     ],
   },
   {
@@ -51,10 +58,10 @@ const avoidGuidelines = [
     title: "Accessories",
     image: "/image-uploading-guidelines/avoid/avoid-2.jpg",
     description: [
-      "Do not use post processed images or any edited images.",
-      "Using Instagram face filters will make your AI-generated photos look overly plastic. Stay away from black and white or sepia filters, as they can cause discoloration of your skin.",
-      "Your face must be directly looking at camera, face must be frontal.",
-      "Don not include other people/face in your image, otherwise AI will also learn their face.",
+      "Do not use edited, AI-generated images.",
+      "No black-and-white or instagram type filtered images.",
+      "Face must be frontal, directly looking at camera.",
+      "Do not include other people or faces in your image.",
     ],
   },
   {
@@ -62,10 +69,11 @@ const avoidGuidelines = [
     title: "Filters",
     image: "/image-uploading-guidelines/avoid/avoid-3.jpg",
     description: [
-      "Please do not submit wedding photos, as makeup and clothing from weddings do not translate well.",
-      "Do not upload blurry/distorted/pixelated images.",
-      "Do not use any AI-generated image or any artifacts in your images.",
-      "Ensure your face is fully visible—avoid angles that may make your head look stretched, or framing that cuts off your face or prevents you from looking directly at the camera.",
+      "Avoid wearing heavy makeup.",
+      "Do not upload blurry, out-of-focus, or low-quality images.",
+      "Avoid low-quality images.",
+      // "Upload recent photos from the last six months that accurately reflect your current facial features.",
+      "Natural angle, ideally from the front at eye level. Ensure your face is fully visible—avoid extreme angles, cropped framing, or poses that distort your facial proportions.",
     ],
   },
   {
@@ -73,10 +81,11 @@ const avoidGuidelines = [
     title: "AI-Generated Photos",
     image: "/image-uploading-guidelines/avoid/avoid-4.jpg",
     description: [
-      "Aim for natural expressions. Avoid showing sadness, anger, surprise, or any unusual facial expressions you do not want in your photoshoot.",
-      "Avoid any background noise if possible.",
-      "Please do not wear hats, sunglasses, AirPods, or other headphones, as they will appear in your headshots.",
-      "Too far: Ensure your face is large enough in the photo (no smaller than 1024x1024 pixels) to avoid blurry or grainy results.",
+      "Avoid exaggerated or unusual facial expressions.",
+      // "Avoid any background noise if possible.",
+      "Not too far from the camera, ideally an arms-length away.",
+      "Do not wear hats, sunglasses, AirPods, or any other accessories that obstruct your face.",
+      "Must avoid full-body shots.",
     ],
   },
 ];
@@ -84,25 +93,23 @@ const avoidGuidelines = [
 export default function ImageUploadingGuideLines() {
   return (
     <>
+      <Heading as="h5" variant={"title"}>
+        TL;DR Version
+      </Heading>
       <ul className="marker:text-primary list-disc ps-4 space-y-2 text-sm">
         <li>
-          Avoid using multiple similar photos from the same outfit, as the AI
-          needs diverse samples to function properly. Using several similar
-          images will limit the AI's ability to learn your appearance.
+          Upload 8-12 (best range) high-quality upper-body photos with different
+          outfits and backgrounds.
+        </li>
+        <li>Variation is key—avoid similar or identical images.</li>
+        <li>Ensure your photos are clear, sharp, and well-lit.</li>
+        <li>
+          Avoid full-body shots, group photos, blurry or out-of-focus images,
+          and small faces.
         </li>
         <li>
-          The results of our AI Headshots depend on how well you choose your
-          sample photos, so select them carefully and take your time to collect
-          good photos.
-        </li>
-        <li>
-          Do not upload photos with Instagram or TikTok filters, artistic
-          editing, post-processing, AI-generated or any other artifacts. The AI
-          will exaggerate any filters, creating an "Obvious AI-generated".
-        </li>
-        <li>
-          Existing professional headshots are great to use, as long as they
-          don't have any filters or post-processing.
+          Just 5-6 high-quality images can work wonders, while even one
+          poor-quality image can negatively impact the entire training.
         </li>
       </ul>
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">

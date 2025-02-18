@@ -17,20 +17,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
+// import { Progress } from "@/components/ui/progress";
 
 import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
 import Loader from "@/components/Loader";
 import Heading from "@/components/shared/heading";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogFooter,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from "@/components/ui/dialog";
 
 const supabase = createSupabaseBrowserClient();
 
@@ -201,7 +201,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
         const { data: signedUrlData, error: signedUrlError } =
           await supabase.storage
             .from("training-images")
-            .createSignedUrl(filePath, 21600);
+            .createSignedUrl(filePath, 604800); // 604800 means 7 days in seconds.
 
         if (signedUrlError) {
           console.error("Signed URL error:", signedUrlError);
@@ -237,10 +237,13 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           <Heading variant={"hero"}> Please upload your images.</Heading>
 
           <p className="text-muted-foreground">
-            Please follow the image uploading guidelines for best results.{" "}
+            By following these simple guidelines, you’re setting yourself up for
+            the best possible outcome. Each photo you upload directly impacts
+            the final outcome, so take a moment to select your best shots that
+            meet our guidelines.
           </p>
-          {/* <ImageUploadingGuideLines /> */}
-          <Dialog>
+          <ImageUploadingGuideLines />
+          {/* <Dialog>
             <DialogTrigger asChild>
               <Button className="mr-2">Show Image Guidelines</Button>
             </DialogTrigger>
@@ -251,7 +254,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
               <ImageUploadingGuideLines />
               <DialogFooter></DialogFooter>
             </DialogContent>
-          </Dialog>
+          </Dialog> */}
           {!isCompleted ? (
             <div className="space-y-4">
               {processing && (

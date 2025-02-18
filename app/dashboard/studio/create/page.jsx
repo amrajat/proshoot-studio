@@ -354,15 +354,6 @@ export default function StudioCreate() {
             <ChevronRight strokeWidth={2} />
           </Button>
         </div>
-        <p className="text-sm mt-2 ">
-          If you're having issues uploading the images please{" "}
-          <Link
-            className="text-destructive underline"
-            href={"/dashboard/studio/create2"}
-          >
-            click here.
-          </Link>
-        </p>
       </ReactErrorBoundary>
     </form>
   );

@@ -23,14 +23,14 @@ import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
 import Loader from "@/components/Loader";
 import Heading from "@/components/shared/heading";
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogFooter,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogTrigger,
-// } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const supabase = createSupabaseBrowserClient();
 
@@ -242,19 +242,21 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
             the final outcome, so take a moment to select your best shots that
             meet our guidelines.
           </p>
-          <ImageUploadingGuideLines />
-          {/* <Dialog>
+          {/* <ImageUploadingGuideLines /> */}
+          <Dialog>
             <DialogTrigger asChild>
-              <Button className="mr-2">Show Image Guidelines</Button>
+              <Button className="mr-2" variant={"destructive"}>
+                Show Image Guidelines
+              </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-7xl overflow-x-auto max-h-screen">
+            <DialogContent className="max-w-7xl overflow-x-auto max-h-screen mt-2 border-none">
               <DialogHeader>
                 <DialogTitle>Guidelines</DialogTitle>
               </DialogHeader>
               <ImageUploadingGuideLines />
               <DialogFooter></DialogFooter>
             </DialogContent>
-          </Dialog> */}
+          </Dialog>
           {!isCompleted ? (
             <div className="space-y-4">
               {processing && (

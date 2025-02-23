@@ -21,7 +21,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-// import { Progress } from "@/components/ui/progress";
 
 import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
@@ -39,8 +38,8 @@ import {
 const supabase = createSupabaseBrowserClient();
 
 // Image validation rules
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-const MAX_NUM_IMAGES = 50;
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const MAX_NUM_IMAGES = 20;
 const MIN_NUM_IMAGES = 10; // This variable is not used anymore.
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 const ACCEPTED_IMAGE_TYPES = {
@@ -53,26 +52,6 @@ const MIN_IMAGE_DIMENSION = 1024;
 // Add these constants
 const CROP_DIMENSION = 1024;
 const CROP_ASPECT = 1;
-
-// Add these styles in your CSS file or as a styled component
-// const masonryStyles = {
-//   display: "flex",
-//   marginLeft: "-16px" /* gutter size offset */,
-//   width: "auto",
-// };
-
-// const masonryColumnStyles = {
-//   paddingLeft: "16px" /* gutter size */,
-//   backgroundClip: "padding-box",
-// };
-
-// Helper function to create image object based on environment
-// const createImageObject = () => {
-//   if (typeof window === "undefined") {
-//     return new NodeImage();
-//   }
-//   return new window.Image();
-// };
 
 // Add this helper function to normalize crop coordinates
 const normalizeCropData = (crop, imageWidth, imageHeight) => {
@@ -100,7 +79,6 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   const [uploading, setUploading] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
-  // Removed loadingModels state since we no longer use face-api
   const [processing, setProcessing] = useState(false);
   const [includeInvalidImages, setIncludeInvalidImages] = useState(false);
   const [allowLessThanTen, setAllowLessThanTen] = useState(false);
@@ -118,7 +96,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
 
   useEffect(() => {
     const validFiles = files.filter((file) => !file.error && file.accepted);
-    if (validFiles.length > 0 && validFiles.length < 10) {
+    if (validFiles.length > 0 && validFiles.length < MIN_NUM_IMAGES) {
       setWarningMessage(
         `You are uploading only ${validFiles.length} high-resolution image${
           validFiles.length !== 1 ? "s" : ""
@@ -409,7 +387,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   const onDrop = useCallback(async (acceptedFiles, rejectedFiles) => {
     rejectedFiles.forEach((file) => {
       if (file.file.size > MAX_FILE_SIZE) {
-        alert(`File ${file.file.name} is too large. Max size is 50MB.`);
+        alert(`File ${file.file.name} is too large. Max size is 20MB.`);
       } else if (!ALLOWED_IMAGE_TYPES.includes(file.file.type)) {
         alert(
           `File ${file.file.name} is not an allowed type. Only JPG and PNG are allowed.`
@@ -616,7 +594,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                     <span className="text-primary">browse</span>
                   </h3>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Upload up to {MAX_NUM_IMAGES} images, each up to{" "}
+                    You can upload up to {MAX_NUM_IMAGES} images, each up to{" "}
                     {(MAX_FILE_SIZE / 1048576).toFixed(0)} MB,
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">

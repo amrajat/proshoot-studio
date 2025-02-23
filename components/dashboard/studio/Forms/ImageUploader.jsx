@@ -12,6 +12,10 @@ import {
   CircleAlert,
 } from "lucide-react";
 import JSZip from "jszip";
+import SmartCrop from "smartcrop";
+import ReactCrop from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+import Masonry from "react-masonry-css";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -46,6 +50,51 @@ const ACCEPTED_IMAGE_TYPES = {
 };
 const MIN_IMAGE_DIMENSION = 1024;
 
+// Add these constants
+const CROP_DIMENSION = 1024;
+const CROP_ASPECT = 1;
+
+// Add these styles in your CSS file or as a styled component
+// const masonryStyles = {
+//   display: "flex",
+//   marginLeft: "-16px" /* gutter size offset */,
+//   width: "auto",
+// };
+
+// const masonryColumnStyles = {
+//   paddingLeft: "16px" /* gutter size */,
+//   backgroundClip: "padding-box",
+// };
+
+// Helper function to create image object based on environment
+// const createImageObject = () => {
+//   if (typeof window === "undefined") {
+//     return new NodeImage();
+//   }
+//   return new window.Image();
+// };
+
+// Add this helper function to normalize crop coordinates
+const normalizeCropData = (crop, imageWidth, imageHeight) => {
+  if (!crop) return null;
+
+  // Ensure crop values are within 0-100 range
+  const x = Math.max(0, Math.min(100, crop.x));
+  const y = Math.max(0, Math.min(100, crop.y));
+
+  // Ensure width and height don't exceed image bounds
+  const width = Math.min(100 - x, crop.width);
+  const height = Math.min(100 - y, crop.height);
+
+  return {
+    unit: "%",
+    x,
+    y,
+    width,
+    height,
+  };
+};
+
 function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -55,17 +104,25 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   const [processing, setProcessing] = useState(false);
   const [includeInvalidImages, setIncludeInvalidImages] = useState(false);
   const [allowLessThanTen, setAllowLessThanTen] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
 
-  const fileInputRef = useRef(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+
+  const [completedCrops, setCompletedCrops] = useState({});
+
+  // Add breakpoint columns for masonry
+  const breakpointColumnsObj = {
+    default: 3,
+    1100: 2,
+    700: 1,
+  };
 
   useEffect(() => {
     const validFiles = files.filter((file) => !file.error && file.accepted);
     if (validFiles.length > 0 && validFiles.length < 10) {
       setWarningMessage(
-        `You are uploading ${validFiles.length} valid image${
+        `You are uploading only ${validFiles.length} high-resolution image${
           validFiles.length !== 1 ? "s" : ""
-        }. We suggest that you upload at least 10 images for best outputs.`
+        }. We recommend at-least 10 for best output.`
       );
     } else {
       setWarningMessage("");
@@ -80,37 +137,272 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
       setIsCompleted(false);
       setUploading(false);
       setProcessing(false);
-      setUploadProgress(0);
       setWarningMessage("");
       setValue("images", ""); // Reset the form value
     };
   }, [setValue]);
 
-  // Simplified image processing without face detection
-  const processImage = async (file) => {
-    return new Promise((resolve) => {
-      const img = new window.Image();
-      img.onload = async () => {
-        let accepted = true;
-        let declineReason = "";
+  // Modify uploadFiles function
+  const uploadFiles = useCallback(async () => {
+    setUploading(true);
 
-        // Only check image dimensions
-        if (
-          img.width < MIN_IMAGE_DIMENSION ||
-          img.height < MIN_IMAGE_DIMENSION
-        ) {
-          accepted = false;
-          declineReason = `Image is too small. Minimum size is ${MIN_IMAGE_DIMENSION}x${MIN_IMAGE_DIMENSION} pixels.`;
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    try {
+      const zip = new JSZip();
+      const validFiles = includeInvalidImages
+        ? files
+        : files.filter((file) => file.accepted);
+
+      // Process each file
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i];
+
+        try {
+          // Load the image properly
+          const originalImage = await createImagePromise(file.preview);
+
+          // Create a new canvas with the target dimensions
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d", {
+            alpha: true,
+            willReadFrequently: true,
+          });
+
+          canvas.width = CROP_DIMENSION;
+          canvas.height = CROP_DIMENSION;
+
+          // Get and normalize crop data
+          const rawCropData = completedCrops[i] || file.initialCrop;
+          const cropData = normalizeCropData(
+            rawCropData,
+            originalImage.width,
+            originalImage.height
+          );
+
+          if (!cropData) {
+            console.error("Invalid crop data for image:", file.file.name);
+            continue;
+          }
+
+          // Calculate precise pixel values from percentages
+          const sourceX = Math.round((cropData.x / 100) * originalImage.width);
+          const sourceY = Math.round((cropData.y / 100) * originalImage.height);
+          const sourceWidth = Math.round(
+            (cropData.width / 100) * originalImage.width
+          );
+          const sourceHeight = Math.round(
+            (cropData.height / 100) * originalImage.height
+          );
+
+          // Additional safety checks
+          const finalSourceX = Math.max(
+            0,
+            Math.min(sourceX, originalImage.width - sourceWidth)
+          );
+          const finalSourceY = Math.max(
+            0,
+            Math.min(sourceY, originalImage.height - sourceHeight)
+          );
+          const finalSourceWidth = Math.min(
+            sourceWidth,
+            originalImage.width - finalSourceX
+          );
+          const finalSourceHeight = Math.min(
+            sourceHeight,
+            originalImage.height - finalSourceY
+          );
+
+          // Clear the canvas before drawing
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Draw the image with proper pixel alignment
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+
+          ctx.drawImage(
+            originalImage,
+            finalSourceX,
+            finalSourceY,
+            finalSourceWidth,
+            finalSourceHeight,
+            0,
+            0,
+            CROP_DIMENSION,
+            CROP_DIMENSION
+          );
+
+          // Convert to blob with proper quality
+          const blob = await new Promise((resolve, reject) => {
+            try {
+              canvas.toBlob(
+                (b) => {
+                  if (b) {
+                    resolve(b);
+                  } else {
+                    reject(new Error("Blob creation failed"));
+                  }
+                },
+                "image/jpeg",
+                1.0 // Maximum quality to preserve image details
+              );
+            } catch (error) {
+              reject(error);
+            }
+          });
+
+          // Verify blob size and content
+          if (!blob || blob.size === 0) {
+            throw new Error(`Invalid blob generated for ${file.file.name}`);
+          }
+
+          // Add to zip with original filename but .jpg extension
+          const fileName = `${file.file.name.replace(/\.[^/.]+$/, "")}.jpg`;
+          zip.file(fileName, blob);
+        } catch (processError) {
+          console.error(
+            "Error processing image:",
+            file.file.name,
+            processError
+          );
+          throw new Error(
+            `Failed to process image ${file.file.name}: ${processError.message}`
+          );
+        } finally {
+          // Clean up resources
+          URL.revokeObjectURL(file.preview);
+        }
+      }
+
+      const zipBlob = await zip.generateAsync({
+        type: "blob",
+        compression: "STORE", // No compression to preserve image quality
+      });
+
+      const filePath = `${session.user.id}/${uuidv4()}/${Date.now()}.zip`;
+
+      const { data, error } = await supabase.storage
+        .from("training-images")
+        .upload(filePath, zipBlob, {
+          contentType: "application/zip",
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      const { data: signedUrlData, error: signedUrlError } =
+        await supabase.storage
+          .from("training-images")
+          .createSignedUrl(filePath, 604800);
+
+      if (signedUrlError) {
+        throw signedUrlError;
+      }
+
+      setValue("images", signedUrlData.signedUrl);
+      setIsCompleted(true);
+    } catch (error) {
+      console.error("Upload error:", error);
+      setWarningMessage(`Upload failed: ${error.message}`);
+      setIsCompleted(false);
+    } finally {
+      setUploading(false);
+    }
+  }, [files, setValue, includeInvalidImages, completedCrops]);
+
+  // Modify createImagePromise for better image loading
+  const createImagePromise = (src) => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+
+      img.onload = () => {
+        // Verify image has loaded properly
+        if (img.width === 0 || img.height === 0) {
+          reject(new Error("Image failed to load properly"));
+          return;
+        }
+        resolve(img);
+      };
+
+      img.onerror = () => {
+        reject(new Error("Failed to load image"));
+      };
+
+      // Set crossOrigin to anonymous if loading from a different origin
+      img.crossOrigin = "anonymous";
+      img.src = src;
+    });
+  };
+
+  // Modify applySmartCrop for more accurate cropping
+  const applySmartCrop = async (file) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const img = await createImagePromise(URL.createObjectURL(file));
+
+        const result = await SmartCrop.crop(img, {
+          width: CROP_DIMENSION,
+          height: CROP_DIMENSION,
+          minScale: 1.0,
+          ruleOfThirds: true,
+          boost: [{ x: 0, y: 0, width: 1, height: 1, weight: 1.0 }],
+          samples: 8,
+        });
+
+        if (!result || !result.topCrop) {
+          throw new Error("Smart crop failed to generate valid crop data");
         }
 
+        // Calculate precise crop values
+        const crop = {
+          x: (result.topCrop.x / img.width) * 100,
+          y: (result.topCrop.y / img.height) * 100,
+          width: (result.topCrop.width / img.width) * 100,
+          height: (result.topCrop.height / img.height) * 100,
+          unit: "%",
+        };
+
+        resolve(crop);
+      } catch (error) {
+        console.error("Smart crop error:", error);
+        // Fallback to center crop
         resolve({
-          file: file,
-          preview: URL.createObjectURL(file),
-          accepted,
-          declineReason,
+          unit: "%",
+          x: 25,
+          y: 25,
+          width: 50,
+          height: 50,
         });
-      };
-      img.src = URL.createObjectURL(file);
+      }
+    });
+  };
+
+  // Define the processImage function
+  const processImage = async (file) => {
+    return new Promise(async (resolve) => {
+      const img = await createImagePromise(URL.createObjectURL(file));
+      const preview = URL.createObjectURL(file);
+
+      let accepted = true;
+      let declineReason = "";
+
+      if (img.width < MIN_IMAGE_DIMENSION || img.height < MIN_IMAGE_DIMENSION) {
+        accepted = false;
+        declineReason = `Image is too small. Minimum size is ${MIN_IMAGE_DIMENSION}x${MIN_IMAGE_DIMENSION} pixels.`;
+      }
+
+      const smartCropResult = await applySmartCrop(file);
+
+      resolve({
+        file,
+        preview,
+        accepted,
+        declineReason,
+        initialCrop: smartCropResult,
+      });
     });
   };
 
@@ -153,69 +445,115 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     [onDrop]
   );
 
-  const removeFile = useCallback((index) => {
-    setFiles((prevFiles) => {
-      URL.revokeObjectURL(prevFiles[index].preview);
-      return prevFiles.filter((_, i) => i !== index);
-    });
-  }, []);
+  // const removeFile = useCallback((index) => {
+  //   setFiles((prevFiles) => {
+  //     URL.revokeObjectURL(prevFiles[index].preview);
+  //     return prevFiles.filter((_, i) => i !== index);
+  //   });
+  // }, []);
 
   const removeAllFiles = useCallback(() => {
     files.forEach((file) => URL.revokeObjectURL(file.preview));
     setFiles([]);
   }, [files]);
 
-  const uploadFiles = useCallback(async () => {
-    setUploading(true);
-    setUploadProgress(0);
+  // Modify the handleCropComplete function
+  const handleCropComplete = (crop, percentCrop, index) => {
+    setCompletedCrops((prev) => ({
+      ...prev,
+      [index]: {
+        unit: "%",
+        x: percentCrop.x,
+        y: percentCrop.y,
+        width: percentCrop.width,
+        height: percentCrop.height,
+      },
+    }));
+  };
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+  // Modify the file card rendering to include cropping UI
+  const renderFileCard = (file, index) => (
+    <Card
+      key={index}
+      className={`mb-4 ${
+        file.accepted ? "border-success" : "border-destructive"
+      }`}
+    >
+      <CardContent className="p-4">
+        <div className="relative">
+          <ReactCrop
+            crop={completedCrops[index] || file.initialCrop}
+            onChange={(c, pc) => handleCropComplete(c, pc, index)}
+            onComplete={(c, pc) => handleCropComplete(c, pc, index)}
+            aspect={CROP_ASPECT}
+            className="max-w-full h-auto"
+            minWidth={100} // Minimum width in pixels
+            minHeight={100} // Minimum height in pixels
+            keepSelection={true}
+            ruleOfThirds={true}
+            locked={true}
+          >
+            <Image
+              src={file.preview}
+              alt={`Preview ${index + 1}`}
+              width={400}
+              height={400}
+              className="w-full h-full object-cover"
+              onClick={() => setSelectedImageIndex(index)}
+            />
+          </ReactCrop>
+          {selectedImageIndex === index && (
+            <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-sm">
+              set focus on you face
+            </div>
+          )}
+        </div>
+        <div className="flex items-center justify-between mt-2">
+          <div>
+            <p className="text-sm font-medium">
+              {file.file.name.slice(0, 10) +
+                "...XXX." +
+                file.file.type.split("/")[1]}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {(file.file.size / 1048576).toFixed(2)} MB
+            </p>
+            {!file.accepted && (
+              <p className="text-xs text-destructive">{file.declineReason}</p>
+            )}
+          </div>
+          <div className="flex items-center space-x-2">
+            {file.accepted ? (
+              <CheckCircle className="h-4 w-4 text-success" />
+            ) : (
+              <CircleAlert className="h-4 w-4 text-destructive" />
+            )}
+            {/* {!uploading && !isCompleted && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => removeFile(index)}
+              >
+                <Trash className="h-4 w-4 text-destructive" />
+              </Button>
+            )} */}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
-    try {
-      const zip = new JSZip();
-      const validFiles = includeInvalidImages
-        ? files
-        : files.filter((file) => file.accepted);
-      validFiles.forEach((file) => {
-        zip.file(file.file.name, file.file);
-      });
-
-      const zipBlob = await zip.generateAsync({ type: "blob" });
-      const filePath = `${session.user.id}/${uuidv4()}/${Date.now()}.zip`;
-
-      const { data, error } = await supabase.storage
-        .from("training-images")
-        .upload(filePath, zipBlob, {
-          contentType: "application/zip",
-          onUploadProgress: (progress) => {
-            const percent = (progress.loaded / progress.total) * 100;
-            setUploadProgress(percent);
-          },
-        });
-
-      if (error) {
-        console.error("Upload error:", error);
-      } else {
-        const { data: signedUrlData, error: signedUrlError } =
-          await supabase.storage
-            .from("training-images")
-            .createSignedUrl(filePath, 604800); // 604800 means 7 days in seconds.
-
-        if (signedUrlError) {
-          console.error("Signed URL error:", signedUrlError);
-        } else {
-          setValue("images", signedUrlData.signedUrl);
+  // Add cleanup in useEffect
+  useEffect(() => {
+    return () => {
+      // Cleanup URLs when component unmounts
+      files.forEach((file) => {
+        if (file.preview) {
+          URL.revokeObjectURL(file.preview);
         }
-      }
-    } catch (error) {
-      console.error("General error:", error);
-    } finally {
-      setUploading(false);
-      setIsCompleted(true);
-    }
-  }, [files, setValue, includeInvalidImages]);
+      });
+    };
+  }, [files]);
 
   // Removed loadingModels check since we no longer use face-api
   return (
@@ -237,7 +575,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           <Heading variant={"hero"}> Please upload your images.</Heading>
 
           <p className="text-muted-foreground">
-            By following these simple guidelines, you’re setting yourself up for
+            By following these simple guidelines, you're setting yourself up for
             the best possible outcome. Each photo you upload directly impacts
             the final outcome, so take a moment to select your best shots that
             meet our guidelines.
@@ -289,72 +627,23 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
               </div>
 
               {files.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {files.map((file, index) => (
-                    <Card
-                      key={index}
-                      className={
-                        file.accepted ? "border-success" : "border-destructive"
-                      }
-                    >
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="relative h-10 w-10">
-                            <Image
-                              src={file.preview}
-                              alt={`Preview ${index + 1}`}
-                              className="rounded-md object-cover"
-                              fill
-                            />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">
-                              {file.file.name.slice(0, 10) +
-                                "...XXX." +
-                                file.file.type.split("/")[1]}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {(file.file.size / 1048576).toFixed(2)} MB
-                            </p>
-                            {!file.accepted && (
-                              <p className="text-xs text-destructive">
-                                {file.declineReason}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {file.accepted ? (
-                            <CheckCircle className="h-4 w-4 text-success" />
-                          ) : (
-                            <CircleAlert className="h-4 w-4 text-destructive" />
-                          )}
-                          {!uploading && !isCompleted && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeFile(index)}
-                            >
-                              <Trash className="h-4 w-4 text-destructive" />
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                <Masonry
+                  breakpointCols={breakpointColumnsObj}
+                  className="flex -ml-4 w-auto"
+                  columnClassName="pl-4 bg-clip-padding"
+                >
+                  {files.map((file, index) => renderFileCard(file, index))}
+                </Masonry>
               )}
 
               {(includeInvalidImages || allowLessThanTen) && (
                 <Alert variant="destructive">
                   <AlertDescription>
                     {includeInvalidImages
-                      ? "You are including invalid images in your upload. "
+                      ? "We recommend uploading all images of at least 1024×1024 resolution for the best results."
                       : allowLessThanTen
                       ? "You are uploading fewer than 10 images. "
                       : ""}
-                    We suggest that you upload at least 1024*1024 resolution for
-                    best outputs.
                   </AlertDescription>
                 </Alert>
               )}
@@ -379,14 +668,9 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                       onClick={() => setIncludeInvalidImages(true)}
                       variant="outline"
                     >
-                      Include Invalid Images
+                      Include low-resolution Images
                     </Button>
                   )}
-                {/* <p className="text-sm text-muted-foreground">
-                  Please ensure your images meet the minimum size requirements.
-                  If you believe your images are valid, you can include them
-                  despite any warnings.
-                </p> */}
               </div>
               {files.length > 0 && (
                 <div className="flex justify-between items-center">

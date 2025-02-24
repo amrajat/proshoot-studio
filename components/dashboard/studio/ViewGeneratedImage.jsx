@@ -6,6 +6,8 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Download } from "lucide-react";
 import { updateStudioDownloadStatus } from "@/lib/supabase/actions/server";
+import { PhotoProvider, PhotoView } from "react-photo-view";
+import "react-photo-view/dist/react-photo-view.css";
 
 function ViewGeneratedImage({
   image,
@@ -40,14 +42,18 @@ function ViewGeneratedImage({
         <div className="absolute top-2 left-2 bg-background/80 text-foreground px-2 py-1 rounded-md text-sm font-semibold">
           #{imageNumber}
         </div>
-        <Image
-          unoptimized={true}
-          src={image}
-          alt={`AI generated image ${imageNumber}`}
-          width={1024}
-          height={1024}
-          className="w-full aspect-square object-cover"
-        />
+        <PhotoProvider>
+          <PhotoView src={image}>
+            <Image
+              unoptimized={true}
+              src={image}
+              alt={`AI generated image ${imageNumber}`}
+              width={1024}
+              height={1024}
+              className="w-full aspect-square object-cover cursor-zoom-in"
+            />
+          </PhotoView>
+        </PhotoProvider>
       </CardContent>
       <CardFooter className="grid grid-cols-2 gap-2 p-2">
         <Button variant="outline" size="sm" className="w-full" asChild>

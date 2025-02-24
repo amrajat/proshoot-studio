@@ -10,6 +10,7 @@ import {
   ImageIcon,
   Trash,
   CircleAlert,
+  Move,
 } from "lucide-react";
 import SmartCrop from "smartcrop";
 import ReactCrop from "react-image-crop";
@@ -250,7 +251,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
 
       if (img.width < MIN_IMAGE_DIMENSION || img.height < MIN_IMAGE_DIMENSION) {
         accepted = false;
-        declineReason = `Image is too small. Minimum size is ${MIN_IMAGE_DIMENSION}x${MIN_IMAGE_DIMENSION} pixels.`;
+        declineReason = `This image is low-resolution. Should be a minimum size of ${MIN_IMAGE_DIMENSION}×${MIN_IMAGE_DIMENSION} pixels.`;
       }
 
       const smartCropResult = await applySmartCrop(file);
@@ -340,6 +341,15 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     >
       <CardContent className="p-4">
         <div className="relative">
+          <div className="absolute top-2 left-2 z-10">
+            <span className="px-3 py-1 flex gap-1 items-center text-xs font-normal text-muted rounded bg-foreground">
+              <Move className="text-destructive" strokeWidth={1.5} />
+              Move
+              <span className="italic">
+                selection area to center your face.
+              </span>
+            </span>
+          </div>
           <ReactCrop
             crop={completedCrops[index] || file.initialCrop}
             onChange={(c, pc) => handleCropComplete(c, pc, index)}
@@ -361,11 +371,6 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
               onClick={() => setSelectedImageIndex(index)}
             />
           </ReactCrop>
-          {selectedImageIndex === index && (
-            <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-sm">
-              set focus on you face
-            </div>
-          )}
         </div>
         <div className="flex items-center justify-between mt-2">
           <div>
@@ -434,10 +439,14 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           <Heading variant={"hero"}> Please upload your images.</Heading>
 
           <p className="text-muted-foreground">
-            By following these simple guidelines, you're setting yourself up for
-            the best possible outcome. Each photo you upload directly impacts
-            the final outcome, so take a moment to select your best shots that
-            meet our guidelines.
+            By following these guidelines, you're setting yourself up for the
+            best possible outcome. Each photo you upload directly impacts the
+            final outcome, so take a moment to select your best shots that meet
+            our guidelines.{" "}
+            <span className="text-destructive">
+              Click on "Show Image Guidelines" button to read about image
+              uploading guidelines.
+            </span>
           </p>
           {/* <ImageUploadingGuideLines /> */}
           <Dialog>
@@ -527,7 +536,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                       onClick={() => setIncludeInvalidImages(true)}
                       variant="outline"
                     >
-                      Include low-resolution Images
+                      Include Low Resolution Images
                     </Button>
                   )}
               </div>

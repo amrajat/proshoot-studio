@@ -11,7 +11,6 @@ import {
   Trash,
   CircleAlert,
 } from "lucide-react";
-import JSZip from "jszip";
 import SmartCrop from "smartcrop";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
@@ -34,6 +33,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { processImagesWithCaptions } from "@/lib/services/imageCaptioningService";
 
 const supabase = createSupabaseBrowserClient();
 
@@ -129,135 +129,16 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     } = await supabase.auth.getSession();
 
     try {
-      const zip = new JSZip();
       const validFiles = includeInvalidImages
         ? files
         : files.filter((file) => file.accepted);
 
-      // Process each file
-      for (let i = 0; i < validFiles.length; i++) {
-        const file = validFiles[i];
-
-        try {
-          // Load the image properly
-          const originalImage = await createImagePromise(file.preview);
-
-          // Create a new canvas with the target dimensions
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d", {
-            alpha: true,
-            willReadFrequently: true,
-          });
-
-          canvas.width = CROP_DIMENSION;
-          canvas.height = CROP_DIMENSION;
-
-          // Get and normalize crop data
-          const rawCropData = completedCrops[i] || file.initialCrop;
-          const cropData = normalizeCropData(
-            rawCropData,
-            originalImage.width,
-            originalImage.height
-          );
-
-          if (!cropData) {
-            console.error("Invalid crop data for image:", file.file.name);
-            continue;
-          }
-
-          // Calculate precise pixel values from percentages
-          const sourceX = Math.round((cropData.x / 100) * originalImage.width);
-          const sourceY = Math.round((cropData.y / 100) * originalImage.height);
-          const sourceWidth = Math.round(
-            (cropData.width / 100) * originalImage.width
-          );
-          const sourceHeight = Math.round(
-            (cropData.height / 100) * originalImage.height
-          );
-
-          // Additional safety checks
-          const finalSourceX = Math.max(
-            0,
-            Math.min(sourceX, originalImage.width - sourceWidth)
-          );
-          const finalSourceY = Math.max(
-            0,
-            Math.min(sourceY, originalImage.height - sourceHeight)
-          );
-          const finalSourceWidth = Math.min(
-            sourceWidth,
-            originalImage.width - finalSourceX
-          );
-          const finalSourceHeight = Math.min(
-            sourceHeight,
-            originalImage.height - finalSourceY
-          );
-
-          // Clear the canvas before drawing
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-          // Draw the image with proper pixel alignment
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = "high";
-
-          ctx.drawImage(
-            originalImage,
-            finalSourceX,
-            finalSourceY,
-            finalSourceWidth,
-            finalSourceHeight,
-            0,
-            0,
-            CROP_DIMENSION,
-            CROP_DIMENSION
-          );
-
-          // Convert to blob with proper quality
-          const blob = await new Promise((resolve, reject) => {
-            try {
-              canvas.toBlob(
-                (b) => {
-                  if (b) {
-                    resolve(b);
-                  } else {
-                    reject(new Error("Blob creation failed"));
-                  }
-                },
-                "image/jpeg",
-                1.0 // Maximum quality to preserve image details
-              );
-            } catch (error) {
-              reject(error);
-            }
-          });
-
-          // Verify blob size and content
-          if (!blob || blob.size === 0) {
-            throw new Error(`Invalid blob generated for ${file.file.name}`);
-          }
-
-          // Add to zip with original filename but .jpg extension
-          const fileName = `${file.file.name.replace(/\.[^/.]+$/, "")}.jpg`;
-          zip.file(fileName, blob);
-        } catch (processError) {
-          console.error(
-            "Error processing image:",
-            file.file.name,
-            processError
-          );
-          throw new Error(
-            `Failed to process image ${file.file.name}: ${processError.message}`
-          );
-        } finally {
-          // Clean up resources
-          URL.revokeObjectURL(file.preview);
-        }
-      }
-
-      const zipBlob = await zip.generateAsync({
-        type: "blob",
-        compression: "STORE", // No compression to preserve image quality
-      });
+      // Process images with captions
+      const { zipBlob, processedFiles } = await processImagesWithCaptions(
+        validFiles,
+        completedCrops,
+        CROP_DIMENSION
+      );
 
       const filePath = `${session.user.id}/${uuidv4()}/${Date.now()}.zip`;
 

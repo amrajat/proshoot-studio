@@ -9,15 +9,14 @@ export async function POST(request) {
   const startTime = Date.now();
 
   try {
-    // Add request timeout
     const { image } = await request.json();
 
     if (!image) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
     }
 
-    // Validate base64 image size
-    const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 10MB
+    // Reduced max size
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
     if (image.length > MAX_IMAGE_SIZE) {
       return NextResponse.json({ error: "Image too large" }, { status: 400 });
     }
@@ -25,19 +24,17 @@ export async function POST(request) {
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-pro-002",
       generationConfig: {
-        maxOutputTokens: 8192,
+        maxOutputTokens: 2048, // Reduced tokens
         temperature: 1,
         topP: 0.95,
-        seed: 0,
       },
     });
 
-    // Add timeout for model generation
+    // Reduced timeout to 12 seconds
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error("Model timeout")), 60000)
     );
 
-    // Remove base64 prefix if present
     const base64Image = image.replace(/^data:image\/\w+;base64,/, "");
 
     const prompt = `
@@ -128,14 +125,12 @@ By following these guidelines, generate a caption that fully captures the essenc
     const response = await result.response;
     const caption = response.text();
 
-    // Log processing time
     console.log(`Caption generated in ${Date.now() - startTime}ms`);
 
     return NextResponse.json({ caption });
   } catch (error) {
     console.error("IC error:", error);
 
-    // Return appropriate error messages
     if (error.message === "Model timeout") {
       return NextResponse.json(
         { error: "IC generation timed out" },

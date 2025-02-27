@@ -6,11 +6,20 @@ export const maxDuration = 60;
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_STUDIO_API_KEY);
 
 export async function POST(request) {
+  const startTime = Date.now();
+
   try {
+    // Add request timeout
     const { image } = await request.json();
 
     if (!image) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
+    }
+
+    // Validate base64 image size
+    const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 10MB
+    if (image.length > MAX_IMAGE_SIZE) {
+      return NextResponse.json({ error: "Image too large" }, { status: 400 });
     }
 
     const model = genAI.getGenerativeModel({
@@ -22,6 +31,11 @@ export async function POST(request) {
         seed: 0,
       },
     });
+
+    // Add timeout for model generation
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Model timeout")), 60000)
+    );
 
     // Remove base64 prefix if present
     const base64Image = image.replace(/^data:image\/\w+;base64,/, "");
@@ -35,21 +49,21 @@ Begin by specifying the type of image (e.g., photo, photograph, digital photo, p
 
 Subject Description:
 
-Include the subject’s age and gender (man or woman).
+Include the subject's age and gender (man or woman).
 
-Describe the subject’s skin tone.
+Describe the subject's skin tone.
 
 Provide details about the hairstyle (style, texture, and color). (Note: Do not include the color of the eyes here.)
 
 Clothing Description:
 
-Describe the subject’s clothing and any accessories.
+Describe the subject's clothing and any accessories.
 
 Include details such as color, style, fabric, and any distinguishing features (e.g., a patterned scarf or textured fabric).
 
 Action/Setting:
 
-Explain the subject’s pose or activity (e.g., standing, sitting, leaning).
+Explain the subject's pose or activity (e.g., standing, sitting, leaning).
 
 Specify the setting or location where the image is taken.
 
@@ -63,7 +77,7 @@ Clearly state whether the subject is smiling or not, and if smiling, describe th
 
 Eye Direction:
 
-Indicate where the subject’s eyes are directed (e.g., directly at the camera, gazing off to the left/right, or looking into the distance).
+Indicate where the subject's eyes are directed (e.g., directly at the camera, gazing off to the left/right, or looking into the distance).
 
 Environment:
 
@@ -96,11 +110,11 @@ Use descriptive language that paints a vivid picture of the scene.
 
 Include any additional details that might enhance the understanding of the image, such as mood, texture, or subtle environmental cues.
 
-Adapt the description based on the subject’s gender (using "he" or "she" accordingly).
+Adapt the description based on the subject's gender (using "he" or "she" accordingly).
 
 By following these guidelines, generate a caption that fully captures the essence of the image. Always use "JSSPRT, " as a prefix in your caption while generating. Return only the caption, formatted in the same style as the "Reference Example" provided in the user intent.`;
 
-    const result = await model.generateContent([
+    const resultPromise = model.generateContent([
       prompt,
       {
         inlineData: {
@@ -110,14 +124,27 @@ By following these guidelines, generate a caption that fully captures the essenc
       },
     ]);
 
+    const result = await Promise.race([resultPromise, timeoutPromise]);
     const response = await result.response;
     const caption = response.text();
 
+    // Log processing time
+    console.log(`Caption generated in ${Date.now() - startTime}ms`);
+
     return NextResponse.json({ caption });
   } catch (error) {
-    console.error("Image captioning error:", error);
+    console.error("IC error:", error);
+
+    // Return appropriate error messages
+    if (error.message === "Model timeout") {
+      return NextResponse.json(
+        { error: "IC generation timed out" },
+        { status: 504 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to generate caption" },
+      { error: "Failed to generate IC", details: error.message },
       { status: 500 }
     );
   }

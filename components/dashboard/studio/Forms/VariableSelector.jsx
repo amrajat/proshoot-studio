@@ -94,33 +94,29 @@ export default function VariableSelector({
             return (
               <Card
                 key={randomKey}
-                className={`relative rounded ${
+                className={`relative rounded cursor-pointer ${
                   currentValue === optionValue
                     ? "border-primary"
                     : "border-border"
                 }`}
+                onClick={() => handleRadioChange(optionValue)}
               >
-                <button
-                  className="w-full text-left"
-                  onClick={() => handleRadioChange(optionValue)}
-                >
-                  <CardContent className="p-4">
-                    <RadioGroupItem
-                      value={optionValue}
-                      id={randomKey}
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor={randomKey}
-                      className="flex items-center justify-between cursor-pointer font-normal"
-                    >
-                      <span>{optionValue}</span>
-                    </Label>
+                <CardContent className="p-4">
+                  <RadioGroupItem
+                    value={optionValue}
+                    id={randomKey}
+                    className="peer sr-only"
+                  />
+                  <Label
+                    htmlFor={randomKey}
+                    className="flex items-center justify-between cursor-pointer font-normal"
+                  >
+                    <span>{optionValue}</span>
                     {currentValue === optionValue && (
-                      <Check className="absolute top-[50%] -translate-y-[50%] right-4 text-primary transition-opacity duration-200 ease-in-out" />
+                      <Check className="text-primary transition-opacity duration-200 ease-in-out" />
                     )}
-                  </CardContent>
-                </button>
+                  </Label>
+                </CardContent>
               </Card>
             );
           })}

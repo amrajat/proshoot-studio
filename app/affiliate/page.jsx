@@ -65,44 +65,16 @@ function Affiliate() {
         {/* End Gradients */}
         <div className="relative">
           <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
-            {/* <div className="max-w-4xl text-center mx-auto">
-              <p className="inline-block text-sm font-medium bg-clip-text bg-gradient-to-l from-blue-600 to-violet-500 text-transparent  ">
-                Proshoot: Affiliate Program
-              </p>
-              <div className="mt-5 max-w-4xl">
-                <Heading type="h2">
-                  Become a Proshoot.co affiliate today & earn up to $17.70 on
-                  each sale!
-                </Heading>
-              </div>
-              <div className="mt-5 max-w-4xl">
-                <p className="text-lg  ">
-                  Join the Proshoot.co Affiliate Program and earn a generous 30%
-                  commission on every successful sale you refer.
-                </p>
-              </div>
-              <div className="mt-8 gap-3 flex justify-center">
-                <Link
-                  href="https://proshoot.lemonsqueezy.com/affiliates"
-                  className="py-3 px-4 inline-flex justify-center items-center gap-x-2 text-base font-semibold rounded border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none self-center"
-                >
-                  Joint Program Today
-                  <HiChevronRight className="ml-2 h-4 w-4" strokeWidth={2} />
-                </Link>
-              </div>
-            </div> */}
             <SectionParaHeading
               badgeText={"Affiliates"}
-              title={
-                "Become a Proshoot.co affiliate today & earn up to $17.70 on each sale!"
-              }
+              title={"earn up to $17.70 on each sale!"}
             >
               Join the Proshoot.co Affiliate Program and earn a generous 30%
               commission on every successful sale you refer.
             </SectionParaHeading>
             <div className="max-w-4xl text-center mx-auto">
-              {/* <Link
-                href="https://proshoot.lemonsqueezy.com/affiliates"
+              <Link
+                href="https://proshoot.firstpromoter.com"
                 className={buttonVariants({
                   variant: "destructive",
                   size: "lg",
@@ -110,10 +82,10 @@ function Affiliate() {
               >
                 Join the Program
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </Link> */}
-              <Button variant={"destructive"} size={"lg"}>
+              </Link>
+              {/* <Button variant={"destructive"} size={"lg"}>
                 Coming Soon!
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>

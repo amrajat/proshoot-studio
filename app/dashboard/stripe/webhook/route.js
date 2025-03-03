@@ -49,8 +49,8 @@ export async function POST(request) {
     quantity,
     user,
     email_id,
-    firstPromoterReference,
-    firstPromoterTID,
+    first_promoter_reference,
+    first_promoter_t_i_d,
   } = bodyObject["meta"]["custom_data"];
 
   // Start....First check if payment id is not already updated to avoid duplicate entries/credits to the database.
@@ -103,8 +103,14 @@ export async function POST(request) {
   params.append("uid", user);
   params.append("amount", bodyObject["data"]["attributes"]["total"]);
   params.append("event_id", bodyObject["data"]["id"]);
-  params.append("ref_id", firstPromoterReference);
-  params.append("tid", firstPromoterTID);
+  params.append("ref_id", first_promoter_reference);
+  params.append("tid", first_promoter_t_i_d);
+
+  console.log(
+    "route handler webhook",
+    first_promoter_reference,
+    first_promoter_t_i_d
+  );
 
   const trackSale = async () => {
     try {

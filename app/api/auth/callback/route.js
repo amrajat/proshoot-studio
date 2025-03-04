@@ -10,7 +10,7 @@ export async function GET(request) {
   console.log("this has been called, route api/auth/callback");
 
   if (code) {
-    const supabase = createSupabaseServerClient();
+    const supabase = await createSupabaseServerClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       await supabase.auth.setSession(data.session);

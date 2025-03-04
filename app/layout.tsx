@@ -4,6 +4,7 @@ import "./globals.css";
 import { GeistSans } from "geist/font/sans";
 
 import CookieBanner from "@/components/CookieBanner";
+import IntercomMessenger from "@/components/IntercomMessenger";
 import Script from "next/script";
 import { CSPostHogProvider } from "./providers";
 
@@ -52,6 +53,7 @@ export default function RootLayout({
           <CookieBanner />
         </body>
       </CSPostHogProvider>
+      <IntercomMessenger />
     </html>
   );
 }

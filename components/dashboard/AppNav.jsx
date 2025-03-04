@@ -36,14 +36,17 @@ function AppNav() {
             Credits
           </Link>
         </div>
-        {/* <div className="snap-center shrink-0 pe-5 sm:pe-8 sm:last:pe-0">
+        <div className="snap-center shrink-0 pe-5 sm:pe-8 sm:last:pe-0">
           <Link
             className="inline-flex items-center gap-x-2 hover:text-gray-500     "
-            href="/dashboard/profile"
+            href="#"
+            onClick={() => {
+              if (window.Intercom) window.Intercom("showSpace", "messages");
+            }}
           >
-            Profile
+            Support
           </Link>
-        </div> */}
+        </div>
 
         <div className="snap-center shrink-0 pe-5 sm:pe-8 sm:last:pe-0">
           <button

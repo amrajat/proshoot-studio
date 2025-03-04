@@ -26,7 +26,7 @@ import {
   TrendingUp,
   Lock,
   CreditCard,
-  Image,
+  Image as ImageIcon,
   Clock,
   Tag,
 } from "lucide-react";
@@ -37,6 +37,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import StarRatings from "@/components/shared/star-ratings";
+import Image from "next/image";
 
 const planIcons = {
   Basic: (
@@ -383,13 +384,13 @@ export default function BuyStudio() {
                 {/* Trust Badges */}
                 <div className="flex justify-center gap-4 py-1">
                   <div className="flex items-center text-xs text-muted-foreground">
-                    <Lock className="size-3 mr-1 text-success/70" />
-                    Secure Checkout
+                    <ShieldCheck className="mr-1 size-3 text-success/70" />
+                    7-days money-back guarantee
                   </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
+                  {/* <div className="flex items-center text-xs text-muted-foreground">
                     <CreditCard className="size-3 mr-1 text-success/70" />
                     Multiple Payment Options
-                  </div>
+                  </div> */}
                 </div>
 
                 <Button
@@ -400,9 +401,20 @@ export default function BuyStudio() {
                 >
                   {pending ? "Processing..." : `Generate Headshots Now`}
                 </Button>
-                <span className="text-muted-foreground text-xs flex items-center justify-center">
+                {/* <span className="text-muted-foreground text-xs flex items-center justify-center">
                   <ShieldCheck className="mr-1.5 size-4 text-success" />
                   7-days money-back guarantee
+                </span> */}
+                <span className="text-muted-foreground text-xs flex items-center justify-center">
+                  <Lock className="size-3 mr-1 text-success/70" />
+                  Secured by&nbsp;
+                  <Image
+                    className="inline transition-transform duration-200 opacity-75 hover:opacity-100"
+                    src="/companies/lemon-squeezy.svg"
+                    width={100}
+                    height={100}
+                    alt="Lemon Squeezy Logo"
+                  />
                 </span>
               </div>
             </form>
@@ -412,7 +424,11 @@ export default function BuyStudio() {
                 After payment, you'll be redirected to create your headshots.
               </p>
               <p className="flex items-center justify-center">
-                You can use any promo code at your next checkout.
+                You can use
+                <span className="font-bold text-primary">
+                  &nbsp;LMTD20&nbsp;
+                </span>
+                promo code at your next checkout.
               </p>
             </div>
           </CardContent>
@@ -566,7 +582,7 @@ const HeadshotShowcase = () => {
             variant="outline"
             className="text-xs py-1 px-3 rounded-full border-primary/20 bg-primary/5 text-primary/80"
           >
-            <Image className="size-3 mr-2" />
+            <ImageIcon className="size-3 mr-2" />
             Generated 4,00,00,0+ Professional Headshots
           </Badge>
         </div>

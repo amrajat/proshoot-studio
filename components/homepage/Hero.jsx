@@ -32,7 +32,7 @@ function Hero() {
           </h1>
           <h5 className="py-1 px-2 rounded-lg inline-flex text-xs font-normal gap-1 items-center text-foreground bg-success/15 mx-auto mb-6 sm:text-sm lg:text-base">
             <Sparkles className="text-success" /> New AI Headshot Model Upgraded
-            on November, 2024{" "}
+            on March, 2025{" "}
             <Tooltip content="This newer model produces ultra-realistic ai headshots with the highest resemblance possible to date." />
           </h5>
           <div className="relative">

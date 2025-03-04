@@ -78,7 +78,7 @@ export default function Pricing() {
     // <section className="py-16 px-4 bg-background">
     <section
       id="pricing"
-      className="relative bg-gradient-to-b from-secondary to-background py-16 sm:py-24 px-4"
+      className="relative bg-gradient-to-b from-secondary/40 to-background py-16 sm:py-24 px-4 overflow-hidden"
     >
       <div className="container mx-auto">
         <SectionParaHeading
@@ -90,7 +90,7 @@ export default function Pricing() {
           without any restrictions.
         </SectionParaHeading>
 
-        {/* <div className="flex justify-center items-center space-x-4 mb-8">
+        <div className="flex justify-center items-center space-x-4 mb-8">
           <span
             className={`text-sm font-medium ${
               !isAnnual ? "text-primary" : "text-muted-foreground"
@@ -104,37 +104,44 @@ export default function Pricing() {
               isAnnual ? "text-primary" : "text-muted-foreground"
             }`}
           >
-            Teams{" "} */}
-        {/* {
+            Teams{" "}
+            {/* {
               <Badge variant="outline" className="ml-2">
                 {isAnnual && "minimum team of 10 people."}
               </Badge>
             } */}
-        {/* </span> */}
-        {/* </div> */}
+          </span>
+        </div>
 
         <div className="mt-6 md:mt-12 grid sm:grid-cols-2 lg:grid-cols-2 min-[1170px]:grid-cols-4 gap-3 md:gap-6 lg:gap-3 xl:gap-6 lg:items-center">
           {pricingPlans.map((plan) => (
             <Card
               key={plan.name}
-              className={`flex flex-col text-center rounded ${
-                plan.popular ? "border-2 border-primary shadow-lg" : ""
+              className={`flex flex-col text-center rounded-xl transition-all duration-200 hover:scale-[1.02] ${
+                plan.popular
+                  ? "border-2 border-primary shadow-xl relative z-10 bg-card/50 backdrop-blur-sm"
+                  : "hover:border-primary/50"
               }`}
             >
               <CardHeader>
                 {plan.popular && (
-                  <Badge className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded text-xs uppercase font-semibold w-auto self-center">
+                  <Badge
+                    variant="secondary"
+                    className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs uppercase font-semibold w-auto self-center bg-primary/10 text-primary hover:bg-primary/20"
+                  >
                     Most Popular
                   </Badge>
                 )}
-                <CardTitle className="text-lg mb-4">{plan.name}</CardTitle>
-                <div className="font-bold text-3xl md:text-4xl xl:text-5xl">
+                <CardTitle className="text-xl font-bold mb-4 text-foreground/90">
+                  {plan.name}
+                </CardTitle>
+                <div className="font-bold text-3xl md:text-4xl xl:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
                   ${isAnnual ? "$" : plan.price}
                   <span className="text-sm font-normal text-muted-foreground">
                     {isAnnual ? "/person" : "/session"}
                   </span>
                 </div>
-                <CardDescription className="text-accent-foreground">
+                <CardDescription className="text-muted-foreground/90 font-medium">
                   {plan.description}
                 </CardDescription>
               </CardHeader>
@@ -142,7 +149,7 @@ export default function Pricing() {
                 <ul className="space-y-2">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-center space-x-2">
-                      <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-primary mr-2" />
+                      <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-primary/90 mr-2" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -151,9 +158,12 @@ export default function Pricing() {
               <CardFooter>
                 <Link
                   href="/auth"
-                  className={`w-full border-primary ${buttonVariants({
-                    variant: plan.popular ? "default" : "outline",
-                  })}`}
+                  className={`w-full transition-all duration-200 ${buttonVariants(
+                    {
+                      variant: plan.popular ? "default" : "default",
+                      className: "hover:scale-[1.02] hover:shadow-md",
+                    }
+                  )}`}
                 >
                   {isAnnual ? "Contact Us" : "Get Started"}
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -163,7 +173,7 @@ export default function Pricing() {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
+        <div className="mt-16 text-center relative z-10">
           <h3 className="text-2xl font-bold leading-tight tracking-tighter md:text-3xl lg:leading-[1.1] text-center mb-4 lowercase">
             Love It or Get Your Money Back
           </h3>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import Autoplay from "embla-carousel-autoplay";
 
 import {
@@ -18,15 +18,24 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import config from "@/config";
 import { createCheckoutLS } from "@/lib/supabase/actions/server";
-import { Check, Minus, Plus, ShieldCheck, TrendingUp } from "lucide-react";
-import ToolTip from "@/components/shared/tooltip";
+import {
+  Check,
+  Minus,
+  Plus,
+  ShieldCheck,
+  TrendingUp,
+  Lock,
+  CreditCard,
+  Image,
+  Clock,
+  Tag,
+} from "lucide-react";
 import { REVIEWS_ARRAY } from "@/lib/reviews";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import StarRatings from "@/components/shared/star-ratings";
 
 const planIcons = {
@@ -162,6 +171,30 @@ export default function BuyStudio() {
   const [plan, setPlan] = useState("Premium");
   const [quantity, setQuantity] = useState(1);
   const [pending, startTransaction] = useTransition();
+  const [couponsLeft, setCouponsLeft] = useState(3);
+  const [timeLeft, setTimeLeft] = useState({
+    hours: 5,
+    minutes: 59,
+    seconds: 59,
+  });
+
+  // Countdown timer effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev.seconds > 0) {
+          return { ...prev, seconds: prev.seconds - 1 };
+        } else if (prev.minutes > 0) {
+          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        } else if (prev.hours > 0) {
+          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        }
+        return prev;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const handleQuantityChange = (value) => {
     if (value >= 1) {
@@ -191,196 +224,353 @@ export default function BuyStudio() {
   }
 
   return (
-    <Card className="w-full max-w-xl mx-auto border-none shadow-none">
-      <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold tracking-tighter">
-          Buy Headshots Package
-        </CardTitle>
-        <CardDescription>
-          Buy our headshot packages to to generate professional headshots.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            checkout();
-          }}
-          className="space-y-6"
-        >
-          <RadioGroup
-            value={plan}
-            onValueChange={setPlan}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            {Object.entries(config.PLANS).map(([key, value]) => (
-              <Label
-                key={key}
-                className={`relative flex flex-col items-start p-6 border-2 rounded cursor-pointer transition-all duration-200 hover:border-primary hover:bg-primary/5 ${
-                  plan === key ? "border-primary bg-primary/5" : "border-border"
-                }`}
-              >
-                <RadioGroupItem value={key} className="sr-only" />
-                <div className="flex items-center space-x-2">
-                  {planIcons[key]}
-                  <span className="text-lg font-semibold">{key}</span>
-                </div>
-                <span className="text-2xl font-bold mb-2">
-                  $ {value.planPrice}
-                </span>
-                <span className="text-sm text-muted-foreground mb-4">
-                  {value.headshots} Headshots
-                </span>
-                {key === "Premium" && (
-                  <Badge
-                    variant="secondary"
-                    className="bg-primary/10 text-primary"
-                  >
-                    <TrendingUp className="size-3 mr-1" strokeWidth={2} />
-                    Most Popular Plan.
-                  </Badge>
-                )}
+    <div className="flex flex-col lg:flex-row w-full max-w-7xl mx-auto gap-6 md:gap-8 py-0 md:py-0 px-4 sm:px-6 lg:px-0">
+      {/* Left Side - Checkout Form */}
+      <div className="w-full lg:w-1/2 lg:self-center">
+        <Card className="border border-border/40 shadow-sm bg-gradient-to-b from-background to-muted/20 backdrop-blur-sm rounded-lg overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/60 via-primary to-primary/60"></div>
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-3xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
+              Buy Headshots Package
+            </CardTitle>
+            <CardDescription className="text-base">
+              Ultra-realistic AI-powered professional headshots that make you
+              stand out.
+            </CardDescription>
 
-                {plan === key && (
-                  <div className="absolute top-4 right-4 w-5 h-5 rounded border-2 border-primary flex items-center justify-center">
-                    <Check className="size-3 text-primary" strokeWidth={4} />
-                  </div>
-                )}
-              </Label>
-            ))}
-          </RadioGroup>
-
-          <Separator />
-
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium flex gap-1 items-center">
-              <span>Quantity</span>
-              <ToolTip content={"each unit generates images for one person."} />
-            </Label>
-            <div className="flex items-center space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => handleQuantityChange(quantity - 1)}
-                disabled={quantity <= 1}
-              >
-                <Minus className="size-4" strokeWidth={2} />
-              </Button>
-              <Input
-                id="quantity"
-                type="number"
-                min={1}
-                value={quantity}
-                onChange={(e) =>
-                  handleQuantityChange(parseInt(e.target.value, 10))
-                }
-                className="w-16 text-center"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => handleQuantityChange(quantity + 1)}
-              >
-                <Plus className="size-4" strokeWidth={2} />
-              </Button>
+            {/* Benefits Highlight Section - Condensed */}
+            <div className="mt-4 flex flex-col gap-2 text-sm">
+              <div className="flex justify-center gap-3 flex-wrap">
+                <Badge
+                  variant="outline"
+                  className="flex items-center gap-1 py-1 px-2 rounded-full border-primary/20 bg-primary/5 text-primary shadow-sm"
+                >
+                  <ShieldCheck className="size-3" /> 100% satisfaction guarantee
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="flex items-center gap-1 py-1 px-2 rounded-full border-primary/20 bg-primary/5 text-primary shadow-sm"
+                >
+                  <ShieldCheck className="size-3" /> 7-days money-back guarantee
+                </Badge>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-4">
-            <div className="flex justify-between text-lg font-semibold">
-              <span>Total</span>
-              <span>
-                ${Math.trunc(quantity * config.PLANS[plan].planPrice)}
-              </span>
-            </div>
-            <Button
-              type="submit"
-              className="w-full text-base py-6 font-bold leading-tight tracking-tighter rounded lg:leading-[1.1]"
-              size="lg"
-              disabled={!quantity || pending}
+            {/* Limited Time Offer */}
+          </CardHeader>
+          <CardContent className="px-5 py-3">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                checkout();
+              }}
+              className="space-y-4"
             >
-              {pending
-                ? "Processing..."
-                : `Pay $${Math.trunc(
-                    quantity * config.PLANS[plan]["planPrice"]
-                  )}`}
-            </Button>
-            <span className="text-muted-foreground text-sm flex items-center justify-center">
-              <ShieldCheck className="mr-2 size-5 text-success" />
-              7-days money-back guarantee
-            </span>
-          </div>
-        </form>
+              <RadioGroup
+                value={plan}
+                onValueChange={setPlan}
+                className="grid grid-cols-1 md:grid-cols-2 gap-3"
+              >
+                {Object.entries(config.PLANS).map(([key, value]) => (
+                  <Label
+                    key={key}
+                    className={`relative flex flex-col items-start p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:border-primary hover:bg-primary/5 hover:shadow-sm ${
+                      plan === key
+                        ? "border-primary bg-primary/5 shadow-sm"
+                        : "border-border"
+                    }`}
+                  >
+                    <RadioGroupItem value={key} className="sr-only" />
+                    <div className="flex items-center space-x-2">
+                      {planIcons[key]}
+                      <span className="text-base font-semibold">{key}</span>
+                    </div>
+                    <span className="text-xl font-bold mb-1 mt-1 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80">
+                      ${value.planPrice}
+                      {key === "Premium" && (
+                        <Badge
+                          variant="secondary"
+                          className="bg-primary/10 text-primary text-xs ml-2 font-medium"
+                        >
+                          <TrendingUp className="size-3 mr-1" strokeWidth={2} />
+                          Most Popular
+                        </Badge>
+                      )}
+                    </span>
+                    <span className="text-xs text-muted-foreground mb-1 font-medium">
+                      {value.headshots} Professional Headshots
+                    </span>
+                    <span className="text-xs text-muted-foreground mb-1 font-medium">
+                      {value.headshots / 4} Unique Clothings
+                    </span>
+                    <span className="text-xs text-muted-foreground mb-1 font-medium">
+                      {value.headshots / 4} Unique Backgrounds
+                    </span>
 
-        {/* <ReviewsCarousel /> */}
-        <div className="mt-6 space-y-2 text-xs text-muted-foreground">
-          <p className="flex items-center justify-center">
-            After payment, you'll be redirected to create your headshots.
-          </p>
-          <p className="flex items-center justify-center">
-            If you have any discount code your can redeem at next checkout page.
-          </p>
+                    {plan === key && (
+                      <div className="absolute top-3 right-3 w-4 h-4 rounded-full border-2 border-primary flex items-center justify-center bg-primary/10">
+                        <Check
+                          className="size-2 text-primary"
+                          strokeWidth={4}
+                        />
+                      </div>
+                    )}
+                  </Label>
+                ))}
+              </RadioGroup>
+
+              <Separator className="bg-border/50" />
+
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium flex gap-1 items-start flex-col">
+                  <span>Quantity</span>
+                  <span className="text-xs font-normal text-muted-foreground">
+                    each unite generates headshots for one person.
+                  </span>
+                </Label>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleQuantityChange(quantity - 1)}
+                    disabled={quantity <= 1}
+                    className="rounded-full h-7 w-7 border-border/60"
+                  >
+                    <Minus className="size-3" strokeWidth={2} />
+                  </Button>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    min={1}
+                    value={quantity}
+                    onChange={(e) =>
+                      handleQuantityChange(parseInt(e.target.value, 10))
+                    }
+                    className="w-14 text-center rounded-md border-border/60 h-8"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleQuantityChange(quantity + 1)}
+                    className="rounded-full h-7 w-7 border-border/60"
+                  >
+                    <Plus className="size-3" strokeWidth={2} />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-4 mt-4">
+                <div className="flex justify-between text-base font-semibold">
+                  <span>Total</span>
+                  <span>
+                    <span className="text-md font-bold mr-4 text-destructive line-through decoration-1 decoration-primary">
+                      ${Math.trunc(quantity * config.PLANS[plan].planPrice)}
+                    </span>
+                    <span className="text-lg font-bold text-primary">
+                      $
+                      {(quantity * config.PLANS[plan].planPrice * 0.8).toFixed(
+                        2
+                      )}
+                    </span>
+                    <span className="ml-1 text-xs bg-success/10 text-success px-1.5 py-0.5 rounded">
+                      SAVE 20%
+                    </span>
+                  </span>
+                </div>
+
+                {/* Trust Badges */}
+                <div className="flex justify-center gap-4 py-1">
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <Lock className="size-3 mr-1 text-success/70" />
+                    Secure Checkout
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <CreditCard className="size-3 mr-1 text-success/70" />
+                    Multiple Payment Options
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full text-base py-5 font-bold leading-tight tracking-tight lg:leading-[1.1]"
+                  size="lg"
+                  disabled={!quantity || pending}
+                >
+                  {pending ? "Processing..." : `Generate Headshots Now`}
+                </Button>
+                <span className="text-muted-foreground text-xs flex items-center justify-center">
+                  <ShieldCheck className="mr-1.5 size-4 text-success" />
+                  7-days money-back guarantee
+                </span>
+              </div>
+            </form>
+
+            <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+              <p className="flex items-center justify-center">
+                After payment, you'll be redirected to create your headshots.
+              </p>
+              <p className="flex items-center justify-center">
+                You can use any promo code at your next checkout.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Right Side - Headshot Showcase */}
+      <div className="w-full lg:w-1/2 relative lg:self-center rounded-lg overflow-hidden">
+        <div className="absolute -top-2 -left-2 w-20 h-20 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-primary/10 rounded-full blur-3xl"></div>
+
+        {/* Added decorative elements to balance visual height */}
+        <div className="hidden lg:block absolute -top-6 right-12 w-24 h-24 rounded-full bg-primary/5 blur-2xl"></div>
+        <div className="hidden lg:block absolute -bottom-6 left-12 w-24 h-24 rounded-full bg-primary/5 blur-2xl"></div>
+
+        <HeadshotShowcase />
+        {/* Limited Time Offer - New Component */}
+        <div className="mt-4 mb-2 mx-auto max-w-md">
+          <div className="relative overflow-hidden rounded-lg border-2 border-primary/30 bg-primary/5 p-4 shadow-sm">
+            <div className="absolute -top-6 -right-6 h-12 w-12 rounded-full bg-primary/20 blur-xl"></div>
+            <div className="absolute -bottom-6 -left-6 h-12 w-12 rounded-full bg-primary/20 blur-xl"></div>
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-bold text-sm text-destructive animate-pulse">
+                    Limited Time Offer!
+                  </h4>
+                </div>
+                <div className="text-xs font-medium text-destructive flex items-center">
+                  <Tag className="mr-1 size-3" />
+                  <span>Only {couponsLeft} coupons left to redeem.</span>
+                </div>
+              </div>
+
+              <div className="mt-2 flex items-center justify-between">
+                <div className="flex flex-col">
+                  <p className="text-sm font-medium">
+                    Promo Code:{" "}
+                    <span className="font-bold text-primary">LMTD20</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Redeem at next checkout page for 20% off.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1 text-xs font-medium">
+                  <Clock className="size-3 text-primary" />
+                  <div className="flex gap-1">
+                    <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                      {timeLeft.hours.toString().padStart(2, "0")}
+                    </span>
+                    :
+                    <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                      {timeLeft.minutes.toString().padStart(2, "0")}
+                    </span>
+                    :
+                    <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                      {timeLeft.seconds.toString().padStart(2, "0")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
-const ReviewsCarousel = () => {
+const HeadshotShowcase = () => {
   return (
-    <Carousel
-      opts={{
-        align: "start",
-        loop: true,
-      }}
-      className="w-full max-w-4xl"
-      plugins={[
-        Autoplay({
-          delay: 4000,
-        }),
-      ]}
-    >
-      <CarouselContent>
-        {REVIEWS_ARRAY.filter((review) => review.comment.length > 1).map(
-          (review) => (
+    <div className="flex flex-col justify-center h-full">
+      <div className="text-center mb-6">
+        <h3 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
+          Don't take our word for it
+        </h3>
+        <p className="text-muted-foreground text-sm mt-1">
+          Trust our customers
+        </p>
+      </div>
+
+      <Carousel
+        opts={{
+          align: "center",
+          loop: true,
+        }}
+        className="w-full"
+        plugins={[
+          Autoplay({
+            delay: 5000,
+          }),
+        ]}
+      >
+        <CarouselContent>
+          {REVIEWS_ARRAY.filter(
+            (review) => review.comment.length > 1 && review.avatar
+          ).map((review) => (
             <CarouselItem key={review.id}>
-              <Card className="bg-transparent border-none shadow-none">
-                <CardContent className="p-2">
-                  <div className="flex items-center justify-center">
-                    <StarRatings size="size-3" rating={review.rating} />
-                  </div>
-                  <p className="text-sm font-light text-accent-foreground text-center italic my-2">
-                    {review.comment}
-                  </p>
-                  <div className="flex items-center justify-center gap-2">
-                    <Avatar className="h-6 w-6 border border-background">
-                      <AvatarImage
-                        src={review.avatar}
-                        alt={`ai headshot generator review by ${review.name}}`}
-                      />
-                      <AvatarFallback>{review.name[0]}</AvatarFallback>
-                    </Avatar>
-                    {/* <span className="text-xs text-muted-foreground">
-                      {review.name}
-                      {review.position &&
-                        review.company &&
-                        `, ${review.position} at ${review.company}`}
-                      {review.position &&
-                        !review.company &&
-                        `, ${review.position}`}
-                      {!review.position &&
-                        !review.company &&
-                        ", Proshoot Customer"}
-                    </span> */}
+              <Card className="border border-border/40 shadow-sm bg-gradient-to-b from-background to-muted/20 backdrop-blur-sm rounded-lg overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20">
+                        <img
+                          src={review.avatar}
+                          alt={`${review.name}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <h4 className="font-semibold text-base">
+                            {review.name}
+                          </h4>
+                          {/* {review.position && (
+                            <p className="text-xs text-muted-foreground">
+                              {review.position}
+                              {review.company && ` at ${review.company}`}
+                            </p>
+                          )} */}
+                        </div>
+                        <StarRatings rating={review.rating} size="size-3" />
+                      </div>
+                      <p className="text-sm line-clamp-3">{review.comment}</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </CarouselItem>
-          )
-        )}
-      </CarouselContent>
-    </Carousel>
+          ))}
+        </CarouselContent>
+      </Carousel>
+
+      {/* Social proof badges */}
+      <div className="mt-6 space-y-3">
+        <div className="flex justify-center mt-4">
+          <Badge
+            variant="outline"
+            className="text-xs py-1 px-3 rounded-full border-primary/20 bg-primary/5 text-primary/80"
+          >
+            <ShieldCheck className="size-3 mr-2" />
+            Trusted by 7,000+ professionals worldwide
+          </Badge>
+        </div>
+        <div className="flex justify-center mt-4">
+          <Badge
+            variant="outline"
+            className="text-xs py-1 px-3 rounded-full border-primary/20 bg-primary/5 text-primary/80"
+          >
+            <Image className="size-3 mr-2" />
+            Generated 4,00,00,0+ Professional Headshots
+          </Badge>
+        </div>
+      </div>
+    </div>
   );
 };

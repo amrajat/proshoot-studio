@@ -19,14 +19,13 @@ const pricingPlans = [
   {
     name: "Basic",
     price: 29,
-    description: "Perfect for individuals starting their online presence",
+    description: "Start your online presence",
     features: [
       "40 AI-generated Headshots",
       "10 Unique Clothing Options",
       "10 Unique Backgrounds",
       "Ready within 2 Hours",
       "Money Back Guarantee",
-      "1 Studio Redo",
     ],
   },
   {
@@ -39,7 +38,6 @@ const pricingPlans = [
       "15 Unique Backgrounds",
       "Ready within 2 Hours",
       "Money Back Guarantee",
-      "1 Studio Redo",
     ],
   },
   {
@@ -52,7 +50,6 @@ const pricingPlans = [
       "20 Unique Backgrounds",
       "Ready within 2 Hours",
       "Money Back Guarantee",
-      "1 Studio Redo",
     ],
     popular: true,
   },
@@ -66,16 +63,12 @@ const pricingPlans = [
       "25 Unique Backgrounds",
       "Ready within 1 Hour",
       "Money Back Guarantee",
-      "1 Studio Redo",
     ],
   },
 ];
 
 export default function Pricing() {
-  const [isAnnual, setIsAnnual] = useState(false);
-
   return (
-    // <section className="py-16 px-4 bg-background">
     <section
       id="pricing"
       className="relative bg-gradient-to-b from-secondary/40 to-background py-16 sm:py-24 px-4 overflow-hidden"
@@ -90,37 +83,14 @@ export default function Pricing() {
           without any restrictions.
         </SectionParaHeading>
 
-        <div className="flex justify-center items-center space-x-4 mb-8">
-          <span
-            className={`text-sm font-medium ${
-              !isAnnual ? "text-primary" : "text-muted-foreground"
-            }`}
-          >
-            Individuals
-          </span>
-          <Switch checked={isAnnual} onCheckedChange={setIsAnnual} />
-          <span
-            className={`text-sm font-medium ${
-              isAnnual ? "text-primary" : "text-muted-foreground"
-            }`}
-          >
-            Teams{" "}
-            {/* {
-              <Badge variant="outline" className="ml-2">
-                {isAnnual && "minimum team of 10 people."}
-              </Badge>
-            } */}
-          </span>
-        </div>
-
         <div className="mt-6 md:mt-12 grid sm:grid-cols-2 lg:grid-cols-2 min-[1170px]:grid-cols-4 gap-3 md:gap-6 lg:gap-3 xl:gap-6 lg:items-center">
           {pricingPlans.map((plan) => (
             <Card
               key={plan.name}
-              className={`flex flex-col text-center rounded-xl transition-all duration-200 hover:scale-[1.02] ${
+              className={`flex flex-col text-center rounded-xl ${
                 plan.popular
                   ? "border-2 border-primary shadow-xl relative z-10 bg-card/50 backdrop-blur-sm"
-                  : "hover:border-primary/50"
+                  : "border-2 hover:border-primary/50"
               }`}
             >
               <CardHeader>
@@ -136,9 +106,9 @@ export default function Pricing() {
                   {plan.name}
                 </CardTitle>
                 <div className="font-bold text-3xl md:text-4xl xl:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
-                  ${isAnnual ? "$" : plan.price}
+                  ${plan.price}
                   <span className="text-sm font-normal text-muted-foreground">
-                    {isAnnual ? "/person" : "/session"}
+                    /person
                   </span>
                 </div>
                 <CardDescription className="text-muted-foreground/90 font-medium">
@@ -158,14 +128,11 @@ export default function Pricing() {
               <CardFooter>
                 <Link
                   href="/auth"
-                  className={`w-full transition-all duration-200 ${buttonVariants(
-                    {
-                      variant: plan.popular ? "default" : "default",
-                      className: "hover:scale-[1.02] hover:shadow-md",
-                    }
-                  )}`}
+                  className={`w-full ${buttonVariants({
+                    variant: plan.popular ? "default" : "default",
+                  })}`}
                 >
-                  {isAnnual ? "Contact Us" : "Get Started"}
+                  Generate Headshots
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </CardFooter>

@@ -151,7 +151,7 @@ export async function POST(request) {
   };
 
   // Call the function
-  await trackSale();
+  if (first_promoter_reference) await trackSale();
 
   return new Response("Done");
 }

@@ -28,7 +28,6 @@
     ".next/types/**/*.ts",
     "middleware.js",
     "components/homepage/HeadshotShowcase.jsx",
-    "app/api/uploadthing/core.js",
     "lib/utils.ts",
     "app/dashboard/flux/page.jsx",
     "components/auth/AuthForm.jsx",

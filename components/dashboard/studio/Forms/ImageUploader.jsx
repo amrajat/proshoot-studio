@@ -48,7 +48,8 @@ import { processImagesWithCaptions } from "@/lib/services/imageCaptioningService
 // Image validation rules
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_NUM_IMAGES = 20;
-const MIN_NUM_IMAGES = 10;
+const MIN_NUM_IMAGES = 1;
+const MIN_NUM_IMAGES_RECOMMENDED = 10;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 const ACCEPTED_IMAGE_TYPES = {
   "image/jpeg": [],
@@ -88,8 +89,6 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   const [isCompleted, setIsCompleted] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
   const [processing, setProcessing] = useState(false);
-  const [includeInvalidImages, setIncludeInvalidImages] = useState(false);
-  const [allowLessThanTen, setAllowLessThanTen] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -110,11 +109,14 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
 
   useEffect(() => {
     const validFiles = files.filter((file) => !file.error && file.accepted);
-    if (validFiles.length > 0 && validFiles.length < MIN_NUM_IMAGES) {
+    if (
+      validFiles.length > 0 &&
+      validFiles.length < MIN_NUM_IMAGES_RECOMMENDED
+    ) {
       setWarningMessage(
         `You are uploading only ${validFiles.length} high-resolution image${
           validFiles.length !== 1 ? "s" : ""
-        }. We recommend at-least 10 for best output.`
+        }. We recommend at-least ${MIN_NUM_IMAGES_RECOMMENDED} for best output.`
       );
     } else {
       setWarningMessage("");
@@ -137,16 +139,15 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     };
   }, [setValue, files]);
 
-  // Modify uploadFiles function with client-side upload
+  // Modify uploadFiles function to remove includeInvalidImages references
   const uploadFiles = useCallback(async () => {
     setUploading(true);
     setUploadProgress(0);
     setUploadError(null);
 
     try {
-      const validFiles = includeInvalidImages
-        ? files
-        : files.filter((file) => file.accepted);
+      // Use all files instead of filtering by includeInvalidImages
+      const validFiles = files.filter((file) => file.accepted);
 
       if (validFiles.length === 0) {
         throw new Error("No valid files to upload");
@@ -200,15 +201,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
         setUploading(false);
       }
     }
-  }, [
-    files,
-    setValue,
-    includeInvalidImages,
-    completedCrops,
-    retryCount,
-    isCompleted,
-    uploadError,
-  ]);
+  }, [files, setValue, completedCrops, retryCount, isCompleted, uploadError]);
 
   // Reset retry count when files change
   useEffect(() => {
@@ -320,7 +313,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           img.height < MIN_IMAGE_DIMENSION
         ) {
           accepted = false;
-          declineReason = `This image is low-resolution. Should be a minimum size of ${MIN_IMAGE_DIMENSION}×${MIN_IMAGE_DIMENSION} pixels.`;
+          declineReason = `This image is smaller than ${MIN_IMAGE_DIMENSION}×${MIN_IMAGE_DIMENSION} pixels.`;
         }
 
         const smartCropResult = await applySmartCrop(file);
@@ -595,21 +588,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
               </span>
             </span>
           </div>
-          <div className="absolute top-2 right-2 z-10">
-            <Button
-              variant="destructive"
-              size="icon"
-              className="h-6 w-6 rounded-full"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent triggering other click handlers
-                handleRemoveImage(index);
-              }}
-              aria-label="Remove image"
-              disabled={uploading || isCompleted}
-            >
-              <Trash className="h-3 w-3" />
-            </Button>
-          </div>
+
           <ReactCrop
             crop={completedCrops[index] || file.initialCrop}
             onChange={(c, pc) => handleCropComplete(c, pc, index)}
@@ -652,6 +631,19 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
             ) : (
               <CircleAlert className="h-4 w-4 text-destructive" />
             )}
+            <Button
+              variant="destructive"
+              size="icon"
+              className="h-6 w-6 rounded-md"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent triggering other click handlers
+                handleRemoveImage(index);
+              }}
+              aria-label="Remove image"
+              disabled={uploading || isCompleted}
+            >
+              <Trash className="h-3 w-3" />
+            </Button>
           </div>
         </div>
       </CardContent>
@@ -679,8 +671,8 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           </DialogHeader>
           <div className="py-4">
             <p>
-              Are you sure you want to remove this image? This action cannot be
-              undone.
+              Are you sure you want to remove this image? You can always add
+              more images before uploading.
             </p>
           </div>
           <DialogFooter className="flex justify-between sm:justify-between">
@@ -711,8 +703,8 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           </DialogHeader>
           <div className="py-4">
             <p>
-              Are you sure you want to remove all images? This action cannot be
-              undone.
+              Are you sure you want to remove all images? You can always add
+              more images before uploading.
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
               You will need to upload new images to continue.
@@ -826,18 +818,6 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                 </Masonry>
               )}
 
-              {(includeInvalidImages || allowLessThanTen) && (
-                <Alert variant="destructive">
-                  <AlertDescription>
-                    {includeInvalidImages
-                      ? "We recommend uploading all images of at least 1024×1024 resolution for the best results."
-                      : allowLessThanTen
-                      ? "You are uploading fewer than 10 images. "
-                      : ""}
-                  </AlertDescription>
-                </Alert>
-              )}
-
               {warningMessage && (
                 <Alert variant="destructive">
                   <AlertDescription>{warningMessage}</AlertDescription>
@@ -872,42 +852,6 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                 </div>
               )}
 
-              <div className="flex flex-col gap-1 items-start">
-                {files.length > 0 && files.length < 10 && !allowLessThanTen && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={() => setAllowLessThanTen(true)}
-                        variant="outline"
-                      >
-                        Upload Fewer Than 10 Images
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>We recommend at least 10 images for best results</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-                {files.some((file) => !file.accepted) &&
-                  !includeInvalidImages && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={() => setIncludeInvalidImages(true)}
-                          variant="outline"
-                        >
-                          Include Low Resolution Images
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          Low resolution images may result in lower quality
-                          output
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-              </div>
               {files.length > 0 && (
                 <div className="flex justify-between items-center">
                   <Button
@@ -915,9 +859,8 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                     disabled={
                       uploading ||
                       processing ||
-                      (!includeInvalidImages &&
-                        !allowLessThanTen &&
-                        files.filter((file) => file.accepted).length < 10)
+                      files.filter((file) => file.accepted).length <
+                        MIN_NUM_IMAGES
                     }
                   >
                     <Upload className="mr-2 h-4 w-4" />
@@ -926,7 +869,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                       : "Upload Images"}
                   </Button>
                   {!uploading && !isCompleted && (
-                    <Button variant="ghost" onClick={handleRemoveAll}>
+                    <Button variant="destructive" onClick={handleRemoveAll}>
                       <Trash className="mr-2 h-4 w-4" />
                       Remove All
                     </Button>

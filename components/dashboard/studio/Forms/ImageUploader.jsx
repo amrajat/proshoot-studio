@@ -35,6 +35,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogClose,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { processImagesWithCaptions } from "@/lib/services/imageCaptioningService";
 
@@ -655,12 +656,12 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           <DialogHeader>
             <DialogTitle>Remove Image</DialogTitle>
           </DialogHeader>
-          <div className="text-sm">
+          <DialogDescription className="text-sm">
             <p>
               Are you sure you want to remove this image? You can always add
               more images before uploading.
             </p>
-          </div>
+          </DialogDescription>
           <DialogFooter className="flex justify-between sm:justify-between">
             <DialogClose asChild>
               <Button type="button" variant="outline">
@@ -684,7 +685,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           <DialogHeader>
             <DialogTitle>Remove All Images</DialogTitle>
           </DialogHeader>
-          <div className="text-sm">
+          <DialogDescription className="text-sm">
             <p>
               Are you sure you want to remove all images? You can always add
               more images before uploading.
@@ -692,7 +693,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
             <p className="mt-2 text-sm text-muted-foreground">
               You will need to upload new images to continue.
             </p>
-          </div>
+          </DialogDescription>
           <DialogFooter className="flex justify-between sm:justify-between">
             <DialogClose asChild>
               <Button type="button" variant="outline">

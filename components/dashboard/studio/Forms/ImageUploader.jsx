@@ -12,6 +12,7 @@ import {
   CircleAlert,
   Move,
   RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import SmartCrop from "smartcrop";
 import ReactCrop from "react-image-crop";
@@ -30,7 +31,6 @@ import {
 } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
 
-import createSupabaseBrowserClient from "@/lib/supabase/BrowserClient";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
 import Loader from "@/components/Loader";
 import Heading from "@/components/shared/heading";
@@ -41,10 +41,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { processImagesWithCaptions } from "@/lib/services/imageCaptioningService";
-
-const supabase = createSupabaseBrowserClient();
 
 // Image validation rules
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
@@ -98,6 +97,9 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [completedCrops, setCompletedCrops] = useState({});
   const fileInputRef = useRef(null);
+  const [imageToRemove, setImageToRemove] = useState(null);
+  const [showRemoveDialog, setShowRemoveDialog] = useState(false);
+  const [showRemoveAllDialog, setShowRemoveAllDialog] = useState(false);
 
   // Add breakpoint columns for masonry
   const breakpointColumnsObj = {
@@ -123,14 +125,17 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   useEffect(() => {
     return () => {
       // Cleanup function that runs when component unmounts
-      setFiles([]);
-      setIsCompleted(false);
-      setUploading(false);
-      setProcessing(false);
-      setWarningMessage("");
+      files.forEach((file) => {
+        if (file.preview) {
+          URL.revokeObjectURL(file.preview);
+        }
+      });
+
+      // Only set the form value to empty, don't update component state
+      // as this can cause infinite loops during unmounting
       setValue("images", ""); // Reset the form value
     };
-  }, [setValue]);
+  }, [setValue, files]);
 
   // Modify uploadFiles function with client-side upload
   const uploadFiles = useCallback(async () => {
@@ -353,54 +358,82 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     });
   };
 
-  const onDrop = useCallback(async (acceptedFiles, rejectedFiles) => {
-    // Clear any previous errors
-    setUploadError(null);
+  const onDrop = useCallback(
+    async (acceptedFiles, rejectedFiles) => {
+      // Clear any previous errors
+      setUploadError(null);
 
-    if (acceptedFiles.length === 0 && rejectedFiles.length > 0) {
-      let errorMessage = "Some files couldn't be accepted:";
+      if (acceptedFiles.length === 0 && rejectedFiles.length > 0) {
+        let errorMessage = "Some files couldn't be accepted:";
 
-      rejectedFiles.forEach((file) => {
-        if (file.file.size > MAX_FILE_SIZE) {
-          errorMessage += `\n- ${file.file.name} is too large (max: 20MB)`;
-        } else if (!ALLOWED_IMAGE_TYPES.includes(file.file.type)) {
-          errorMessage += `\n- ${file.file.name} is not a JPG or PNG`;
-        } else {
-          errorMessage += `\n- ${file.file.name} couldn't be processed`;
-        }
-      });
-
-      setWarningMessage(errorMessage);
-      return;
-    }
-
-    setUploading(true);
-    setProcessing(true);
-
-    try {
-      // Process files in batches to prevent browser from freezing
-      const BATCH_SIZE = 5;
-      let processedFiles = [];
-
-      for (let i = 0; i < acceptedFiles.length; i += BATCH_SIZE) {
-        const batch = acceptedFiles.slice(i, i + BATCH_SIZE);
-        const batchResults = await Promise.all(batch.map(processImage));
-        processedFiles = [...processedFiles, ...batchResults];
-
-        // Update files after each batch to show progress
-        setFiles((prevFiles) => {
-          const newFiles = [...prevFiles, ...batchResults];
-          return newFiles.slice(0, MAX_NUM_IMAGES);
+        rejectedFiles.forEach((file) => {
+          if (file.file.size > MAX_FILE_SIZE) {
+            errorMessage += `\n- ${file.file.name} is too large (max: 20MB)`;
+          } else if (!ALLOWED_IMAGE_TYPES.includes(file.file.type)) {
+            errorMessage += `\n- ${file.file.name} is not a JPG or PNG`;
+          } else {
+            errorMessage += `\n- ${file.file.name} couldn't be processed`;
+          }
         });
+
+        setWarningMessage(errorMessage);
+        return;
       }
-    } catch (error) {
-      console.error("File processing error:", error);
-      setWarningMessage("Error processing images: " + error.message);
-    } finally {
-      setProcessing(false);
-      setUploading(false);
-    }
-  }, []);
+
+      setUploading(true);
+      setProcessing(true);
+
+      try {
+        // Process files in batches to prevent browser from freezing
+        const BATCH_SIZE = 5;
+        let processedFiles = [];
+        let newFiles = [...files]; // Start with current files
+
+        for (let i = 0; i < acceptedFiles.length; i += BATCH_SIZE) {
+          const batch = acceptedFiles.slice(i, i + BATCH_SIZE);
+          const batchResults = await Promise.all(batch.map(processImage));
+          processedFiles = [...processedFiles, ...batchResults];
+
+          // Calculate how many new files we can add
+          const availableSlots = MAX_NUM_IMAGES - newFiles.length;
+
+          if (availableSlots <= 0) {
+            // We're already at max, don't add any new files
+            setWarningMessage(
+              `Maximum of ${MAX_NUM_IMAGES} images reached. Some files were not added.`
+            );
+            break;
+          }
+
+          // Only add as many new files as we have slots for
+          const filesToAdd = batchResults.slice(0, availableSlots);
+
+          if (filesToAdd.length < batchResults.length) {
+            setWarningMessage(
+              `Maximum of ${MAX_NUM_IMAGES} images reached. Some files were not added.`
+            );
+          }
+
+          newFiles = [...newFiles, ...filesToAdd];
+
+          // If we've reached the maximum, stop processing
+          if (newFiles.length >= MAX_NUM_IMAGES) {
+            break;
+          }
+        }
+
+        // Update files state once at the end instead of in each iteration
+        setFiles(newFiles);
+      } catch (error) {
+        console.error("File processing error:", error);
+        setWarningMessage("Error processing images: " + error.message);
+      } finally {
+        setProcessing(false);
+        setUploading(false);
+      }
+    },
+    [files]
+  );
 
   const { getRootProps, getInputProps, open } = useDropzone({
     onDrop,
@@ -421,43 +454,106 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     [onDrop]
   );
 
-  const removeFile = useCallback((index) => {
-    setFiles((prevFiles) => {
-      // Make sure to revoke the object URL to prevent memory leaks
-      URL.revokeObjectURL(prevFiles[index].preview);
-
-      // Remove the crop data for this file
-      setCompletedCrops((prev) => {
-        const newCrops = { ...prev };
-        delete newCrops[index];
-
-        // Reindex the remaining crops
-        const reindexedCrops = {};
-        let newIndex = 0;
-
-        prevFiles.forEach((_, i) => {
-          if (i !== index && newCrops[i]) {
-            reindexedCrops[newIndex] = newCrops[i];
-            newIndex++;
-          }
-        });
-
-        return reindexedCrops;
-      });
-
-      return prevFiles.filter((_, i) => i !== index);
-    });
+  // Function to handle remove all with confirmation
+  const handleRemoveAll = useCallback(() => {
+    setShowRemoveAllDialog(true);
   }, []);
 
-  const removeAllFiles = useCallback(() => {
+  // Add a removeFile function to remove individual images
+  const removeFile = useCallback(
+    (index) => {
+      // Make a copy of the current files
+      const prevFiles = [...files];
+
+      // Make sure to revoke the object URL to prevent memory leaks
+      if (prevFiles[index] && prevFiles[index].preview) {
+        URL.revokeObjectURL(prevFiles[index].preview);
+      }
+
+      // Create a new array without the removed file
+      const newFiles = prevFiles.filter((_, i) => i !== index);
+
+      // Create new previews for files whose indices changed
+      const updatedFiles = newFiles.map((file, newIndex) => {
+        // If this file's index changed, we need to recreate its preview
+        if (newIndex >= index) {
+          // Create a new preview URL for this file
+          const newPreview = URL.createObjectURL(file.file);
+
+          // Revoke the old preview URL to prevent memory leaks
+          if (file.preview) {
+            URL.revokeObjectURL(file.preview);
+          }
+
+          // Return a new file object with the updated preview
+          return {
+            ...file,
+            preview: newPreview,
+          };
+        }
+
+        // If this file's index didn't change, return it as is
+        return file;
+      });
+
+      // Update the files state
+      setFiles(updatedFiles);
+
+      // Update the crop data
+      const newCrops = { ...completedCrops };
+      delete newCrops[index];
+
+      // Reindex the crops based on the new file indices
+      const reindexedCrops = {};
+
+      updatedFiles.forEach((file, newIndex) => {
+        const oldIndex = newIndex >= index ? newIndex + 1 : newIndex;
+        if (completedCrops[oldIndex]) {
+          reindexedCrops[newIndex] = completedCrops[oldIndex];
+        }
+      });
+
+      // Update the completedCrops state
+      setCompletedCrops(reindexedCrops);
+    },
+    [files, completedCrops]
+  );
+
+  // Function to confirm remove all
+  const confirmRemoveAll = useCallback(() => {
+    // Clean up all object URLs first
     files.forEach((file) => {
       if (file.preview) {
         URL.revokeObjectURL(file.preview);
       }
     });
+
+    // Clear all files and crops in a single batch update
     setFiles([]);
     setCompletedCrops({});
+
+    // Close the dialog
+    setShowRemoveAllDialog(false);
   }, [files]);
+
+  // Function to handle image removal with confirmation
+  const handleRemoveImage = useCallback((index) => {
+    // Only set the index to remove, don't perform any state updates yet
+    setImageToRemove(index);
+    setShowRemoveDialog(true);
+  }, []);
+
+  // Function to confirm image removal
+  const confirmRemoveImage = useCallback(() => {
+    if (imageToRemove !== null) {
+      // Only remove the file if we have a valid index
+      removeFile(imageToRemove);
+      // Reset the imageToRemove state
+      setImageToRemove(null);
+    }
+    // Close the dialog
+    setShowRemoveDialog(false);
+  }, [imageToRemove, removeFile]);
 
   // Modify the handleCropComplete function to normalize crop data
   const handleCropComplete = (crop, percentCrop, index) => {
@@ -480,7 +576,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     }));
   };
 
-  // Modify the file card rendering to include cropping UI
+  // Update the renderFileCard function to include the remove button
   const renderFileCard = (file, index) => (
     <Card
       key={index}
@@ -499,6 +595,21 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
               </span>
             </span>
           </div>
+          <div className="absolute top-2 right-2 z-10">
+            <Button
+              variant="destructive"
+              size="icon"
+              className="h-6 w-6 rounded-full"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent triggering other click handlers
+                handleRemoveImage(index);
+              }}
+              aria-label="Remove image"
+              disabled={uploading || isCompleted}
+            >
+              <Trash className="h-3 w-3" />
+            </Button>
+          </div>
           <ReactCrop
             crop={completedCrops[index] || file.initialCrop}
             onChange={(c, pc) => handleCropComplete(c, pc, index)}
@@ -515,7 +626,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
               alt={`Preview ${index + 1}`}
               width={400}
               height={400}
-              className="w-full h-full object-cover"
+              className="w-full h-auto object-cover"
               onClick={() => setSelectedImageIndex(index)}
               unoptimized={true}
             />
@@ -541,33 +652,11 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
             ) : (
               <CircleAlert className="h-4 w-4 text-destructive" />
             )}
-            {!uploading && !isCompleted && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => removeFile(index)}
-                aria-label="Remove image"
-              >
-                <Trash className="h-4 w-4 text-destructive" />
-              </Button>
-            )}
           </div>
         </div>
       </CardContent>
     </Card>
   );
-
-  // Add cleanup in useEffect
-  useEffect(() => {
-    return () => {
-      // Cleanup URLs when component unmounts
-      files.forEach((file) => {
-        if (file.preview) {
-          URL.revokeObjectURL(file.preview);
-        }
-      });
-    };
-  }, [files]);
 
   // Retry upload function
   const handleRetryUpload = () => {
@@ -579,6 +668,73 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   // Removed loadingModels check since we no longer use face-api
   return (
     <TooltipProvider>
+      {/* Confirmation dialog for removing an image */}
+      <Dialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Remove Image
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>
+              Are you sure you want to remove this image? This action cannot be
+              undone.
+            </p>
+          </div>
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={confirmRemoveImage}
+            >
+              Remove
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation dialog for removing all images */}
+      <Dialog open={showRemoveAllDialog} onOpenChange={setShowRemoveAllDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Remove All Images
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>
+              Are you sure you want to remove all images? This action cannot be
+              undone.
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              You will need to upload new images to continue.
+            </p>
+          </div>
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={confirmRemoveAll}
+            >
+              Remove All
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {isSubmitting || studioMessage ? (
         studioMessage ? (
           <Alert variant="destructive">
@@ -770,7 +926,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                       : "Upload Images"}
                   </Button>
                   {!uploading && !isCompleted && (
-                    <Button variant="ghost" onClick={removeAllFiles}>
+                    <Button variant="ghost" onClick={handleRemoveAll}>
                       <Trash className="mr-2 h-4 w-4" />
                       Remove All
                     </Button>

@@ -1,18 +1,16 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import {
   Upload,
-  CheckCircle,
+  CircleCheck,
   ImageIcon,
   Trash,
   CircleAlert,
   Move,
   RefreshCw,
-  AlertTriangle,
 } from "lucide-react";
 import SmartCrop from "smartcrop";
 import ReactCrop from "react-image-crop";
@@ -23,12 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+
 import { Progress } from "@/components/ui/progress";
 
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
@@ -48,7 +41,7 @@ import { processImagesWithCaptions } from "@/lib/services/imageCaptioningService
 // Image validation rules
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_NUM_IMAGES = 20;
-const MIN_NUM_IMAGES = 1;
+const MIN_NUM_IMAGES = 3;
 const MIN_NUM_IMAGES_RECOMMENDED = 10;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 const ACCEPTED_IMAGE_TYPES = {
@@ -573,7 +566,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   const renderFileCard = (file, index) => (
     <Card
       key={index}
-      className={`mb-4 ${
+      className={`mb-4 rounded-md ${
         file.accepted ? "border-success" : "border-destructive"
       }`}
     >
@@ -595,8 +588,8 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
             onComplete={(c, pc) => handleCropComplete(c, pc, index)}
             aspect={CROP_ASPECT}
             className="max-w-full h-auto"
-            minWidth={100} // Minimum width in pixels
-            minHeight={100} // Minimum height in pixels
+            minWidth={128} // Minimum width in pixels
+            minHeight={128} // Minimum height in pixels
             keepSelection={true}
             ruleOfThirds={true}
           >
@@ -627,23 +620,19 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           </div>
           <div className="flex items-center space-x-2">
             {file.accepted ? (
-              <CheckCircle className="h-4 w-4 text-success" />
+              <CircleCheck className="h-4 w-4 text-success" />
             ) : (
               <CircleAlert className="h-4 w-4 text-destructive" />
             )}
-            <Button
-              variant="destructive"
-              size="icon"
-              className="h-6 w-6 rounded-md"
+            <Trash
+              className="h-4 w-4 text-destructive cursor-pointer hover:text-destructive/80"
               onClick={(e) => {
                 e.stopPropagation(); // Prevent triggering other click handlers
                 handleRemoveImage(index);
               }}
               aria-label="Remove image"
               disabled={uploading || isCompleted}
-            >
-              <Trash className="h-3 w-3" />
-            </Button>
+            />
           </div>
         </div>
       </CardContent>
@@ -659,17 +648,14 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
 
   // Removed loadingModels check since we no longer use face-api
   return (
-    <TooltipProvider>
+    <>
       {/* Confirmation dialog for removing an image */}
       <Dialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              Remove Image
-            </DialogTitle>
+            <DialogTitle>Remove Image</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
+          <div className="text-sm">
             <p>
               Are you sure you want to remove this image? You can always add
               more images before uploading.
@@ -696,12 +682,9 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
       <Dialog open={showRemoveAllDialog} onOpenChange={setShowRemoveAllDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              Remove All Images
-            </DialogTitle>
+            <DialogTitle>Remove All Images</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
+          <div className="text-sm">
             <p>
               Are you sure you want to remove all images? You can always add
               more images before uploading.
@@ -760,12 +743,20 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                 Show Image Guidelines
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-7xl overflow-x-auto max-h-screen mt-2 border-none">
-              <DialogHeader>
-                <DialogTitle>Guidelines</DialogTitle>
+            <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-6xl h-[90vh] p-4 sm:p-6 overflow-hidden">
+              <DialogHeader className="mb-2 sm:mb-4">
+                <DialogTitle className="text-xl sm:text-2xl">
+                  Image Upload Guidelines
+                </DialogTitle>
               </DialogHeader>
-              <ImageUploadingGuideLines />
-              <DialogFooter></DialogFooter>
+              <div className="overflow-y-auto pr-2 -mr-2 h-full pb-12">
+                <ImageUploadingGuideLines />
+              </div>
+              <DialogFooter className="mt-4 sm:mt-6">
+                <DialogClose asChild>
+                  <Button variant="destructive">Close</Button>
+                </DialogClose>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
           {!isCompleted ? (
@@ -853,21 +844,27 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
               )}
 
               {files.length > 0 && (
-                <div className="flex justify-between items-center">
-                  <Button
-                    onClick={uploadFiles}
-                    disabled={
-                      uploading ||
-                      processing ||
-                      files.filter((file) => file.accepted).length <
-                        MIN_NUM_IMAGES
-                    }
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    {uploading
-                      ? `Uploading... ${uploadProgress}%`
-                      : "Upload Images"}
-                  </Button>
+                <div className="flex justify-between items-start">
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      onClick={uploadFiles}
+                      disabled={
+                        uploading ||
+                        processing ||
+                        files.filter((file) => file.accepted).length <
+                          MIN_NUM_IMAGES
+                      }
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      {uploading
+                        ? `Uploading... ${uploadProgress}%`
+                        : "Upload Images"}
+                    </Button>
+                    <span className="text-xs text-muted-foreground">
+                      You will need at least {MIN_NUM_IMAGES} hi-res images to
+                      continue.
+                    </span>
+                  </div>
                   {!uploading && !isCompleted && (
                     <Button variant="destructive" onClick={handleRemoveAll}>
                       <Trash className="mr-2 h-4 w-4" />
@@ -894,7 +891,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           )}
         </div>
       )}
-    </TooltipProvider>
+    </>
   );
 }
 

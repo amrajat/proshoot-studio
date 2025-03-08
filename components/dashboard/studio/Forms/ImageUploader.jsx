@@ -714,7 +714,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
       {isSubmitting || studioMessage ? (
         studioMessage ? (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>Message</AlertTitle>
             <AlertDescription>{studioMessage}</AlertDescription>
           </Alert>
         ) : (

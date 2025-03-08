@@ -225,7 +225,7 @@ export default function BuyStudio() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row w-full max-w-7xl mx-auto gap-6 md:gap-8 py-0 md:py-0 px-4 sm:px-6 lg:px-0">
+    <div className="flex flex-col lg:flex-row w-full max-w-7xl mx-auto gap-6 md:gap-8 py-0 md:py-0 px-1 sm:px-6 lg:px-0">
       {/* Left Side - Checkout Form */}
       <div className="w-full lg:w-1/2 lg:self-center">
         <Card className="border border-border/40 shadow-sm bg-gradient-to-b from-background to-muted/20 backdrop-blur-sm rounded-lg overflow-hidden">
@@ -326,7 +326,7 @@ export default function BuyStudio() {
                 <Label className="text-sm font-medium flex gap-1 items-start flex-col">
                   <span>Quantity</span>
                   <span className="text-xs font-normal text-muted-foreground">
-                    each unite generates headshots for one person.
+                    How many people?
                   </span>
                 </Label>
                 <div className="flex items-center space-x-2">
@@ -421,14 +421,10 @@ export default function BuyStudio() {
 
             <div className="mt-3 space-y-1 text-xs text-muted-foreground">
               <p className="flex items-center justify-center">
-                After payment, you'll be redirected to create your headshots.
+                Next, you'll be redirected to create your headshots.
               </p>
               <p className="flex items-center justify-center">
-                You can use
-                <span className="font-bold text-primary">
-                  &nbsp;LMTD20&nbsp;
-                </span>
-                promo code at your next checkout.
+                Use LMTD20 promo at your next page.
               </p>
             </div>
           </CardContent>
@@ -452,7 +448,7 @@ export default function BuyStudio() {
             <div className="absolute -bottom-6 -left-6 h-12 w-12 rounded-full bg-primary/20 blur-xl"></div>
 
             <div className="relative z-10">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start flex-col justify-center">
                 <div className="flex items-center gap-2">
                   <h4 className="font-bold text-sm text-destructive animate-pulse">
                     Limited Time Offer!
@@ -464,14 +460,14 @@ export default function BuyStudio() {
                 </div>
               </div>
 
-              <div className="mt-2 flex items-center justify-between">
+              <div className="mt-2 flex items-start justify-between">
                 <div className="flex flex-col">
                   <p className="text-sm font-medium">
                     Promo Code:{" "}
                     <span className="font-bold text-primary">LMTD20</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Redeem at next checkout page for 20% off.
+                    Redeem at next page for 20% off.
                   </p>
                 </div>
 

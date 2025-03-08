@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import BuyStudio from "../buy/page";
 import Link from "next/link";
 import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary";
+import * as Sentry from "@sentry/nextjs";
 
 const FileUploader = ({
   register,
@@ -212,36 +213,76 @@ export default function StudioCreate() {
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
-      const sanitizedData = formSchema.parse(data);
-      sanitizedData.glasses = sanitizedData.glasses === "Yes";
+
+      // Validate the form data
+      let sanitizedData;
+      try {
+        sanitizedData = formSchema.parse(data);
+        sanitizedData.glasses = sanitizedData.glasses === "Yes";
+      } catch (error) {
+        console.error("Form validation error:", error);
+        setStudioMessage("Please check all required fields");
+        setIsSubmitting(false);
+        return;
+      }
 
       const isValid = await trigger();
       if (!isValid) {
         setStudioMessage("Please check all required fields");
+        setIsSubmitting(false);
         return;
       }
 
-      const response = await fetch("/dashboard/studio/create/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(sanitizedData),
-      });
+      // Submit the form with error handling
+      try {
+        const response = await fetch("/dashboard/studio/create/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(sanitizedData),
+        });
 
-      if (!response.ok) {
-        throw new Error(await response.text());
+        if (!response.ok) {
+          // Try to parse the error message from the response
+          const errorData = await response.json().catch(() => ({}));
+
+          if (response.status === 402) {
+            setStudioMessage(
+              "You don't have enough credits. Please purchase more credits to continue."
+            );
+            setIsSubmitting(false);
+            return;
+          } else if (response.status === 401) {
+            setStudioMessage("Your session has expired. Please log in again.");
+            setIsSubmitting(false);
+            return;
+          }
+
+          throw new Error(
+            errorData.message || `Server error: ${response.status}`
+          );
+        }
+
+        const result = await response.json();
+
+        // Clear form data from local storage
+        localStorage.removeItem("currentFormStep");
+        localStorage.removeItem("formValues");
+
+        setStudioMessage(result.message || "Studio created successfully!");
+        router.push("/dashboard/studio/" + result.studioId);
+      } catch (error) {
+        console.error("API request error:", error);
+        Sentry.captureException(error);
+        setStudioMessage(
+          "We couldn't create your studio. Please try again or contact our support team."
+        );
+        setIsSubmitting(false);
       }
-
-      const result = await response.json();
-
-      localStorage.removeItem("currentFormStep");
-      localStorage.removeItem("formValues");
-
-      setStudioMessage(result.message);
-      router.push("/dashboard/studio/" + result.studioId);
     } catch (error) {
       console.error("Submission error:", error);
+      Sentry.captureException(error);
       setStudioMessage(
         error instanceof z.ZodError
           ? "Please check all form fields"

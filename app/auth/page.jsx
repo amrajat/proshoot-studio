@@ -33,11 +33,11 @@ export default function SignInPage() {
                 </div>
                 {/* Form */}
                 <AuthForm lastSignedInMethod={lastSignedInMethod} />
-                <p className="block text-xs mt-1 text-center text-muted-foreground">
+                {/* <p className="block text-xs mt-1 text-center text-muted-foreground">
                   You don't need to create account/password here. We use modern
                   authentication which allows you to access your account with
                   your existing social accounts or passcode based email login.
-                </p>
+                </p> */}
                 {/* End Form */}
               </div>
             </div>

@@ -29,12 +29,12 @@ async function ViewStudio({ params }) {
   if (!images) {
     return (
       <CoverPage
-        title="Creating Headshots..."
+        title="Generating Headshots..."
         buttonLink="/contact"
         buttonText="Contact Support"
       >
-        Please wait! Your ai headshots are being created, if it takes more than
-        2 hours, please contact support.
+        Please wait! Your AI headshots are being generated, if it takes more
+        than 2 hours, please contact support.
       </CoverPage>
     );
   }

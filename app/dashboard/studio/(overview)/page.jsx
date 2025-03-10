@@ -55,7 +55,7 @@ async function StudioContent() {
 
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <Card className="group rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-border/50 h-full flex flex-col overflow-hidden">
+        <Card className="group shadow-none rounded-lg transition-all duration-300 border border-border/50 h-full flex flex-col overflow-hidden">
           <CardHeader className="relative aspect-[4/5] p-0 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-primary/20 group-hover:opacity-80 transition-opacity duration-300 z-10" />
             {/* <Image
@@ -83,7 +83,7 @@ async function StudioContent() {
               Generate Headshots
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Upload your images and generate professional AI headshots.
+              Upload your images and generate.
             </p>
           </CardContent>
           <CardFooter className="p-4 pt-0">

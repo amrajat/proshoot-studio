@@ -50,8 +50,9 @@ async function ViewStudio({ params }) {
             Please wait! Your AI headshots are being generated.
           </p>
           <p className="text-sm text-muted-foreground">
-            This process typically takes 30-60 minutes. If it takes more than 2
-            hours, please contact our support team for assistance.
+            This process usually takes 30 to 60 minutes. You will get an email
+            when it is complete. If it takes longer, please contact our support
+            team for assistance.
           </p>
         </div>
       </CoverPage>
@@ -69,10 +70,6 @@ async function ViewStudio({ params }) {
                 watermarks.
               </li>
               <li>
-                Clicking the <strong>Preview</strong> button will open the image
-                in a new window, still in a compressed format.
-              </li>
-              <li>
                 Clicking the <strong>Download</strong> button will provide the
                 image in full quality, and all watermarks will be automatically
                 removed from all images.
@@ -88,12 +85,20 @@ async function ViewStudio({ params }) {
       )}
 
       {alreadyDownloaded && (
-        <Alert className="mb-6 bg-muted/20 border-muted">
-          <InfoIcon className="h-4 w-4" />
-          <AlertDescription className="text-sm">
-            If you require headshots with custom outfits or backgrounds, feel
-            free to reach out. We'll do our best to generate them for you at no
-            additional cost.
+        <Alert className="mb-6 bg-primary/5 border-primary/20">
+          <AlertDescription className="text-sm mt-2">
+            <ul className="list-disc pl-5 space-y-1">
+              <li className="font-medium">
+                We’d love to feature your favorite headshot on our website as an
+                example of our quality. Let us know in chat if you're okay with
+                that! 😊
+              </li>
+              <li>
+                If you require headshots with custom outfits or backgrounds,
+                feel free to reach out to us via chat or email. We'll do our
+                best to generate them for you at no additional cost.
+              </li>
+            </ul>
           </AlertDescription>
         </Alert>
       )}

@@ -1,6 +1,7 @@
-import Link from "next/link";
+"use client";
 import { Button } from "@/components/ui/button";
 import Heading from "../shared/heading";
+import { MessageCircle } from "lucide-react";
 
 export default function CoverPage({ title, children, buttonText, buttonLink }) {
   return (
@@ -9,8 +10,18 @@ export default function CoverPage({ title, children, buttonText, buttonLink }) {
         {title}
       </Heading>
       <p className="text-xl text-muted-foreground">{children}</p>
-      <Button asChild size="lg">
+      {/* <Button asChild size="lg">
         <Link href={buttonLink}>{buttonText}</Link>
+      </Button> */}
+      <Button
+        variant="default"
+        size="lg"
+        onClick={() => {
+          if (window.Intercom) window.Intercom("showSpace", "messages");
+        }}
+      >
+        <MessageCircle />
+        Contact Support
       </Button>
     </div>
   );

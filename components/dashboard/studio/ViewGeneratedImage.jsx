@@ -84,13 +84,13 @@ function ViewGeneratedImage({
   };
 
   return (
-    <Card className="overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 rounded-lg border border-border/50 h-full flex flex-col">
+    <Card className="overflow-hidden shadow-none transition-all duration-300 rounded-lg border border-border/50 h-full flex flex-col">
       <CardContent className="p-0 relative flex-grow">
         <Badge
           variant="secondary"
-          className="absolute top-2 left-2 z-20 bg-background/80 backdrop-blur-sm font-medium"
+          className="absolute top-2 left-2 z-20 bg-background/80 backdrop-blur-sm"
         >
-          #{imageNumber}
+          {imageNumber}
         </Badge>
 
         {/* Loading Skeleton */}
@@ -149,9 +149,9 @@ function ViewGeneratedImage({
                     isHovering ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  <div className="bg-background/80 backdrop-blur-sm p-2 rounded-full">
-                    <ZoomIn className="h-8 w-8 text-primary" />
-                  </div>
+                  {/* <div className="bg-background/80 backdrop-blur-sm p-2 rounded-full"> */}
+                  <ZoomIn className="h-8 w-8 text-primary" />
+                  {/* </div> */}
                   <span className="absolute bottom-3 text-white text-sm font-medium bg-black/50 px-3 py-1 rounded-full">
                     Click to view enlarged.
                   </span>
@@ -162,25 +162,8 @@ function ViewGeneratedImage({
         )}
       </CardContent>
 
-      <CardFooter className="grid grid-cols-2 gap-2 p-3 bg-muted/5">
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          asChild
-          disabled={imageError || isLoading}
-        >
-          <a
-            href={image}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center"
-          >
-            <Eye className="mr-2 h-4 w-4" />
-            Preview
-          </a>
-        </Button>
-
+      {/* <CardFooter className="grid grid-cols-2 gap-2 p-3 bg-muted/5">  */}
+      <CardFooter className="p-0 bg-muted/5">
         {!alreadyDownloaded ? (
           <form
             className="w-full"
@@ -202,7 +185,7 @@ function ViewGeneratedImage({
             <Button
               type="submit"
               size="sm"
-              className="w-full"
+              className="rounded-none w-full"
               disabled={imageError || isLoading}
             >
               <Download className="mr-2 h-4 w-4" />
@@ -214,7 +197,7 @@ function ViewGeneratedImage({
             onClick={downloadImage}
             disabled={isDownloading || imageError || isLoading}
             size="sm"
-            className="w-full"
+            className="rounded-none w-full"
           >
             <Download className="mr-2 h-4 w-4" />
             {isDownloading ? "Downloading..." : "Download"}

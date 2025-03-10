@@ -364,7 +364,7 @@ export default function StudioCreate() {
       >
         <div className="mb-6">{renderStep(steps[currentStep])}</div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center flex-wrap gap-2">
           <Button
             className="disabled:opacity-50"
             type="button"
@@ -373,16 +373,6 @@ export default function StudioCreate() {
           >
             <ChevronLeft strokeWidth={2} />
             Previous
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleReset}
-            disabled={isSubmitting}
-          >
-            <RotateCcw />
-            Reset
           </Button>
 
           <Button
@@ -395,15 +385,26 @@ export default function StudioCreate() {
             <ChevronRight strokeWidth={2} />
           </Button>
         </div>
-        <p className="text-base mt-2 ">
-          If you're having issues uploading the images please{" "}
-          <Link
-            className="text-destructive underline"
-            href={"/dashboard/studio/create2"}
+        <div className="flex justify-between items-center flex-wrap gap-2 mt-2">
+          <p className="text-base mt-2">
+            Experiencing issues with image uploads? Please{" "}
+            <Link
+              className="text-destructive underline"
+              href={"/dashboard/studio/create2"}
+            >
+              click here.
+            </Link>
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleReset}
+            disabled={isSubmitting}
           >
-            click here.
-          </Link>
-        </p>
+            <RotateCcw className="text-destructive" />
+            Start Over
+          </Button>
+        </div>
       </ReactErrorBoundary>
     </form>
   );

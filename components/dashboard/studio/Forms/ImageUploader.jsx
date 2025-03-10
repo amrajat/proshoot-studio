@@ -50,7 +50,7 @@ const ACCEPTED_IMAGE_TYPES = {
   "image/jpg": [],
   "image/png": [],
 };
-const MIN_IMAGE_DIMENSION = 1024;
+const MIN_IMAGE_DIMENSION = 265;
 
 // Add these constants
 const CROP_DIMENSION = 1024;
@@ -728,10 +728,9 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           <Heading variant={"hero"}> Please upload your images.</Heading>
 
           <p className="text-muted-foreground">
-            By following these guidelines, you're setting yourself up for the
-            best possible outcome. Each photo you upload directly impacts the
-            final outcome, so take a moment to select your best shots that meet
-            our guidelines.{" "}
+            These guidelines aren’t strict rules—just tips to help you get the
+            best results! The closer you follow them, the better, but no
+            pressure.{" "}
             <span className="text-destructive">
               Click on "Show Image Guidelines" button to read about image
               uploading guidelines.
@@ -845,7 +844,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
               )}
 
               {files.length > 0 && (
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start flex-wrap gap-2">
                   <div className="flex flex-col gap-2">
                     <Button
                       onClick={uploadFiles}

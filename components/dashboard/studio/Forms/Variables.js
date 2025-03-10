@@ -127,7 +127,7 @@ export const HAIR_STYLES = [
     isRequired: true,
     placeholderText: null,
     helpText:
-      "Please make sure you provide text in the style of available options above..",
+      "Please make sure you provide text in the style of available options above and include word 'hair' at the end.",
     regexPattern: null,
     radioOptions: true,
     customOption: true,

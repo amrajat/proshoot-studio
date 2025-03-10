@@ -41,6 +41,7 @@ import { processImagesWithCaptions } from "@/lib/services/imageCaptioningService
 
 // Image validation rules
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const MAX_TOTAL_SIZE = 400 * 1024 * 1024; // 200MB total
 const MAX_NUM_IMAGES = 20;
 const MIN_NUM_IMAGES = 3;
 const MIN_NUM_IMAGES_RECOMMENDED = 8;
@@ -50,11 +51,44 @@ const ACCEPTED_IMAGE_TYPES = {
   "image/jpg": [],
   "image/png": [],
 };
-const MIN_IMAGE_DIMENSION = 1024;
+const MIN_IMAGE_DIMENSION = 512;
 
 // Add these constants
 const CROP_DIMENSION = 1024;
 const CROP_ASPECT = 1;
+
+// Add timeout configuration
+const TIMEOUTS = {
+  // Adjust these based on network conditions and device capabilities
+  IMAGE_LOAD: 30000, // 30 seconds for image loading
+  SMART_CROP: 5000, // 5 seconds for smart crop
+  PROCESSING: 30000, // 30 seconds for image processing
+  UPLOAD_RETRY_DELAY: 3000, // 3 seconds before retrying upload
+  UPLOAD_TOTAL: 120000, // 2 minutes for total upload time
+};
+
+// Add network detection to adjust timeouts
+const detectNetworkSpeed = () => {
+  // Use navigator.connection if available (modern browsers)
+  if (navigator.connection) {
+    const connection = navigator.connection;
+
+    // Adjust timeouts based on connection type/speed
+    if (connection.effectiveType === "4g") {
+      // Fast connection, use default timeouts
+      return 1;
+    } else if (connection.effectiveType === "3g") {
+      // Medium connection, increase timeouts by 50%
+      return 1.5;
+    } else {
+      // Slow connection, double timeouts
+      return 2;
+    }
+  }
+
+  // Default multiplier if connection info not available
+  return 1;
+};
 
 // Add this helper function to normalize crop coordinates
 const normalizeCropData = (crop, imageWidth, imageHeight) => {
@@ -78,21 +112,103 @@ const normalizeCropData = (crop, imageWidth, imageHeight) => {
 };
 
 function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
-  const [files, setFiles] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [warningMessage, setWarningMessage] = useState("");
-  const [processing, setProcessing] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadError, setUploadError] = useState(null);
-  const [retryCount, setRetryCount] = useState(0);
+  // Define reducer for related state management
+  const initialState = {
+    files: [],
+    uploading: false,
+    isCompleted: false,
+    warningMessage: "",
+    processing: false,
+    uploadProgress: 0,
+    uploadError: null,
+    retryCount: 0,
+    selectedImageIndex: null,
+    completedCrops: {},
+    imageToRemove: null,
+    showRemoveDialog: false,
+    showRemoveAllDialog: false,
+  };
 
-  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
-  const [completedCrops, setCompletedCrops] = useState({});
+  // Define reducer function to handle related state updates
+  const reducer = (state, action) => {
+    switch (action.type) {
+      case "SET_FILES":
+        return { ...state, files: action.payload };
+      case "SET_UPLOADING":
+        return { ...state, uploading: action.payload };
+      case "SET_COMPLETED":
+        return { ...state, isCompleted: action.payload };
+      case "SET_WARNING":
+        return { ...state, warningMessage: action.payload };
+      case "SET_PROCESSING":
+        return { ...state, processing: action.payload };
+      case "SET_UPLOAD_PROGRESS":
+        return { ...state, uploadProgress: action.payload };
+      case "SET_UPLOAD_ERROR":
+        return { ...state, uploadError: action.payload };
+      case "SET_RETRY_COUNT":
+        return { ...state, retryCount: action.payload };
+      case "INCREMENT_RETRY_COUNT":
+        return { ...state, retryCount: state.retryCount + 1 };
+      case "SET_SELECTED_IMAGE":
+        return { ...state, selectedImageIndex: action.payload };
+      case "SET_COMPLETED_CROPS":
+        return { ...state, completedCrops: action.payload };
+      case "UPDATE_CROP":
+        return {
+          ...state,
+          completedCrops: {
+            ...state.completedCrops,
+            [action.payload.index]: action.payload.crop,
+          },
+        };
+      case "REMOVE_CROP":
+        const newCrops = { ...state.completedCrops };
+        delete newCrops[action.payload];
+        return { ...state, completedCrops: newCrops };
+      case "SET_IMAGE_TO_REMOVE":
+        return { ...state, imageToRemove: action.payload };
+      case "SET_SHOW_REMOVE_DIALOG":
+        return { ...state, showRemoveDialog: action.payload };
+      case "SET_SHOW_REMOVE_ALL_DIALOG":
+        return { ...state, showRemoveAllDialog: action.payload };
+      case "RESET_UPLOAD_STATE":
+        return {
+          ...state,
+          uploading: false,
+          uploadProgress: 0,
+          uploadError: null,
+          retryCount: 0,
+        };
+      case "RESET_ALL":
+        return initialState;
+      default:
+        return state;
+    }
+  };
+
+  // Use reducer instead of multiple useState calls
+  const [state, dispatch] = React.useReducer(reducer, initialState);
+
+  // Destructure state for easier access
+  const {
+    files,
+    uploading,
+    isCompleted,
+    warningMessage,
+    processing,
+    uploadProgress,
+    uploadError,
+    retryCount,
+    selectedImageIndex,
+    completedCrops,
+    imageToRemove,
+    showRemoveDialog,
+    showRemoveAllDialog,
+  } = state;
+
+  const [networkFactor, setNetworkFactor] = useState(1);
   const fileInputRef = useRef(null);
-  const [imageToRemove, setImageToRemove] = useState(null);
-  const [showRemoveDialog, setShowRemoveDialog] = useState(false);
-  const [showRemoveAllDialog, setShowRemoveAllDialog] = useState(false);
 
   // Add breakpoint columns for masonry
   const breakpointColumnsObj = {
@@ -101,108 +217,86 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     700: 1,
   };
 
+  // Detect network speed on component mount and when online status changes
+  useEffect(() => {
+    const updateNetworkFactor = () => {
+      const factor = detectNetworkSpeed();
+      setNetworkFactor(factor);
+    };
+
+    // Initial detection
+    updateNetworkFactor();
+
+    // Update when online status changes
+    window.addEventListener("online", updateNetworkFactor);
+
+    return () => {
+      window.removeEventListener("online", updateNetworkFactor);
+    };
+  }, []);
+
+  // Update the useEffect for warning message
   useEffect(() => {
     const validFiles = files.filter((file) => !file.error && file.accepted);
     if (
       validFiles.length > 0 &&
       validFiles.length < MIN_NUM_IMAGES_RECOMMENDED
     ) {
-      setWarningMessage(
-        `You are uploading only ${validFiles.length} image${
+      dispatch({
+        type: "SET_WARNING",
+        payload: `You are uploading only ${
+          validFiles.length
+        } high-resolution image${
           validFiles.length !== 1 ? "s" : ""
-        }. We recommend at-least ${MIN_NUM_IMAGES_RECOMMENDED} for best results.`
-      );
+        }. We recommend at-least ${MIN_NUM_IMAGES_RECOMMENDED} for best output.`,
+      });
     } else {
-      setWarningMessage("");
+      dispatch({ type: "SET_WARNING", payload: "" });
     }
   }, [files]);
 
   // Add this effect to reset the component state when stepping back
   useEffect(() => {
+    // Cleanup function that runs when component unmounts
     return () => {
-      // Cleanup function that runs when component unmounts
-      files.forEach((file) => {
-        if (file.preview) {
-          URL.revokeObjectURL(file.preview);
-        }
-      });
+      // Clean up all object URLs to prevent memory leaks
+      cleanupObjectUrls();
 
       // Only set the form value to empty, don't update component state
       // as this can cause infinite loops during unmounting
       setValue("images", ""); // Reset the form value
     };
-  }, [setValue, files]);
+  }, [setValue]);
 
-  // Modify uploadFiles function to remove includeInvalidImages references
-  const uploadFiles = useCallback(async () => {
-    setUploading(true);
-    setUploadProgress(0);
-    setUploadError(null);
-
-    try {
-      // Use all files instead of filtering by includeInvalidImages
-      const validFiles = files.filter((file) => file.accepted);
-
-      if (validFiles.length === 0) {
-        throw new Error("No valid files to upload");
+  // Update the cleanup function
+  const cleanupObjectUrls = useCallback(() => {
+    files.forEach((file) => {
+      if (file.preview) {
+        URL.revokeObjectURL(file.preview);
       }
-
-      // Process images with captions and upload directly to Supabase
-      const { signedUrl, stats } = await processImagesWithCaptions(
-        validFiles,
-        completedCrops,
-        CROP_DIMENSION,
-        // Progress callback
-        (progress) => {
-          const { stage, percent } = progress;
-          let totalProgress = 0;
-
-          // Calculate overall progress based on stage
-          if (stage === "processing") {
-            totalProgress = percent * 0.4; // Processing is 40% of total
-          } else if (stage === "zipping") {
-            totalProgress = 40 + percent * 0.2; // Zipping is 20% of total
-          } else if (stage === "uploading") {
-            totalProgress = 60 + percent * 0.4; // Uploading is 40% of total
-          }
-
-          setUploadProgress(Math.round(totalProgress));
-        }
-      );
-
-      // Set the form value with the signed URL
-      setValue("images", signedUrl);
-      setUploadProgress(100);
-      setIsCompleted(true);
-    } catch (error) {
-      console.error("Upload error:", error);
-      setUploadError(error.message || "Upload failed. Please try again.");
-
-      // Auto-retry logic for certain errors
-      if (
-        retryCount < 2 &&
-        (error.message.includes("network") ||
-          error.message.includes("timeout") ||
-          error.message.includes("connection"))
-      ) {
-        setRetryCount((prev) => prev + 1);
-        setTimeout(() => {
-          uploadFiles();
-        }, 3000);
-      }
-    } finally {
-      if (!isCompleted && !uploadError) {
-        setUploading(false);
-      }
-    }
-  }, [files, setValue, completedCrops, retryCount, isCompleted, uploadError]);
-
-  // Reset retry count when files change
-  useEffect(() => {
-    setRetryCount(0);
+    });
   }, [files]);
 
-  // Modify createImagePromise for better image loading
+  // Add a centralized error handler function
+  const handleError = useCallback((error, context, fallback = null) => {
+    // Log the error with context
+    console.error(`Error in ${context}:`, error);
+
+    // Send to Sentry if available
+    if (window.Sentry) {
+      window.Sentry.captureException(error, {
+        tags: {
+          component: "ImageUploader",
+          context: context,
+        },
+      });
+    }
+
+    // Return fallback value if provided
+    return fallback;
+  }, []);
+
+  // Update the createImagePromise function with dynamic timeouts
   const createImagePromise = (src) => {
     return new Promise((resolve, reject) => {
       const img = new window.Image();
@@ -224,10 +318,10 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
       img.crossOrigin = "anonymous";
       img.src = src;
 
-      // Add timeout to prevent hanging
+      // Add timeout to prevent hanging with dynamic adjustment
       const timeout = setTimeout(() => {
         reject(new Error("Image loading timed out"));
-      }, 30000);
+      }, TIMEOUTS.IMAGE_LOAD * networkFactor);
 
       img.onload = () => {
         clearTimeout(timeout);
@@ -240,12 +334,16 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     });
   };
 
-  // Modify applySmartCrop for more accurate cropping with fallback
+  // Update the applySmartCrop function with dynamic timeouts
   const applySmartCrop = async (file) => {
     return new Promise(async (resolve, reject) => {
       try {
         const objectUrl = URL.createObjectURL(file);
-        const img = await createImagePromise(objectUrl);
+        const img = await createImagePromise(objectUrl).catch((error) => {
+          throw new Error(
+            `Failed to load image for smart crop: ${error.message}`
+          );
+        });
 
         // Implement a timeout for SmartCrop to prevent hanging
         const cropPromise = SmartCrop.crop(img, {
@@ -258,7 +356,10 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
         });
 
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error("Smart crop timed out")), 5000);
+          setTimeout(
+            () => reject(new Error("Smart crop timed out")),
+            TIMEOUTS.SMART_CROP * networkFactor
+          );
         });
 
         const result = await Promise.race([cropPromise, timeoutPromise]);
@@ -279,7 +380,9 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
         URL.revokeObjectURL(objectUrl);
         resolve(crop);
       } catch (error) {
-        console.error("Smart crop error:", error);
+        // Use standardized error handling
+        handleError(error, "applySmartCrop");
+
         // Fallback to center crop
         resolve({
           unit: "%",
@@ -292,12 +395,16 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     });
   };
 
-  // Define the processImage function with better error handling
+  // Update the processImage function with standardized error handling
   const processImage = async (file) => {
     return new Promise(async (resolve) => {
       try {
         const objectUrl = URL.createObjectURL(file);
-        const img = await createImagePromise(objectUrl);
+        const img = await createImagePromise(objectUrl).catch((error) => {
+          throw new Error(
+            `Failed to load image for processing: ${error.message}`
+          );
+        });
 
         let accepted = true;
         let declineReason = "";
@@ -307,7 +414,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           img.height < MIN_IMAGE_DIMENSION
         ) {
           accepted = true;
-          declineReason = `Smaller than ${MIN_IMAGE_DIMENSION}×${MIN_IMAGE_DIMENSION} pixels.`;
+          declineReason = `This image is smaller than ${MIN_IMAGE_DIMENSION}×${MIN_IMAGE_DIMENSION} pixels, but we will still use it, it may not be perfect.`;
         }
 
         const smartCropResult = await applySmartCrop(file);
@@ -324,7 +431,9 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           },
         });
       } catch (error) {
-        console.error("Process image error:", error);
+        // Use standardized error handling
+        handleError(error, "processImage");
+
         // Even if processing fails, we should return something to prevent the UI from breaking
         const objectUrl = URL.createObjectURL(file);
         resolve({
@@ -345,10 +454,40 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     });
   };
 
+  // Add a function to calculate total file size
+  const calculateTotalSize = useCallback((fileList) => {
+    return fileList.reduce((total, file) => total + file.file.size, 0);
+  }, []);
+
+  // Add validation for total file size
+  const validateTotalSize = useCallback(
+    (currentFiles, newFiles) => {
+      const currentSize = calculateTotalSize(currentFiles);
+      const newSize = calculateTotalSize(newFiles);
+      const totalSize = currentSize + newSize;
+
+      if (totalSize > MAX_TOTAL_SIZE) {
+        return {
+          valid: false,
+          message: `Total size of all images (${(
+            totalSize /
+            (1024 * 1024)
+          ).toFixed(2)} MB) exceeds the maximum allowed (${
+            MAX_TOTAL_SIZE / (1024 * 1024)
+          } MB).`,
+        };
+      }
+
+      return { valid: true };
+    },
+    [calculateTotalSize]
+  );
+
+  // Update the onDrop function to include total size validation
   const onDrop = useCallback(
     async (acceptedFiles, rejectedFiles) => {
       // Clear any previous errors
-      setUploadError(null);
+      dispatch({ type: "SET_UPLOAD_ERROR", payload: null });
 
       if (acceptedFiles.length === 0 && rejectedFiles.length > 0) {
         let errorMessage = "Some files couldn't be accepted:";
@@ -363,12 +502,21 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           }
         });
 
-        setWarningMessage(errorMessage);
+        dispatch({ type: "SET_WARNING", payload: errorMessage });
         return;
       }
 
-      setUploading(true);
-      setProcessing(true);
+      // Validate total size before processing
+      const filesToValidate = acceptedFiles.map((file) => ({ file }));
+      const sizeValidation = validateTotalSize(files, filesToValidate);
+
+      if (!sizeValidation.valid) {
+        dispatch({ type: "SET_WARNING", payload: sizeValidation.message });
+        return;
+      }
+
+      dispatch({ type: "SET_UPLOADING", payload: true });
+      dispatch({ type: "SET_PROCESSING", payload: true });
 
       try {
         // Process files in batches to prevent browser from freezing
@@ -386,9 +534,10 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
 
           if (availableSlots <= 0) {
             // We're already at max, don't add any new files
-            setWarningMessage(
-              `Maximum of ${MAX_NUM_IMAGES} images reached. Some files were not added.`
-            );
+            dispatch({
+              type: "SET_WARNING",
+              payload: `Maximum of ${MAX_NUM_IMAGES} images reached. Some files were not added.`,
+            });
             break;
           }
 
@@ -396,9 +545,10 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           const filesToAdd = batchResults.slice(0, availableSlots);
 
           if (filesToAdd.length < batchResults.length) {
-            setWarningMessage(
-              `Maximum of ${MAX_NUM_IMAGES} images reached. Some files were not added.`
-            );
+            dispatch({
+              type: "SET_WARNING",
+              payload: `Maximum of ${MAX_NUM_IMAGES} images reached. Some files were not added.`,
+            });
           }
 
           newFiles = [...newFiles, ...filesToAdd];
@@ -410,16 +560,20 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
         }
 
         // Update files state once at the end instead of in each iteration
-        setFiles(newFiles);
+        dispatch({ type: "SET_FILES", payload: newFiles });
       } catch (error) {
-        console.error("File processing error:", error);
-        setWarningMessage("Error processing images: " + error.message);
+        // Use standardized error handling
+        handleError(error, "onDrop");
+        dispatch({
+          type: "SET_WARNING",
+          payload: "Error processing images: " + error.message,
+        });
       } finally {
-        setProcessing(false);
-        setUploading(false);
+        dispatch({ type: "SET_PROCESSING", payload: false });
+        dispatch({ type: "SET_UPLOADING", payload: false });
       }
     },
-    [files]
+    [files, handleError, validateTotalSize]
   );
 
   const { getRootProps, getInputProps, open } = useDropzone({
@@ -441,12 +595,12 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     [onDrop]
   );
 
-  // Function to handle remove all with confirmation
+  // Update the handleRemoveAll function
   const handleRemoveAll = useCallback(() => {
-    setShowRemoveAllDialog(true);
+    dispatch({ type: "SET_SHOW_REMOVE_ALL_DIALOG", payload: true });
   }, []);
 
-  // Add a removeFile function to remove individual images
+  // Update the removeFile function
   const removeFile = useCallback(
     (index) => {
       // Make a copy of the current files
@@ -460,89 +614,66 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
       // Create a new array without the removed file
       const newFiles = prevFiles.filter((_, i) => i !== index);
 
-      // Create new previews for files whose indices changed
-      const updatedFiles = newFiles.map((file, newIndex) => {
-        // If this file's index changed, we need to recreate its preview
-        if (newIndex >= index) {
-          // Create a new preview URL for this file
-          const newPreview = URL.createObjectURL(file.file);
-
-          // Revoke the old preview URL to prevent memory leaks
-          if (file.preview) {
-            URL.revokeObjectURL(file.preview);
-          }
-
-          // Return a new file object with the updated preview
-          return {
-            ...file,
-            preview: newPreview,
-          };
-        }
-
-        // If this file's index didn't change, return it as is
-        return file;
-      });
-
       // Update the files state
-      setFiles(updatedFiles);
+      dispatch({ type: "SET_FILES", payload: newFiles });
 
-      // Update the crop data
-      const newCrops = { ...completedCrops };
-      delete newCrops[index];
+      // Create a new completedCrops object without the removed index
+      // and with all subsequent indices shifted down by 1
+      const newCompletedCrops = {};
 
-      // Reindex the crops based on the new file indices
-      const reindexedCrops = {};
+      // For each entry in the current completedCrops
+      Object.entries(completedCrops).forEach(([cropIndex, cropData]) => {
+        const numericIndex = parseInt(cropIndex, 10);
 
-      updatedFiles.forEach((file, newIndex) => {
-        const oldIndex = newIndex >= index ? newIndex + 1 : newIndex;
-        if (completedCrops[oldIndex]) {
-          reindexedCrops[newIndex] = completedCrops[oldIndex];
+        if (numericIndex < index) {
+          // Indices before the removed index stay the same
+          newCompletedCrops[numericIndex] = cropData;
+        } else if (numericIndex > index) {
+          // Indices after the removed index shift down by 1
+          newCompletedCrops[numericIndex - 1] = cropData;
         }
+        // The index that matches the removed file is excluded
       });
 
       // Update the completedCrops state
-      setCompletedCrops(reindexedCrops);
+      dispatch({ type: "SET_COMPLETED_CROPS", payload: newCompletedCrops });
     },
     [files, completedCrops]
   );
 
-  // Function to confirm remove all
+  // Update the confirmRemoveAll function
   const confirmRemoveAll = useCallback(() => {
     // Clean up all object URLs first
-    files.forEach((file) => {
-      if (file.preview) {
-        URL.revokeObjectURL(file.preview);
-      }
-    });
+    cleanupObjectUrls();
 
     // Clear all files and crops in a single batch update
-    setFiles([]);
-    setCompletedCrops({});
+    dispatch({ type: "SET_FILES", payload: [] });
+    dispatch({ type: "SET_COMPLETED_CROPS", payload: {} });
 
     // Close the dialog
-    setShowRemoveAllDialog(false);
-  }, [files]);
+    dispatch({ type: "SET_SHOW_REMOVE_ALL_DIALOG", payload: false });
+  }, [cleanupObjectUrls]);
 
-  // Function to handle image removal with confirmation
+  // Update the handleRemoveImage function
   const handleRemoveImage = useCallback((index) => {
     // Only set the index to remove, don't perform any state updates yet
-    setImageToRemove(index);
-    setShowRemoveDialog(true);
+    dispatch({ type: "SET_IMAGE_TO_REMOVE", payload: index });
+    dispatch({ type: "SET_SHOW_REMOVE_DIALOG", payload: true });
   }, []);
 
-  // Function to confirm image removal
+  // Update the confirmRemoveImage function
   const confirmRemoveImage = useCallback(() => {
     if (imageToRemove !== null) {
       // Only remove the file if we have a valid index
       removeFile(imageToRemove);
       // Reset the imageToRemove state
-      setImageToRemove(null);
+      dispatch({ type: "SET_IMAGE_TO_REMOVE", payload: null });
     }
     // Close the dialog
-    setShowRemoveDialog(false);
+    dispatch({ type: "SET_SHOW_REMOVE_DIALOG", payload: false });
   }, [imageToRemove, removeFile]);
 
-  // Modify the handleCropComplete function to normalize crop data
+  // Update the handleCropComplete function
   const handleCropComplete = (crop, percentCrop, index) => {
     if (!percentCrop) return;
 
@@ -557,13 +688,13 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
       dimensions.height
     );
 
-    setCompletedCrops((prev) => ({
-      ...prev,
-      [index]: normalizedCrop,
-    }));
+    dispatch({
+      type: "UPDATE_CROP",
+      payload: { index, crop: normalizedCrop },
+    });
   };
 
-  // Update the renderFileCard function to include the remove button
+  // Update the renderFileCard function to include accessibility features
   const renderFileCard = (file, index) => (
     <Card
       key={index}
@@ -585,27 +716,65 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
             </span>
           </div>
 
-          <ReactCrop
-            crop={completedCrops[index] || file.initialCrop}
-            onChange={(c, pc) => handleCropComplete(c, pc, index)}
-            onComplete={(c, pc) => handleCropComplete(c, pc, index)}
-            aspect={CROP_ASPECT}
-            className="max-w-full h-auto"
-            minWidth={128} // Minimum width in pixels
-            minHeight={128} // Minimum height in pixels
-            keepSelection={true}
-            ruleOfThirds={true}
+          <div
+            role="application"
+            aria-label="Image crop editor"
+            tabIndex="0"
+            onKeyDown={(e) => {
+              // Handle keyboard navigation for the crop area
+              const crop = completedCrops[index] || file.initialCrop;
+              const step = e.shiftKey ? 10 : 2; // Larger steps with shift key
+              let newCrop = { ...crop };
+
+              switch (e.key) {
+                case "ArrowLeft":
+                  newCrop.x = Math.max(0, crop.x - step);
+                  e.preventDefault();
+                  break;
+                case "ArrowRight":
+                  newCrop.x = Math.min(100 - crop.width, crop.x + step);
+                  e.preventDefault();
+                  break;
+                case "ArrowUp":
+                  newCrop.y = Math.max(0, crop.y - step);
+                  e.preventDefault();
+                  break;
+                case "ArrowDown":
+                  newCrop.y = Math.min(100 - crop.height, crop.y + step);
+                  e.preventDefault();
+                  break;
+                default:
+                  return; // Don't handle other keys
+              }
+
+              handleCropComplete(null, newCrop, index);
+            }}
           >
-            <Image
-              src={file.preview}
-              alt={`Preview ${index + 1}`}
-              width={400}
-              height={400}
-              className="w-full h-auto object-cover"
-              onClick={() => setSelectedImageIndex(index)}
-              unoptimized={true}
-            />
-          </ReactCrop>
+            <ReactCrop
+              crop={completedCrops[index] || file.initialCrop}
+              onChange={(c, pc) => handleCropComplete(c, pc, index)}
+              onComplete={(c, pc) => handleCropComplete(c, pc, index)}
+              aspect={CROP_ASPECT}
+              className="max-w-full h-auto"
+              minWidth={128} // Minimum width in pixels
+              minHeight={128} // Minimum height in pixels
+              keepSelection={true}
+              ruleOfThirds={true}
+              aria-label="Crop image"
+            >
+              <Image
+                src={file.preview}
+                alt={`Preview ${index + 1}`}
+                width={400}
+                height={400}
+                className="w-full h-auto object-cover"
+                onClick={() =>
+                  dispatch({ type: "SET_SELECTED_IMAGE", payload: index })
+                }
+                unoptimized={true}
+              />
+            </ReactCrop>
+          </div>
         </div>
         <div className="flex items-center justify-between mt-2">
           <div>
@@ -613,10 +782,11 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
               {file.file.name.slice(0, 10) +
                 "...XXX." +
                 file.file.type.split("/")[1]}
+              <span className="text-xs text-muted-foreground">
+                &nbsp;{(file.file.size / 1048576).toFixed(2)} MB
+              </span>
             </p>
-            <p className="text-xs text-muted-foreground">
-              {(file.file.size / 1048576).toFixed(2)} MB
-            </p>
+
             {(!file.accepted || file.declineReason) && (
               <p className="text-xs text-destructive">{file.declineReason}</p>
             )}
@@ -627,33 +797,191 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
             ) : (
               <CircleAlert className="h-4 w-4 text-destructive" />
             )}
-            <Trash
-              className="h-4 w-4 text-destructive cursor-pointer hover:text-destructive/80"
+            <button
+              type="button"
+              className="flex items-center justify-center"
               onClick={(e) => {
                 e.stopPropagation(); // Prevent triggering other click handlers
                 handleRemoveImage(index);
               }}
-              aria-label="Remove image"
+              aria-label={`Remove image ${index + 1}`}
               disabled={uploading || isCompleted}
-            />
+              tabIndex="0"
+            >
+              <Trash
+                className="h-4 w-4 text-destructive cursor-pointer hover:text-destructive/80"
+                aria-hidden="true"
+              />
+            </button>
           </div>
         </div>
       </CardContent>
     </Card>
   );
 
-  // Retry upload function
+  // Update the handleRetryUpload function
   const handleRetryUpload = () => {
-    setRetryCount(0);
-    setUploadError(null);
+    dispatch({ type: "SET_RETRY_COUNT", payload: 0 });
+    dispatch({ type: "SET_UPLOAD_ERROR", payload: null });
     uploadFiles();
   };
 
-  // Removed loadingModels check since we no longer use face-api
+  // Add a comprehensive validation function
+  const validateImages = useCallback(() => {
+    const validFiles = files.filter((file) => file.accepted);
+    const errors = [];
+
+    // Check minimum number of images
+    if (validFiles.length < MIN_NUM_IMAGES) {
+      errors.push(
+        `You need at least ${MIN_NUM_IMAGES} valid images to continue.`
+      );
+    }
+
+    // Check maximum number of images
+    if (validFiles.length > MAX_NUM_IMAGES) {
+      errors.push(`You can upload a maximum of ${MAX_NUM_IMAGES} images.`);
+    }
+
+    // Check total size
+    const totalSize = calculateTotalSize(validFiles);
+    if (totalSize > MAX_TOTAL_SIZE) {
+      errors.push(
+        `Total size of all images (${(totalSize / (1024 * 1024)).toFixed(
+          2
+        )} MB) exceeds the maximum allowed (${
+          MAX_TOTAL_SIZE / (1024 * 1024)
+        } MB).`
+      );
+    }
+
+    // Check if any images have missing crop data
+    const missingCrops = validFiles.some(
+      (file, index) => !completedCrops[index] && !file.initialCrop
+    );
+    if (missingCrops) {
+      errors.push(
+        "Some images are missing crop data. Please ensure all images have been properly cropped."
+      );
+    }
+
+    // Return validation result
+    return {
+      valid: errors.length === 0,
+      errors,
+    };
+  }, [files, completedCrops, calculateTotalSize]);
+
+  // Update the uploadFiles function to use the comprehensive validation
+  const uploadFiles = useCallback(async () => {
+    // Run comprehensive validation
+    const validation = validateImages();
+
+    if (!validation.valid) {
+      dispatch({
+        type: "SET_UPLOAD_ERROR",
+        payload: validation.errors.join("\n"),
+      });
+      return;
+    }
+
+    dispatch({ type: "SET_UPLOADING", payload: true });
+    dispatch({ type: "SET_UPLOAD_PROGRESS", payload: 0 });
+    dispatch({ type: "SET_UPLOAD_ERROR", payload: null });
+
+    // Set a global timeout for the entire upload process
+    const uploadTimeout = setTimeout(() => {
+      if (uploading && !isCompleted) {
+        dispatch({
+          type: "SET_UPLOAD_ERROR",
+          payload:
+            "Upload timed out. Please try again with a better connection.",
+        });
+        dispatch({ type: "SET_UPLOADING", payload: false });
+      }
+    }, TIMEOUTS.UPLOAD_TOTAL * networkFactor);
+
+    try {
+      const validFiles = files.filter((file) => file.accepted);
+
+      // Process images with captions and upload directly to Supabase
+      const { signedUrl, stats } = await processImagesWithCaptions(
+        validFiles,
+        completedCrops,
+        CROP_DIMENSION,
+        // Progress callback
+        (progress) => {
+          const { stage, percent } = progress;
+          let totalProgress = 0;
+
+          // Calculate overall progress based on stage
+          if (stage === "processing") {
+            totalProgress = percent * 0.4; // Processing is 40% of total
+          } else if (stage === "zipping") {
+            totalProgress = 40 + percent * 0.2; // Zipping is 20% of total
+          } else if (stage === "uploading") {
+            totalProgress = 60 + percent * 0.4; // Uploading is 40% of total
+          }
+
+          dispatch({
+            type: "SET_UPLOAD_PROGRESS",
+            payload: Math.round(totalProgress),
+          });
+        }
+      );
+
+      // Set the form value with the signed URL
+      setValue("images", signedUrl);
+      dispatch({ type: "SET_UPLOAD_PROGRESS", payload: 100 });
+      dispatch({ type: "SET_COMPLETED", payload: true });
+    } catch (error) {
+      // Use standardized error handling
+      handleError(error, "uploadFiles");
+      dispatch({
+        type: "SET_UPLOAD_ERROR",
+        payload: error.message || "Upload failed. Please try again.",
+      });
+
+      // Auto-retry logic for certain errors
+      if (
+        retryCount < 2 &&
+        (error.message.includes("network") ||
+          error.message.includes("timeout") ||
+          error.message.includes("connection"))
+      ) {
+        dispatch({ type: "INCREMENT_RETRY_COUNT" });
+        setTimeout(() => {
+          uploadFiles();
+        }, TIMEOUTS.UPLOAD_RETRY_DELAY * networkFactor);
+      }
+    } finally {
+      clearTimeout(uploadTimeout);
+      if (!isCompleted && !uploadError) {
+        dispatch({ type: "SET_UPLOADING", payload: false });
+      }
+    }
+  }, [
+    files,
+    setValue,
+    completedCrops,
+    retryCount,
+    isCompleted,
+    uploadError,
+    uploading,
+    networkFactor,
+    handleError,
+    validateImages,
+  ]);
+
+  // Reset retry count when files change
+  useEffect(() => {
+    dispatch({ type: "SET_RETRY_COUNT", payload: 0 });
+  }, [files]);
+
   return (
     <>
       {/* Confirmation dialog for removing an image */}
-      <Dialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
+      <Dialog open={showRemoveDialog} onOpenChange={showRemoveDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Remove Image</DialogTitle>
@@ -680,7 +1008,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
       </Dialog>
 
       {/* Confirmation dialog for removing all images */}
-      <Dialog open={showRemoveAllDialog} onOpenChange={setShowRemoveAllDialog}>
+      <Dialog open={showRemoveAllDialog} onOpenChange={showRemoveAllDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Remove All Images</DialogTitle>
@@ -723,7 +1051,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           <Heading variant={"hero"}> Please upload your images.</Heading>
 
           <p className="text-muted-foreground">
-            These guidelines aren’t strict rules—just tips to help you get the
+            These guidelines aren't strict rules—just tips to help you get the
             best results! The closer you follow them, the better, but no
             pressure.{" "}
             <span className="text-destructive">

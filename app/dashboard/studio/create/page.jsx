@@ -84,6 +84,7 @@ export default function StudioCreate() {
     clearErrors,
     trigger,
     reset,
+    getValues,
   } = useForm({
     mode: "onChange",
     resolver: zodResolver(formSchema),
@@ -293,8 +294,8 @@ export default function StudioCreate() {
   };
 
   const handleReset = () => {
-    localStorage.removeItem("formValues");
     localStorage.removeItem("currentFormStep");
+    localStorage.removeItem("formValues");
     reset(); // Reset form values
     setCurrentStep(0); // Reset to first step
     setStudioMessage(false);
@@ -379,13 +380,19 @@ export default function StudioCreate() {
             className="disabled:opacity-50"
             type={currentStep === steps.length - 1 ? "submit" : "button"}
             onClick={currentStep === steps.length - 1 ? undefined : next}
-            disabled={isNextDisabled || isSubmitting}
+            disabled={
+              isNextDisabled ||
+              isSubmitting ||
+              (currentStep === steps.length - 1
+                ? getValues("images").length < 3
+                : false)
+            }
           >
             {currentStep === steps.length - 1 ? "Create Studio" : "Next"}
             <ChevronRight strokeWidth={2} />
           </Button>
         </div>
-        <div className="flex justify-between items-center flex-wrap gap-2 mt-2">
+        <div className="flex justify-between items-center flex-wrap gap-2 mt-4">
           <p className="text-base mt-2">
             Experiencing issues with image uploads? Please{" "}
             <Link
@@ -408,26 +415,4 @@ export default function StudioCreate() {
       </ReactErrorBoundary>
     </form>
   );
-}
-
-class CustomErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error("Form error:", error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    return this.props.children;
-  }
 }

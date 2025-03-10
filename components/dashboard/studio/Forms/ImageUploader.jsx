@@ -43,14 +43,14 @@ import { processImagesWithCaptions } from "@/lib/services/imageCaptioningService
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_NUM_IMAGES = 20;
 const MIN_NUM_IMAGES = 3;
-const MIN_NUM_IMAGES_RECOMMENDED = 10;
+const MIN_NUM_IMAGES_RECOMMENDED = 8;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 const ACCEPTED_IMAGE_TYPES = {
   "image/jpeg": [],
   "image/jpg": [],
   "image/png": [],
 };
-const MIN_IMAGE_DIMENSION = 265;
+const MIN_IMAGE_DIMENSION = 1024;
 
 // Add these constants
 const CROP_DIMENSION = 1024;
@@ -108,9 +108,9 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
       validFiles.length < MIN_NUM_IMAGES_RECOMMENDED
     ) {
       setWarningMessage(
-        `You are uploading only ${validFiles.length} high-resolution image${
+        `You are uploading only ${validFiles.length} image${
           validFiles.length !== 1 ? "s" : ""
-        }. We recommend at-least ${MIN_NUM_IMAGES_RECOMMENDED} for best output.`
+        }. We recommend at-least ${MIN_NUM_IMAGES_RECOMMENDED} for best results.`
       );
     } else {
       setWarningMessage("");
@@ -306,8 +306,8 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           img.width < MIN_IMAGE_DIMENSION ||
           img.height < MIN_IMAGE_DIMENSION
         ) {
-          accepted = false;
-          declineReason = `This image is smaller than ${MIN_IMAGE_DIMENSION}×${MIN_IMAGE_DIMENSION} pixels.`;
+          accepted = true;
+          declineReason = `Smaller than ${MIN_IMAGE_DIMENSION}×${MIN_IMAGE_DIMENSION} pixels.`;
         }
 
         const smartCropResult = await applySmartCrop(file);
@@ -568,7 +568,9 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     <Card
       key={index}
       className={`mb-4 rounded-md ${
-        file.accepted ? "border-success" : "border-destructive"
+        file.accepted && !file.declineReason
+          ? "border-success"
+          : "border-destructive"
       }`}
     >
       <CardContent className="p-4">
@@ -615,12 +617,12 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
             <p className="text-xs text-muted-foreground">
               {(file.file.size / 1048576).toFixed(2)} MB
             </p>
-            {!file.accepted && (
+            {(!file.accepted || file.declineReason) && (
               <p className="text-xs text-destructive">{file.declineReason}</p>
             )}
           </div>
           <div className="flex items-center space-x-2">
-            {file.accepted ? (
+            {file.accepted && !file.declineReason ? (
               <CircleCheck className="h-4 w-4 text-success" />
             ) : (
               <CircleAlert className="h-4 w-4 text-destructive" />
@@ -657,10 +659,8 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
             <DialogTitle>Remove Image</DialogTitle>
           </DialogHeader>
           <DialogDescription className="text-sm">
-            <p>
-              Are you sure you want to remove this image? You can always add
-              more images before uploading.
-            </p>
+            Are you sure you want to remove this image? You can always add more
+            images before uploading.
           </DialogDescription>
           <DialogFooter className="flex justify-between sm:justify-between">
             <DialogClose asChild>
@@ -686,13 +686,8 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
             <DialogTitle>Remove All Images</DialogTitle>
           </DialogHeader>
           <DialogDescription className="text-sm">
-            <p>
-              Are you sure you want to remove all images? You can always add
-              more images before uploading.
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              You will need to upload new images to continue.
-            </p>
+            Are you sure you want to remove all images? You can always add more
+            images before uploading.
           </DialogDescription>
           <DialogFooter className="flex justify-between sm:justify-between">
             <DialogClose asChild>
@@ -861,7 +856,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                         : "Upload Images"}
                     </Button>
                     <span className="text-xs text-muted-foreground">
-                      You will need at least {MIN_NUM_IMAGES} hi-res images to
+                      You will need at least {MIN_NUM_IMAGES} images to
                       continue.
                     </span>
                   </div>

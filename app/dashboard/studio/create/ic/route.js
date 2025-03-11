@@ -158,8 +158,6 @@ By following these guidelines, generate a caption that fully captures the essenc
     const response = await result.response;
     const caption = response.text();
 
-    console.log(`Caption generated in ${Date.now() - startTime}ms`);
-
     return NextResponse.json({ caption });
   } catch (error) {
     console.error("IC error:", error);

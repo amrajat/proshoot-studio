@@ -313,6 +313,10 @@ export default function Component() {
               />
 
               <div className="space-y-4">
+                <p className="text-sm text-destructive">
+                  Please upload 5 or more images (we recommend 8-20 for best
+                  results.)
+                </p>
                 <input
                   type="file"
                   accept="image/*"
@@ -359,7 +363,7 @@ export default function Component() {
                   <div className="space-y-2">
                     <Button
                       type="submit"
-                      disabled={uploading || files.length < 1}
+                      disabled={uploading || files.length < 5}
                       className="w-full"
                     >
                       <ArrowUp className="mr-2" />

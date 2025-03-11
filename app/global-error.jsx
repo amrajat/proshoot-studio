@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { GeistSans } from "geist/font/sans";
 import Error from "@/components/Error";
 import { Button } from "@/components/ui/button";
-import { Home, RefreshCw } from "lucide-react";
+import { Home, RefreshCw, MessageCircle } from "lucide-react";
+import { openIntercomMessenger, trackErrorInIntercom } from "@/lib/intercom";
 
 export default function GlobalError({ error }) {
   const [errorInfo, setErrorInfo] = useState({
@@ -33,6 +34,16 @@ export default function GlobalError({ error }) {
       } else if (error.name === "ChunkLoadError") {
         errorDetails =
           "Failed to load a part of the application. This might be due to a new deployment or network issues.";
+      } else if (error.status === 404) {
+        errorDetails = "The requested resource could not be found.";
+      } else if (error.status === 403) {
+        errorDetails = "You don't have permission to access this resource.";
+      } else if (error.status === 401) {
+        errorDetails = "You need to be logged in to access this resource.";
+      } else if (error.status === 429) {
+        errorDetails = "Too many requests. Please try again later.";
+      } else if (error.status >= 500) {
+        errorDetails = "There was a server error. Our team has been notified.";
       }
     }
 
@@ -41,6 +52,9 @@ export default function GlobalError({ error }) {
       details: errorDetails,
       errorId: eventId,
     });
+
+    // Track the error in Intercom
+    trackErrorInIntercom(error, eventId, "Next.js global-error.jsx");
   }, [error]);
 
   const handleRefresh = () => {
@@ -49,6 +63,21 @@ export default function GlobalError({ error }) {
 
   const handleGoHome = () => {
     window.location.href = "/";
+  };
+
+  const handleContactSupport = () => {
+    // Use the Intercom utility to open the messenger with error details
+    openIntercomMessenger({
+      message: `I encountered an error (ID: ${
+        errorInfo.errorId || "unknown"
+      }): ${errorInfo.message}`,
+      metadata: {
+        error_id: errorInfo.errorId,
+        error_message: errorInfo.message,
+        error_details: errorInfo.details,
+        page_url: window.location.href,
+      },
+    });
   };
 
   return (
@@ -72,7 +101,7 @@ export default function GlobalError({ error }) {
 
             <Error message={errorInfo.message} details={errorInfo.details} />
 
-            <div className="flex justify-center space-x-4 mt-6">
+            <div className="flex justify-center flex-wrap gap-3 mt-6">
               <Button
                 onClick={handleRefresh}
                 className="inline-flex items-center justify-center px-4 py-2"
@@ -88,6 +117,15 @@ export default function GlobalError({ error }) {
               >
                 <Home className="mr-2 h-4 w-4" />
                 Go to homepage
+              </Button>
+
+              <Button
+                onClick={handleContactSupport}
+                className="inline-flex items-center justify-center px-4 py-2"
+                variant="outline"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Contact support
               </Button>
             </div>
           </div>

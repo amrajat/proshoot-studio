@@ -19,7 +19,12 @@ import Error from "@/components/Error";
 import Loader from "@/components/Loader";
 import useSWR from "swr";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  MessageCircle,
+} from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
@@ -27,6 +32,7 @@ import BuyStudio from "../buy/page";
 import Link from "next/link";
 import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary";
 import * as Sentry from "@sentry/nextjs";
+import { openIntercomMessenger, trackErrorInIntercom } from "@/lib/intercom";
 
 const FileUploader = ({
   register,
@@ -71,6 +77,7 @@ export default function StudioCreate() {
   const [shouldValidate, setShouldValidate] = useState(false);
   const [studioMessage, setStudioMessage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorDetails, setErrorDetails] = useState(null);
 
   const savedFormValues =
     typeof window !== "undefined" ? localStorage.getItem("formValues") : null;
@@ -275,7 +282,16 @@ export default function StudioCreate() {
         router.push("/dashboard/studio/" + result.studioId);
       } catch (error) {
         console.error("API request error:", error);
-        Sentry.captureException(error);
+        Sentry.captureException(error, {
+          contexts: {
+            studio: {
+              step: currentStep,
+              formData: sanitizedData,
+            },
+          },
+        });
+        trackErrorInIntercom(error, null, "Studio creation API error");
+        setErrorDetails(error.message || "API request failed");
         setStudioMessage(
           "We couldn't create your studio. Please try again or contact our support team."
         );
@@ -283,7 +299,20 @@ export default function StudioCreate() {
       }
     } catch (error) {
       console.error("Submission error:", error);
-      Sentry.captureException(error);
+      Sentry.captureException(error, {
+        contexts: {
+          studio: {
+            step: currentStep,
+            formData: data,
+          },
+        },
+      });
+      trackErrorInIntercom(
+        error,
+        null,
+        "Studio creation form submission error"
+      );
+      setErrorDetails(error.message || "Form submission failed");
       setStudioMessage(
         error instanceof z.ZodError
           ? "Please check all form fields"
@@ -300,6 +329,36 @@ export default function StudioCreate() {
     setCurrentStep(0); // Reset to first step
     setStudioMessage(false);
     setIsSubmitting(false);
+  };
+
+  const handleContactSupport = () => {
+    openIntercomMessenger({
+      message: `I'm having trouble creating a studio. ${
+        errorDetails ? `Error: ${errorDetails}` : ""
+      }`,
+      metadata: {
+        page: "create_studio",
+        error: errorDetails,
+        step: currentStep,
+      },
+    });
+  };
+
+  const handleErrorBoundaryError = (error, errorInfo) => {
+    console.error("Error boundary caught an error:", error, errorInfo);
+    Sentry.captureException(error, {
+      contexts: {
+        react: {
+          componentStack: errorInfo?.componentStack,
+        },
+        studio: {
+          step: currentStep,
+          formData: getValues(),
+        },
+      },
+    });
+    trackErrorInIntercom(error, null, "Studio creation error boundary");
+    setErrorDetails(error.message || "An unexpected error occurred");
   };
 
   const renderStep = (step) => {
@@ -361,7 +420,35 @@ export default function StudioCreate() {
       className="max-w-7xl mx-auto mt-8"
     >
       <ReactErrorBoundary
-        fallback={<Error message="Something went wrong. Please try again." />}
+        fallback={
+          <div>
+            <Error
+              message="Something went wrong"
+              details={
+                errorDetails ||
+                "An unexpected error occurred while creating your studio."
+              }
+            />
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Button
+                onClick={() => window.location.reload()}
+                className="flex items-center"
+                variant="default"
+              >
+                Try again
+              </Button>
+              <Button
+                onClick={handleContactSupport}
+                className="flex items-center"
+                variant="default"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Contact support
+              </Button>
+            </div>
+          </div>
+        }
+        onError={handleErrorBoundaryError}
       >
         <div className="mb-6">{renderStep(steps[currentStep])}</div>
 
@@ -412,6 +499,23 @@ export default function StudioCreate() {
             Start Over
           </Button>
         </div>
+
+        {studioMessage && (
+          <div className="mt-4">
+            <Error message={studioMessage} />
+            {studioMessage.includes("contact our support") && (
+              <Button
+                onClick={handleContactSupport}
+                className="mt-2 flex items-center"
+                variant="default"
+                type="button"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Contact support
+              </Button>
+            )}
+          </div>
+        )}
       </ReactErrorBoundary>
     </form>
   );

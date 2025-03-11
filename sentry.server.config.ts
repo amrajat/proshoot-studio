@@ -19,7 +19,12 @@ Sentry.init({
   enableTracing: true,
 
   // Add error filtering to reduce noise
-  beforeSend(event) {
+  beforeSend(event, hint) {
+    // Don't send events in development
+    if (process.env.NODE_ENV === "development") {
+      return null;
+    }
+
     // Filter out known non-critical errors
     if (event.exception && event.exception.values) {
       const exceptionValue = event.exception.values[0]?.value || "";
@@ -29,11 +34,33 @@ Sentry.init({
         exceptionValue.includes("ECONNRESET") ||
         exceptionValue.includes("ETIMEDOUT") ||
         exceptionValue.includes("ENOTFOUND") ||
-        exceptionValue.includes("socket hang up")
+        exceptionValue.includes("socket hang up") ||
+        exceptionValue.includes("getaddrinfo ENOTFOUND") ||
+        exceptionValue.includes("connect ETIMEDOUT") ||
+        exceptionValue.includes("ECONNREFUSED") ||
+        exceptionValue.includes("EPIPE") ||
+        exceptionValue.includes("EHOSTUNREACH") ||
+        exceptionValue.includes(
+          "Client network socket disconnected before secure TLS connection was established"
+        )
       ) {
         return null;
       }
     }
+
+    // Add request data if available from hint context
+    const req = hint?.extra?.request;
+    if (req) {
+      event.contexts = {
+        ...event.contexts,
+        request: {
+          url: req.url,
+          method: req.method,
+          headers: req.headers,
+        },
+      };
+    }
+
     return event;
   },
 

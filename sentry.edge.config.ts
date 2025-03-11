@@ -10,8 +10,32 @@ Sentry.init({
   enabled: process.env.NODE_ENV === "production",
 
   // Adjust this value in production, or use tracesSampler for greater control
-  tracesSampleRate: 1,
+  tracesSampleRate: 0.2,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
+
+  // Add error filtering to reduce noise
+  beforeSend(event) {
+    // Don't send events in development
+    if (process.env.NODE_ENV === "development") {
+      return null;
+    }
+
+    // Filter out known non-critical errors
+    if (event.exception && event.exception.values) {
+      const exceptionValue = event.exception.values[0]?.value || "";
+
+      // Ignore common network errors that are typically transient
+      if (
+        exceptionValue.includes("Failed to fetch") ||
+        exceptionValue.includes("NetworkError") ||
+        exceptionValue.includes("Network request failed")
+      ) {
+        return null;
+      }
+    }
+
+    return event;
+  },
 });

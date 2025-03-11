@@ -4,7 +4,8 @@ import * as Sentry from "@sentry/nextjs";
 import { useEffect, useState } from "react";
 import Error from "@/components/Error";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Home } from "lucide-react";
+import { RefreshCw, Home, MessageCircle } from "lucide-react";
+import { openIntercomMessenger, trackErrorInIntercom } from "@/lib/intercom";
 
 export default function ErrorBoundary({ error, reset }) {
   const [errorInfo, setErrorInfo] = useState({
@@ -50,7 +51,25 @@ export default function ErrorBoundary({ error, reset }) {
       details: errorDetails,
       errorId: eventId,
     });
+
+    // Track the error in Intercom
+    trackErrorInIntercom(error, eventId, "Next.js error.js");
   }, [error]);
+
+  const handleContactSupport = () => {
+    // Use the Intercom utility to open the messenger with error details
+    openIntercomMessenger({
+      message: `I encountered an error (ID: ${
+        errorInfo.errorId || "unknown"
+      }): ${errorInfo.message}`,
+      metadata: {
+        error_id: errorInfo.errorId,
+        error_message: errorInfo.message,
+        error_details: errorInfo.details,
+        page_url: window.location.href,
+      },
+    });
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -62,7 +81,7 @@ export default function ErrorBoundary({ error, reset }) {
           retryLabel="Try again"
         />
 
-        <div className="mt-4 flex space-x-4">
+        <div className="mt-4 flex flex-wrap gap-3">
           <Button
             onClick={reset}
             className="flex items-center"
@@ -70,6 +89,24 @@ export default function ErrorBoundary({ error, reset }) {
           >
             <RefreshCw className="mr-2 h-4 w-4" />
             Try again
+          </Button>
+
+          <Button
+            onClick={() => window.location.reload()}
+            className="flex items-center"
+            variant="outline"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh page
+          </Button>
+
+          <Button
+            onClick={handleContactSupport}
+            className="flex items-center"
+            variant="default"
+          >
+            <MessageCircle className="mr-2 h-4 w-4" />
+            Contact support
           </Button>
 
           <Button

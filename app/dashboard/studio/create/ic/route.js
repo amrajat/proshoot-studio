@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 export const maxDuration = 60;
 
@@ -7,17 +8,49 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_STUDIO_API_KEY);
 
 export async function POST(request) {
   const startTime = Date.now();
+  const requestId = `ic-${Date.now()}-${Math.random()
+    .toString(36)
+    .substring(2, 9)}`;
 
   try {
-    const { image } = await request.json();
+    let requestBody;
+    try {
+      requestBody = await request.json();
+    } catch (parseError) {
+      Sentry.captureException(parseError, {
+        contexts: {
+          request: {
+            error: "Failed to parse IC request body",
+            requestId,
+          },
+        },
+      });
+      return NextResponse.json(
+        { error: "Invalid request format" },
+        { status: 400 }
+      );
+    }
+
+    const { image } = requestBody;
 
     if (!image) {
+      const noImageError = new Error("No image provided for IC generation");
+      Sentry.captureMessage("IC generation failed: No image provided", {
+        level: "warning",
+        tags: { requestId },
+      });
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
     }
 
     // Reduced max size
     const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
     if (image.length > MAX_IMAGE_SIZE) {
+      const sizeError = new Error("Image too large for IC generation");
+      Sentry.captureMessage("IC generation failed: Image too large", {
+        level: "warning",
+        tags: { requestId },
+        extra: { imageSize: image.length },
+      });
       return NextResponse.json({ error: "Image too large" }, { status: 400 });
     }
 
@@ -130,11 +163,20 @@ By following these guidelines, generate a caption that fully captures the essenc
     return NextResponse.json({ caption });
   } catch (error) {
     console.error("IC error:", error);
+    Sentry.captureException(error, {
+      contexts: {
+        ic: {
+          error: "IC generation failed",
+          requestId,
+          processingTime: Date.now() - startTime,
+        },
+      },
+    });
 
     if (error.message === "Model timeout") {
       return NextResponse.json(
         { error: "IC generation timed out" },
-        { status: 504 }
+        { status: 408 }
       );
     }
 

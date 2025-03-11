@@ -21,7 +21,13 @@ Sentry.init({
   replaysSessionSampleRate: 0.05,
 
   // Add error filtering to reduce noise
-  beforeSend(event) {
+  beforeSend(event, hint) {
+    // Don't send events in development
+    if (process.env.NODE_ENV === "development") {
+      return null;
+    }
+
+    const error = hint?.originalException;
     // Filter out known non-critical errors
     if (event.exception && event.exception.values) {
       const exceptionValue = event.exception.values[0]?.value || "";
@@ -31,11 +37,31 @@ Sentry.init({
         exceptionValue.includes("Failed to fetch") ||
         exceptionValue.includes("NetworkError") ||
         exceptionValue.includes("Network request failed") ||
-        exceptionValue.includes("ChunkLoadError")
+        exceptionValue.includes("ChunkLoadError") ||
+        exceptionValue.includes("Loading chunk") ||
+        exceptionValue.includes("Loading CSS chunk") ||
+        exceptionValue.includes("ResizeObserver loop") ||
+        exceptionValue.includes("ResizeObserver loop limit exceeded") ||
+        exceptionValue.includes("Script error") ||
+        exceptionValue.includes("connection aborted")
       ) {
         return null;
       }
     }
+
+    // Add user interaction data if available
+    if (typeof window !== "undefined") {
+      event.contexts = {
+        ...event.contexts,
+        browser: {
+          ...event.contexts?.browser,
+          userAgent: window.navigator.userAgent,
+          url: window.location.href,
+          referrer: document.referrer,
+        },
+      };
+    }
+
     return event;
   },
 

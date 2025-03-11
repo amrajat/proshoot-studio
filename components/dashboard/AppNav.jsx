@@ -55,7 +55,8 @@ function AppNav() {
             className="inline-flex items-center gap-x-2 hover:text-gray-500     "
             href="#"
             onClick={() => {
-              if (window.Intercom) window.Intercom("showSpace", "messages");
+              if (window && window.Intercom)
+                window.Intercom("showSpace", "messages");
             }}
           >
             <LifeBuoy className="h-5 w-5 mr-2" />

@@ -118,6 +118,10 @@ function Hero() {
               7-days money-back guarantee
             </span>
           </div>
+
+          {/* Mobile RightImage - visible on smaller screens */}
+          <CenterImageMobile />
+
           <ReviewsCarousel />
           <UsedByHappyCustomers />
           {/* <MediaLogos /> */}
@@ -355,6 +359,60 @@ const MediaLogos = () => {
           className="opacity-50 hover:opacity-100 transition-opacity duration-300"
         />
       ))}
+    </div>
+  );
+};
+
+const CenterImageMobile = () => {
+  return (
+    <div className="block xl:hidden mb-32 mt-4 max-w-[280px] mx-auto relative">
+      <div className="relative overflow-hidden rounded-lg shadow-md">
+        <AspectRatio ratio={3 / 4} className="relative rounded">
+          <Image
+            src="/examples/ai-portrait-26.jpg"
+            alt="ai headshot of customer Pranay Airan"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            style={{ objectFit: "cover" }}
+          />
+
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-foreground to-transparent"></div>
+          <div className="absolute top-2.5 right-2.5">
+            <span className="px-3 py-1 flex gap-1 items-center text-xs font-normal text-muted rounded bg-foreground">
+              <Sparkles className="text-destructive" strokeWidth={1.5} />
+              AI <span className="italic">Generated</span>
+            </span>
+          </div>
+          <div className="absolute flex flex-col self-end justify-self-end inset-x-0 bottom-0 p-2.5">
+            <div className="flex justify-self-end items-center gap-4 mt-3">
+              <div className="flex-1 min-w-0 mb-1">
+                <p className="text-base justify-self-end font-normal text-muted">
+                  Pranay Airan
+                </p>
+                <p className="text-xs justify-self-end text-muted">
+                  IIIT, Bangalore
+                </p>
+              </div>
+            </div>
+            <StarRatings size="size-3" rating={5} />
+          </div>
+        </AspectRatio>
+      </div>
+
+      <Image
+        className="absolute bottom-[-100px] w-[80px] h-[80px] rounded shadow-sm object-cover border"
+        src={"/selfie-3.jpg"}
+        width={80}
+        height={80}
+        alt="selfie of customer pranay airan"
+      />
+      <Image
+        className="absolute bottom-[-50px] left-[40px] w-[80px] h-[80px] rotate-[135deg]"
+        src={"/arrow.svg"}
+        width={80}
+        height={80}
+        alt="arrow svg icon, pointing to upside"
+      />
     </div>
   );
 };

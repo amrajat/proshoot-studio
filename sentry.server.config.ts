@@ -49,17 +49,18 @@ Sentry.init({
     }
 
     // Add request data if available from hint context
-    const req = hint?.extra?.request;
-    if (req) {
-      event.contexts = {
-        ...event.contexts,
-        request: {
-          url: req.url,
-          method: req.method,
-          headers: req.headers,
-        },
-      };
-    }
+    // const req = hint?.extra?.request;
+    // hint.
+    // if (req) {
+    //   event.contexts = {
+    //     ...event.contexts,
+    //     request: {
+    //       url: req.url,
+    //       method: req.method,
+    //       headers: req.headers,
+    //     },
+    //   };
+    // }
 
     return event;
   },

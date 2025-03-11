@@ -127,6 +127,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     imageToRemove: null,
     showRemoveDialog: false,
     showRemoveAllDialog: false,
+    showGuidelinesDialog: true,
   };
 
   // Define reducer function to handle related state updates
@@ -172,6 +173,8 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
         return { ...state, showRemoveDialog: action.payload };
       case "SET_SHOW_REMOVE_ALL_DIALOG":
         return { ...state, showRemoveAllDialog: action.payload };
+      case "SET_SHOW_GUIDELINES_DIALOG":
+        return { ...state, showGuidelinesDialog: action.payload };
       case "RESET_UPLOAD_STATE":
         return {
           ...state,
@@ -205,6 +208,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     imageToRemove,
     showRemoveDialog,
     showRemoveAllDialog,
+    showGuidelinesDialog,
   } = state;
 
   const [networkFactor, setNetworkFactor] = useState(1);
@@ -244,9 +248,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     ) {
       dispatch({
         type: "SET_WARNING",
-        payload: `You are uploading only ${
-          validFiles.length
-        } high-resolution image${
+        payload: `You are uploading only ${validFiles.length} image${
           validFiles.length !== 1 ? "s" : ""
         }. We recommend at-least ${MIN_NUM_IMAGES_RECOMMENDED} for best output.`,
       });
@@ -981,7 +983,12 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   return (
     <>
       {/* Confirmation dialog for removing an image */}
-      <Dialog open={showRemoveDialog} onOpenChange={showRemoveDialog}>
+      <Dialog
+        open={showRemoveDialog}
+        onOpenChange={(open) =>
+          dispatch({ type: "SET_SHOW_REMOVE_DIALOG", payload: open })
+        }
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Remove Image</DialogTitle>
@@ -1008,7 +1015,12 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
       </Dialog>
 
       {/* Confirmation dialog for removing all images */}
-      <Dialog open={showRemoveAllDialog} onOpenChange={showRemoveAllDialog}>
+      <Dialog
+        open={showRemoveAllDialog}
+        onOpenChange={(open) =>
+          dispatch({ type: "SET_SHOW_REMOVE_ALL_DIALOG", payload: open })
+        }
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Remove All Images</DialogTitle>
@@ -1051,16 +1063,16 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
           <Heading variant={"hero"}> Please upload your images.</Heading>
 
           <p className="text-muted-foreground">
-            These guidelines aren't strict rules—just tips to help you get the
-            best results! The closer you follow them, the better, but no
-            pressure.{" "}
-            <span className="text-destructive">
-              Click on "Show Image Guidelines" button to read about image
-              uploading guidelines.
-            </span>
+            Click on "Show Image Guidelines" button to read about image
+            uploading guidelines.
           </p>
           {/* <ImageUploadingGuideLines /> */}
-          <Dialog>
+          <Dialog
+            open={showGuidelinesDialog}
+            onOpenChange={(open) =>
+              dispatch({ type: "SET_SHOW_GUIDELINES_DIALOG", payload: open })
+            }
+          >
             <DialogTrigger asChild>
               <Button className="mr-2" variant={"destructive"}>
                 Show Image Guidelines

@@ -6,11 +6,9 @@ import {
   isStudioDownloaded,
 } from "@/lib/supabase/actions/server";
 import CoverPage from "@/components/dashboard/CoverPage";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { InfoIcon, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import ImageGallery from "@/components/dashboard/studio/ImageGallery";
+import DownloadAllImages from "@/components/dashboard/studio/DownloadAllImages";
 
 function ImageSkeleton() {
   return (
@@ -89,7 +87,7 @@ async function ViewStudio({ params }) {
           <AlertDescription className="text-sm mt-2">
             <ul className="list-disc pl-5 space-y-1">
               <li className="font-medium">
-                We’d love to feature your favorite headshot on our website as an
+                We'd love to feature your favorite headshot on our website as an
                 example of our quality. Let us know in chat if you're okay with
                 that! 😊
               </li>
@@ -118,6 +116,12 @@ async function ViewStudio({ params }) {
           alreadyDownloaded={alreadyDownloaded}
         />
       </Suspense>
+
+      {alreadyDownloaded && images && images.length > 0 && (
+        <div className="mt-8 flex justify-center">
+          <DownloadAllImages images={images} />
+        </div>
+      )}
     </div>
   );
 }

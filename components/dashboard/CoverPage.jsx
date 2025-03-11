@@ -9,7 +9,7 @@ export default function CoverPage({ title, children, buttonText, buttonLink }) {
       <Heading as="h2" variant={"hero"}>
         {title}
       </Heading>
-      <p className="text-xl text-muted-foreground">{children}</p>
+      {children}
       {/* <Button asChild size="lg">
         <Link href={buttonLink}>{buttonText}</Link>
       </Button> */}

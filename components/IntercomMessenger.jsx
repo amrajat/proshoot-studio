@@ -26,8 +26,8 @@ export default function IntercomMessenger() {
           const { user } = session;
           Intercom({
             app_id: "jvwzr8qk",
-            user_id: user.id,
-            name: user?.raw_user_meta_data?.full_name || "there!",
+            user_id: user?.id,
+            name: user?.user_metadata?.full_name || "there!",
             email: user?.email,
             created_at: user?.created_at,
           });

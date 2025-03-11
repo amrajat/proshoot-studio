@@ -26,7 +26,7 @@ const followGuidelines = [
   },
   {
     id: 3,
-    title: "Multiple Photos",
+    title: "Close-up Shots",
     image: "/image-uploading-guidelines/follow/follow-3.jpg",
     description: [
       "Upload high-quality, well-lit photos with a clear frontal view.",
@@ -90,15 +90,22 @@ export default function ImageUploadingGuideLines() {
   return (
     <div className="w-full space-y-6 py-2">
       <div className="space-y-4">
-        <Heading as="h5" variant={"title"}>
-          TL;DR Version
-        </Heading>
+        <p className="text-muted-foreground">
+          These guidelines aren't strict rules—just tips to help you get the
+          best results! The closer you follow them, the better.
+        </p>
+        <p className="text-destructive font-bold">
+          Highly Recommended, Follow these 5 points at least.
+        </p>
         <ul className="marker:text-primary list-disc ps-4 space-y-3 text-sm md:text-base">
           <li>
-            Upload 8-12 (best range) high-quality upper-body photos with
-            different outfits and backgrounds.
+            Upload 8-20 high-quality close-ups, upper-body shots with different
+            outfits and backgrounds.
           </li>
-          <li>Variation is key—avoid similar or identical images.</li>
+          <li>
+            Variation is key—avoid similar or identical images or same day
+            photos.
+          </li>
           <li>Ensure your photos are clear, sharp, and well-lit.</li>
           <li>
             Avoid full-body shots, group photos, blurry or out-of-focus images,

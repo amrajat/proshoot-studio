@@ -211,13 +211,18 @@ export default function BuyStudio() {
 
     startTransaction(async () => {
       try {
-        await createCheckoutLS(
+        const result = await createCheckoutLS(
           plan,
           quantity,
           config.PLANS[plan].variantId,
           firstPromoterReference,
           firstPromoterTID
         );
+
+        // Handle the redirect on the client side
+        if (result && result.url) {
+          window.location.href = result.url;
+        }
       } catch (error) {
         console.error("Checkout Error:", error);
       }

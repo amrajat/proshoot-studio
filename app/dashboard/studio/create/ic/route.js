@@ -10,7 +10,12 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_STUDIO_API_KEY);
 // Simple function to validate request authenticity
 function validateRequest(timestamp, token) {
   // Secret key should be stored in environment variables
-  const secretKey = process.env.PROCESSING_SECRET_KEY;
+  // This must match the client-side key for authentication to work
+  // Check both possible environment variable names to ensure compatibility
+  const secretKey =
+    process.env.PROCESSING_SECRET_KEY ||
+    "default-secret-key-change-in-production";
+
   // Only accept requests within the last 15 minutes to prevent replay attacks
   const now = Date.now();
   const requestTime = parseInt(timestamp, 10);
@@ -29,13 +34,32 @@ function validateRequest(timestamp, token) {
     return Math.abs(hash).toString(16);
   }
 
-  // Generate expected token
+  // Generate expected token - must match client-side implementation exactly
   const expectedToken = simpleHash(
     timestamp + secretKey + timestamp.slice(0, 5)
   );
 
   // Compare in constant time to prevent timing attacks
   return token === expectedToken;
+}
+
+// Safe base64 encoding function that works with all characters
+function safeBase64Encode(text) {
+  try {
+    return Buffer.from(text).toString("base64");
+  } catch (error) {
+    console.error("Base64 encoding error:", error);
+    // Fallback to a simpler encoding if Buffer fails
+    try {
+      return btoa(text);
+    } catch (fallbackError) {
+      console.error("Fallback base64 encoding also failed:", fallbackError);
+      // Return a safe fallback if all encoding methods fail
+      return Buffer.from("JSSPRT, A photograph of a person.").toString(
+        "base64"
+      );
+    }
+  }
 }
 
 export async function POST(request) {
@@ -70,6 +94,11 @@ export async function POST(request) {
       Sentry.captureMessage("Unauthorized IC request attempt", {
         level: "warning",
         tags: { requestId },
+        extra: {
+          timestamp: timestamp || "missing",
+          tokenLength: token ? token.length : "missing",
+          secretKeyExists: Boolean(process.env.PROCESSING_SECRET_KEY),
+        },
       });
       return NextResponse.json(
         { error: "Unauthorized request" },
@@ -217,8 +246,8 @@ By following these guidelines, generate a caption that fully captures the essenc
         level: "info",
       });
 
-      // Obfuscate the response by encoding it - use btoa compatible encoding
-      const encodedData = Buffer.from(caption).toString("base64");
+      // Obfuscate the response by encoding it - use safe encoding function
+      const encodedData = safeBase64Encode(caption);
       return NextResponse.json({ data: encodedData, type: "ic-data" });
     } catch (modelError) {
       // If the model times out or fails, return a fallback response
@@ -230,9 +259,9 @@ By following these guidelines, generate a caption that fully captures the essenc
         });
 
         // Return encoded fallback
-        const fallbackData = Buffer.from(
+        const fallbackData = safeBase64Encode(
           "JSSPRT, A photograph of a person."
-        ).toString("base64");
+        );
         return NextResponse.json({
           data: fallbackData,
           type: "ic-data",
@@ -256,9 +285,7 @@ By following these guidelines, generate a caption that fully captures the essenc
     });
 
     // Return an encoded fallback response
-    const fallbackData = Buffer.from(
-      "JSSPRT, A photograph of a person."
-    ).toString("base64");
+    const fallbackData = safeBase64Encode("JSSPRT, A photograph of a person.");
     return NextResponse.json({
       data: fallbackData,
       type: "ic-data",

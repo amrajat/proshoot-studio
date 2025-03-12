@@ -43,7 +43,7 @@ import { processImagesWithCaptions } from "@/lib/services/imageCaptioningService
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_TOTAL_SIZE = 400 * 1024 * 1024; // 200MB total
 const MAX_NUM_IMAGES = 20;
-const MIN_NUM_IMAGES = 3;
+const MIN_NUM_IMAGES = 5;
 const MIN_NUM_IMAGES_RECOMMENDED = 8;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 const ACCEPTED_IMAGE_TYPES = {
@@ -60,11 +60,11 @@ const CROP_ASPECT = 1;
 // Add timeout configuration
 const TIMEOUTS = {
   // Adjust these based on network conditions and device capabilities
-  IMAGE_LOAD: 30000, // 30 seconds for image loading
-  SMART_CROP: 5000, // 5 seconds for smart crop
-  PROCESSING: 30000, // 30 seconds for image processing
+  IMAGE_LOAD: 600000, // 60 seconds for image loading
+  SMART_CROP: 600000, // 60 seconds for smart crop
+  PROCESSING: 6000000, // 600 seconds for image processing
   UPLOAD_RETRY_DELAY: 3000, // 3 seconds before retrying upload
-  UPLOAD_TOTAL: 120000, // 2 minutes for total upload time
+  UPLOAD_TOTAL: 15000000, // 2 minutes for total upload time
 };
 
 // Add network detection to adjust timeouts

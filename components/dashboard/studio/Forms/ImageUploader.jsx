@@ -282,7 +282,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
   // Add a centralized error handler function
   const handleError = useCallback((error, context, fallback = null) => {
     // Log the error with context
-    console.error(`Error in ${context}:`, error);
+    // console.error(`Error in ${context}:`, error);
 
     // Send to Sentry if available
     if (window.Sentry) {

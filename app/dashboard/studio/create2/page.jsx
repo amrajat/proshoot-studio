@@ -13,6 +13,7 @@ import Image from "next/image";
 
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -25,7 +26,6 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -40,7 +40,6 @@ const formSchema = z.object({
   ethnicity: z.string().min(1, "Please enter your ethnicity"),
   hairStyle: z.string().min(1, "Please describe your hairstyle"),
   eyeColor: z.string().min(1, "Please enter your eye color"),
-  grooming: z.string().optional(),
   glasses: z.string().optional(),
 });
 
@@ -62,7 +61,6 @@ export default function Component() {
       ethnicity: "",
       hairStyle: "",
       eyeColor: "",
-      grooming: "",
       glasses: "",
     },
   });
@@ -139,7 +137,6 @@ export default function Component() {
       Ethnicity: ${formData.ethnicity}
       Hair Style: ${formData.hairStyle}
       Eye Color: ${formData.eyeColor}
-      Grooming: ${formData.grooming || "N/A"}
       Glasses: ${formData.glasses || "N/A"}
     `;
 
@@ -173,19 +170,6 @@ export default function Component() {
     <>
       {!isCompleted && (
         <div className="w-full mx-auto space-y-8">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="mr-2">Show Image Guidelines</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-7xl overflow-x-auto max-h-screen mt-2 border-none">
-              <DialogHeader>
-                <DialogTitle>Guidelines</DialogTitle>
-              </DialogHeader>
-              <ImageUploadingGuideLines />
-              <DialogFooter></DialogFooter>
-            </DialogContent>
-          </Dialog>
-
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -280,30 +264,13 @@ export default function Component() {
 
               <FormField
                 control={form.control}
-                name="grooming"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Grooming (Optional)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Any grooming preferences"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="glasses"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Glasses and Preferences (Optional)</FormLabel>
+                    <FormLabel>Glasses(Optional)</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Write 'true' if wearing glasses in photos, otherwise describe desired glasses. You can also share your outfit or background preferences for your headshots, and we would love to create them according to your style."
+                        placeholder="Write 'true' if wearing glasses in photos, otherwise describe desired glasses."
                         {...field}
                       />
                     </FormControl>
@@ -314,9 +281,35 @@ export default function Component() {
 
               <div className="space-y-4">
                 <p className="text-sm text-destructive">
+                  Read image uploading guidelines below.
+                </p>
+                <Dialog defaultOpen={true}>
+                  <DialogTrigger asChild>
+                    <Button className="mr-2" variant={"destructive"}>
+                      Show Image Guidelines
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-6xl h-[90vh] p-4 sm:p-6 overflow-hidden">
+                    <DialogHeader className="mb-2 sm:mb-4">
+                      <DialogTitle className="text-xl sm:text-2xl">
+                        Image Upload Guidelines
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="overflow-y-auto pr-2 -mr-2 h-full pb-12">
+                      <ImageUploadingGuideLines />
+                    </div>
+                    <DialogFooter className="mt-4 sm:mt-6">
+                      <DialogClose asChild>
+                        <Button variant="destructive">Close</Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <p className="text-sm text-destructive">
                   Please upload 5 or more images (we recommend 8-20 for best
                   results.)
                 </p>
+
                 <input
                   type="file"
                   accept="image/*"
@@ -325,6 +318,7 @@ export default function Component() {
                   className="hidden"
                   ref={fileInputRef}
                 />
+
                 <Button
                   type="button"
                   onClick={triggerFileInput}
@@ -408,8 +402,8 @@ export default function Component() {
       {isCompleted && parseInt(progress) === 100 && !uploading && (
         <h1 className="text-2xl font-bold">
           Thank you! We are in the process of setting up your studio. You will
-          be notified once it is ready. Please email us at support@proshoot.co
-          if you don't hear from us within 24Hrs.
+          be notified once it is ready. Please chat/email us at
+          support@proshoot.co if you don't hear from us within 24Hrs.
         </h1>
       )}
     </>

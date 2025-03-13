@@ -34,6 +34,51 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          // Clickjacking protection
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "Content-Security-Policy",
+            value:
+              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'self';",
+          },
+          // Protection against MIME type confusion attacks
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          // XSS protection
+          {
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
+          },
+          // Control how much referrer information should be included with requests
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          // Control which browser features can be used
+          {
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+          },
+          // HTTP Strict Transport Security
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {

@@ -25,6 +25,12 @@ Sentry.init({
     // Filter out known non-critical errors
     if (event.exception && event.exception.values) {
       const exceptionValue = event.exception.values[0]?.value || "";
+      const exceptionType = event.exception.values[0]?.type || "";
+
+      // Ignore Next.js redirect "errors" - these are not actual errors but part of Next.js routing
+      if (exceptionType === "Error" && exceptionValue === "NEXT_REDIRECT") {
+        return null;
+      }
 
       // Ignore common network errors that are typically transient
       if (

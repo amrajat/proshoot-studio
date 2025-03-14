@@ -4,9 +4,12 @@ import { cookies } from "next/headers";
 import TestimonialSlider from "@/app/auth/TestimonialsSlider";
 import Header from "@/components/layout/Header";
 
-export default function SignInPage() {
+export default function SignInPage({ searchParams }) {
   const cookieJar = cookies();
   const lastSignedInMethod = cookieJar.get("lastSignedInMethod")?.value;
+
+  // Get error from query params if present
+  const error = searchParams?.error;
 
   return (
     <div className="h-screen flex flex-col">
@@ -22,13 +25,24 @@ export default function SignInPage() {
                 </p>
               </div>
               <div className="mt-5">
-                <OAuth provider={"google"} />
+                {error && (
+                  <div className="text-destructive text-sm mb-4">
+                    {decodeURIComponent(error)}
+                  </div>
+                )}
+                <OAuth
+                  provider="google"
+                  lastSignedInMethod={lastSignedInMethod}
+                />
 
-                <div className="py-3 flex items-center text-xs uppercase before:flex-[1_1_0%] before:border-t before:border-gray-200 before:me-6 after:flex-[1_1_0%] after:border-t after:border-gray-200 after:ms-6   ">
+                <div className="py-3 flex items-center text-xs uppercase before:flex-[1_1_0%] before:border-t before:border-gray-200 before:me-6 after:flex-[1_1_0%] after:border-t after:border-gray-200 after:ms-6">
                   Or
                 </div>
-                <OAuth provider={"linkedin_oidc"} />
-                <div className="py-3 flex items-center text-xs uppercase before:flex-[1_1_0%] before:border-t before:border-gray-200 before:me-6 after:flex-[1_1_0%] after:border-t after:border-gray-200 after:ms-6   ">
+                <OAuth
+                  provider="linkedin_oidc"
+                  lastSignedInMethod={lastSignedInMethod}
+                />
+                <div className="py-3 flex items-center text-xs uppercase before:flex-[1_1_0%] before:border-t before:border-gray-200 before:me-6 after:flex-[1_1_0%] after:border-t after:border-gray-200 after:ms-6">
                   Or continue with email
                 </div>
                 {/* Form */}

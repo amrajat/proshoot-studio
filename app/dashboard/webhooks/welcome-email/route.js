@@ -7,27 +7,10 @@ const url = process.env.ZOHO_ZEPTOMAIL_URL;
 const token = process.env.ZOHO_ZEPTOMAIL_TOKEN;
 const eMailClient = new SendMailClient({ url, token });
 
-// Webhook secret for verification
-const webhookSecret = process.env.SUPABASE_WEBHOOK_SECRET;
-
 // Rate limiting map
 const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX = 10; // Max 10 requests per minute
-
-// interface WebhookPayload {
-//   type: "INSERT" | "UPDATE" | "DELETE";
-//   table: string;
-//   record: {
-//     id: string,
-//     email: string,
-//     raw_user_meta_data: {
-//       username?: string,
-//     },
-//     created_at: string,
-//   };
-//   schema: string;
-// }
 
 // Rate limiting function
 function isRateLimited(ip) {
@@ -52,7 +35,16 @@ function isRateLimited(ip) {
   return false;
 }
 
-export async function GET(request) {
+export async function POST(request) {
+  // verify webhook secret using search params
+  const secret = request.nextUrl.searchParams.get("SUPABASE_WEBHOOK_SECRET");
+  if (secret !== process.env.SUPABASE_WEBHOOK_SECRET) {
+    return NextResponse.json(
+      { error: "Invalid Webhook Secret" },
+      { status: 401 }
+    );
+  }
+
   try {
     // Get client IP for rate limiting
     const headersList = headers();
@@ -66,15 +58,6 @@ export async function GET(request) {
       );
     }
 
-    // Verify webhook signature
-    // const signature = headersList.get("x-webhook-signature");
-    // if (!signature || signature !== webhookSecret) {
-    //   return NextResponse.json(
-    //     { error: "Invalid webhook signature" },
-    //     { status: 401 }
-    //   );
-    // }
-
     const payload = await request.json();
 
     // Only process new user insertions
@@ -84,43 +67,29 @@ export async function GET(request) {
 
     // Extract user information
     const { email, raw_user_meta_data } = payload.record;
-    const username = raw_user_meta_data?.username || email.split("@")[0];
+    const firstName =
+      raw_user_meta_data?.full_name?.split(" ")[0] || email.split("@")[0];
+    const fullName = raw_user_meta_data?.full_name || email;
 
-    // Send welcome email
-    // await resend.emails.send({
-    //   from: "Proshoot <welcome@proshoot.co>",
-    //   to: email,
-    //   subject: "Welcome to Proshoot! 🎉",
-    //   react: WelcomeEmail({ username }),
-    // });
-
-    await eMailClient
-      .sendMailWithTemplate({
-        mail_template_key:
-          "2518b.55dd124be7f45b04.k1.fa0ee950-f9db-11ef-bc61-525400b0b0f3.19567102465",
-        from: {
-          address: "noreply@proshoot.co",
-          name: "noreply",
-        },
-        to: [
-          {
-            email_address: {
-              address: "ablognet@gmail.com",
-              name: "Support",
-            },
+    await eMailClient.sendMailWithTemplate({
+      mail_template_key:
+        "2518b.55dd124be7f45b04.k1.fa0ee950-f9db-11ef-bc61-525400b0b0f3.19567102465",
+      from: {
+        address: "support@proshoot.co",
+        name: "Rajat",
+      },
+      to: [
+        {
+          email_address: {
+            address: email,
+            name: fullName,
           },
-        ],
-        merge_info: {
-          "product name": "product name_value",
-          product: "product_value",
-          "support id": "support id_value",
-          brand: "brand_value",
-          username: "username_value",
         },
-        subject: "Test Email",
-      })
-      .then((resp) => console.log("success"))
-      .catch((error) => console.log(error, "error"));
+      ],
+      merge_info: {
+        user_name: firstName,
+      },
+    });
 
     return NextResponse.json(
       { status: "success", message: "Welcome email sent" },
@@ -134,3 +103,12 @@ export async function GET(request) {
     );
   }
 }
+
+//generate a random string for the webhook secret 32 characters long secure and unique
+function generateRandomString(length) {
+  return Math.random()
+    .toString(36)
+    .substring(2, 2 + length);
+}
+
+console.log(generateRandomString(32));

@@ -43,22 +43,29 @@ function validateRequest(timestamp, token) {
   return token === expectedToken;
 }
 
-// Safe base64 encoding function that works with all characters
+// Replace the current safeBase64Encode function with this improved version
 function safeBase64Encode(text) {
+  if (!text || typeof text !== "string") {
+    console.error("Invalid text for encoding:", text);
+    return Buffer.from("JSSPRT, A photograph of a person.").toString("base64");
+  }
+
   try {
-    return Buffer.from(text).toString("base64");
+    // Ensure the text is properly sanitized before encoding
+    // Remove any non-printable characters that might cause issues
+    const sanitizedText = text
+      .replace(/[\x00-\x1F\x7F-\x9F]/g, " ")
+      // Ensure reasonable length
+      .substring(0, 2500)
+      // Make sure it starts with the expected prefix
+      .replace(/^(?!JSSPRT)/, "JSSPRT, ");
+
+    // Use standard base64 encoding with Buffer
+    return Buffer.from(sanitizedText).toString("base64");
   } catch (error) {
     console.error("Base64 encoding error:", error);
-    // Fallback to a simpler encoding if Buffer fails
-    try {
-      return btoa(text);
-    } catch (fallbackError) {
-      console.error("Fallback base64 encoding also failed:", fallbackError);
-      // Return a safe fallback if all encoding methods fail
-      return Buffer.from("JSSPRT, A photograph of a person.").toString(
-        "base64"
-      );
-    }
+    // Return a safe fallback if encoding fails
+    return Buffer.from("JSSPRT, A photograph of a person.").toString("base64");
   }
 }
 
@@ -233,7 +240,16 @@ By following these guidelines, generate a caption that fully captures the essenc
     try {
       const result = await Promise.race([resultPromise, timeoutPromise]);
       const response = await result.response;
-      const caption = response.text();
+      let caption = response.text();
+
+      // Sanitize the caption before encoding
+      // Ensure it's a reasonable length and doesn't contain problematic characters
+      if (!caption || typeof caption !== "string") {
+        caption = "JSSPRT, A photograph of a person.";
+      } else if (caption.length > 2500) {
+        // Truncate very long captions to prevent issues
+        caption = caption.substring(0, 2500) + "...";
+      }
 
       // Log processing time for monitoring
       const processingTime = Date.now() - processingStartTime;

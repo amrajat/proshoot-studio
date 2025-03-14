@@ -23,9 +23,22 @@ export async function middleware(request) {
       const sessionData = await getCurrentSession();
       session = sessionData.session;
     } catch (error) {
-      // Log the error but don't crash the middleware
-      console.error("Session retrieval error:", error);
-      Sentry.captureException(error);
+      // Check if this is an expected auth error for unauthenticated users
+      const isAuthTokenError =
+        error.message?.includes("Invalid Refresh Token") ||
+        error.message?.includes("Refresh Token Not Found");
+
+      // Only log unexpected errors to Sentry
+      if (!isAuthTokenError) {
+        console.error("Session retrieval error:", error);
+        Sentry.captureException(error);
+      } else {
+        // Just log to console for expected auth errors
+        console.log(
+          "Auth token error (expected for unauthenticated users):",
+          error.message
+        );
+      }
 
       // If we can't verify the session, redirect to auth for protected routes
       if (pathname.startsWith(`/dashboard`)) {

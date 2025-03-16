@@ -44,11 +44,11 @@ const nextConfig = {
             key: "X-Frame-Options",
             value: "SAMEORIGIN",
           },
-          {
-            key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'self';",
-          },
+          // { FIXME: This is temporary, we need to add the CSP back in
+          //   key: "Content-Security-Policy",
+          //   value:
+          //     "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'self';",
+          // },
           // Protection against MIME type confusion attacks
           {
             key: "X-Content-Type-Options",

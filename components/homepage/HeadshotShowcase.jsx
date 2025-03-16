@@ -58,6 +58,7 @@ export default function HeadshotShowcase() {
             className="mx-auto scale-[-1] -rotate-45 mt-10 mb-12"
             width={150}
             height={150}
+            style={{ width: "150px", height: "150px" }}
             alt="arrow pointing down"
           />
         </div>

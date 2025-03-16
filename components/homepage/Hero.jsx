@@ -181,6 +181,7 @@ const LeftImage = () => {
         src={"/arrow.svg"}
         width={100}
         height={100}
+        style={{ width: "100px", height: "100px" }}
         alt="arrow svg icon, pointing to downside"
       />
     </div>
@@ -234,6 +235,7 @@ const RightImage = () => {
         src={"/arrow.svg"}
         width={100}
         height={100}
+        style={{ width: "100px", height: "100px" }}
         alt="arrow svg icon, pointing to upside"
       />
     </div>
@@ -411,6 +413,7 @@ const CenterImageMobile = () => {
         src={"/arrow.svg"}
         width={80}
         height={80}
+        style={{ width: "80px", height: "80px" }}
         alt="arrow svg icon, pointing to upside"
       />
     </div>

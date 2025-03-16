@@ -54,6 +54,7 @@ function Reviews() {
               <Image
                 src={"/ai-summary-bg.jpeg"}
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover"
                 alt={`ai summary written by a robot`}
               />
@@ -134,6 +135,7 @@ function Reviews() {
                 <Image
                   src={review.headshot}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover"
                   alt={`ai headshot review by ${review.name}`}
                 />

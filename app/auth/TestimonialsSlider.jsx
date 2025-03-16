@@ -31,8 +31,7 @@ function TestimonialSlider() {
         height={832}
         quality={100}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 to-transparent bg-opacity-10 flex lg:flex-none flex-col justify-end p-12">
-        {/* <div className="absolute inset-0 bottom-0 bg-gradient-to-t from-foreground to-transparent p-12"> */}
+      <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 to-transparent flex flex-col justify-end p-12">
         <blockquote className="text-white text-2xl font-medium mb-4">
           {REVIEWS_ARRAY[currentTestimonial].comment}
         </blockquote>
@@ -40,17 +39,6 @@ function TestimonialSlider() {
           <p className="font-semibold">
             {REVIEWS_ARRAY[currentTestimonial].name}
           </p>
-          {/* <p>
-            {REVIEWS_ARRAY[currentTestimonial].position &&
-              REVIEWS_ARRAY[currentTestimonial].company &&
-              `${REVIEWS_ARRAY[currentTestimonial].position} at ${REVIEWS_ARRAY[currentTestimonial].company}`}
-            {REVIEWS_ARRAY[currentTestimonial].position &&
-              !REVIEWS_ARRAY[currentTestimonial].company &&
-              `${REVIEWS_ARRAY[currentTestimonial].position}`}
-            {!REVIEWS_ARRAY[currentTestimonial].position &&
-              !REVIEWS_ARRAY[currentTestimonial].company &&
-              "Proshoot Customer"}
-          </p> */}
         </div>
         <div className="flex items-center mt-4">
           <StarRatings rating={REVIEWS_ARRAY[currentTestimonial].rating} />

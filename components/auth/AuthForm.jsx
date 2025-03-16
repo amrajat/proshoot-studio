@@ -84,6 +84,11 @@ export default function AuthForm() {
                 />
               </div>
             </div>
+            <div className="mt-4">
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? "Sending OTP..." : "Continue with Email"}
+              </Button>
+            </div>
           </form>
         ) : (
           <form onSubmit={handleOtpSubmit}>
@@ -100,28 +105,22 @@ export default function AuthForm() {
                 />
               </div>
             </div>
+            <div className="mt-4">
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? "Verifying..." : "Verify OTP"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setStep("email")}
+                className="w-full mt-2"
+              >
+                Back
+              </Button>
+            </div>
           </form>
         )}
       </CardContent>
-      <CardFooter className="flex flex-col gap-2 p-0">
-        <Button
-          type="submit"
-          onClick={step === "email" ? handleEmailSubmit : handleOtpSubmit}
-          disabled={loading}
-          className="w-full self-stretch"
-        >
-          {loading
-            ? "Sending OTP..."
-            : step === "email"
-            ? "Continue with Email"
-            : "Verify OTP"}
-        </Button>
-        {step === "otp" && (
-          <Button variant="outline" onClick={() => setStep("email")}>
-            Back
-          </Button>
-        )}
-      </CardFooter>
     </>
   );
 }

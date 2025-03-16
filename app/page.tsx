@@ -15,8 +15,8 @@ import HeadshotShowcase from "@/components/homepage/HeadshotShowcase";
 export default function Home() {
   return (
     <>
+      <Header />
       <main id="content" role="main">
-        <Header />
         <Hero />
         <Examples />
         <Features />

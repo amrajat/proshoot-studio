@@ -583,9 +583,8 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     accept: ACCEPTED_IMAGE_TYPES,
     maxSize: MAX_FILE_SIZE,
     maxFiles: MAX_NUM_IMAGES,
-    noClick: true,
-    noKeyboard: true,
     disabled: processing || uploading,
+    noClick: true,
   });
 
   const handleFileChange = useCallback(
@@ -1109,12 +1108,29 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
                     ? "border-muted cursor-not-allowed"
                     : "border-primary"
                 } rounded-lg`}
-                onClick={uploading || processing ? undefined : open}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  if (!uploading && !processing) {
+                    fileInputRef.current?.click();
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    if (!uploading && !processing) {
+                      fileInputRef.current?.click();
+                    }
+                  }
+                }}
               >
                 <input
-                  {...getInputProps()}
-                  onChange={handleFileChange}
+                  type="file"
                   ref={fileInputRef}
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                  multiple
+                  accept={Object.keys(ACCEPTED_IMAGE_TYPES).join(",")}
                   disabled={uploading || processing}
                 />
                 <div className="text-center">

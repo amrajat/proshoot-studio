@@ -40,6 +40,7 @@ const FileUploader = ({
   setValue,
   isSubmitting,
   studioMessage,
+  watch,
 }) => (
   <div>
     <input
@@ -53,6 +54,7 @@ const FileUploader = ({
       errors={errors}
       isSubmitting={isSubmitting}
       studioMessage={studioMessage}
+      watch={watch}
     />
   </div>
 );
@@ -399,6 +401,7 @@ export default function StudioCreate() {
             setValue={setValue}
             isSubmitting={isSubmitting}
             studioMessage={studioMessage}
+            watch={watch}
           />
         );
 

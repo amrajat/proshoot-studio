@@ -111,7 +111,13 @@ const normalizeCropData = (crop, imageWidth, imageHeight) => {
   };
 };
 
-function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
+function ImageUploader({
+  setValue,
+  errors,
+  isSubmitting,
+  studioMessage,
+  watch,
+}) {
   // Define reducer for related state management
   const initialState = {
     files: [],
@@ -220,6 +226,9 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     1100: 2,
     700: 1,
   };
+
+  // Add this line near the top of the component to watch the gender field
+  const gender = watch("gender");
 
   // Detect network speed on component mount and when online status changes
   useEffect(() => {
@@ -928,7 +937,8 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
             type: "SET_UPLOAD_PROGRESS",
             payload: Math.round(totalProgress),
           });
-        }
+        },
+        gender // Pass the gender value here
       );
 
       // Set the form value with the signed URL
@@ -972,6 +982,7 @@ function ImageUploader({ setValue, errors, isSubmitting, studioMessage }) {
     networkFactor,
     handleError,
     validateImages,
+    gender,
   ]);
 
   // Reset retry count when files change

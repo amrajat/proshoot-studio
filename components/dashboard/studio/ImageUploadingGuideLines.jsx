@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { Check, X, Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import Heading from "@/components/shared/heading";
 
 const followGuidelines = [
   {
@@ -112,8 +111,8 @@ export default function ImageUploadingGuideLines() {
             and small faces.
           </li>
           <li>
-            Just 5-6 high-quality images can work wonders, while even one
-            poor-quality image can negatively impact the entire training.
+            Upload some half-body images, or the AI might make you look skinnier
+            than you actually are.
           </li>
         </ul>
       </div>

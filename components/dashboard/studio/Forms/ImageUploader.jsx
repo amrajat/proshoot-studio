@@ -43,8 +43,8 @@ import { processImagesWithCaptions } from "@/lib/services/imageCaptioningService
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_TOTAL_SIZE = 400 * 1024 * 1024; // 200MB total
 const MAX_NUM_IMAGES = 20;
-const MIN_NUM_IMAGES = 5;
-const MIN_NUM_IMAGES_RECOMMENDED = 8;
+const MIN_NUM_IMAGES = 8;
+const MIN_NUM_IMAGES_RECOMMENDED = 10;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 const ACCEPTED_IMAGE_TYPES = {
   "image/jpeg": [],
@@ -716,15 +716,13 @@ function ImageUploader({
     >
       <CardContent className="p-4">
         <div className="relative">
-          <div className="absolute top-2 left-2 z-10">
-            <span className="px-3 py-1 flex gap-1 items-center text-xs font-normal text-muted rounded bg-foreground">
+          {/* <div className="absolute top-2 left-2 z-10">
+            <span className="px-3 py-1 flex gap-1 items-center text-xs font-normal text-muted rounded bg-foreground/50">
               <Move className="text-destructive" strokeWidth={1.5} />
-              Move
-              <span className="italic">
-                selection area to center your face.
-              </span>
+              Keep
+              <span className="italic">Upper Body in frame</span>
             </span>
-          </div>
+          </div> */}
 
           <div
             role="application"
@@ -1162,13 +1160,29 @@ function ImageUploader({
               </div>
 
               {files.length > 0 && (
-                <Masonry
-                  breakpointCols={breakpointColumnsObj}
-                  className="flex -ml-4 w-auto"
-                  columnClassName="pl-4 bg-clip-padding"
-                >
-                  {files.map((file, index) => renderFileCard(file, index))}
-                </Masonry>
+                <>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <span className="px-3 py-1 flex gap-1 items-center text-xs font-normal text-muted rounded bg-foreground">
+                      <Move className="text-destructive" strokeWidth={1.5} />
+                      KEEP
+                      <span className="italic">your head in frame</span>
+                    </span>
+                    <span className="px-3 py-1 flex gap-1 items-center text-xs font-normal text-muted rounded bg-foreground">
+                      <Move className="text-destructive" strokeWidth={1.5} />
+                      KEEP
+                      <span className="italic">
+                        some upper body shots in frame
+                      </span>
+                    </span>
+                  </div>
+                  <Masonry
+                    breakpointCols={breakpointColumnsObj}
+                    className="flex -ml-4 w-auto"
+                    columnClassName="pl-4 bg-clip-padding"
+                  >
+                    {files.map((file, index) => renderFileCard(file, index))}
+                  </Masonry>
+                </>
               )}
 
               {warningMessage && (

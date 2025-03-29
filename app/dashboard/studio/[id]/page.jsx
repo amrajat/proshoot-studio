@@ -73,9 +73,8 @@ async function ViewStudio({ params }) {
                 removed from all images.
               </li>
               <li className="font-medium">
-                If you require headshots with custom outfits or backgrounds,
-                feel free to reach out to us via chat or email. We'll do our
-                best to generate them for you at no additional cost.
+                To create custom headshots, please remove watermarks by
+                downloading at least 1 image.
               </li>
             </ul>
           </AlertDescription>
@@ -91,11 +90,13 @@ async function ViewStudio({ params }) {
                 example of our quality. Let us know in chat if you're okay with
                 that! 😊
               </li>
-              <li>
-                If you require headshots with custom outfits or backgrounds,
-                feel free to reach out to us via chat or email. We'll do our
-                best to generate them for you at no additional cost.
-              </li>
+              {images.length > 70 && (
+                <li>
+                  To create custom headshots, please start a chat with your
+                  preferences for outfit, outfit color, and background. The more
+                  details you provide, the better we can match your vision.
+                </li>
+              )}
             </ul>
           </AlertDescription>
         </Alert>

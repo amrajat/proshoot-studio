@@ -30,6 +30,8 @@ import {
   Tag,
   MessageCircle,
   RefreshCcw,
+  Sparkles,
+  WandSparkles,
 } from "lucide-react";
 import { REVIEWS_ARRAY } from "@/lib/reviews";
 import {
@@ -364,11 +366,33 @@ export default function BuyStudio() {
                         {value.headshots} Professional Headshots
                       </span>
                       <span className="text-xs text-muted-foreground mb-1 font-medium">
-                        {value.headshots / 4} Unique Clothings
+                        {value.headshots / 4} Unique Outfits & Backgrounds
                       </span>
-                      <span className="text-xs text-muted-foreground mb-1 font-medium">
-                        {value.headshots / 4} Unique Backgrounds
-                      </span>
+
+                      {[key === "Premium", key === "Pro"].some(Boolean) && (
+                        <>
+                          <Badge
+                            variant="destructive"
+                            className="text-xs font-medium mb-2"
+                          >
+                            <Sparkles
+                              className="size-4 mr-1"
+                              strokeWidth={1.5}
+                            />
+                            Custom Outfits
+                          </Badge>
+                          <Badge
+                            variant="destructive"
+                            className="text-xs font-medium"
+                          >
+                            <WandSparkles
+                              className="size-4 mr-1"
+                              strokeWidth={1.5}
+                            />
+                            Custom Backgrounds
+                          </Badge>
+                        </>
+                      )}
 
                       {plan === key && (
                         <div className="absolute top-3 right-3 w-4 h-4 rounded-full border-2 border-primary flex items-center justify-center bg-primary/10">
@@ -381,6 +405,12 @@ export default function BuyStudio() {
                     </Label>
                   ))}
                 </RadioGroup>
+
+                <p className="text-sm text-muted-foreground mb-1 font-medium">
+                  Premium (4*2=8 headshots) and Pro (4*6=24 headshots) plans
+                  include extra custom outfits and backgrounds for complete
+                  control over your headshots.
+                </p>
 
                 <Separator className="bg-border/50" />
 
@@ -428,20 +458,15 @@ export default function BuyStudio() {
                   <div className="flex justify-between text-base font-semibold">
                     <span>Total</span>
                     <span>
-                      <span className="text-md font-bold mr-4 text-destructive line-through decoration-1 decoration-primary">
+                      {/* <span className="text-md font-bold mr-4 text-destructive line-through decoration-1 decoration-primary">
+                        ${Math.trunc(quantity * config.PLANS[plan].planPrice)}
+                      </span> */}
+                      <span className="text-lg font-bold text-primary">
                         ${Math.trunc(quantity * config.PLANS[plan].planPrice)}
                       </span>
-                      <span className="text-lg font-bold text-primary">
-                        $
-                        {(
-                          quantity *
-                          config.PLANS[plan].planPrice *
-                          0.8
-                        ).toFixed(2)}
-                      </span>
-                      <span className="ml-1 text-xs bg-success/10 text-success px-1.5 py-0.5 rounded">
+                      {/* <span className="ml-1 text-xs bg-success/10 text-success px-1.5 py-0.5 rounded">
                         SAVE 20%
-                      </span>
+                      </span> */}
                     </span>
                   </div>
 
@@ -487,9 +512,9 @@ export default function BuyStudio() {
                 <p className="flex items-center justify-center">
                   Next, you'll be redirected to create your headshots.
                 </p>
-                <p className="flex items-center justify-center">
+                {/* <p className="flex items-center justify-center">
                   Use LMTD20 promo at your next page.
-                </p>
+                </p> */}
               </div>
             </CardContent>
           </Card>
@@ -506,7 +531,7 @@ export default function BuyStudio() {
 
           <HeadshotShowcase />
           {/* Limited Time Offer - New Component */}
-          <div className="mt-4 mb-2 mx-auto max-w-md">
+          {/* <div className="mt-4 mb-2 mx-auto max-w-md">
             <div className="relative overflow-hidden rounded-lg border-2 border-primary/30 bg-primary/5 p-4 shadow-sm">
               <div className="absolute -top-6 -right-6 h-12 w-12 rounded-full bg-primary/20 blur-xl"></div>
               <div className="absolute -bottom-6 -left-6 h-12 w-12 rounded-full bg-primary/20 blur-xl"></div>
@@ -554,7 +579,7 @@ export default function BuyStudio() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

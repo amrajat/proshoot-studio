@@ -9,18 +9,6 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "sdbooth2-production.s3.amazonaws.com",
-      },
-      {
-        protocol: "https",
-        hostname: "api.astria.ai",
-      },
-      {
-        protocol: "https",
-        hostname: "utfs.io",
-      },
-      {
-        protocol: "https",
         hostname: "replicate.com",
       },
       {
@@ -44,11 +32,38 @@ const nextConfig = {
             key: "X-Frame-Options",
             value: "SAMEORIGIN",
           },
-          // { FIXME: This is temporary, we need to add the CSP back in
-          //   key: "Content-Security-Policy",
-          //   value:
-          //     "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'self';",
-          // },
+          {
+            //FIXME: This is temporary, we need to add the CSP back in
+            key: "Content-Security-Policy",
+            value: [
+              // Default fallback - only allow from same origin
+              "default-src 'self'",
+              // Scripts - allow specific trusted domains and inline scripts needed for Next.js
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firstpromoter.com https://*.posthog.com https://*.sentry.io https://*.intercom.io https://*.intercomcdn.com https://*.google.com https://*.googleapis.com",
+              // Styles - needed for Next.js and Tailwind
+              "style-src 'self' 'unsafe-inline' https://*.intercom.io https://*.intercomcdn.com",
+              // Images - allow self, data URLs, blob URLs and your remote patterns
+              "img-src 'self' data: blob: https://*.supabase.co https://*.replicate.com https://replicate.delivery https://*.intercom.io https://*.intercomcdn.com https://*.google.com",
+              // Fonts
+              "font-src 'self' data: https://*.intercomcdn.com",
+              // Connect (for API calls, websockets)
+              "connect-src 'self' https://*.posthog.com https://*.sentry.io https://*.supabase.co https://*.intercom.io https://*.firstpromoter.com https://*.google.com wss://*.intercom.io",
+              // Frame ancestors - protect against clickjacking
+              "frame-ancestors 'self'",
+              // Form actions
+              "form-action 'self'",
+              // Media
+              "media-src 'self' https://*.intercom.io",
+              // Object sources (PDFs, plugins)
+              "object-src 'none'",
+              // Frame sources for embedded content
+              "frame-src 'self' https://*.intercom.io https://*.google.com",
+              // Worker sources for web workers and service workers
+              "worker-src 'self' blob:",
+              // Manifest
+              "manifest-src 'self'",
+            ].join("; "),
+          },
           // Protection against MIME type confusion attacks
           {
             key: "X-Content-Type-Options",

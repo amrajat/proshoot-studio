@@ -5,7 +5,7 @@ import { GeistSans } from "geist/font/sans";
 
 import CookieBanner from "@/components/CookieBanner";
 import IntercomMessenger from "@/components/IntercomMessenger";
-import Script from "next/script";
+import FirstPromoterScript from "@/components/FirstPromoterScript";
 import { CSPostHogProvider } from "./providers";
 
 export const metadata: Metadata = {
@@ -27,25 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth min-h-screen">
       <CSPostHogProvider>
-        <Script id="firstpromoter-inline" strategy="afterInteractive">
-          {`
-          (function(w){
-            w.fpr=w.fpr||function(){
-              w.fpr.q = w.fpr.q||[];
-              w.fpr.q[arguments[0]=='set'?'unshift':'push'](arguments);
-            };
-          })(window);
-          fpr("init", {cid:"vx2r56ks"}); 
-          fpr("click");
-        `}
-        </Script>
-
-        {/* First Promoter External Script */}
-        <Script
-          src="https://cdn.firstpromoter.com/fpr.js"
-          strategy="afterInteractive"
-          async
-        />
+        <FirstPromoterScript />
         <body
           className={GeistSans.className + " antialiased" + " min-h-screen"}
         >

@@ -22,6 +22,18 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: "/fp/track",
+        destination: "https://t.firstpromoter.com/tr",
+      },
+      {
+        source: "/fp/details",
+        destination: "https://t.firstpromoter.com/get_details",
+      },
+    ];
+  },
   async headers() {
     return [
       {
@@ -39,7 +51,7 @@ const nextConfig = {
               // Default fallback - only allow from same origin
               "default-src 'self'",
               // Scripts - allow specific trusted domains and inline scripts needed for Next.js
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firstpromoter.com https://*.posthog.com https://*.sentry.io https://*.intercom.io https://*.intercomcdn.com https://*.google.com https://*.googleapis.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               // Styles - needed for Next.js and Tailwind
               "style-src 'self' 'unsafe-inline' https://*.intercom.io https://*.intercomcdn.com",
               // Images - allow self, data URLs, blob URLs and your remote patterns
@@ -47,7 +59,7 @@ const nextConfig = {
               // Fonts
               "font-src 'self' data: https://*.intercomcdn.com",
               // Connect (for API calls, websockets)
-              "connect-src 'self' https://*.posthog.com https://*.sentry.io https://*.supabase.co https://*.intercom.io https://*.firstpromoter.com https://*.google.com wss://*.intercom.io",
+              "connect-src 'self' https://*.posthog.com https://*.sentry.io https://*.supabase.co https://*.intercom.io wss://*.intercom.io",
               // Frame ancestors - protect against clickjacking
               "frame-ancestors 'self'",
               // Form actions

@@ -6,7 +6,7 @@ import { GeistSans } from "geist/font/sans";
 import CookieBanner from "@/components/CookieBanner";
 import IntercomMessenger from "@/components/IntercomMessenger";
 import FirstPromoterScript from "@/components/FirstPromoterScript";
-import { CSPostHogProvider } from "./providers";
+import { PostHogProvider } from "@/components/PostHogProvider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${process.env.URL}`),
@@ -21,20 +21,20 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="scroll-smooth min-h-screen">
-      <CSPostHogProvider>
+      <PostHogProvider>
         <FirstPromoterScript />
         <body
-          className={GeistSans.className + " antialiased" + " min-h-screen"}
+          className={
+            GeistSans.className + " antialiased" + " min-h-screen"
+          }
         >
           {children}
           <CookieBanner />
         </body>
-      </CSPostHogProvider>
+      </PostHogProvider>
       <IntercomMessenger />
     </html>
   );

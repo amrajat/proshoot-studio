@@ -1,8 +1,9 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 declare global {
   interface Window {
@@ -12,7 +13,7 @@ declare global {
   }
 }
 
-export default function FirstPromoterScript() {
+function FirstPromoterContent() {
   const searchParams = useSearchParams();
   const ref = searchParams.get("ref");
 
@@ -72,5 +73,13 @@ export default function FirstPromoterScript() {
         onLoad={initializeFirstPromoter}
       />
     </>
+  );
+}
+
+export default function FirstPromoterScript() {
+  return (
+    <Suspense fallback={null}>
+      <FirstPromoterContent />
+    </Suspense>
   );
 }

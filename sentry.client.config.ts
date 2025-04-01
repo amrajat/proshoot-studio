@@ -7,18 +7,15 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: "https://458f233d8eae5d8abea19d7344652a76@o4507332139089920.ingest.us.sentry.io/4507332141645824",
   enabled: process.env.NODE_ENV === "production",
+  tunnel: "/monitoring/api/envelope",
 
-  // Adjust sampling rate to reduce noise while still capturing important errors
-  tracesSampleRate: 0.2,
+  // Reduce sampling rates to avoid rate limiting
+  tracesSampleRate: 0.1,
+  replaysOnErrorSampleRate: 0.5,
+  replaysSessionSampleRate: 0.01,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
-
-  // Increase replay capture rate for errors to help with debugging
-  replaysOnErrorSampleRate: 1.0,
-
-  // Reduce session replay sample rate to save resources
-  replaysSessionSampleRate: 0.05,
 
   // Add error filtering to reduce noise
   beforeSend(event, hint) {
@@ -35,6 +32,15 @@ Sentry.init({
 
       // Ignore Next.js redirect "errors" - these are not actual errors but part of Next.js routing
       if (exceptionType === "Error" && exceptionValue === "NEXT_REDIRECT") {
+        return null;
+      }
+
+      // Rate limit related errors
+      if (
+        exceptionValue.includes("429") ||
+        exceptionValue.includes("Too Many Requests")
+      ) {
+        console.warn("Sentry rate limit reached");
         return null;
       }
 
@@ -71,10 +77,9 @@ Sentry.init({
     return event;
   },
 
-  // You can remove this option if you're not planning to use the Sentry Session Replay feature:
+  // Configure integrations with optimized settings
   integrations: [
     Sentry.replayIntegration({
-      // Additional Replay configuration goes in here, for example:
       maskAllText: true,
       blockAllMedia: true,
     }),

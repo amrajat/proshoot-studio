@@ -45,6 +45,11 @@ const nextConfig = {
         source: "/ingest/decide",
         destination: "https://us.i.posthog.com/decide",
       },
+      // Sentry rewrites
+      {
+        source: "/monitoring/api/:path*",
+        destination: "https://o4507332139089920.ingest.us.sentry.io/:path*",
+      },
     ];
   },
   // This is required to support PostHog trailing slash API requests
@@ -146,7 +151,7 @@ export default withSentryConfig(nextConfig, {
   // This can increase your server load as well as your hosting bill.
   // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
   // side errors will fail.
-  // tunnelRoute: "/monitoring",
+  tunnelRoute: "/monitoring/api",
 
   // Hides source maps from generated client bundles
   hideSourceMaps: true,

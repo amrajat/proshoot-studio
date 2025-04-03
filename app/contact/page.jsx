@@ -2,7 +2,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/homepage/Footer";
 import Container from "@/components/dashboard/Container";
 import Heading from "@/components/shared/heading";
-import TallyContactForm from "@/app/contact/contact-form";
 export const metadata = {
   title: "Contact",
   description:
@@ -19,10 +18,17 @@ function Contact() {
             Contact Us
           </Heading>
           <p className="text-sm font-normal ">
-            Please fill below form or email us at support@proshoot.co to get in
-            touch with us. Thank you!
+            We’d love to hear from you!<br></br>
+            <br></br>
+            For any questions, support, or inquiries, Simply click on the small
+            <strong> round messenger icon at the bottom right</strong> of your
+            screen to chat with us instantly.
+            <br></br>
+            <br></br>
+            Prefer email? No problem! Reach us at{" "}
+            <strong>support@proshoot.co</strong>, and we’ll get back to you as
+            soon as possible. We’re here to help—let’s connect! 😊
           </p>
-          <TallyContactForm />
         </div>
       </Container>
       <Footer />

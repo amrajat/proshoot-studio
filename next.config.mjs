@@ -70,9 +70,9 @@ const nextConfig = {
             value: [
               // Default fallback - only allow from same origin
               "default-src 'self'",
-              // Scripts - allow specific trusted domains and inline scripts needed for Next.js
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-              // Styles - needed for Next.js and Tailwind
+              // Scripts - allow specific trusted domains and inline scripts needed for Next.js and Intercom
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.intercom.io https://*.intercomcdn.com",
+              // Styles - needed for Next.js, Tailwind and Intercom
               "style-src 'self' 'unsafe-inline' https://*.intercom.io https://*.intercomcdn.com",
               // Images - allow self, data URLs, blob URLs and your remote patterns
               "img-src 'self' data: blob: https://*.supabase.co https://*.replicate.com https://replicate.delivery https://*.intercom.io https://*.intercomcdn.com https://*.google.com",
@@ -85,13 +85,13 @@ const nextConfig = {
               // Form actions
               "form-action 'self'",
               // Media
-              "media-src 'self' https://*.intercom.io",
+              "media-src 'self' https://*.intercom.io https://*.intercomcdn.com",
               // Object sources (PDFs, plugins)
               "object-src 'none'",
               // Frame sources for embedded content
               "frame-src 'self' https://*.intercom.io https://*.google.com",
               // Worker sources for web workers and service workers
-              "worker-src 'self' blob:",
+              "worker-src 'self' blob: https://*.intercom.io",
               // Manifest
               "manifest-src 'self'",
             ].join("; "),

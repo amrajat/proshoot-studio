@@ -90,20 +90,26 @@ export default function ImageUploadingGuideLines() {
     <div className="w-full space-y-6 py-2">
       <div className="space-y-4">
         <p className="text-muted-foreground">
-          These guidelines aren't strict rules—just tips to help you get the
-          best results! The closer you follow them, the better.
+          To get the best possible results, it's essential to follow these
+          guidelines closely. While some tips are flexible, the{" "}
+          <span className="font-medium underline text-foreground">
+            5 key recommendations below must be followed—otherwise, you’ll miss
+            out on the best outcomes.
+          </span>{" "}
+          The closer you stick to these guidelines, the better your results will
+          be!
         </p>
         <p className="text-destructive font-bold">
           Highly Recommended, Follow these 5 points at least.
         </p>
-        <ul className="marker:text-primary list-disc ps-4 space-y-3 text-sm md:text-base">
-          <li>
-            Upload 8-20 high-quality close-ups, upper-body shots with different
-            outfits and backgrounds.
-          </li>
+        <ol className="list-decimal ps-4 space-y-3 text-sm md:text-base">
           <li>
             Variation is key—avoid similar or identical images or same day
             photos.
+          </li>
+          <li>
+            Upload 8-20 high-quality close-ups, upper-body shots with different
+            outfits, expressions, and backgrounds.
           </li>
           <li>Ensure your photos are clear, sharp, and well-lit.</li>
           <li>
@@ -114,7 +120,7 @@ export default function ImageUploadingGuideLines() {
             Upload some half-body images, or the AI might make you look skinnier
             than you actually are.
           </li>
-        </ul>
+        </ol>
       </div>
 
       <div className="space-y-6">

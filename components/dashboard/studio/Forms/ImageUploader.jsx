@@ -1074,7 +1074,6 @@ function ImageUploader({
             Click on "Show Image Guidelines" button to read about image
             uploading guidelines.
           </p>
-          {/* <ImageUploadingGuideLines /> */}
           <Dialog
             open={showGuidelinesDialog}
             onOpenChange={(open) =>

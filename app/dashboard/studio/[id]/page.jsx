@@ -85,11 +85,6 @@ async function ViewStudio({ params }) {
         <Alert className="mb-6 bg-primary/5 border-primary/20">
           <AlertDescription className="text-sm mt-2">
             <ul className="list-disc pl-5 space-y-1">
-              <li className="font-medium">
-                We'd love to feature your favorite headshot on our website as an
-                example of our quality. Let us know in chat if you're okay with
-                that! 😊
-              </li>
               {images.length > 70 && (
                 <li>
                   To create custom headshots, please start a chat with your

@@ -3,10 +3,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { GeistSans } from "geist/font/sans";
 
-import CookieBanner from "@/components/CookieBanner";
-import IntercomMessenger from "@/components/IntercomMessenger";
-import FirstPromoterScript from "@/components/FirstPromoterScript";
-import { PostHogProvider } from "@/components/PostHogProvider";
+// import CookieBanner from "@/components/CookieBanner";
+import FirstPromoterScript from "@/components/services/first-promoter";
+import { PostHogProvider } from "@/components/services/posthog";
+import { SidebarProvider } from "@/context/SidebarContext";
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${process.env.URL}`),
@@ -27,15 +27,12 @@ export default function RootLayout({
       <PostHogProvider>
         <FirstPromoterScript />
         <body
-          className={
-            GeistSans.className + " antialiased" + " min-h-screen"
-          }
+          className={GeistSans.className + " antialiased" + " min-h-screen"}
         >
-          {children}
-          <CookieBanner />
+          <SidebarProvider>{children}</SidebarProvider>
+          {/* <CookieBanner /> */}
         </body>
       </PostHogProvider>
-      <IntercomMessenger />
     </html>
   );
 }

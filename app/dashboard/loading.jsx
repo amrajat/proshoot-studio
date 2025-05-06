@@ -1,9 +1,4 @@
-import Container from "@/components/dashboard/Container";
 import Loader from "@/components/Loader";
 export default function Loading() {
-  return (
-    <Container>
-      <Loader />
-    </Container>
-  );
+  return <Loader />;
 }

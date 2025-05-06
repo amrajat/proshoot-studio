@@ -9,28 +9,32 @@ const config = {
   baseUrl: "https://www.proshoot.co",
 
   PLANS: {
-    Basic: {
+    Starter: {
       planPrice: 29,
       variantId: 387793,
       headshots: 40,
-    },
-
-    Standard: {
-      planPrice: 39,
-      variantId: 387811,
-      headshots: 60,
-    },
-
-    Premium: {
-      planPrice: 49,
-      variantId: 387812,
-      headshots: 80,
+      styles: 10,
     },
 
     Pro: {
+      planPrice: 39,
+      variantId: 387811,
+      headshots: 60,
+      styles: 15,
+    },
+
+    Elite: {
+      planPrice: 49,
+      variantId: 387812,
+      headshots: 80,
+      styles: 20,
+    },
+
+    Studio: {
       planPrice: 59,
       variantId: 387813,
       headshots: 100,
+      styles: 25,
     },
   },
 };

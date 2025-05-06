@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { REVIEWS_ARRAY } from "@/lib/reviews";
+import { REVIEWS_ARRAY } from "@/utils/reviews";
 import StarRatings from "./star-ratings";
 
 const aiSummary = {

@@ -1,0 +1,1 @@
+ALTER TYPE public.studio_status ADD VALUE 'images_uploaded';

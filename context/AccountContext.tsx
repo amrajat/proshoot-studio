@@ -6,39 +6,36 @@ import React, {
   useContext,
   ReactNode,
   useMemo,
+  useEffect, // Added useEffect
 } from "react";
 import { User as LucideUser, Building } from "lucide-react";
-import createSupabaseBrowserClient from "@/lib/supabase/browser-client"; // Import browser client
+import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
 
-// Define types for context data
 export type OrganizationContext = {
   id: string;
   name: string;
   owner_user_id: string;
-  team_size?: number | null; // Add optional team_size
-  website?: string | null; // Add optional website
-  industry?: string | null; // Add optional industry
-  department?: string | null; // Add optional department
-  position?: string | null; // Add optional position
+  team_size?: number | null;
+  website?: string | null;
+  industry?: string | null;
+  department?: string | null;
+  position?: string | null;
 };
 
 export type PersonalContext = {
-  id: "personal"; // Use a fixed ID for personal context
-  name: string; // User's full name
+  id: "personal";
+  name: string;
 };
 
 export type AvailableContext =
   | ({ type: "personal" } & PersonalContext)
   | ({ type: "organization" } & OrganizationContext);
 
-// Define the shape of the Supabase data we expect from fetching
-// (Mirroring the structure fetched in app/dashboard/layout.tsx)
 type FetchedProfile = {
   user_id: string;
   full_name?: string | null;
 };
 
-// Adjust FetchedOrgMember: organizations is an array of detailed objects, or null/undefined
 type FetchedOrganizationDetail = {
   id: string;
   name: string;
@@ -51,7 +48,7 @@ type FetchedOrganizationDetail = {
 };
 
 type FetchedOrgMember = {
-  organizations: FetchedOrganizationDetail[] | null; // organizations is an array or null
+  organizations: FetchedOrganizationDetail[] | null;
 };
 
 interface AccountContextProps {
@@ -60,7 +57,8 @@ interface AccountContextProps {
   selectedContext: AvailableContext | null;
   setSelectedContext: (context: AvailableContext | null) => void;
   isLoading: boolean;
-  refreshContext: () => Promise<void>; // Add refresh function
+  refreshContext: () => Promise<void>;
+  isCurrentUserOrgAdmin: boolean;
 }
 
 const AccountContext = createContext<AccountContextProps | undefined>(
@@ -69,19 +67,25 @@ const AccountContext = createContext<AccountContextProps | undefined>(
 
 interface AccountProviderProps {
   children: ReactNode;
-  initialProfile: FetchedProfile | null; // Use FetchedProfile type
-  initialOrganizations: OrganizationContext[]; // Type for initial prop is fine
+  initialProfile: FetchedProfile | null;
+  initialOrganizations: OrganizationContext[];
   initialIsLoading?: boolean;
 }
 
+const LOCAL_STORAGE_KEY = "selectedAccountContextIdentifier";
+
+type StoredContextIdentifier = {
+  id: string;
+  type: "personal" | "organization";
+};
+
 export const AccountProvider = ({
   children,
-  initialProfile: initialProfileData, // Rename to avoid conflict
-  initialOrganizations: initialOrganizationsData, // Rename
+  initialProfile: initialProfileData,
+  initialOrganizations: initialOrganizationsData,
   initialIsLoading = false,
 }: AccountProviderProps) => {
   const [isLoading, setIsLoading] = useState(initialIsLoading);
-  // State to hold the actual profile and orgs data, allowing refresh
   const [profile, setProfile] = useState<FetchedProfile | null>(
     initialProfileData
   );
@@ -89,7 +93,26 @@ export const AccountProvider = ({
     initialOrganizationsData
   );
 
+  // Initialize selectedContext state. The actual value will be set by the useEffect below.
+  const [selectedContext, setSelectedContextInternal] =
+    useState<AvailableContext | null>(null);
+
   const userId = useMemo(() => profile?.user_id || null, [profile]);
+
+  const isCurrentUserOrgAdmin = useMemo(() => {
+    if (
+      !selectedContext ||
+      selectedContext.type !== "organization" ||
+      !userId
+    ) {
+      return false;
+    }
+    const orgContext = selectedContext as Extract<
+      AvailableContext,
+      { type: "organization" }
+    >;
+    return orgContext.owner_user_id === userId;
+  }, [selectedContext, userId]);
 
   const availableContexts = useMemo(() => {
     const contexts: AvailableContext[] = [];
@@ -103,66 +126,140 @@ export const AccountProvider = ({
     organizations.forEach((org) => {
       contexts.push({
         type: "organization",
-        ...org, // Spread all fields from OrganizationContext type
+        ...org,
       });
     });
     return contexts;
   }, [profile, organizations]);
 
-  const [selectedContext, setSelectedContextInternal] =
-    useState<AvailableContext | null>(null);
+  // Effect to initialize selectedContext from localStorage or defaults
+  useEffect(() => {
+    let initialSelection: AvailableContext | null = null;
+    let foundInStorage = false;
 
-  // Effect to initialize or update selectedContext when availableContexts change
-  React.useEffect(() => {
-    const personal = availableContexts.find((c) => c.type === "personal");
-    const firstOrg = availableContexts.find((c) => c.type === "organization");
-
-    // If current selection is still valid, keep it
-    const currentSelectionValid = selectedContext
-      ? availableContexts.some((ctx) => ctx.id === selectedContext.id)
-      : false;
-
-    if (currentSelectionValid) {
-      // Update the selected context object instance if necessary (e.g., name changed)
-      const updatedSelected = availableContexts.find(
-        (ctx) => ctx.id === selectedContext!.id
-      );
-      if (
-        updatedSelected &&
-        JSON.stringify(updatedSelected) !== JSON.stringify(selectedContext)
-      ) {
-        setSelectedContextInternal(updatedSelected);
+    if (typeof window !== "undefined" && availableContexts.length > 0) {
+      const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (storedValue) {
+        try {
+          const storedIdentifier: StoredContextIdentifier =
+            JSON.parse(storedValue);
+          const matchingContext = availableContexts.find(
+            (ctx) =>
+              ctx.id === storedIdentifier.id &&
+              ctx.type === storedIdentifier.type
+          );
+          if (matchingContext) {
+            initialSelection = matchingContext;
+            foundInStorage = true;
+          } else {
+            localStorage.removeItem(LOCAL_STORAGE_KEY); // Clean up invalid stored value
+          }
+        } catch (error) {
+          console.error(
+            "Error parsing selectedContext from localStorage on init",
+            error
+          );
+          localStorage.removeItem(LOCAL_STORAGE_KEY);
+        }
       }
-    } else {
-      // Otherwise, default: personal > first org > null
-      setSelectedContextInternal(personal || firstOrg || null);
-    }
-  }, [availableContexts]); // Rerun when contexts list changes
 
-  // The public setter function remains the same
+      if (foundInStorage && initialSelection) {
+        // Only set if different from current to avoid loops if already set by another tab via storage event
+        if (
+          JSON.stringify(selectedContext) !== JSON.stringify(initialSelection)
+        ) {
+          setSelectedContextInternal(initialSelection);
+        }
+      } else if (!selectedContext) {
+        // If no context currently selected (e.g. initial load and nothing valid in storage)
+        const personal = availableContexts.find((c) => c.type === "personal");
+        const firstOrg = availableContexts.find(
+          (c) => c.type === "organization"
+        );
+        setSelectedContextInternal(personal || firstOrg || null);
+      }
+    } else if (availableContexts.length === 0 && selectedContext !== null) {
+      // If contexts become empty, clear selection
+      setSelectedContextInternal(null);
+    }
+  }, [availableContexts]); // Rerun when availableContexts changes. SelectedContext removed from deps.
+
   const setSelectedContext = (context: AvailableContext | null) => {
     setSelectedContextInternal(context);
+    if (typeof window !== "undefined") {
+      if (context) {
+        const identifierToStore: StoredContextIdentifier = {
+          id: context.id,
+          type: context.type,
+        };
+        localStorage.setItem(
+          LOCAL_STORAGE_KEY,
+          JSON.stringify(identifierToStore)
+        );
+      } else {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+      }
+    }
   };
 
-  // --- Refresh Function Implementation ---
+  // Effect for cross-tab synchronization via localStorage
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === LOCAL_STORAGE_KEY) {
+        if (event.newValue) {
+          try {
+            const newIdentifier: StoredContextIdentifier = JSON.parse(
+              event.newValue
+            );
+            const newSelectedContext = availableContexts.find(
+              (ctx) =>
+                ctx.id === newIdentifier.id && ctx.type === newIdentifier.type
+            );
+            if (
+              newSelectedContext &&
+              JSON.stringify(newSelectedContext) !==
+                JSON.stringify(selectedContext)
+            ) {
+              setSelectedContextInternal(newSelectedContext);
+            } else if (!newSelectedContext && selectedContext !== null) {
+              setSelectedContextInternal(null); // Item was validly set to something not in availableContexts or cleared
+            }
+          } catch (error) {
+            console.error(
+              "Error processing storage event for selectedContext",
+              error
+            );
+          }
+        } else {
+          // newValue is null, meaning item was removed from localStorage
+          if (selectedContext !== null) {
+            setSelectedContextInternal(null);
+          }
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [availableContexts, selectedContext]); // Re-run if availableContexts changes or selectedContext changes locally
+
   const refreshContext = async () => {
     console.log("Starting refreshContext...");
     setIsLoading(true);
-
-    // --- Restore the core logic ---
     const supabase = createSupabaseBrowserClient();
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
+
     if (authError || !user) {
       console.error("Refresh Context: Auth Error", authError);
       setProfile(null);
       setOrganizations([]);
-      // No return here, let finally handle setIsLoading
     } else {
       try {
-        // Fetch profile and organizations in parallel
         const [profileRes, orgMembersRes] = await Promise.all([
           supabase
             .from("profiles")
@@ -206,15 +303,9 @@ export const AccountProvider = ({
         console.error("Refresh Context: Unexpected error:", error);
       }
     }
-    // --- End of restored logic ---
-
-    // Remove simulated delay unless specifically needed for debugging later
-    // await new Promise(resolve => setTimeout(resolve, 50));
-
     console.log("...Finishing refreshContext");
     setIsLoading(false);
   };
-  // --- End Refresh Function ---
 
   const value = {
     userId,
@@ -222,7 +313,8 @@ export const AccountProvider = ({
     selectedContext,
     setSelectedContext,
     isLoading,
-    refreshContext, // Provide the refresh function
+    refreshContext,
+    isCurrentUserOrgAdmin,
   };
 
   return (

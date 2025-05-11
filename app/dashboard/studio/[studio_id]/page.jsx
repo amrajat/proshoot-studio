@@ -5,7 +5,7 @@ import { ContentLayout } from "@/components/dashboard/sidebar/content-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image"; // Using next/image for optimization
 import { notFound } from "next/navigation";
-import { HeadshotCard } from "../_components/HeadshotCard"; // Import the new component
+// import { HeadshotCard } from "../_components/HeadshotCard"; // Import the new component
 import { Building } from "lucide-react";
 
 async function getStudioDetails(supabase, studioId, userId) {
@@ -142,12 +142,13 @@ export default async function StudioDetailPage({ params }) {
           {headshots.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {headshots.map((headshot) => (
-                <HeadshotCard
-                  key={headshot.id}
-                  headshot={headshot}
-                  studioId={studio.id} // Pass studioId
-                  initialIsFavorited={headshot.isFavorited} // Pass initial state
-                />
+                // <HeadshotCard
+                //   key={headshot.id}
+                //   headshot={headshot}
+                //   studioId={studio.id} // Pass studioId
+                //   initialIsFavorited={headshot.isFavorited} // Pass initial state
+                // />
+                <></>
               ))}
             </div>
           ) : (

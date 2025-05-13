@@ -755,7 +755,7 @@ export default function StudioCreate() {
   }, [errors]);
 
   return (
-    <ContentLayout title="Create Studio">
+    <ContentLayout navbar={false} title="Create Studio">
       <form
         onSubmit={handleSubmit(onSubmit)}
         onKeyDown={(e) => {

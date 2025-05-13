@@ -4,10 +4,15 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client"; // Use Browser client for client-side fetching
-import { useAccountContext } from "@/context/AccountContext"; // Import the context hook
+import {
+  useAccountContext,
+  type OrganizationContext as OrgContextTypeFromAccount,
+} from "@/context/AccountContext"; // Import the context hook
 import { useRouter } from "next/navigation"; // For redirecting
 import Link from "next/link"; // For links
 import { Skeleton } from "@/components/ui/skeleton"; // For loading state
+import StudioCreate from "@/app/dashboard/studio/create/page";
+import OrganizationAdminDashboardComponent from "@/components/dashboard/organizations/OrganizationAdminDashboard"; // IMPORT THE ACTUAL COMPONENT
 
 // Re-use or import type from context or a central types file
 type Credits = {
@@ -38,7 +43,11 @@ const checkPlanCredits = (credits: Credits | null | undefined): boolean => {
 };
 
 export default function DashboardClient({ userId }: DashboardClientProps) {
-  const { selectedContext, isLoading: contextLoading } = useAccountContext();
+  const {
+    selectedContext,
+    isLoading: contextLoading,
+    isCurrentUserOrgAdmin,
+  } = useAccountContext();
   const router = useRouter();
 
   // State for personal credits fetched client-side
@@ -102,78 +111,24 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   // 3. Render based on Selected Context Type
   if (selectedContext.type === "personal") {
-    return (
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Personal Dashboard</h2>
-        {creditsLoading && (
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-1/4" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        )}
-        {!creditsLoading && (
-          <>
-            {checkPlanCredits(personalCredits) ? (
-              <div className="p-4 border rounded-md bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700/50">
-                <p className="mb-2 text-green-800 dark:text-green-300">
-                  You have credits available!
-                </p>
-                <Button asChild>
-                  <Link href="/dashboard/studio/create">
-                    Create New Headshots
-                  </Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="p-4 border rounded-md bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700/50">
-                <p className="mb-2 text-amber-800 dark:text-amber-300">
-                  You need credits to create headshots for your personal
-                  account.
-                </p>
-                <Button asChild>
-                  <Link href="/dashboard/billing">Go to Billing</Link>
-                </Button>
-              </div>
-            )}
-            {/* Display current credits if needed */}
-            {/* <pre>Credits: {JSON.stringify(personalCredits, null, 2)}</pre> */}
-          </>
-        )}
-      </div>
-    );
+    return <StudioCreate />;
   }
 
   if (selectedContext.type === "organization") {
-    return (
-      <div>
-        <h2 className="text-xl font-semibold mb-4">
-          Organization Dashboard: {selectedContext.name}
-        </h2>
-        <p className="text-muted-foreground">
-          You are currently viewing the dashboard in the context of the
-          organization '{selectedContext.name}'.
-        </p>
-        {/* Add Organization-specific components/links here */}
-        {/* Example: Link to org settings, members, org billing, org studios etc. */}
-        <div className="mt-4 space-x-2">
-          <Button asChild variant="outline">
-            <Link
-              href={`/dashboard/organization/${selectedContext.id}/settings`}
-            >
-              Organization Settings
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link
-              href={`/dashboard/organization/${selectedContext.id}/members`}
-            >
-              Manage Members
-            </Link>
-          </Button>
-          {/* Add more org-specific actions */}
-        </div>
-      </div>
-    );
+    if (isCurrentUserOrgAdmin) {
+      // Ensure selectedContext is correctly typed for OrganizationAdminDashboardComponent
+      const orgAdminContext = selectedContext as OrgContextTypeFromAccount & {
+        type: "organization";
+      };
+      return (
+        <OrganizationAdminDashboardComponent orgContext={orgAdminContext} />
+      );
+    } else {
+      // User is a member, not an admin
+      // TODO: Pass any necessary org-specific props to StudioCreate if needed
+      // e.g., for restricted clothing/backgrounds, though the prompt says StudioCreate handles this.
+      return <StudioCreate />;
+    }
   }
 
   // Fallback if context type is somehow unexpected

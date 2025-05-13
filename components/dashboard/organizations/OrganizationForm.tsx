@@ -23,7 +23,10 @@ import {
 } from "@/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, AlertCircle } from "lucide-react";
-import { OrganizationContext } from "@/context/AccountContext";
+import {
+  OrganizationContext,
+  useAccountContext,
+} from "@/context/AccountContext";
 import { z } from "zod";
 
 // Refine schema for potentially null values
@@ -50,6 +53,7 @@ export default function OrganizationForm({
 }: OrganizationFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const { refreshContext, switchToOrgAfterRefresh } = useAccountContext();
 
   const form = useForm<z.infer<typeof orgFormSchema>>({
     resolver: zodResolver(orgFormSchema),
@@ -80,17 +84,31 @@ export default function OrganizationForm({
 
     try {
       let result;
+      let orgIdToSwitchTo: string | null = null;
+
       if (mode === "create") {
         result = await createOrganizationAction(dataToSend);
+        if (!result?.error && result?.data?.id) {
+          orgIdToSwitchTo = result.data.id;
+        } else if (result?.error) {
+          setFormError(result.error);
+        }
       } else if (mode === "edit" && initialData?.id) {
         result = await updateOrganizationAction(initialData.id, dataToSend);
+        if (!result?.error) {
+          orgIdToSwitchTo = initialData.id;
+        } else {
+          setFormError(result.error);
+        }
       } else {
         throw new Error("Invalid mode or missing initialData for edit.");
       }
 
-      if (result?.error) {
-        setFormError(result.error);
-      } else {
+      // If successful and we have an org ID, trigger context switch and refresh
+      if (!result?.error && orgIdToSwitchTo) {
+        switchToOrgAfterRefresh(orgIdToSwitchTo);
+        await refreshContext();
+
         toast({
           title: `Organization ${
             mode === "create" ? "created" : "updated"
@@ -99,6 +117,7 @@ export default function OrganizationForm({
             mode === "create" ? "created" : "updated"
           } organization: ${values.name}`,
         });
+
         onSuccess?.();
       }
     } catch (error) {

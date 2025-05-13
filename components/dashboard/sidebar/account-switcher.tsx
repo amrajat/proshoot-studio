@@ -35,6 +35,7 @@ import {
 import {
   useAccountContext,
   OrganizationContext,
+  AvailableContext,
 } from "@/context/AccountContext";
 
 export function AccountSwitcher() {
@@ -50,6 +51,7 @@ export function AccountSwitcher() {
 
   const [isCreateOrgDialogOpen, setCreateOrgDialogOpen] = React.useState(false);
   const [isEditOrgDialogOpen, setEditOrgDialogOpen] = React.useState(false);
+  const [switchToOrgId, setSwitchToOrgId] = React.useState<string | null>(null);
 
   const ownedOrg = React.useMemo(() => {
     if (!userId) return null;
@@ -66,6 +68,19 @@ export function AccountSwitcher() {
         context.type === "organization" && context.owner_user_id === userId
     );
   }, [availableContexts, userId]);
+
+  React.useEffect(() => {
+    if (switchToOrgId && availableContexts.length > 0) {
+      const targetOrg = availableContexts.find(
+        (ctx) => ctx.type === "organization" && ctx.id === switchToOrgId
+      ) as Extract<AvailableContext, { type: "organization" }> | undefined;
+
+      if (targetOrg) {
+        setSelectedContext(targetOrg);
+        setSwitchToOrgId(null);
+      }
+    }
+  }, [availableContexts, switchToOrgId, setSelectedContext, userId]);
 
   const handleOpenCreateDialog = () => setCreateOrgDialogOpen(true);
   const handleOpenEditDialog = () => setEditOrgDialogOpen(true);
@@ -208,9 +223,12 @@ export function AccountSwitcher() {
           </DialogHeader>
           <OrganizationForm
             mode="create"
-            onSuccess={() => {
+            onSuccess={async (newOrgId?: string) => {
               setCreateOrgDialogOpen(false);
-              refreshContext();
+              if (newOrgId) {
+                setSwitchToOrgId(newOrgId);
+              }
+              await refreshContext();
             }}
           />
         </DialogContent>
@@ -227,9 +245,12 @@ export function AccountSwitcher() {
           <OrganizationForm
             mode="edit"
             initialData={ownedOrg}
-            onSuccess={() => {
+            onSuccess={async () => {
               setEditOrgDialogOpen(false);
-              refreshContext();
+              if (ownedOrg?.id) {
+                setSwitchToOrgId(ownedOrg.id);
+              }
+              await refreshContext();
             }}
           />
         </DialogContent>

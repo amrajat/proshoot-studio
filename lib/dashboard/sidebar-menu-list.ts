@@ -83,16 +83,16 @@ export function getMenuList(pathname: string): Group[] {
     {
       groupLabel: "Settings",
       menus: [
-        {
-          href: "/dashboard/teams",
-          label: "Teams",
-          icon: Users,
-        },
-        {
-          href: "/dashboard/account",
-          label: "Account Settings",
-          icon: Settings,
-        },
+        // {
+        //   href: "/dashboard/teams",
+        //   label: "Teams",
+        //   icon: Users,
+        // },
+        // {
+        //   href: "/dashboard/account",
+        //   label: "Account Settings",
+        //   icon: Settings,
+        // },
         {
           href: "/dashboard/studio",
           label: "Studio",

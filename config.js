@@ -36,6 +36,12 @@ const config = {
       headshots: 100,
       styles: 25,
     },
+    Team: {
+      planPrice: 49,
+      variantId: 387813,
+      headshots: 100,
+      styles: 25,
+    },
   },
 };
 

@@ -26,12 +26,23 @@ CREATE TABLE public.organizations (
     id uuid PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     owner_user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT, -- Prevent deleting owner if org exists
     name text NOT NULL,
+    team_size INT4, -- Added from 20250504110536
+    website TEXT NULL, -- Added from 20250504110536
+    industry TEXT NULL, -- Added from 20250504110536
+    department TEXT NULL, -- Added from 20250504110536
+    "position" TEXT NULL, -- Added from 20250504110536 (quoted)
+    invite_token TEXT UNIQUE, -- Added from 20250512000000
+    invite_token_generated_at TIMESTAMPTZ, -- Added from 20250512000000
     created_at timestamptz DEFAULT now() NOT NULL,
-    updated_at timestamptz DEFAULT now() NOT NULL
+    updated_at timestamptz DEFAULT now() NOT NULL,
+    CONSTRAINT organizations_owner_user_id_key UNIQUE (owner_user_id), -- Added from 20250504133136 (Enforces single owned org)
+    CONSTRAINT organizations_name_key UNIQUE (name) -- Added for clarity, org names should be unique
 );
+COMMENT ON COLUMN public.organizations.invite_token IS 'Stores the active universal invite token for the organization. Nullified when revoked.';
+COMMENT ON COLUMN public.organizations.invite_token_generated_at IS 'Timestamp of when the current universal invite token was generated.';
 ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
 
--- 3. Organization Members Table (Moved Up)
+-- 3. Organization Members Table
 CREATE TABLE public.organization_members (
     id uuid PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
@@ -117,7 +128,7 @@ CREATE TABLE public.purchases (
     payment_intent_id text UNIQUE,
     amount integer NOT NULL CHECK (amount > 0),
     currency text NOT NULL,
-    credits_granted integer NOT NULL CHECK (credits_granted >= 0),
+    credits_granted integer NOT NULL CHECK (credits_granted >= 0), -- Consider renaming if this field's meaning changes
     status public.purchase_status NOT NULL,
     created_at timestamptz DEFAULT now() NOT NULL,
     updated_at timestamptz DEFAULT now() NOT NULL
@@ -126,19 +137,32 @@ ALTER TABLE public.purchases ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow user read access to own purchases" ON public.purchases FOR SELECT USING ( auth.uid() = user_id );
 CREATE POLICY "Allow org admin read access to org purchases" ON public.purchases FOR SELECT USING ( organization_id IS NOT NULL AND (SELECT role FROM public.organization_members mem WHERE mem.user_id = auth.uid() AND mem.organization_id = purchases.organization_id) = 'admin'::public.organization_role );
 
--- 9. Credits Table
+-- 9. Credits Table (Refactored for Model 1)
 CREATE TABLE public.credits (
     id uuid PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
-    user_id uuid UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
-    organization_id uuid UNIQUE REFERENCES public.organizations(id) ON DELETE CASCADE,
-    balance integer NOT NULL DEFAULT 0 CHECK (balance >= 0),
-    updated_at timestamptz DEFAULT now() NOT NULL,
-    CONSTRAINT user_or_org_check CHECK ((user_id IS NOT NULL AND organization_id IS NULL) OR (user_id IS NULL AND organization_id IS NOT NULL))
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, -- Every credit row tied to a user (owner/purchaser)
+    organization_id uuid NULL REFERENCES public.organizations(id) ON DELETE CASCADE, -- If NULL, it's personal credits. If NOT NULL, it's org credits.
+    balance integer NOT NULL DEFAULT 0 CHECK (balance >= 0), -- Consider if this is still needed or just use plan columns
+    starter integer NOT NULL DEFAULT 0 CHECK (starter >= 0), -- Added from 20250504084305
+    pro integer NOT NULL DEFAULT 0 CHECK (pro >= 0), -- Added from 20250504084305
+    elite integer NOT NULL DEFAULT 0 CHECK (elite >= 0), -- Added from 20250504084305
+    studio integer NOT NULL DEFAULT 0 CHECK (studio >= 0), -- Added from 20250504084305
+    team integer NOT NULL DEFAULT 0 CHECK (team >= 0), -- Added from 20250512104258
+    updated_at timestamptz DEFAULT now() NOT NULL
+    -- Removed user_or_org_check constraint (Model 1 allows user_id and org_id)
+    -- Removed UNIQUE constraints on user_id and organization_id (Model 1 might allow multiple rows per user/org if needed, though current setup implies one)
 );
+COMMENT ON TABLE public.credits IS 'Stores credit balances. For personal credits, organization_id is NULL. For organization credits, organization_id is NOT NULL and user_id refers to the owner/purchaser.';
+COMMENT ON COLUMN public.credits.user_id IS 'Reference to the user who owns these credits. NOT NULL.';
+COMMENT ON COLUMN public.credits.organization_id IS 'Reference to the organization if these are org-specific credits; otherwise NULL.';
+COMMENT ON COLUMN public.credits.team IS 'Stores the balance of credits for the Team plan, used specifically for organizations.';
+
 ALTER TABLE public.credits ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow user read access to own credit balance" ON public.credits FOR SELECT USING ( auth.uid() = user_id );
-CREATE POLICY "Allow org members read access to org credit balance" ON public.credits FOR SELECT USING ( organization_id IS NOT NULL AND organization_id IN (SELECT organization_id FROM public.organization_members WHERE user_id = auth.uid()) );
--- Update/Insert/Delete should likely be restricted to backend/triggers/functions
+-- RLS Policy for personal credits (user_id matches AND org_id IS NULL)
+CREATE POLICY "Allow user read access to own PERSONAL credit balance" ON public.credits FOR SELECT USING ( auth.uid() = user_id AND organization_id IS NULL );
+-- RLS Policy for organization credits (org_id matches user's membership)
+CREATE POLICY "Allow org members read access to ORG credit balance" ON public.credits FOR SELECT USING ( organization_id IS NOT NULL AND organization_id IN (SELECT organization_id FROM public.organization_members WHERE user_id = auth.uid()) );
+-- Note: Update/Insert/Delete should likely be restricted to backend/triggers/functions
 
 -- 10. Transactions Table
 CREATE TABLE public.transactions (
@@ -155,10 +179,10 @@ CREATE TABLE public.transactions (
 );
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow user read access to own credit transactions" ON public.transactions FOR SELECT USING (
-    credit_account_id IN (SELECT id FROM public.credits WHERE user_id = auth.uid())
+    credit_account_id IN (SELECT id FROM public.credits WHERE user_id = auth.uid() AND organization_id IS NULL) -- Match Personal Credits RLS
 );
 CREATE POLICY "Allow org members read access to org credit transactions" ON public.transactions FOR SELECT USING (
-    credit_account_id IN (SELECT id FROM public.credits WHERE organization_id IS NOT NULL AND organization_id IN (SELECT organization_id FROM public.organization_members WHERE user_id = auth.uid()))
+    credit_account_id IN (SELECT id FROM public.credits WHERE organization_id IS NOT NULL AND organization_id IN (SELECT organization_id FROM public.organization_members WHERE user_id = auth.uid())) -- Match Org Credits RLS
 );
 -- Insert should be restricted to backend/triggers/functions
 
@@ -187,15 +211,16 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
 
--- Function to create a credit balance for a new user profile
+-- Function to create a PERSONAL credit balance for a new user profile (Model 1)
 CREATE OR REPLACE FUNCTION public.handle_new_profile_credit()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER SET SEARCH_PATH = public
 AS $$
 BEGIN
-  INSERT INTO public.credits (user_id, balance)
-  VALUES (NEW.user_id, 0); -- Start with 0 credits
+  -- Insert a row specifically for personal credits (organization_id IS NULL)
+  INSERT INTO public.credits (user_id, organization_id, balance, starter, pro, elite, studio, team)
+  VALUES (NEW.user_id, NULL, 0, 0, 0, 0, 0, 0); -- Start with 0 credits for all plans
   RETURN NEW;
 END;
 $$;
@@ -205,33 +230,13 @@ CREATE TRIGGER on_profile_created_add_credits
   AFTER INSERT ON public.profiles
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_profile_credit();
 
+-- Removed trigger for creating organization credits, as it's now handled
+-- by the create_organization_with_initial_setup function.
 
--- Placeholder for Organization Credits Trigger (Implement if needed)
-/*
--- Function/Trigger for Organization Credits
-CREATE OR REPLACE FUNCTION public.handle_new_organization_credit()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER SET SEARCH_PATH = public
-AS $$
-BEGIN
-  INSERT INTO public.credits (organization_id, balance)
-  VALUES (NEW.id, 0); -- Start orgs with 0 credits
-  RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER on_organization_created_add_credits
-  AFTER INSERT ON public.organizations
-  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_organization_credit();
-*/
-
--- Data Migration (IMPORTANT: ADJUST PLACEHOLDERS)
+-- Data Migration Placeholders (Review and Adjust Before Running)
 
 -- Copy data from existing public.users to new public.profiles
--- Replace <placeholders> with your actual column names in public.users
 -- DO NOT RUN if public.users doesn't have these exact columns or if profiles should be populated differently.
--- Consider null handling if source columns can be null.
 /*
 INSERT INTO public.profiles (user_id, full_name, avatar_url, created_at, updated_at)
 SELECT
@@ -245,31 +250,21 @@ FROM
 ON CONFLICT (user_id) DO NOTHING; -- Avoid errors if a profile somehow already exists (e.g., from trigger)
 */
 
--- Create initial credit balances for existing users based on public.users
--- Replace <initial_credits_value> with 0 or the desired starting balance.
+-- Create initial PERSONAL credit balances for existing users
+-- Only inserts if a personal credit row doesn't already exist for the user
 /*
-INSERT INTO public.credits (user_id, balance)
+INSERT INTO public.credits (user_id, organization_id, balance, starter, pro, elite, studio, team)
 SELECT
-    id,
-    <initial_credits_value> -- Replace with desired initial credit value (e.g., 0 or 100)
+    p.user_id,
+    NULL, -- Explicitly NULL for personal credits
+    0, -- Initial balance
+    0, -- Initial starter
+    0, -- Initial pro
+    0, -- Initial elite
+    0, -- Initial studio
+    0  -- Initial team (always 0 for personal rows)
 FROM
-    public.users
-ON CONFLICT (user_id) DO UPDATE SET balance = EXCLUDED.balance; -- Or handle conflict differently
-*/
-
--- Create initial transaction logs for these balances (if credits were added above)
-/*
-INSERT INTO public.transactions (user_id, credit_account_id, change_amount, type, description)
-SELECT
-    u.id,
-    c.id,
-    c.balance, -- Assumes balance reflects the initial grant
-    'initial'::public.transaction_type,
-    'Initial credit balance assignment from migration'
-FROM
-    public.users u
-JOIN
-    public.credits c ON u.id = c.user_id
-WHERE
-    c.balance > 0; -- Only log if actual credits were granted
+    public.profiles p
+LEFT JOIN public.credits c ON p.user_id = c.user_id AND c.organization_id IS NULL
+WHERE c.id IS NULL; -- Only insert if a personal credit row doesn't exist
 */

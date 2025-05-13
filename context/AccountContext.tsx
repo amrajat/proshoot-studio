@@ -8,8 +8,8 @@ import React, {
   useMemo,
   useEffect, // Added useEffect
 } from "react";
-import { User as LucideUser, Building } from "lucide-react";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
+import { SendMailClient } from "zeptomail";
 
 export type OrganizationContext = {
   id: string;
@@ -20,6 +20,8 @@ export type OrganizationContext = {
   industry?: string | null;
   department?: string | null;
   position?: string | null;
+  invite_token?: string | null;
+  invite_token_generated_at?: string | null;
 };
 
 export type PersonalContext = {
@@ -45,6 +47,8 @@ type FetchedOrganizationDetail = {
   industry?: string | null;
   department?: string | null;
   position?: string | null;
+  invite_token?: string | null;
+  invite_token_generated_at?: string | null;
 };
 
 type FetchedOrgMember = {
@@ -59,6 +63,7 @@ interface AccountContextProps {
   isLoading: boolean;
   refreshContext: () => Promise<void>;
   isCurrentUserOrgAdmin: boolean;
+  switchToOrgAfterRefresh: (orgId: string) => void;
 }
 
 const AccountContext = createContext<AccountContextProps | undefined>(
@@ -96,6 +101,7 @@ export const AccountProvider = ({
   // Initialize selectedContext state. The actual value will be set by the useEffect below.
   const [selectedContext, setSelectedContextInternal] =
     useState<AvailableContext | null>(null);
+  const [switchToOrgId, setSwitchToOrgId] = useState<string | null>(null);
 
   const userId = useMemo(() => profile?.user_id || null, [profile]);
 
@@ -245,6 +251,37 @@ export const AccountProvider = ({
     };
   }, [availableContexts, selectedContext]); // Re-run if availableContexts changes or selectedContext changes locally
 
+  // Effect to refresh context on initial client-side mount
+  useEffect(() => {
+    console.log(
+      "AccountProvider mounted, triggering initial refreshContext..."
+    );
+    refreshContext();
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  const switchToOrgAfterRefresh = (orgId: string) => {
+    setSwitchToOrgId(orgId);
+  };
+
+  // Effect to handle the actual switch AFTER contexts are refreshed
+  // This runs when availableContexts changes OR switchToOrgId changes
+  useEffect(() => {
+    if (switchToOrgId && availableContexts.length > 0) {
+      const targetOrg = availableContexts.find(
+        (ctx) => ctx.type === "organization" && ctx.id === switchToOrgId
+      ) as Extract<AvailableContext, { type: "organization" }> | undefined;
+
+      if (targetOrg) {
+        setSelectedContext(targetOrg); // Use the existing setSelectedContext function
+        setSwitchToOrgId(null); // Reset the trigger
+      }
+      // Optional: Handle case where org ID is not found after refresh (e.g., deleted?)
+      // else {
+      //   setSwitchToOrgId(null);
+      // }
+    }
+  }, [availableContexts, switchToOrgId, setSelectedContext]); // Dependency array includes setSelectedContext
+
   const refreshContext = async () => {
     console.log("Starting refreshContext...");
     setIsLoading(true);
@@ -269,7 +306,7 @@ export const AccountProvider = ({
           supabase
             .from("organization_members")
             .select(
-              "organizations (id, name, owner_user_id, team_size, website, industry, department, position)"
+              "organizations (id, name, owner_user_id, team_size, website, industry, department, position, invite_token, invite_token_generated_at)"
             )
             .eq("user_id", user.id),
         ]);
@@ -315,6 +352,7 @@ export const AccountProvider = ({
     isLoading,
     refreshContext,
     isCurrentUserOrgAdmin,
+    switchToOrgAfterRefresh,
   };
 
   return (

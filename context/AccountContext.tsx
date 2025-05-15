@@ -7,6 +7,7 @@ import React, {
   ReactNode,
   useMemo,
   useEffect, // Added useEffect
+  useCallback,
 } from "react";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
 import { SendMailClient } from "zeptomail";
@@ -91,6 +92,7 @@ export const AccountProvider = ({
   initialIsLoading = false,
 }: AccountProviderProps) => {
   const [isLoading, setIsLoading] = useState(initialIsLoading);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [profile, setProfile] = useState<FetchedProfile | null>(
     initialProfileData
   );
@@ -138,151 +140,8 @@ export const AccountProvider = ({
     return contexts;
   }, [profile, organizations]);
 
-  // Effect to initialize selectedContext from localStorage or defaults
-  useEffect(() => {
-    let initialSelection: AvailableContext | null = null;
-    let foundInStorage = false;
-
-    if (typeof window !== "undefined" && availableContexts.length > 0) {
-      const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (storedValue) {
-        try {
-          const storedIdentifier: StoredContextIdentifier =
-            JSON.parse(storedValue);
-          const matchingContext = availableContexts.find(
-            (ctx) =>
-              ctx.id === storedIdentifier.id &&
-              ctx.type === storedIdentifier.type
-          );
-          if (matchingContext) {
-            initialSelection = matchingContext;
-            foundInStorage = true;
-          } else {
-            localStorage.removeItem(LOCAL_STORAGE_KEY); // Clean up invalid stored value
-          }
-        } catch (error) {
-          console.error(
-            "Error parsing selectedContext from localStorage on init",
-            error
-          );
-          localStorage.removeItem(LOCAL_STORAGE_KEY);
-        }
-      }
-
-      if (foundInStorage && initialSelection) {
-        // Only set if different from current to avoid loops if already set by another tab via storage event
-        if (
-          JSON.stringify(selectedContext) !== JSON.stringify(initialSelection)
-        ) {
-          setSelectedContextInternal(initialSelection);
-        }
-      } else if (!selectedContext) {
-        // If no context currently selected (e.g. initial load and nothing valid in storage)
-        const personal = availableContexts.find((c) => c.type === "personal");
-        const firstOrg = availableContexts.find(
-          (c) => c.type === "organization"
-        );
-        setSelectedContextInternal(personal || firstOrg || null);
-      }
-    } else if (availableContexts.length === 0 && selectedContext !== null) {
-      // If contexts become empty, clear selection
-      setSelectedContextInternal(null);
-    }
-  }, [availableContexts]); // Rerun when availableContexts changes. SelectedContext removed from deps.
-
-  const setSelectedContext = (context: AvailableContext | null) => {
-    setSelectedContextInternal(context);
-    if (typeof window !== "undefined") {
-      if (context) {
-        const identifierToStore: StoredContextIdentifier = {
-          id: context.id,
-          type: context.type,
-        };
-        localStorage.setItem(
-          LOCAL_STORAGE_KEY,
-          JSON.stringify(identifierToStore)
-        );
-      } else {
-        localStorage.removeItem(LOCAL_STORAGE_KEY);
-      }
-    }
-  };
-
-  // Effect for cross-tab synchronization via localStorage
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === LOCAL_STORAGE_KEY) {
-        if (event.newValue) {
-          try {
-            const newIdentifier: StoredContextIdentifier = JSON.parse(
-              event.newValue
-            );
-            const newSelectedContext = availableContexts.find(
-              (ctx) =>
-                ctx.id === newIdentifier.id && ctx.type === newIdentifier.type
-            );
-            if (
-              newSelectedContext &&
-              JSON.stringify(newSelectedContext) !==
-                JSON.stringify(selectedContext)
-            ) {
-              setSelectedContextInternal(newSelectedContext);
-            } else if (!newSelectedContext && selectedContext !== null) {
-              setSelectedContextInternal(null); // Item was validly set to something not in availableContexts or cleared
-            }
-          } catch (error) {
-            console.error(
-              "Error processing storage event for selectedContext",
-              error
-            );
-          }
-        } else {
-          // newValue is null, meaning item was removed from localStorage
-          if (selectedContext !== null) {
-            setSelectedContextInternal(null);
-          }
-        }
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, [availableContexts, selectedContext]); // Re-run if availableContexts changes or selectedContext changes locally
-
-  // Effect to refresh context on initial client-side mount
-  useEffect(() => {
-    console.log(
-      "AccountProvider mounted, triggering initial refreshContext..."
-    );
-    refreshContext();
-  }, []); // Empty dependency array ensures this runs only once on mount
-
-  const switchToOrgAfterRefresh = (orgId: string) => {
-    setSwitchToOrgId(orgId);
-  };
-
-  // Effect to handle the actual switch AFTER contexts are refreshed
-  // This runs when availableContexts changes OR switchToOrgId changes
-  useEffect(() => {
-    if (switchToOrgId && availableContexts.length > 0) {
-      const targetOrg = availableContexts.find(
-        (ctx) => ctx.type === "organization" && ctx.id === switchToOrgId
-      ) as Extract<AvailableContext, { type: "organization" }> | undefined;
-
-      if (targetOrg) {
-        setSelectedContext(targetOrg); // Use the existing setSelectedContext function
-        setSwitchToOrgId(null); // Reset the trigger
-      }
-      // Optional: Handle case where org ID is not found after refresh (e.g., deleted?)
-      // else {
-      //   setSwitchToOrgId(null);
-      // }
-    }
-  }, [availableContexts, switchToOrgId, setSelectedContext]); // Dependency array includes setSelectedContext
-
-  const refreshContext = async () => {
+  // >>> refreshContext MUST BE DEFINED BEFORE setSelectedContext <<<
+  const refreshContext = useCallback(async () => {
     console.log("Starting refreshContext...");
     setIsLoading(true);
     const supabase = createSupabaseBrowserClient();
@@ -342,7 +201,156 @@ export const AccountProvider = ({
     }
     console.log("...Finishing refreshContext");
     setIsLoading(false);
+  }, []);
+
+  // Effect to initialize selectedContext from localStorage or defaults
+  useEffect(() => {
+    let initialSelection: AvailableContext | null = null;
+    let foundInStorage = false;
+
+    if (typeof window !== "undefined" && availableContexts.length > 0) {
+      const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (storedValue) {
+        try {
+          const storedIdentifier: StoredContextIdentifier =
+            JSON.parse(storedValue);
+          const matchingContext = availableContexts.find(
+            (ctx) =>
+              ctx.id === storedIdentifier.id &&
+              ctx.type === storedIdentifier.type
+          );
+          if (matchingContext) {
+            initialSelection = matchingContext;
+            foundInStorage = true;
+          } else {
+            localStorage.removeItem(LOCAL_STORAGE_KEY); // Clean up invalid stored value
+          }
+        } catch (error) {
+          console.error(
+            "Error parsing selectedContext from localStorage on init",
+            error
+          );
+          localStorage.removeItem(LOCAL_STORAGE_KEY);
+        }
+      }
+
+      if (foundInStorage && initialSelection) {
+        // Only set if different from current to avoid loops if already set by another tab via storage event
+        if (
+          JSON.stringify(selectedContext) !== JSON.stringify(initialSelection)
+        ) {
+          setSelectedContextInternal(initialSelection);
+        }
+      } else if (!selectedContext) {
+        // If no context currently selected (e.g. initial load and nothing valid in storage)
+        const personal = availableContexts.find((c) => c.type === "personal");
+        const firstOrg = availableContexts.find(
+          (c) => c.type === "organization"
+        );
+        setSelectedContextInternal(personal || firstOrg || null);
+      }
+    } else if (availableContexts.length === 0 && selectedContext !== null) {
+      // If contexts become empty, clear selection
+      setSelectedContextInternal(null);
+    }
+  }, [availableContexts]); // Rerun when availableContexts changes. SelectedContext removed from deps.
+
+  const setSelectedContext = useCallback(
+    async (context: AvailableContext | null) => {
+      setIsLoading(true); // Set loading true immediately
+      setSelectedContextInternal(context); // Update internal state
+      if (context) {
+        const identifierToStore: StoredContextIdentifier = {
+          id: context.id,
+          type: context.type,
+        };
+        localStorage.setItem(
+          LOCAL_STORAGE_KEY,
+          JSON.stringify(identifierToStore)
+        );
+      } else {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+      }
+      // Refresh context to ensure all data (credits, etc.) aligns with the new selection
+      await refreshContext();
+      // refreshContext will set isLoading to false when done
+    },
+    [setSelectedContextInternal, refreshContext] // Dependencies: the setter for the internal state, and refreshContext
+  );
+
+  // Effect for cross-tab synchronization via localStorage
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === LOCAL_STORAGE_KEY) {
+        if (event.newValue) {
+          try {
+            const newIdentifier: StoredContextIdentifier = JSON.parse(
+              event.newValue
+            );
+            const newSelectedContext = availableContexts.find(
+              (ctx) =>
+                ctx.id === newIdentifier.id && ctx.type === newIdentifier.type
+            );
+            if (
+              newSelectedContext &&
+              JSON.stringify(newSelectedContext) !==
+                JSON.stringify(selectedContext)
+            ) {
+              setSelectedContextInternal(newSelectedContext);
+            } else if (!newSelectedContext && selectedContext !== null) {
+              setSelectedContextInternal(null); // Item was validly set to something not in availableContexts or cleared
+            }
+          } catch (error) {
+            console.error(
+              "Error processing storage event for selectedContext",
+              error
+            );
+          }
+        } else {
+          // newValue is null, meaning item was removed from localStorage
+          if (selectedContext !== null) {
+            setSelectedContextInternal(null);
+          }
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [availableContexts, selectedContext]); // Re-run if availableContexts changes or selectedContext changes locally
+
+  // Effect to refresh context on initial client-side mount
+  useEffect(() => {
+    console.log(
+      "AccountProvider mounted, triggering initial refreshContext..."
+    );
+    refreshContext();
+  }, [refreshContext]); // refreshContext added as dependency
+
+  const switchToOrgAfterRefresh = (orgId: string) => {
+    setSwitchToOrgId(orgId);
   };
+
+  // Effect to handle the actual switch AFTER contexts are refreshed
+  // This runs when availableContexts changes OR switchToOrgId changes
+  useEffect(() => {
+    if (switchToOrgId && availableContexts.length > 0) {
+      const targetOrg = availableContexts.find(
+        (ctx) => ctx.type === "organization" && ctx.id === switchToOrgId
+      ) as Extract<AvailableContext, { type: "organization" }> | undefined;
+
+      if (targetOrg) {
+        setSelectedContext(targetOrg); // Use the existing setSelectedContext function
+        setSwitchToOrgId(null); // Reset the trigger
+      }
+      // Optional: Handle case where org ID is not found after refresh (e.g., deleted?)
+      // else {
+      //   setSwitchToOrgId(null);
+      // }
+    }
+  }, [availableContexts, switchToOrgId, setSelectedContext]); // Dependency array includes setSelectedContext
 
   const value = {
     userId,

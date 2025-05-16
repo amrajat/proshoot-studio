@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import VariableSelector from "./components/Forms/VariableSelector";
 import PlanSelector from "./components/Forms/PlanSelector";
@@ -363,43 +363,52 @@ export default function StudioCreate() {
     ? config.PLANS[selectedPlan]?.styles || 0
     : 0;
 
-  const steps = [
-    {
-      id: "Step 0",
-      component: "PlanSelector",
-      data: [
-        {
-          title: "Please select your plan.",
-          subtitle:
-            "You can see available plan credits below the name of plan name.",
-          fieldName: "plan",
-        },
-        null,
-      ],
-    },
-    {
-      id: "Step 1",
-      component: "ClothingSelector",
-      // data: null,
-    },
-    {
-      id: "Step 2",
-      component: "BackgroundSelector",
-      // data: null,
-    },
-    { id: "Step 3", component: "VariableSelector", data: GENDERS },
-    { id: "Step 4", component: "VariableSelector", data: AGES },
-    { id: "Step 5", component: "VariableSelector", data: ETHNICITIES },
-    { id: "Step 6", component: "VariableSelector", data: HAIR_STYLES },
-    { id: "Step 7", component: "VariableSelector", data: EYE_COLORS },
-    { id: "Step 8", component: "VariableSelector", data: GLASSES },
-    {
-      id: "Step 9",
-      component: "VariableSelector",
-      data: STUDIO_NAME_SELECTOR,
-    },
-    { id: "Step 10", component: "FileUploader" },
-  ];
+  const steps = useMemo(() => {
+    const baseSteps = [
+      {
+        id: "Step 0",
+        component: "PlanSelector",
+        data: [
+          {
+            title: "Please select your plan.",
+            subtitle:
+              "You can see available plan credits below the name of plan name.",
+            fieldName: "plan",
+          },
+          null,
+        ],
+      },
+      {
+        id: "Step 1",
+        component: "ClothingSelector",
+      },
+      {
+        id: "Step 2",
+        component: "BackgroundSelector",
+      },
+      { id: "Step 3", component: "VariableSelector", data: GENDERS },
+      { id: "Step 4", component: "VariableSelector", data: AGES },
+      { id: "Step 5", component: "VariableSelector", data: ETHNICITIES },
+      { id: "Step 6", component: "VariableSelector", data: HAIR_STYLES },
+      { id: "Step 7", component: "VariableSelector", data: EYE_COLORS },
+      { id: "Step 8", component: "VariableSelector", data: GLASSES },
+      {
+        id: "Step 9",
+        component: "VariableSelector",
+        data: STUDIO_NAME_SELECTOR,
+      },
+      { id: "Step 10", component: "FileUploader" },
+    ];
+
+    if (
+      selectedContext?.type === "organization" &&
+      organizationCredits?.team > 0
+    ) {
+      return baseSteps.filter((step) => step.component !== "PlanSelector");
+    }
+
+    return baseSteps;
+  }, [selectedContext?.type, organizationCredits?.team]);
 
   const [clothingError, setClothingError] = useState("");
   const [backgroundsError, setBackgroundsError] = useState("");
@@ -436,7 +445,15 @@ export default function StudioCreate() {
         setBackgroundsError("");
         isValid = true;
       } else if (currentStepData.component === "PlanSelector") {
-        isValid = await trigger(currentStepData.data[0].fieldName);
+        if (
+          selectedContext?.type === "organization" &&
+          organizationCredits?.team > 0
+        ) {
+          setValue("plan", "team", { shouldValidate: true });
+          isValid = true;
+        } else {
+          isValid = await trigger(currentStepData.data[0].fieldName);
+        }
       } else if (currentStepData.component === "VariableSelector") {
         isValid = await trigger(currentStepData.data[0].fieldName);
       } else if (currentStepData.component === "FileUploader") {
@@ -756,6 +773,22 @@ export default function StudioCreate() {
     }
   }, [errors]);
 
+  // Add this effect to handle automatic plan selection for org context
+  useEffect(() => {
+    if (
+      selectedContext?.type === "organization" &&
+      organizationCredits?.team > 0
+    ) {
+      // Set the plan value to "team" automatically
+      setValue("plan", "team", { shouldValidate: true });
+
+      // If we're on the plan selector step (step 0), move to the next step
+      if (currentStep === 0) {
+        setCurrentStep(1);
+      }
+    }
+  }, [selectedContext?.type, organizationCredits?.team, setValue, currentStep]);
+
   return (
     <ContentLayout navbar={false} title="Create Studio">
       <form
@@ -768,7 +801,9 @@ export default function StudioCreate() {
         className="max-w-7xl mx-auto mt-8"
       >
         <>
-          <div className="mb-6">{renderStep(steps[currentStep])}</div>
+          <div className="mb-6">
+            {steps[currentStep] && renderStep(steps[currentStep])}
+          </div>
 
           <div className="flex justify-between items-center flex-wrap gap-2">
             <Button

@@ -223,60 +223,62 @@ export default function StudioCreate() {
 
   useEffect(() => {
     const fetchCredits = async () => {
-      if (selectedContext?.type !== "personal" || !userId) {
-        if (selectedContext?.type !== "organization") {
-          setPersonalCredits(null);
-        }
+      if (!userId) {
+        setPersonalCredits(null);
+        setOrganizationCredits(null);
         setIsCreditsLoading(false);
+        setIsOrgCreditsLoading(false);
         return;
       }
+
       setIsCreditsLoading(true);
+      setIsOrgCreditsLoading(true);
+
       const supabase = createSupabaseBrowserClient();
       const { data, error } = await supabase
         .from("credits")
         .select("*")
         .eq("user_id", userId)
-        .is("organization_id", null)
         .maybeSingle();
-      if (!error) setPersonalCredits(data);
-      else console.error("Error fetching personal credits:", error);
-      setIsCreditsLoading(false);
-    };
 
-    const fetchOrganizationCredits = async () => {
-      if (selectedContext?.type !== "organization" || !selectedContext.id) {
+      console.log("Fetched credits data:", data);
+
+      if (!error && data) {
+        // For personal context, use personal plan credits
+        const personalCreditsData = {
+          starter: data.starter || 0,
+          pro: data.pro || 0,
+          elite: data.elite || 0,
+          studio: data.studio || 0,
+          team: 0, // Set team to 0 for personal context
+        };
+
+        // For organization context, use team credits
+        const orgCreditsData = {
+          team: data.team || 0,
+          starter: 0,
+          pro: 0,
+          elite: 0,
+          studio: 0,
+        };
+
+        console.log("Personal context credits:", personalCreditsData);
+        console.log("Organization context credits:", orgCreditsData);
+
+        setPersonalCredits(personalCreditsData);
+        setOrganizationCredits(orgCreditsData);
+      } else {
+        console.error("Error fetching credits:", error);
+        setPersonalCredits(null);
         setOrganizationCredits(null);
-        setIsOrgCreditsLoading(false);
-        return;
       }
-      setIsOrgCreditsLoading(true);
-      const supabase = createSupabaseBrowserClient();
-      const { data, error } = await supabase
-        .from("credits")
-        .select("*")
-        .eq("organization_id", selectedContext.id)
-        .is("user_id", null)
-        .maybeSingle();
-      if (!error) setOrganizationCredits(data);
-      else console.error("Error fetching organization credits:", error);
+
+      setIsCreditsLoading(false);
       setIsOrgCreditsLoading(false);
     };
 
-    if (selectedContext?.type === "personal") {
-      fetchCredits();
-      setOrganizationCredits(null);
-      setIsOrgCreditsLoading(false);
-    } else if (selectedContext?.type === "organization") {
-      fetchOrganizationCredits();
-      setPersonalCredits(null);
-      setIsCreditsLoading(false);
-    } else {
-      setPersonalCredits(null);
-      setOrganizationCredits(null);
-      setIsCreditsLoading(false);
-      setIsOrgCreditsLoading(false);
-    }
-  }, [selectedContext, userId]);
+    fetchCredits();
+  }, [userId, selectedContext?.type]);
 
   useEffect(() => {
     if (selectedContext?.type === "organization" && selectedContext.id) {

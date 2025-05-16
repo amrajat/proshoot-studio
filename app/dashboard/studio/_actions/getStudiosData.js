@@ -127,10 +127,9 @@ export async function getStudiosData(currentUserId, contextType, contextId) {
       studiosQuery = supabase
         .from("studios")
         .select(
-          "*, organizations (name), profiles!inner(user_id, full_name, email)"
-        ) //   Ensure profiles join
+          "*, organizations (name), profiles:creator_user_id (id, full_name, email)"
+        )
         .eq("organization_id", contextId)
-
         .eq("downloaded", true);
     } else {
       pageTitle = `Your Studios in ${orgName}`;

@@ -11,6 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { useAccountContext } from "@/context/AccountContext";
 import Heading from "@/components/shared/heading";
 
+// Define which plans are available per context
+const PERSONAL_PLANS = ["starter", "pro", "elite", "studio"];
+const ORG_PLANS = ["team"];
+
 export default function PlanSelector({
   data,
   isPending,
@@ -26,13 +30,19 @@ export default function PlanSelector({
 }) {
   const { userId } = useAccountContext();
   const [details, _] = data;
-  const options = Object.entries(config.PLANS).map(
-    ([planName, planDetails]) => [planName, planDetails.headshots]
-  );
-  const [localValue, setLocalValue] = useState("");
 
-  // Determine which plans are enabled based on credits
-  // (No disabling logic needed, all plans are always selectable)
+  // Filter available plans based on context
+  const availablePlans = React.useMemo(() => {
+    const allPlans = Object.entries(config.PLANS);
+    return allPlans.filter(([planName]) => {
+      const normalizedPlanName = planName.toLowerCase();
+      return isOrgContext
+        ? ORG_PLANS.includes(normalizedPlanName) // Only show team plan for orgs
+        : PERSONAL_PLANS.includes(normalizedPlanName); // Only show personal plans for personal context
+    });
+  }, [isOrgContext]);
+
+  const [localValue, setLocalValue] = useState("");
 
   const handleRadioChange = (value) => {
     setLocalValue(value);
@@ -56,6 +66,23 @@ export default function PlanSelector({
 
   const currentValue = watch ? watch(details.fieldName) : localValue;
 
+  // If no plans are available for the current context, show a message
+  if (availablePlans.length === 0) {
+    return (
+      <fieldset disabled={isPending} className="space-y-4">
+        <Badge variant="destructive" className="mb-2 uppercase">
+          No Plans Available
+        </Badge>
+        <Heading variant={"hero"}>{details.title}</Heading>
+        <p className="text-muted-foreground">
+          {isOrgContext
+            ? "No team plans are currently available for organizations."
+            : "No personal plans are currently available."}
+        </p>
+      </fieldset>
+    );
+  }
+
   return (
     <fieldset disabled={isPending} className="space-y-4">
       <Badge variant="destructive" className="mb-2 uppercase">
@@ -68,7 +95,7 @@ export default function PlanSelector({
         value={currentValue}
         className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
       >
-        {options.map(([planName, remainingCredits]) => {
+        {availablePlans.map(([planName, planDetails]) => {
           const randomKey = uuidv4();
           const planCredits = credits
             ? credits[planName.toLowerCase()] ?? 0
@@ -100,7 +127,7 @@ export default function PlanSelector({
                     {planCredits} credits available
                   </span>
                   <span className="text-sm text-muted-foreground">
-                    {config.PLANS[planName]?.headshots} Headshots
+                    {planDetails?.headshots} Headshots
                   </span>
                 </Label>
                 {currentValue === planName && (

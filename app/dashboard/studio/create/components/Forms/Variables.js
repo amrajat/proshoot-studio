@@ -208,7 +208,9 @@ export const STUDIO_NAME_SELECTOR = [
 ];
 
 export const formSchema = z.object({
-  plan: z.enum(["Starter", "Pro", "Elite", "Studio"]),
+  plan: z.enum(["Starter", "Pro", "Elite", "Studio", "Team"], {
+    message: "Please select a valid plan.",
+  }),
   gender: z.string().min(3, { message: "Please select your gender." }),
   age: z.string().min(1, { message: "Please select your age range." }),
   ethnicity: z.string().min(1, { message: "Please select your ethnicity." }),

@@ -258,24 +258,47 @@ export const AccountProvider = ({
   const setSelectedContext = useCallback(
     async (context: AvailableContext | null) => {
       setIsLoading(true); // Set loading true immediately
-      setSelectedContextInternal(context); // Update internal state
-      if (context) {
-        const identifierToStore: StoredContextIdentifier = {
-          id: context.id,
-          type: context.type,
-        };
-        localStorage.setItem(
-          LOCAL_STORAGE_KEY,
-          JSON.stringify(identifierToStore)
-        );
-      } else {
-        localStorage.removeItem(LOCAL_STORAGE_KEY);
+
+      try {
+        // Clear form data from localStorage when switching contexts
+        if (typeof window !== "undefined") {
+          // Only clear if we're actually switching contexts (not just initializing)
+          if (
+            selectedContext &&
+            context &&
+            (selectedContext.type !== context.type ||
+              selectedContext.id !== context.id)
+          ) {
+            localStorage.removeItem("currentFormStep");
+            localStorage.removeItem("formValues");
+            console.log(
+              "Cleared form data from localStorage due to context switch"
+            );
+          }
+        }
+
+        setSelectedContextInternal(context); // Update internal state
+        if (context) {
+          const identifierToStore: StoredContextIdentifier = {
+            id: context.id,
+            type: context.type,
+          };
+          localStorage.setItem(
+            LOCAL_STORAGE_KEY,
+            JSON.stringify(identifierToStore)
+          );
+        } else {
+          localStorage.removeItem(LOCAL_STORAGE_KEY);
+        }
+        // Refresh context to ensure all data (credits, etc.) aligns with the new selection
+        await refreshContext();
+      } catch (error) {
+        console.error("Error during context switch:", error);
+      } finally {
+        setIsLoading(false);
       }
-      // Refresh context to ensure all data (credits, etc.) aligns with the new selection
-      await refreshContext();
-      // refreshContext will set isLoading to false when done
     },
-    [setSelectedContextInternal, refreshContext] // Dependencies: the setter for the internal state, and refreshContext
+    [setSelectedContextInternal, refreshContext, selectedContext]
   );
 
   // Effect for cross-tab synchronization via localStorage

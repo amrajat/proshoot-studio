@@ -37,9 +37,12 @@ import {
   OrganizationContext,
   AvailableContext,
 } from "@/context/AccountContext";
+import { useRouter, usePathname } from "next/navigation";
 
 export function AccountSwitcher() {
   const { isMobile } = useSidebar();
+  const router = useRouter();
+  const pathname = usePathname();
   const {
     userId,
     availableContexts,
@@ -52,6 +55,27 @@ export function AccountSwitcher() {
   const [isCreateOrgDialogOpen, setCreateOrgDialogOpen] = React.useState(false);
   const [isEditOrgDialogOpen, setEditOrgDialogOpen] = React.useState(false);
   const [switchToOrgId, setSwitchToOrgId] = React.useState<string | null>(null);
+
+  const handleContextSwitch = React.useCallback(
+    async (context: AvailableContext) => {
+      if (
+        typeof window !== "undefined" &&
+        selectedContext &&
+        (selectedContext.type !== context.type ||
+          selectedContext.id !== context.id)
+      ) {
+        localStorage.removeItem("currentFormStep");
+        localStorage.removeItem("formValues");
+        console.log(
+          "Cleared form data from localStorage due to context switch in AccountSwitcher"
+        );
+      }
+      await setSelectedContext(context);
+      // Refresh the current page after context switch
+      router.refresh();
+    },
+    [selectedContext, setSelectedContext, router]
+  );
 
   const ownedOrg = React.useMemo(() => {
     if (!userId) return null;
@@ -168,9 +192,9 @@ export function AccountSwitcher() {
                 return (
                   <DropdownMenuItem
                     key={context.id}
-                    onClick={() => setSelectedContext(context)}
+                    onClick={() => handleContextSwitch(context)}
                     className="gap-2 p-2"
-                    disabled={context.id === selectedContext.id}
+                    disabled={context.id === selectedContext?.id}
                   >
                     <div className="flex size-6 items-center justify-center rounded-sm border">
                       <Icon className="size-4 shrink-0" />

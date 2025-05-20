@@ -24,7 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { Progress } from "@/components/ui/progress";
 
-import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
+import ImageUploadingGuideLines from "@/app/dashboard/studio/create/components/ImageUploadingGuideLines";
 import Loader from "@/components/Loader";
 import Heading from "@/components/shared/heading";
 import {

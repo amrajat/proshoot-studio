@@ -7,7 +7,7 @@ import ImageUploader from "./components/Forms/ImageUploader";
 import ClothingSelector from "./components/Forms/ClothingSelector";
 import BackgroundSelector from "./components/Forms/BackgroundSelector";
 import {
-  formSchema,
+  formSchema as baseFormSchema,
   GENDERS,
   AGES,
   ETHNICITIES,
@@ -32,7 +32,6 @@ import {
 } from "@/app/utils/studioOptions"; // Import global options
 
 const FileUploader = ({
-  register,
   errors,
   setValue,
   isSubmitting,
@@ -40,12 +39,9 @@ const FileUploader = ({
   watch,
 }) => (
   <div>
-    <input
-      type="text"
-      className="hidden"
-      {...register("images", { required: "Please upload a file" })}
-    />
-    {errors.file && <p className="text-red-500 mt-2">{errors.file.message}</p>}
+    {errors.images && (
+      <p className="text-red-500 mt-2">{errors.images.message}</p>
+    )}
     <ImageUploader
       setValue={setValue}
       errors={errors}
@@ -55,6 +51,21 @@ const FileUploader = ({
     />
   </div>
 );
+
+const extendedFormSchema = baseFormSchema.extend({
+  images: z
+    .array(
+      z.object({
+        objectKey: z.string().min(1, "Object key is required"),
+        publicUrl: z.string().url("Invalid public URL"),
+        originalName: z.string().optional(),
+        size: z.number().optional(),
+        type: z.string().optional(),
+      })
+    )
+    .min(1, "Please upload at least 1 image.")
+    .max(20, "You can upload a maximum of 20 images."),
+});
 
 export default function StudioCreate() {
   const router = useRouter();
@@ -115,7 +126,7 @@ export default function StudioCreate() {
     control,
   } = useForm({
     mode: "onChange",
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(extendedFormSchema),
     defaultValues: {
       clothing:
         Array.isArray(parsedLocalStorageValues.clothing) &&
@@ -139,7 +150,9 @@ export default function StudioCreate() {
       hairStyle: parsedLocalStorageValues.hairStyle || "",
       eyeColor: parsedLocalStorageValues.eyeColor || "",
       glasses: parsedLocalStorageValues.glasses || "No",
-      images: parsedLocalStorageValues.images || "",
+      images: Array.isArray(parsedLocalStorageValues.images)
+        ? parsedLocalStorageValues.images
+        : [],
       studioName: parsedLocalStorageValues.studioName || "",
       plan: parsedLocalStorageValues.plan || "",
     },
@@ -191,7 +204,9 @@ export default function StudioCreate() {
         hairStyle: currentFormValues.hairStyle || "",
         eyeColor: currentFormValues.eyeColor || "",
         glasses: currentFormValues.glasses || "No",
-        images: currentFormValues.images || "",
+        images: Array.isArray(currentFormValues.images)
+          ? currentFormValues.images
+          : [],
         studioName: currentFormValues.studioName || "",
       };
       localStorage.setItem("formValues", JSON.stringify(valuesToSave));
@@ -457,8 +472,7 @@ export default function StudioCreate() {
       } else if (currentStepData.component === "VariableSelector") {
         isValid = await trigger(currentStepData.data[0].fieldName);
       } else if (currentStepData.component === "FileUploader") {
-        const imagesValue = getValues("images");
-        isValid = Boolean(imagesValue);
+        isValid = await trigger("images");
       } else {
         isValid = await trigger();
       }
@@ -497,7 +511,7 @@ export default function StudioCreate() {
       setIsSubmitting(true);
       let sanitizedData;
       try {
-        sanitizedData = formSchema.parse(data);
+        sanitizedData = extendedFormSchema.parse(data);
         sanitizedData.glasses = sanitizedData.glasses === "Yes";
       } catch (error) {
         console.error("Form validation error:", error);
@@ -694,7 +708,6 @@ export default function StudioCreate() {
       case "FileUploader":
         return (
           <FileUploader
-            register={register}
             errors={errors}
             setValue={setValue}
             isSubmitting={isSubmitting}
@@ -761,7 +774,7 @@ export default function StudioCreate() {
   }
   if (currentStep === steps.length - 1) {
     const imagesValue = getValues("images");
-    if (!imagesValue || imagesValue.length < 3) {
+    if (!imagesValue || imagesValue.length < 1 || imagesValue.length > 20) {
       mainButtonDisabled = true;
     }
   }

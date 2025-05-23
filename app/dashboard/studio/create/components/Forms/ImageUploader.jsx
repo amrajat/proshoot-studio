@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
+import { getCroppedImage } from "@/utils/image-cropping"; // use this to upload cropped images.
 import {
   Upload,
   CircleCheck,
@@ -38,6 +39,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
+import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
 // Image validation rules
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_TOTAL_SIZE = 400 * 1024 * 1024; // 200MB total
@@ -133,6 +135,7 @@ function ImageUploader({
     showRemoveDialog: false,
     showRemoveAllDialog: false,
     showGuidelinesDialog: true,
+    uploadedFileDetails: [], // To store R2 objectKey and publicUrl for uploaded files
   };
 
   // Define reducer function to handle related state updates
@@ -180,6 +183,13 @@ function ImageUploader({
         return { ...state, showRemoveAllDialog: action.payload };
       case "SET_SHOW_GUIDELINES_DIALOG":
         return { ...state, showGuidelinesDialog: action.payload };
+      case "SET_UPLOADED_FILE_DETAILS":
+        return { ...state, uploadedFileDetails: action.payload };
+      case "ADD_UPLOADED_FILE_DETAIL":
+        return {
+          ...state,
+          uploadedFileDetails: [...state.uploadedFileDetails, action.payload],
+        };
       case "RESET_UPLOAD_STATE":
         return {
           ...state,
@@ -214,10 +224,12 @@ function ImageUploader({
     showRemoveDialog,
     showRemoveAllDialog,
     showGuidelinesDialog,
+    uploadedFileDetails,
   } = state;
 
   const [networkFactor, setNetworkFactor] = useState(1);
   const fileInputRef = useRef(null);
+  const supabase = createSupabaseBrowserClient(); // Initialize Supabase client
 
   // Add breakpoint columns for masonry
   const breakpointColumnsObj = {
@@ -872,6 +884,10 @@ function ImageUploader({
       );
     }
 
+    // Check if all files that are meant to be uploaded have R2 details
+    // This check is more relevant if we track uploads individually.
+    // For now, we assume if isCompleted is true, all uploads are done.
+
     // Return validation result
     return {
       valid: errors.length === 0,
@@ -895,6 +911,27 @@ function ImageUploader({
     dispatch({ type: "SET_UPLOADING", payload: true });
     dispatch({ type: "SET_UPLOAD_PROGRESS", payload: 0 });
     dispatch({ type: "SET_UPLOAD_ERROR", payload: null });
+    dispatch({ type: "SET_UPLOADED_FILE_DETAILS", payload: [] }); // Reset details on new upload attempt
+
+    // Get Supabase session for user token
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      dispatch({
+        type: "SET_UPLOAD_ERROR",
+        payload: "Authentication error. Please log in again.",
+      });
+      dispatch({ type: "SET_UPLOADING", payload: false });
+      handleError(
+        sessionError || new Error("No session"),
+        "uploadFiles.getSession"
+      );
+      clearTimeout(uploadTimeout); // Clear the global timeout
+      return;
+    }
+    const userToken = session.access_token;
 
     // Set a global timeout for the entire upload process
     const uploadTimeout = setTimeout(() => {
@@ -909,24 +946,234 @@ function ImageUploader({
     }, TIMEOUTS.UPLOAD_TOTAL * networkFactor);
 
     try {
-      const validFiles = files.filter((file) => file.accepted);
+      const validFilesToUpload = files.filter(
+        (file, index) =>
+          file.accepted && (completedCrops[index] || file.initialCrop)
+      );
 
-      // Process images with captions and upload directly to Supabase
+      if (validFilesToUpload.length === 0) {
+        dispatch({
+          type: "SET_UPLOAD_ERROR",
+          payload: "No valid files to upload.",
+        });
+        dispatch({ type: "SET_UPLOADING", payload: false });
+        clearTimeout(uploadTimeout);
+        return;
+      }
 
-      // Set the form value with the signed URL
-      const signedUrl = "https://placeholder.svg"; // TODO: Replace with the signed URL
-      setValue("images", signedUrl);
-      dispatch({ type: "SET_UPLOAD_PROGRESS", payload: 100 });
-      dispatch({ type: "SET_COMPLETED", payload: true });
+      const allUploadedFileDetails = [];
+      let overallProgress = 0;
+
+      for (let i = 0; i < validFilesToUpload.length; i++) {
+        const fileData = validFilesToUpload[i];
+        const cropData = completedCrops[i] || fileData.initialCrop;
+        const originalFile = fileData.file;
+
+        if (!cropData) {
+          // This should ideally be caught by validateImages, but as a safeguard:
+          console.warn(
+            "Skipping file due to missing crop data:",
+            originalFile.name
+          );
+          continue;
+        }
+
+        try {
+          // 1. Get cropped image blob
+          const croppedImageBlob = await getCroppedImage(
+            fileData.preview, // imageSrc
+            cropData, // crop
+            CROP_DIMENSION // dimension (e.g., 1024)
+          );
+
+          console.log(
+            `[File: ${originalFile.name}] Cropped Blob:`,
+            croppedImageBlob
+          );
+          if (!croppedImageBlob) {
+            console.error(
+              `[File: ${originalFile.name}] Cropped image blob is null or undefined.`
+            );
+            throw new Error(`Failed to crop image: ${originalFile.name}`);
+          }
+          console.log(
+            `[File: ${originalFile.name}] User token for presign:`,
+            userToken ? "Token Present" : "Token MISSING"
+          );
+
+          // 2. Get pre-signed URL from our backend
+          const presignResponse = await fetch("/api/r2/upload-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              fileName: originalFile.name,
+              contentType: croppedImageBlob.type,
+              userToken: userToken, // REINSTATED - API route expects this now
+            }),
+            cache: "no-store", // Add cache-busting header
+          });
+
+          console.log(
+            `[File: ${originalFile.name}] Presign Response Status:`,
+            presignResponse.status
+          );
+          console.log(
+            `[File: ${originalFile.name}] Presign Response OK:`,
+            presignResponse.ok
+          );
+          // console.log(`[File: ${originalFile.name}] Presign Response Headers:`, Object.fromEntries(presignResponse.headers.entries()));
+
+          if (!presignResponse.ok) {
+            const errorData = await presignResponse
+              .json()
+              .catch(() => ({ error: "Failed to parse presign error JSON" }));
+            console.error(
+              `[File: ${originalFile.name}] Presign error data:`,
+              errorData
+            );
+            throw new Error(
+              `Failed to get upload URL for ${originalFile.name}: ${
+                errorData.error || presignResponse.statusText
+              }`
+            );
+          }
+          const { uploadUrl, objectKey, publicUrl } =
+            await presignResponse.json();
+
+          console.log(
+            `[File: ${originalFile.name}] Received uploadUrl:`,
+            uploadUrl
+          );
+          console.log(
+            `[File: ${originalFile.name}] Received objectKey:`,
+            objectKey
+          );
+          console.log(
+            `[File: ${originalFile.name}] Received publicUrl:`,
+            publicUrl
+          );
+
+          if (!uploadUrl) {
+            console.error(
+              `[File: ${originalFile.name}] uploadUrl is missing from presign response.`
+            );
+            throw new Error(`uploadUrl missing for ${originalFile.name}`);
+          }
+
+          // 3. Upload the file to R2 using the pre-signed URL
+          const r2UploadResponse = await fetch(uploadUrl, {
+            method: "PUT",
+            headers: { "Content-Type": croppedImageBlob.type },
+            body: croppedImageBlob,
+          });
+
+          console.log(
+            `[File: ${originalFile.name}] R2 Upload Response Status:`,
+            r2UploadResponse.status
+          );
+          console.log(
+            `[File: ${originalFile.name}] R2 Upload Response OK:`,
+            r2UploadResponse.ok
+          );
+          // console.log(`[File: ${originalFile.name}] R2 Upload Response Headers:`, Object.fromEntries(r2UploadResponse.headers.entries()));
+
+          if (!r2UploadResponse.ok) {
+            // Attempt to get more details from R2 error if possible (often XML)
+            const r2ErrorText = await r2UploadResponse
+              .text()
+              .catch(() => "Could not read R2 error text.");
+            console.error(
+              `[File: ${originalFile.name}] R2 upload error text:`,
+              r2ErrorText
+            );
+            throw new Error(
+              `Failed to upload ${originalFile.name} to R2: ${r2UploadResponse.statusText}. Details: ${r2ErrorText}`
+            );
+          }
+
+          // Store details of the uploaded file
+          const uploadedDetail = {
+            objectKey,
+            publicUrl,
+            originalName: originalFile.name,
+            size: croppedImageBlob.size,
+            type: croppedImageBlob.type,
+          };
+          allUploadedFileDetails.push(uploadedDetail);
+          dispatch({
+            type: "ADD_UPLOADED_FILE_DETAIL",
+            payload: uploadedDetail,
+          });
+
+          // Update progress
+          overallProgress = ((i + 1) / validFilesToUpload.length) * 100;
+          dispatch({
+            type: "SET_UPLOAD_PROGRESS",
+            payload: Math.round(overallProgress),
+          });
+        } catch (fileUploadError) {
+          // Log individual file error and continue if desired, or rethrow to stop all.
+          console.error(
+            `Error processing file ${originalFile.name}:`,
+            fileUploadError
+          );
+          handleError(
+            fileUploadError,
+            `uploadFiles.fileProcessing.${originalFile.name}`
+          );
+          // Decide if one file failure should stop all:
+          // For now, we'll let it try other files but record the primary error.
+          if (!state.uploadError) {
+            // Set first error
+            dispatch({
+              type: "SET_UPLOAD_ERROR",
+              payload: `Error with ${originalFile.name}: ${fileUploadError.message}. Other files may also be affected.`,
+            });
+          }
+        }
+      }
+
+      if (
+        allUploadedFileDetails.length === validFilesToUpload.length &&
+        allUploadedFileDetails.length > 0
+      ) {
+        // All attempted files uploaded successfully
+        setValue("images", allUploadedFileDetails); // Pass array of uploaded file details
+        dispatch({ type: "SET_UPLOAD_PROGRESS", payload: 100 });
+        dispatch({ type: "SET_COMPLETED", payload: true });
+        dispatch({ type: "SET_UPLOAD_ERROR", payload: null }); // Clear any previous non-blocking file errors
+      } else if (allUploadedFileDetails.length > 0) {
+        // Partial success
+        setValue("images", allUploadedFileDetails); // Still set the successfully uploaded ones
+        // The error for the failed one(s) should already be set
+        dispatch({ type: "SET_COMPLETED", payload: false }); // Not fully completed
+        // Optionally, set a specific warning about partial upload
+        dispatch({
+          type: "SET_WARNING",
+          payload:
+            "Some images uploaded successfully, but others failed. Please review errors.",
+        });
+      } else {
+        // No files were successfully uploaded, an error should already be set by individual file attempt.
+        if (!state.uploadError) {
+          // If no specific file error was set but nothing uploaded.
+          dispatch({
+            type: "SET_UPLOAD_ERROR",
+            payload: "Upload failed. No images were successfully processed.",
+          });
+        }
+        dispatch({ type: "SET_COMPLETED", payload: false });
+      }
     } catch (error) {
-      // Use standardized error handling
-      handleError(error, "uploadFiles");
+      // Catch all for broader errors (e.g., before loop starts, or unhandled)
+      handleError(error, "uploadFiles.mainCatch");
       dispatch({
         type: "SET_UPLOAD_ERROR",
         payload: error.message || "Upload failed. Please try again.",
       });
+      dispatch({ type: "SET_COMPLETED", payload: false });
 
-      // Auto-retry logic for certain errors
+      // Auto-retry logic for certain errors (this might need adjustment with R2 specifics)
       if (
         retryCount < 2 &&
         (error.message.includes("network") ||
@@ -956,6 +1203,11 @@ function ImageUploader({
     handleError,
     validateImages,
     gender,
+    supabase,
+    state.uploadError,
+    state.uploading,
+    state.isCompleted,
+    TIMEOUTS.UPLOAD_TOTAL,
   ]);
 
   // Reset retry count when files change

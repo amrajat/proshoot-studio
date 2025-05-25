@@ -263,6 +263,13 @@ enabled = false
 # tenant = "my-auth0-tenant"
 # tenant_region = "us"
 
+[auth.external.google]
+enabled = true
+client_id = "349055144195-ccs1okbai3cq067pgpcnankanvtkvjun.apps.googleusercontent.com"
+# secret = "env(GOOGLE_CLIENT_SECRET)" # Commented out as it's not strictly needed for One-Tap ID token flow
+redirect_uri = "http://localhost:54321/auth/v1/callback"
+skip_nonce_check = false # Explicitly set for clarity, though it's the default. Ensures nonce is checked.
+
 # Use AWS Cognito (Amplify) as a third-party provider alongside Supabase Auth.
 [auth.third_party.aws_cognito]
 enabled = false

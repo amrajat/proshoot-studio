@@ -1,89 +1,80 @@
-import { getCurrentSession } from "@/lib/supabase/actions/server";
+// import { getCurrentSession } from "@/lib/supabase/actions/server";
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+import { createServerClient } from "@supabase/ssr";
+// import * as Sentry from "@sentry/nextjs";
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request) {
-  try {
-    const { pathname } = request.nextUrl;
+  const { pathname, origin } = request.nextUrl;
+  const response = NextResponse.next();
 
-    // Public paths that don't require authentication checks
-    if (
-      pathname.startsWith(`/dashboard/stripe/webhook`) ||
-      pathname.startsWith(`/dashboard/webhooks`) ||
-      pathname.startsWith(`/auth/callback`)
-    ) {
-      // Allow access to the requested path
-      return NextResponse.next();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        get: (name) => request.cookies.get(name)?.value,
+        set: (name, value, options) => {
+          response.cookies.set({ name, value, ...options });
+        },
+        remove: (name, options) => {
+          response.cookies.delete({ name, ...options });
+        },
+      },
     }
+  );
 
-    // Get session with error handling
-    let session;
-    try {
-      const sessionData = await getCurrentSession();
-      session = sessionData.session;
-    } catch (error) {
-      // Check if this is an expected auth error for unauthenticated users
-      const isAuthTokenError =
-        error.message?.includes("Invalid Refresh Token") ||
-        error.message?.includes("Refresh Token Not Found");
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-      // Only log unexpected errors to Sentry
-      if (!isAuthTokenError) {
-        console.error("Session retrieval error:", error);
-        Sentry.captureException(error);
-      } else {
-        // Just log to console for expected auth errors
-        console.log(
-          "Auth token error (expected for unauthenticated users):",
-          error.message
-        );
-      }
+  // Define public and auth routes
+  const publicRoutes = ["/", "/pricing", "/terms", "/privacy"]; // Add any other public routes
+  const authRoutes = ["/auth", "/auth/callback"];
 
-      // If we can't verify the session, redirect to auth for protected routes
-      if (pathname.startsWith(`/dashboard`)) {
-        return NextResponse.redirect(new URL(`/auth`, request.url));
-      }
+  const isPublicRoute =
+    publicRoutes.some(
+      (route) =>
+        pathname === route ||
+        (route !== "/" && pathname.startsWith(route + "/"))
+    ) || pathname.startsWith("/api"); // Also treat API routes as public for now
+  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
-      // For other routes, allow the request to continue
-      return NextResponse.next();
-    }
-
-    // Check if the user is authenticated and trying to access a protected path
-    if (pathname.startsWith(`/dashboard`) && !session) {
-      // Redirect the user to the /auth page if not authenticated
-      return NextResponse.redirect(new URL(`/auth`, request.url));
-    }
-
-    // If the user is not authenticated and trying to access the /auth page
-    if (pathname.startsWith(`/auth`) && session) {
-      // Redirect the user to the /dashboard page if authenticated
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
-
-    // If the user is authenticated and trying to access any other path
-    if (session) {
-      // Allow access to the requested path
-      return NextResponse.next();
-    }
-
-    // For all other cases, allow the request to continue
-    return NextResponse.next();
-  } catch (error) {
-    // Catch any unexpected errors to prevent middleware from crashing
-    console.error("Middleware error:", error);
-    Sentry.captureException(error);
-
-    // Default to allowing the request rather than breaking the application
-    return NextResponse.next();
+  if (!session && !isPublicRoute && !isAuthRoute) {
+    // User is not logged in and trying to access a protected route
+    // Store the intended URL to redirect after login
+    const redirectTo = `${origin}/auth?next=${encodeURIComponent(pathname)}${
+      request.nextUrl.search
+    }`;
+    return NextResponse.redirect(redirectTo);
   }
+
+  if (session && isAuthRoute && pathname !== "/auth/callback") {
+    // User is logged in but trying to access /auth page (not callback)
+    // Redirect them to dashboard or their intended 'next' page if available
+    const nextUrl = request.nextUrl.searchParams.get("next") || "/dashboard";
+    const safeNextUrl = nextUrl.startsWith("/") ? nextUrl : "/dashboard";
+    return NextResponse.redirect(`${origin}${safeNextUrl}`);
+  }
+
+  // For One Tap: If the user is trying to access a specific page and gets logged in via One Tap,
+  // the One Tap component itself will handle the redirect to 'redirectToAfterLogin' from sessionStorage.
+  // This middleware primarily handles direct navigation and OAuth/OTP flows.
+
+  return response;
 }
 
 // See "Matching Paths" below to learn more
 export const config = {
   matcher: [
-    // "/((?!api|_next/static|_next/image|favicon.ico).*)",
-    "/dashboard/:path*",
-    "/auth",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - images (if you have a public /images folder)
+     * - api (if you want to exclude all api routes, though some auth api might be needed)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|images).*)",
   ],
 };

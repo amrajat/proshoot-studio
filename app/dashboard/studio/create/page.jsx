@@ -256,8 +256,6 @@ export default function StudioCreate() {
         .eq("user_id", userId)
         .maybeSingle();
 
-      console.log("Fetched credits data:", data);
-
       if (!error && data) {
         // For personal context, use personal plan credits
         const personalCreditsData = {
@@ -276,9 +274,6 @@ export default function StudioCreate() {
           elite: 0,
           studio: 0,
         };
-
-        console.log("Personal context credits:", personalCreditsData);
-        console.log("Organization context credits:", orgCreditsData);
 
         setPersonalCredits(personalCreditsData);
         setOrganizationCredits(orgCreditsData);

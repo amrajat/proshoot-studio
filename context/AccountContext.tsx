@@ -142,7 +142,6 @@ export const AccountProvider = ({
 
   // >>> refreshContext MUST BE DEFINED BEFORE setSelectedContext <<<
   const refreshContext = useCallback(async () => {
-    console.log("Starting refreshContext...");
     setIsLoading(true);
     const supabase = createSupabaseBrowserClient();
     const {
@@ -199,7 +198,6 @@ export const AccountProvider = ({
         console.error("Refresh Context: Unexpected error:", error);
       }
     }
-    console.log("...Finishing refreshContext");
     setIsLoading(false);
   }, []);
 
@@ -271,9 +269,6 @@ export const AccountProvider = ({
           ) {
             localStorage.removeItem("currentFormStep");
             localStorage.removeItem("formValues");
-            console.log(
-              "Cleared form data from localStorage due to context switch"
-            );
           }
         }
 
@@ -346,9 +341,6 @@ export const AccountProvider = ({
 
   // Effect to refresh context on initial client-side mount
   useEffect(() => {
-    console.log(
-      "AccountProvider mounted, triggering initial refreshContext..."
-    );
     refreshContext();
   }, [refreshContext]); // refreshContext added as dependency
 

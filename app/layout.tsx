@@ -3,13 +3,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { GeistSans } from "geist/font/sans";
 
-// import CookieBanner from "@/components/CookieBanner";
-import FirstPromoterScript from "@/components/services/first-promoter";
-import { PostHogProvider } from "@/components/services/posthog";
+// import FirstPromoterScript from "@/components/services/first-promoter";
+// import { PostHogProvider } from "@/components/services/posthog";
 import { SidebarProvider } from "@/context/SidebarContext";
+import GoogleOneTapComponent from "@/components/google-one-tap";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(`${process.env.URL}`),
+  metadataBase: new URL(process.env.URL || "http://localhost:3000"),
   title: {
     default: "Proshoot.co: Generate Professional Headshots with AI.",
     template: "%s - Proshoot.co AI Portraits",
@@ -24,15 +24,13 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="scroll-smooth min-h-screen">
-      <PostHogProvider>
-        <FirstPromoterScript />
-        <body
-          className={GeistSans.className + " antialiased" + " min-h-screen"}
-        >
-          <SidebarProvider>{children}</SidebarProvider>
-          {/* <CookieBanner /> */}
-        </body>
-      </PostHogProvider>
+      {/* <PostHogProvider> */}
+      {/* <FirstPromoterScript /> */}
+      <body className={GeistSans.className + " antialiased" + " min-h-screen"}>
+        <GoogleOneTapComponent />
+        <SidebarProvider>{children}</SidebarProvider>
+      </body>
+      {/* </PostHogProvider> */}
     </html>
   );
 }

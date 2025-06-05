@@ -12,6 +12,7 @@ import {
   CircleAlert,
   Move,
   RefreshCw,
+  FileArchive,
 } from "lucide-react";
 import SmartCrop from "smartcrop";
 import ReactCrop from "react-image-crop";
@@ -41,6 +42,7 @@ import {
 
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
 import { useImageAnalysis } from "@/hooks/useImageAnalysis";
+import JSZip from "jszip";
 
 // Image validation rules
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
@@ -954,7 +956,7 @@ function ImageUploader({
         (res.rekognitionIndividual &&
           (res.rekognitionIndividual.noFaceDetected ||
             res.rekognitionIndividual.multipleFacesDetected)) ||
-        (res.hashAnalysis && res.hashAnalysis.isExactDuplicate) // Example: you might want to block uploads of duplicates
+        (res.hashAnalysis && res.hashAnalysis.isExactDuplicate)
     );
 
     if (analysisState !== "completed" || hasCriticalAnalysisIssues) {
@@ -966,21 +968,20 @@ function ImageUploader({
       else if (hasCriticalAnalysisIssues)
         errorMsg =
           "Some images have critical issues (e.g., no face, duplicates). Please review or remove them before uploading.";
-
       dispatch({ type: "SET_UPLOAD_ERROR", payload: errorMsg });
-      // Optionally, highlight specific images by updating their individual error states in analysisResults
       return;
     }
 
     dispatch({ type: "SET_UPLOADING", payload: true });
     dispatch({ type: "SET_UPLOAD_PROGRESS", payload: 0 });
     dispatch({ type: "SET_UPLOAD_ERROR", payload: null });
-    dispatch({ type: "SET_UPLOADED_FILE_DETAILS", payload: [] });
+    dispatch({ type: "SET_UPLOADED_FILE_DETAILS", payload: [] }); // Clear previous details
 
     const {
       data: { session },
       error: sessionError,
     } = await supabase.auth.getSession();
+
     if (sessionError || !session) {
       dispatch({
         type: "SET_UPLOAD_ERROR",
@@ -991,14 +992,12 @@ function ImageUploader({
         sessionError || new Error("No session"),
         "uploadFiles.getSession"
       );
-      return; // Removed clearTimeout(uploadTimeout) as it's not defined here yet.
+      return;
     }
     const userToken = session.access_token;
 
     const uploadTimeout = setTimeout(() => {
-      // Check uploading flag from state, not a local variable
       if (state.uploading && !state.isCompleted) {
-        // Use state.isCompleted
         dispatch({
           type: "SET_UPLOAD_ERROR",
           payload: "Upload timed out. Please try again.",
@@ -1008,34 +1007,44 @@ function ImageUploader({
     }, TIMEOUTS.UPLOAD_TOTAL * networkFactor);
 
     try {
-      const validFilesToUpload = files.filter(
+      const validFilesToProcess = files.filter(
         (file, index) =>
           file.accepted &&
           !file.error &&
           (completedCrops[index] || file.initialCrop)
       );
-      if (validFilesToUpload.length === 0) {
+
+      if (validFilesToProcess.length === 0) {
         dispatch({
           type: "SET_UPLOAD_ERROR",
-          payload: "No valid files to upload.",
+          payload: "No valid files to zip and upload.",
         });
         dispatch({ type: "SET_UPLOADING", payload: false });
         clearTimeout(uploadTimeout);
         return;
       }
 
-      const allUploadedDetails = [];
-      let overallProgress = 0;
+      dispatch({ type: "SET_PROCESSING", payload: true }); // Indicate zipping process
 
-      for (let i = 0; i < validFilesToUpload.length; i++) {
-        const fileData = validFilesToUpload[i];
+      const zip = new JSZip();
+      let filesAddedToZip = 0;
+      let currentZippingProgress = 0;
+      const totalFilesToZip = validFilesToProcess.length;
+
+      for (let i = 0; i < totalFilesToZip; i++) {
+        const fileData = validFilesToProcess[i];
         const originalIndex = files.findIndex(
           (f) => f.preview === fileData.preview
-        ); // Get original index
+        );
         const cropData = completedCrops[originalIndex] || fileData.initialCrop;
         const originalFile = fileData.file;
 
-        if (!cropData) continue;
+        if (!cropData) {
+          console.warn(
+            `Skipping file ${originalFile.name} due to missing crop data during zipping.`
+          );
+          continue;
+        }
 
         try {
           const croppedImageBlob = await getCroppedImage(
@@ -1043,137 +1052,190 @@ function ImageUploader({
             cropData,
             CROP_DIMENSION
           );
-          if (!croppedImageBlob)
-            throw new Error(`Failed to crop image: ${originalFile.name}`);
 
-          const presignResponse = await fetch("/api/r2/upload-url", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              fileName: originalFile.name,
-              contentType: croppedImageBlob.type,
-              userToken,
-            }),
-            cache: "no-store",
-          });
-          if (!presignResponse.ok) {
-            const errorData = await presignResponse
-              .json()
-              .catch(() => ({ error: "Failed to parse presign error" }));
-            throw new Error(
-              `Failed to get upload URL for ${originalFile.name}: ${
-                errorData.error || presignResponse.statusText
-              }`
+          if (croppedImageBlob) {
+            const fileNameInZip = originalFile.name.replace(
+              /[^a-zA-Z0-9._-]/g,
+              "_"
+            );
+            zip.file(fileNameInZip, croppedImageBlob);
+            filesAddedToZip++;
+          } else {
+            console.warn(
+              `Skipping file ${originalFile.name} as getCroppedImage returned null.`
             );
           }
-          const { uploadUrl, objectKey, publicUrl } =
-            await presignResponse.json();
-          if (!uploadUrl)
-            throw new Error(`uploadUrl missing for ${originalFile.name}`);
-
-          const r2UploadResponse = await fetch(uploadUrl, {
-            method: "PUT",
-            headers: { "Content-Type": croppedImageBlob.type },
-            body: croppedImageBlob,
-          });
-          if (!r2UploadResponse.ok) {
-            const r2ErrorText = await r2UploadResponse
-              .text()
-              .catch(() => "Could not read R2 error.");
-            throw new Error(
-              `Failed to upload ${originalFile.name} to R2: ${r2UploadResponse.statusText}. Details: ${r2ErrorText}`
-            );
-          }
-
-          const uploadedDetail = {
-            objectKey,
-            publicUrl,
-            originalName: originalFile.name,
-            size: croppedImageBlob.size,
-            type: croppedImageBlob.type,
-          };
-          allUploadedDetails.push(uploadedDetail);
-          dispatch({
-            type: "ADD_UPLOADED_FILE_DETAIL",
-            payload: uploadedDetail,
-          });
-
-          overallProgress = ((i + 1) / validFilesToUpload.length) * 100;
-          dispatch({
-            type: "SET_UPLOAD_PROGRESS",
-            payload: Math.round(overallProgress),
-          });
-        } catch (fileUploadError) {
+        } catch (cropError) {
           console.error(
-            `Error processing file ${originalFile.name}:`,
-            fileUploadError
+            `Error cropping file ${originalFile.name} for zipping:`,
+            cropError
           );
-          handleError(
-            fileUploadError,
-            `uploadFiles.fileProcessing.${originalFile.name}`
-          );
-          if (!state.uploadError) {
-            // Use state.uploadError
-            dispatch({
-              type: "SET_UPLOAD_ERROR",
-              payload: `Error with ${originalFile.name}: ${fileUploadError.message}. Other files may also be affected.`,
-            });
-          }
+          // Optionally, add to an error list to show the user
         }
+        currentZippingProgress = ((i + 1) / totalFilesToZip) * 50; // Zipping is first 50%
+        dispatch({
+          type: "SET_UPLOAD_PROGRESS",
+          payload: Math.round(currentZippingProgress),
+        });
       }
 
-      if (
-        allUploadedDetails.length === validFilesToUpload.length &&
-        allUploadedDetails.length > 0
-      ) {
-        setValue("images", allUploadedDetails);
-        dispatch({ type: "SET_UPLOAD_PROGRESS", payload: 100 });
-        dispatch({ type: "SET_COMPLETED", payload: true });
-        dispatch({ type: "SET_UPLOAD_ERROR", payload: null });
-        resetAnalysis(); // Reset analysis after successful upload
-      } else if (allUploadedDetails.length > 0) {
-        setValue("images", allUploadedDetails);
-        dispatch({ type: "SET_COMPLETED", payload: false });
+      if (filesAddedToZip === 0) {
         dispatch({
-          type: "SET_WARNING",
-          payload: "Some images uploaded, but others failed. Review errors.",
+          type: "SET_UPLOAD_ERROR",
+          payload: "No files could be processed and added to the ZIP.",
         });
-      } else {
-        if (!state.uploadError) {
-          // Use state.uploadError
-          dispatch({
-            type: "SET_UPLOAD_ERROR",
-            payload: "Upload failed. No images were successfully processed.",
-          });
-        }
-        dispatch({ type: "SET_COMPLETED", payload: false });
+        dispatch({ type: "SET_PROCESSING", payload: false });
+        dispatch({ type: "SET_UPLOADING", payload: false });
+        clearTimeout(uploadTimeout);
+        return;
       }
+
+      const zipBlob = await zip.generateAsync({
+        type: "blob",
+        compression: "DEFLATE",
+        compressionOptions: { level: 6 },
+      });
+
+      dispatch({ type: "SET_PROCESSING", payload: false }); // Zipping done
+
+      const zipFileName = `dataset_${session.user.id.substring(
+        0,
+        8
+      )}_${Date.now()}.zip`;
+
+      console.log(
+        "[Zip Upload] Requesting presign URL for:",
+        zipFileName,
+        "Type:",
+        zipBlob.type
+      );
+
+      const presignResponse = await fetch("/api/r2/upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: zipFileName,
+          contentType: zipBlob.type,
+          userToken: userToken,
+        }),
+        cache: "no-store",
+      });
+
+      console.log(
+        "[Zip Upload] Presign Response Status:",
+        presignResponse.status
+      );
+
+      if (!presignResponse.ok) {
+        const errorData = await presignResponse
+          .json()
+          .catch(() => ({ error: "Failed to parse presign error" }));
+        console.error("[Zip Upload] Presign error data:", errorData);
+        throw new Error(
+          `Failed to get upload URL for ZIP: ${
+            errorData.error || presignResponse.statusText
+          }`
+        );
+      }
+
+      // EXPECTING API to return: { uploadUrl, downloadUrl, objectKey }
+      const { uploadUrl, downloadUrl, objectKey } =
+        await presignResponse.json();
+
+      console.log("[Zip Upload] Received uploadUrl (for PUT):", uploadUrl);
+      console.log(
+        "[Zip Upload] Received downloadUrl (for GET, 24hr expiry - from API):",
+        downloadUrl
+      );
+      console.log("[Zip Upload] Received objectKey:", objectKey);
+
+      if (!uploadUrl) {
+        console.error(
+          "[Zip Upload] uploadUrl is missing from presign response."
+        );
+        throw new Error("uploadUrl missing for ZIP file upload");
+      }
+      if (!downloadUrl) {
+        console.warn(
+          "[Zip Upload] downloadUrl is missing from presign response. Download link may not work as expected for private objects unless PUT URL is publicly accessible for GET too (not typical)."
+        );
+        // Fallback or error if downloadUrl is critical and missing
+        // For now, we'll proceed, but the download link might use the PUT URL which could fail for GET
+      }
+
+      dispatch({ type: "SET_UPLOAD_PROGRESS", payload: 50 });
+
+      const r2UploadResponse = await fetch(uploadUrl, {
+        // Use PUT URL for upload
+        method: "PUT",
+        headers: { "Content-Type": zipBlob.type },
+        body: zipBlob,
+      });
+
+      console.log(
+        "[Zip Upload] R2 Upload Response Status:",
+        r2UploadResponse.status
+      );
+
+      if (!r2UploadResponse.ok) {
+        const r2ErrorText = await r2UploadResponse
+          .text()
+          .catch(() => "Could not read R2 error.");
+        console.error("[Zip Upload] R2 upload error text:", r2ErrorText);
+        throw new Error(
+          `Failed to upload ZIP to R2: ${r2UploadResponse.statusText}. Details: ${r2ErrorText}`
+        );
+      }
+
+      const finalUrlForForm = downloadUrl || uploadUrl; // Prefer downloadUrl if available
+
+      const uploadedZipDisplayDetails = {
+        objectKey,
+        // Use downloadUrl for the link, fallback to uploadUrl if downloadUrl isn't provided (though this might not work for GET)
+        displayUrl: downloadUrl || uploadUrl,
+        originalName: zipFileName,
+        size: zipBlob.size,
+        type: zipBlob.type,
+        isZip: true,
+        zippedFileCount: filesAddedToZip,
+      };
+
+      dispatch({
+        type: "SET_UPLOADED_FILE_DETAILS",
+        payload: [uploadedZipDisplayDetails],
+      });
+
+      // Set 'images' to the (ideally GET) pre-signed URL string with 24hr expiry from API
+      setValue("images", finalUrlForForm);
+
+      dispatch({ type: "SET_UPLOAD_PROGRESS", payload: 100 });
+      dispatch({ type: "SET_COMPLETED", payload: true });
+      dispatch({ type: "SET_UPLOAD_ERROR", payload: null });
+      resetAnalysis();
     } catch (error) {
-      handleError(error, "uploadFiles.mainCatch");
+      handleError(error, "uploadFiles.zipAndUpload");
       dispatch({
         type: "SET_UPLOAD_ERROR",
-        payload: error.message || "Upload failed. Please try again.",
+        payload: error.message || "ZIP Upload failed. Please try again.",
       });
       dispatch({ type: "SET_COMPLETED", payload: false });
+      dispatch({ type: "SET_PROCESSING", payload: false });
 
       if (
         state.retryCount < 2 &&
         (error.message.includes("network") ||
           error.message.includes("timeout") ||
-          error.message.includes("connection"))
+          error.message.includes("connection")) &&
+        !error.message.toLowerCase().includes("zip") // Avoid retrying logical ZIP errors
       ) {
-        // Use state.retryCount
         dispatch({ type: "INCREMENT_RETRY_COUNT" });
-        setTimeout(
-          () => uploadFiles(),
-          TIMEOUTS.UPLOAD_RETRY_DELAY * networkFactor
-        );
+        setTimeout(() => {
+          uploadFiles();
+        }, TIMEOUTS.UPLOAD_RETRY_DELAY * networkFactor);
       }
     } finally {
       clearTimeout(uploadTimeout);
-      // Use state properties for conditions
-      if (!state.isCompleted && !state.uploadError) {
-        // Use state.isCompleted, state.uploadError
+      if (!state.isCompleted) {
         dispatch({ type: "SET_UPLOADING", payload: false });
       }
     }
@@ -1185,14 +1247,16 @@ function ImageUploader({
     networkFactor,
     handleError,
     validateImages,
-    gender,
     state.uploading,
     state.isCompleted,
     state.uploadError,
-    state.retryCount, // Dependencies on state properties
+    state.retryCount,
     analysisState,
     analysisResults,
-    resetAnalysis, // Analysis related dependencies
+    resetAnalysis,
+    TIMEOUTS.UPLOAD_RETRY_DELAY,
+    TIMEOUTS.UPLOAD_TOTAL,
+    CROP_DIMENSION,
   ]);
 
   useEffect(() => {
@@ -1634,6 +1698,59 @@ function ImageUploader({
                 button.
               </AlertDescription>
             </Alert>
+          )}
+          {isCompleted && uploadedFileDetails.length > 0 && (
+            <div className="mt-6">
+              <Heading variant="h3" className="mb-3">
+                Upload Successful!
+              </Heading>
+              <Alert className="my-4">
+                <AlertTitle>ZIP File Ready</AlertTitle>
+                <AlertDescription>
+                  Your ZIP file has been uploaded. The pre-signed URL for access
+                  has been set. You can typically find the URL in the form data
+                  if needed, or use the download link below if configured.
+                </AlertDescription>
+              </Alert>
+              {/* Display details of the single uploaded ZIP */}
+              {uploadedFileDetails.map((uploadedFile, index) => (
+                <Card key={uploadedFile.objectKey || index} className="mb-4">
+                  <CardContent className="p-4">
+                    {uploadedFile.isZip && ( // Should always be true now
+                      <div className="flex items-center space-x-4">
+                        <FileArchive className="h-12 w-12 text-muted-foreground flex-shrink-0" />
+                        <div className="flex-grow">
+                          <p
+                            className="text-sm font-semibold truncate"
+                            title={uploadedFile.originalName}
+                          >
+                            {uploadedFile.originalName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Contains {uploadedFile.zippedFileCount} image(s)
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Size: {(uploadedFile.size / 1024 / 1024).toFixed(2)}{" "}
+                            MB
+                          </p>
+                          {/* Use the displayUrl which should be the pre-signed GET URL */}
+                          {uploadedFile.displayUrl && (
+                            <a
+                              href={uploadedFile.displayUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline mt-1 block"
+                            >
+                              Download ZIP
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
           {!isCompleted && errors && errors["images"]?.message && (
             <p className="text-sm text-destructive">

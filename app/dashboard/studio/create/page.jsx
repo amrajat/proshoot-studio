@@ -54,17 +54,10 @@ const FileUploader = ({
 
 const extendedFormSchema = baseFormSchema.extend({
   images: z
-    .array(
-      z.object({
-        objectKey: z.string().min(1, "Object key is required"),
-        publicUrl: z.string().url("Invalid public URL"),
-        originalName: z.string().optional(),
-        size: z.number().optional(),
-        type: z.string().optional(),
-      })
-    )
-    .min(1, "Please upload at least 1 image.")
-    .max(20, "You can upload a maximum of 20 images."),
+    .string()
+    .url({ message: "A valid pre-signed URL for the ZIP file is required." })
+    .min(1, "Please upload the ZIP file to get a pre-signed URL."),
+  // Keep other extended fields if any, or remove .extend if 'images' was the only one
 });
 
 export default function StudioCreate() {
@@ -135,7 +128,7 @@ export default function StudioCreate() {
             typeof item === "object" && "name" in item && "theme" in item
         )
           ? [...parsedLocalStorageValues.clothing]
-          : [], // Default to empty array if localStorage data is invalid
+          : [],
       backgrounds:
         Array.isArray(parsedLocalStorageValues.backgrounds) &&
         parsedLocalStorageValues.backgrounds.every(
@@ -143,16 +136,14 @@ export default function StudioCreate() {
             typeof item === "object" && "name" in item && "theme" in item
         )
           ? [...parsedLocalStorageValues.backgrounds]
-          : [], // Default to empty array if localStorage data is invalid
+          : [],
       gender: parsedLocalStorageValues.gender || "",
       age: parsedLocalStorageValues.age || "",
       ethnicity: parsedLocalStorageValues.ethnicity || "",
       hairStyle: parsedLocalStorageValues.hairStyle || "",
       eyeColor: parsedLocalStorageValues.eyeColor || "",
       glasses: parsedLocalStorageValues.glasses || "No",
-      images: Array.isArray(parsedLocalStorageValues.images)
-        ? parsedLocalStorageValues.images
-        : [],
+      images: parsedLocalStorageValues.images || "", // Initialize as string
       studioName: parsedLocalStorageValues.studioName || "",
       plan: parsedLocalStorageValues.plan || "",
     },
@@ -176,7 +167,6 @@ export default function StudioCreate() {
     if (typeof window !== "undefined") {
       const currentFormValues = getValues();
 
-      // Ensure clothing and backgrounds are valid arrays of objects before saving
       const clothingToSave =
         Array.isArray(currentFormValues.clothing) &&
         currentFormValues.clothing.every(
@@ -204,9 +194,7 @@ export default function StudioCreate() {
         hairStyle: currentFormValues.hairStyle || "",
         eyeColor: currentFormValues.eyeColor || "",
         glasses: currentFormValues.glasses || "No",
-        images: Array.isArray(currentFormValues.images)
-          ? currentFormValues.images
-          : [],
+        images: currentFormValues.images || "", // Save as string
         studioName: currentFormValues.studioName || "",
       };
       localStorage.setItem("formValues", JSON.stringify(valuesToSave));
@@ -553,9 +541,11 @@ export default function StudioCreate() {
       // Add the generated prompts to the data to be sent to the backend
       // Your backend will expect an array of prompt strings.
       sanitizedData.prompts = finalPrompts;
+      sanitizedData.organization_id =
+        selectedContext?.type === "organization" ? selectedContext.id : null;
       // console.log("Generated Prompts for API:", finalPrompts); // For debugging
       try {
-        const response = await fetch("/dashboard/studio/create/upload/test", {
+        const response = await fetch("/api/lora-training", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -769,7 +759,7 @@ export default function StudioCreate() {
   }
   if (currentStep === steps.length - 1) {
     const imagesValue = getValues("images");
-    if (!imagesValue || imagesValue.length < 1 || imagesValue.length > 20) {
+    if (typeof imagesValue !== "string" || imagesValue.trim() === "") {
       mainButtonDisabled = true;
     }
   }

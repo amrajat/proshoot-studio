@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import createSupabaseServerClient from "@/lib/supabase/server-client";
 import { v4 as uuidv4 } from "uuid";
@@ -13,6 +17,7 @@ const R2_ENDPOINT = process.env.R2_ENDPOINT;
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
 const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
 const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME;
+const R2_REGION = process.env.R2_REGION || "auto"; // R2 typically uses 'auto'
 // R2_PUBLIC_URL is optional, will be handled if not set
 // const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL;
 
@@ -34,8 +39,8 @@ console.log("[API Route Init] R2_ENDPOINT:", R2_ENDPOINT);
 console.log("[API Route Init] R2_BUCKET_NAME:", R2_BUCKET_NAME);
 
 const s3Client = new S3Client({
-  region: "auto", // For R2, "auto" is typically used
-  endpoint: R2_ENDPOINT, // Ensure this is just https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+  region: R2_REGION,
+  endpoint: R2_ENDPOINT,
   credentials: {
     accessKeyId: R2_ACCESS_KEY_ID,
     secretAccessKey: R2_SECRET_ACCESS_KEY,
@@ -44,11 +49,21 @@ const s3Client = new S3Client({
   // For R2, the default (false or undefined) is preferred.
 });
 
-export async function POST(request) {
+const UPLOAD_EXPIRATION_SECONDS = 600; // 10 minutes for the PUT URL
+const DEFAULT_DOWNLOAD_EXPIRATION_SECONDS = 86400; // 24 hours for the GET URL
+
+export async function POST(req) {
   const supabase = await createSupabaseServerClient();
+  let userId;
 
   try {
-    const { fileName, contentType, userToken } = await request.json();
+    const body = await req.json();
+    const {
+      fileName,
+      contentType,
+      userToken, // Expecting token from client
+      expirationInSeconds, // Optional: client can request specific expiry for downloadUrl
+    } = body;
 
     if (!fileName || !contentType) {
       return NextResponse.json(
@@ -58,82 +73,107 @@ export async function POST(request) {
     }
 
     if (!userToken) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Verify user session with Supabase
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser(userToken);
-
-    if (userError || !user) {
-      console.error("Supabase auth error:", userError);
       return NextResponse.json(
-        { error: "Invalid user session" },
+        { error: "Missing user token" },
         { status: 401 }
       );
     }
 
-    const userId = user.id; // User's UUID from Supabase
-    const uniqueFileName = `${uuidv4()}-${fileName.replace(/\s+/g, "_")}`; // Create a unique file name to prevent overwrites
-    const objectKey = `${userId}/${uniqueFileName}`; // Path in R2: /uuid/unique-filename.jpg
+    const { data: userData, error: userError } = await supabase.auth.getUser(
+      userToken
+    );
 
-    const command = new PutObjectCommand({
+    if (userError || !userData?.user) {
+      console.error("R2 Upload API - Auth Error:", userError);
+      return NextResponse.json(
+        { error: "Authentication failed. Invalid token." },
+        { status: 401 }
+      );
+    }
+    userId = userData.user.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "User ID not found after authentication." },
+        { status: 401 }
+      );
+    }
+
+    // Sanitize filename and create a unique object key
+    const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const uniqueId = uuidv4(); // Generate a unique ID for the file
+    // Example: user_id/original_filename_uniqueid.extension
+    // Or if it's always a zip: user_id/uniqueid.zip
+    const fileExtension = sanitizedFileName.includes(".")
+      ? sanitizedFileName.substring(sanitizedFileName.lastIndexOf("."))
+      : "";
+    const baseFileName = sanitizedFileName.includes(".")
+      ? sanitizedFileName.substring(0, sanitizedFileName.lastIndexOf("."))
+      : sanitizedFileName;
+
+    // Construct objectKey - using the filename passed from client (which is already the zip name)
+    // const objectKey = `${userId}/${baseFileName}-${uniqueId}${fileExtension}`;
+    const objectKey = `${userId}/${fileName}`; // Simpler: use userId/zipFileName.zip
+
+    // Create PutObjectCommand for uploading
+    const putCommand = new PutObjectCommand({
       Bucket: R2_BUCKET_NAME,
       Key: objectKey,
       ContentType: contentType,
-      // ACL: 'public-read', // R2 does not use ACLs like S3. Public access is via bucket settings or Cloudflare Workers.
-      // For client-side uploads, metadata can be set here if needed
-      // Metadata: {
-      //   'custom-header': 'value',
-      // },
+      // Optionally add Metadata like userId if needed, e.g., Metadata: { "user-id": userId }
     });
 
-    // Pre-signed URLs for R2 should have a relatively short expiration time for security
-    const expiresIn = 300; // 5 minutes
-    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn });
+    // Generate pre-signed URL for PUT (upload)
+    const uploadUrl = await getSignedUrl(s3Client, putCommand, {
+      expiresIn: UPLOAD_EXPIRATION_SECONDS,
+    });
 
-    // Construct the public URL (this part is for accessing the file later, not for the PUT upload itself)
-    let publicFileUrl;
-    if (process.env.R2_PUBLIC_URL) {
-      publicFileUrl = `${process.env.R2_PUBLIC_URL}/${objectKey}`;
-    } else {
-      // Fallback if R2_PUBLIC_URL is not set: Construct a standard virtual-hosted style R2 URL
-      try {
-        const endpointHost = new URL(R2_ENDPOINT).hostname; // e.g., c7616cca1c5a5038e0c45956512164bb.r2.cloudflarestorage.com
-        // Correct virtual-hosted style for R2: https://<bucket>.<account-id-host>/<objectKey>
-        publicFileUrl = `https://${R2_BUCKET_NAME}.${endpointHost}/${objectKey}`;
-      } catch (e) {
-        console.error(
-          "Error constructing fallback public URL due to invalid R2_ENDPOINT:",
-          e
-        );
-        publicFileUrl = null; // or some default/error indicator
-      }
+    // Determine expiration for the GET (download) URL
+    let downloadExpiry = DEFAULT_DOWNLOAD_EXPIRATION_SECONDS;
+    if (
+      expirationInSeconds &&
+      typeof expirationInSeconds === "number" &&
+      expirationInSeconds > 0
+    ) {
+      // Optional: Add a max cap to client-requested expiry if needed
+      // downloadExpiry = Math.min(expirationInSeconds, MAX_ALLOWED_EXPIRY_FROM_CLIENT);
+      downloadExpiry = expirationInSeconds;
     }
 
-    // Log the generated signed URL that the client will use for PUT
-    console.log("Generated pre-signed URL for client PUT:", signedUrl);
-    console.log("Object Key for this URL:", objectKey);
+    // Create GetObjectCommand for downloading
+    const getCommand = new GetObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: objectKey,
+    });
+
+    // Generate pre-signed URL for GET (download) with configured/default expiry
+    const downloadUrl = await getSignedUrl(s3Client, getCommand, {
+      expiresIn: downloadExpiry,
+    });
+
+    // This public URL construction is for Cloudflare R2's specific pattern
+    // It's useful if you ever decide to make some objects public or use a custom domain.
+    // For private objects accessed via pre-signed URLs, this isn't strictly necessary for the client.
+    // const r2PublicDomain = process.env.R2_PUBLIC_URL || \`https://${R2_BUCKET_NAME}.${process.env.R2_ACCOUNT_ID_HOSTNAME}\`;
+    // const publicUrl = \`\${r2PublicDomain}/${objectKey}\`;
 
     return NextResponse.json({
-      uploadUrl: signedUrl,
-      objectKey: objectKey,
-      publicUrl: publicFileUrl,
+      uploadUrl, // For client to PUT the file
+      downloadUrl, // For client to GET the file later (e.g., 24hr expiry)
+      objectKey,
+      // publicUrl, // Only include if meaningful for your setup
     });
   } catch (error) {
-    console.error("Error generating pre-signed URL:", error);
-    let errorMessage = "Failed to generate upload URL.";
-    if (error.name === "CredentialsProviderError") {
-      errorMessage =
-        "Could not load R2 credentials. Ensure R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY are set correctly.";
-    } else if (error.message && error.message.includes("Forbidden")) {
-      errorMessage =
-        "Access to R2 bucket denied. Check bucket permissions and API token scopes.";
+    console.error("R2 Upload API - Error generating pre-signed URL:", error);
+    // Differentiate between auth errors and other errors if needed
+    if (
+      error.message.includes("Authentication failed") ||
+      error.message.includes("User ID not found")
+    ) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
     }
     return NextResponse.json(
-      { error: errorMessage, details: error.message },
+      { error: "Failed to generate pre-signed URL.", details: error.message },
       { status: 500 }
     );
   }

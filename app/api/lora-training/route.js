@@ -1,85 +1,129 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import createSupabaseServerClient from "@/lib/supabase/server-client";
+import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request) {
-  const url = `https://api.runpod.ai/v2/${process.env.RUNPOD_TRAINING_ENDPOINT_ID}/run`;
-
+  const supabase = await createSupabaseServerClient();
   const requestData = await request.json();
 
-  const supabase = await createServerClient();
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase.rpc("deduct_credits", {
-    p_user_id: requestData.user_id,
-    p_plan_name: requestData.plan,
-    p_credits_required: 1,
-  });
+    if (!user) {
+      return NextResponse.json({ error: "User not found." }, { status: 401 });
+    }
 
-  if (error) {
+    // 1. Update 'referred_by' in profiles if applicable
+    if (requestData.howDidYouHearAboutUs) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ referred_by: requestData.howDidYouHearAboutUs })
+        .eq("id", user.id)
+        .is("referred_by", null);
+      // TODO: this needs update, it's not working
+
+      if (profileError) {
+        console.error("Error updating profile:", profileError);
+        // Not a critical error, so we just log it and continue.
+      }
+    }
+
+    const studioId = uuidv4();
+
+    // 2. Create a new entry in public.studios table
+    const studioData = {
+      id: studioId,
+      creator_user_id: user.id,
+      organization_id: requestData.organization_id || null,
+      name: requestData.studioName,
+      status: "pending",
+      plan: requestData.plan,
+      attributes: {
+        gender: requestData.gender,
+        age: requestData.age,
+        ethnicity: requestData.ethnicity,
+        hairstyle: requestData.hairStyle,
+        eyecolor: requestData.eyeColor,
+        glasses: requestData.glasses,
+      },
+      attire_ids: requestData.clothing.map((c) => c.name),
+      background_ids: requestData.backgrounds.map((b) => b.name),
+      datasets:
+        "https://ai-studio-datasets.s3.us-east-1.amazonaws.com/datasets/1.zip", // Expects a single URL string
+    };
+
+    const { error: studioError } = await supabase
+      .from("studios")
+      .insert(studioData);
+
+    if (studioError) {
+      console.error("Error creating studio:", studioError);
+      return NextResponse.json(
+        { error: `Error creating studio: ${studioError.message}` },
+        { status: 500 }
+      );
+    }
+
+    // 3. Call the RunPod API
+    const runpodApiUrl = `https://api.runpod.ai/v2/${process.env.RUNPOD_LORA_TRAINING_ENDPOINT_ID}/run`;
+    const webhookUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhooks/lora-training`;
+
+    const runpodInput = {
+      input: {
+        studio_id: studioId,
+        user_id: user.id,
+        plan_name: requestData.plan,
+        gender: requestData.gender,
+        data_url: requestData.images,
+        webhook_secret: process.env.RUNPOD_WEBHOOK_SECRET,
+      },
+      webhook: webhookUrl,
+    };
+
+    const runpodRequestConfig = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.RUNPOD_API_KEY}`,
+      },
+      body: JSON.stringify(runpodInput),
+    };
+
+    const runpodResponse = await fetch(runpodApiUrl, runpodRequestConfig);
+
+    if (!runpodResponse.ok) {
+      const errorBody = await runpodResponse.text();
+      console.error(
+        `RunPod API call failed: ${runpodResponse.status} ${errorBody}`
+      );
+      // Optional: Update studio status to 'failed' here
+      return NextResponse.json(
+        { error: `RunPod API call failed: ${errorBody}` },
+        { status: 502 }
+      );
+    }
+
+    const runpodData = await runpodResponse.json();
+    console.log(runpodData);
+
+    // Optionally, update the studio status with the RunPod job ID
+    await supabase
+      .from("studios")
+      .update({ runpod_job_id: runpodData.id, status: runpodData.status })
+      .eq("id", studioId);
+
+    // 4. Return success response with the new studioId
+    return NextResponse.json({
+      message: "Studio creation initiated successfully!",
+      studioId: studioId,
+    });
+  } catch (error) {
+    console.error("Error in /api/lora-training:", error);
     return NextResponse.json(
-      { error: "Something went wrong. Please try again later." },
+      { error: "An unexpected error occurred." },
       { status: 500 }
     );
-  }
-  if (data === false) {
-    return NextResponse.json(
-      { error: "Insufficient credits. Please purchase more credits." },
-      { status: 400 }
-    );
-  }
-
-  const inputData = {
-    input: {
-      lora_file_name: requestData.studioName,
-      gender: requestData.gender,
-      data_url: requestData.images,
-      user_id: requestData.user_id,
-      plan_name: requestData.plan,
-    },
-  };
-
-  const requestConfig = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.RUNPOD_API_KEY}`,
-    },
-    body: JSON.stringify(inputData),
-  };
-
-  try {
-    const response = await fetch(url, requestConfig);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    // data will be like below object.
-    // {
-    //   "id": "eaebd6e7-6a92-4bb8-a911-f996ac5ea99d",
-    //   "status": "IN_QUEUE"
-    //   "output": {'lora_url': [], 'user_id': user_id, 'studio_id': studio_id, 'plan_name': plan_name}
-    // } and we have to redirect to dashboard/studio/data.id
-    const data = await response.json();
-    await supabase.from("studio").insert({
-      id: data.id,
-      creater_id: requestData.user_id,
-      plan: requestData.plan,
-      organization_id:
-        requestData.organization_id === null
-          ? null
-          : requestData.organization_id,
-      name: requestData.studioName,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      images: requestData.images,
-      status: "IN_QUEUE",
-    });
-    if (error) {
-      throw new Error(`HTTP error! status: ${error.status}`);
-    }
-
-    return NextResponse.redirect(`/dashboard/studio/${data.id}`);
-  } catch (error) {
-    console.error("Error:", error);
-    throw error;
   }
 }

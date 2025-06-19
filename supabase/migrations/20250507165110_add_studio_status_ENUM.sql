@@ -1,1 +1,0 @@
-ALTER TYPE public.studio_status ADD VALUE 'done';

@@ -33,13 +33,12 @@ const createServerActionClient = () => {
   );
 };
 
-interface AcceptUniversalInviteParams {
-  universalToken: string;
-  organizationId: string;
+interface AcceptInvitationParams {
+  token: string;
 }
 
-export async function acceptUniversalInviteAction(
-  params: AcceptUniversalInviteParams
+export async function acceptInvitationAction(
+  params: AcceptInvitationParams
 ): Promise<{ data?: any; error?: string }> {
   const supabase = createServerActionClient();
   const {
@@ -51,46 +50,35 @@ export async function acceptUniversalInviteAction(
     return { error: "User not authenticated. Please log in and try again." };
   }
 
-  if (!params.universalToken || !params.organizationId) {
-    return { error: "Missing invite token or organization ID." };
+  if (!params.token) {
+    return { error: "Missing invitation token." };
   }
 
   try {
-    const { data, error } = await supabase.rpc(
-      "accept_organization_invite_with_credit_transfer",
-      {
-        p_user_id: user.id,
-        p_organization_id: params.organizationId,
-        p_invite_token: params.universalToken,
-      }
-    );
+    const { data, error: rpcError } = await supabase.rpc("accept_invitation", {
+      p_invite_token: params.token,
+      p_accepting_user_id: user.id,
+    });
 
-    if (error) {
-      console.error(
-        "Error calling accept_organization_invite_with_credit_transfer RPC:",
-        error
-      );
-      return { error: error.message || "Failed to accept invitation via RPC." };
+    if (rpcError) {
+      console.error("Error calling accept_invitation RPC:", rpcError);
+      return { error: rpcError.message || "Failed to accept invitation." };
     }
 
-    // The RPC function returns a JSONB object. 'data' here is that object.
-    // If the RPC itself returns an object like { error: 'some message' }, we need to check that.
     if (data && data.error) {
       return { error: data.error };
     }
 
     if (data && data.success) {
-      revalidatePath("/dashboard"); // Revalidate dashboard to reflect new org membership
-      // Also revalidate account context related paths potentially, or rely on client-side refreshContext
-      return { data: data };
+      revalidatePath("/dashboard", "layout");
+      return { data };
     }
 
-    // Fallback for unexpected RPC response structure
     return {
-      error: "Unexpected response from server when accepting invitation.",
+      error: "An unexpected error occurred while accepting the invitation.",
     };
   } catch (e: any) {
-    console.error("Exception in acceptUniversalInviteAction:", e);
-    return { error: e.message || "An unexpected error occurred." };
+    console.error("Exception in acceptInvitationAction:", e);
+    return { error: e.message || "An unexpected server error occurred." };
   }
 }

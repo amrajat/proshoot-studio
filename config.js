@@ -23,13 +23,6 @@ const config = {
       styles: 15,
     },
 
-    Elite: {
-      planPrice: 49,
-      variantId: 387812,
-      headshots: 80,
-      styles: 20,
-    },
-
     Studio: {
       planPrice: 59,
       variantId: 387813,

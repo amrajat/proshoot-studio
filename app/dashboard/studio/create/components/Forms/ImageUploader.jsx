@@ -938,39 +938,39 @@ function ImageUploader({
   }, [files, completedCrops, calculateTotalSize]);
 
   const uploadFiles = useCallback(async () => {
-    const validation = validateImages();
-    if (!validation.valid) {
-      dispatch({
-        type: "SET_UPLOAD_ERROR",
-        payload: validation.errors.join("\n"),
-      });
-      return;
-    }
+    // const validation = validateImages();
+    // if (!validation.valid) {
+    //   dispatch({
+    //     type: "SET_UPLOAD_ERROR",
+    //     payload: validation.errors.join("\n"),
+    //   });
+    //   return;
+    // }
 
     // Additional check: Ensure analysis is complete and no critical errors exist
-    const hasCriticalAnalysisIssues = Object.values(analysisResults).some(
-      (res) =>
-        (res.status &&
-          (res.status.startsWith("error_") ||
-            res.status === "skipped_no_crop")) ||
-        (res.rekognitionIndividual &&
-          (res.rekognitionIndividual.noFaceDetected ||
-            res.rekognitionIndividual.multipleFacesDetected)) ||
-        (res.hashAnalysis && res.hashAnalysis.isExactDuplicate)
-    );
+    // const hasCriticalAnalysisIssues = Object.values(analysisResults).some(
+    //   (res) =>
+    //     (res.status &&
+    //       (res.status.startsWith("error_") ||
+    //         res.status === "skipped_no_crop")) ||
+    //     (res.rekognitionIndividual &&
+    //       (res.rekognitionIndividual.noFaceDetected ||
+    //         res.rekognitionIndividual.multipleFacesDetected)) ||
+    //     (res.hashAnalysis && res.hashAnalysis.isExactDuplicate)
+    // );
 
-    if (analysisState !== "completed" || hasCriticalAnalysisIssues) {
-      let errorMsg =
-        "Please complete image analysis and resolve any critical issues before uploading.";
-      if (analysisState !== "completed")
-        errorMsg =
-          "Image analysis is not yet complete. Please wait or re-analyze.";
-      else if (hasCriticalAnalysisIssues)
-        errorMsg =
-          "Some images have critical issues (e.g., no face, duplicates). Please review or remove them before uploading.";
-      dispatch({ type: "SET_UPLOAD_ERROR", payload: errorMsg });
-      return;
-    }
+    // if (analysisState !== "completed" || hasCriticalAnalysisIssues) {
+    //   let errorMsg =
+    //     "Please complete image analysis and resolve any critical issues before uploading.";
+    //   if (analysisState !== "completed")
+    //     errorMsg =
+    //       "Image analysis is not yet complete. Please wait or re-analyze.";
+    //   else if (hasCriticalAnalysisIssues)
+    //     errorMsg =
+    //       "Some images have critical issues (e.g., no face, duplicates). Please review or remove them before uploading.";
+    //   dispatch({ type: "SET_UPLOAD_ERROR", payload: errorMsg });
+    //   return;
+    // }
 
     dispatch({ type: "SET_UPLOADING", payload: true });
     dispatch({ type: "SET_UPLOAD_PROGRESS", payload: 0 });
@@ -1206,7 +1206,8 @@ function ImageUploader({
       });
 
       // Set 'images' to the (ideally GET) pre-signed URL string with 24hr expiry from API
-      setValue("images", finalUrlForForm);
+      // setValue("images", finalUrlForForm);
+      setValue("images", objectKey);
 
       dispatch({ type: "SET_UPLOAD_PROGRESS", payload: 100 });
       dispatch({ type: "SET_COMPLETED", payload: true });
@@ -1259,6 +1260,11 @@ function ImageUploader({
     CROP_DIMENSION,
   ]);
 
+  const handleRetryUpload = useCallback(() => {
+    dispatch({ type: "RESET_UPLOAD_STATE" });
+    uploadFiles();
+  }, [uploadFiles]);
+
   useEffect(() => {
     dispatch({ type: "SET_RETRY_COUNT", payload: 0 });
   }, [files]); // Reset retry count when files list changes.
@@ -1301,8 +1307,8 @@ function ImageUploader({
       // Add other conditions you deem critical from analysisResults per image.
     );
 
-  const canUpload =
-    minImagesMet &&
+  // const canUpload =
+  minImagesMet &&
     !isAnalysisInProgress &&
     analysisState === "completed" && // Must have completed analysis
     !hasCriticalAnalysisErrors && // And no critical errors
@@ -1615,7 +1621,7 @@ function ImageUploader({
                   <div className="flex flex-col sm:flex-row gap-3 items-center">
                     <Button
                       onClick={uploadFiles}
-                      disabled={!canUpload}
+                      // disabled={!canUpload} //TODO: uncomment this
                       title={uploadButtonTitle}
                     >
                       <Upload className="mr-2 h-4 w-4" />

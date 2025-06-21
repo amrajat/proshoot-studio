@@ -11,12 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { useAccountContext } from "@/context/AccountContext";
 import Heading from "@/components/shared/heading";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 
 // Define which plans are available per context
-const PERSONAL_PLANS = ["starter", "pro", "elite", "studio"];
+const PERSONAL_PLANS = ["starter", "pro", "studio"];
 const ORG_PLANS = ["team"];
 
 export default function PlanSelector({
@@ -53,13 +50,6 @@ export default function PlanSelector({
     if (!isOrgContext || !credits) return false;
     return credits.team === 0;
   }, [isOrgContext, credits]);
-
-  // Effect to handle redirect when there are zero team credits
-  useEffect(() => {
-    if (hasZeroTeamCredits) {
-      router.push("/dashboard/buy");
-    }
-  }, [hasZeroTeamCredits, router]);
 
   // Register field with react-hook-form
   useEffect(() => {

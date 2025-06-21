@@ -60,3 +60,40 @@ export const sendTransactionalEmail = async (
     };
   }
 };
+
+interface OrgInviteParams {
+  to: string;
+  inviterName: string;
+  organizationName: string;
+  inviteUrl: string;
+}
+
+export const sendOrganizationInviteEmail = async (params: OrgInviteParams) => {
+  const { to, inviterName, organizationName, inviteUrl } = params;
+  const subject = `You're invited to join ${organizationName} on Headsshot`;
+  const htmlBody = `
+    <div style="font-family: sans-serif; line-height: 1.6;">
+      <h2>You're Invited!</h2>
+      <p>Hi there,</p>
+      <p>
+        <strong>${inviterName}</strong> has invited you to join the
+        <strong>${organizationName}</strong> organization on Headsshot.
+      </p>
+      <p>Click the button below to accept the invitation and get started:</p>
+      <a href="${inviteUrl}" style="background-color: #007bff; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+        Accept Invitation
+      </a>
+      <p>If you did not expect this invitation, you can safely ignore this email.</p>
+      <hr style="border: none; border-top: 1px solid #eee;" />
+      <p style="font-size: 0.8em; color: #777;">
+        This email was sent from Headsshot.
+      </p>
+    </div>
+  `;
+
+  return sendTransactionalEmail(
+    [{ email_address: { address: to } }],
+    subject,
+    htmlBody
+  );
+};

@@ -5,7 +5,7 @@ export type CreditPlan = {
   price: string; // e.g., "$10.00"
   variantId: string; // Actual LemonSqueezy variant ID
   credits: {
-    type: "starter" | "pro" | "elite" | "studio" | "balance";
+    type: "starter" | "pro" | "studio" | "balance";
     amount: number;
   };
 };
@@ -26,14 +26,6 @@ export const organizationCreditPlans: CreditPlan[] = [
     price: "$19.99",
     variantId: "YOUR_LSQ_PRO_PACK_VARIANT_ID", // Replace with actual LemonSqueezy Variant ID
     credits: { type: "pro", amount: 10 },
-  },
-  {
-    id: "org-elite-pack",
-    name: "Org Elite Pack",
-    description: "10 Elite Credits for your Organization",
-    price: "$29.99",
-    variantId: "YOUR_LSQ_ELITE_PACK_VARIANT_ID", // Replace with actual LemonSqueezy Variant ID
-    credits: { type: "elite", amount: 10 },
   },
   // Add more plans as needed, e.g., bulk balance credits
   {

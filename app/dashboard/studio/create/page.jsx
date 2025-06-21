@@ -1,11 +1,29 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
-import { useForm, Controller } from "react-hook-form";
-import VariableSelector from "./components/Forms/VariableSelector";
-import PlanSelector from "./components/Forms/PlanSelector";
-import ImageUploader from "./components/Forms/ImageUploader";
-import ClothingSelector from "./components/Forms/ClothingSelector";
-import BackgroundSelector from "./components/Forms/BackgroundSelector";
+import React, { useEffect, useMemo, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { v4 as uuidv4 } from "uuid";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  AlertCircle,
+} from "lucide-react";
+import { ContentLayout } from "@/components/dashboard/sidebar/content-layout";
+import { useAccountContext } from "@/context/AccountContext";
+import { useCredits } from "@/hooks/useCredits";
+import useDashboardStore from "@/stores/dashboardStore";
+import useFormPersistence from "@/hooks/useFormPersistence";
+import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
+import config from "@/config";
+import { generatePrompts } from "@/utils/prompts";
+import {
+  ALL_CLOTHING_OPTIONS as GLOBAL_ALL_CLOTHING_OPTIONS,
+  ALL_BACKGROUND_OPTIONS as GLOBAL_ALL_BACKGROUND_OPTIONS,
+} from "@/app/utils/studioOptions";
 import {
   formSchema as baseFormSchema,
   GENDERS,
@@ -15,21 +33,15 @@ import {
   EYE_COLORS,
   GLASSES,
   STUDIO_NAME_SELECTOR,
+  HOW_DID_YOU_HEAR_ABOUT_US,
 } from "./components/Forms/Variables";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useRouter } from "next/navigation";
-import { ContentLayout } from "@/components/dashboard/sidebar/content-layout";
-import { useAccountContext } from "@/context/AccountContext";
-import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
-import config from "@/config";
-import { generatePrompts } from "@/utils/prompts"; // Adjust path if your utils folder is elsewhere
-import {
-  ALL_CLOTHING_OPTIONS as GLOBAL_ALL_CLOTHING_OPTIONS,
-  ALL_BACKGROUND_OPTIONS as GLOBAL_ALL_BACKGROUND_OPTIONS,
-} from "@/app/utils/studioOptions"; // Import global options
+import VariableSelector from "./components/Forms/VariableSelector";
+import PlanSelector from "./components/Forms/PlanSelector";
+import ImageUploader from "./components/Forms/ImageUploader";
+import ClothingSelector from "./components/Forms/ClothingSelector";
+import BackgroundSelector from "./components/Forms/BackgroundSelector";
+
+// Studio Create Component - Refactored for better maintainability
 
 const FileUploader = ({
   errors,
@@ -55,56 +67,75 @@ const FileUploader = ({
 const extendedFormSchema = baseFormSchema.extend({
   images: z
     .string()
-    .url({ message: "A valid pre-signed URL for the ZIP file is required." })
+    // .url({ message: "A valid pre-signed URL for the ZIP file is required." })
     .min(1, "Please upload the ZIP file to get a pre-signed URL."),
   // Keep other extended fields if any, or remove .extend if 'images' was the only one
 });
 
 export default function StudioCreate() {
   const router = useRouter();
-  const { selectedContext, userId, isCurrentUserOrgAdmin } =
-    useAccountContext();
-  const [personalCredits, setPersonalCredits] = useState(null);
-  const [isCreditsLoading, setIsCreditsLoading] = useState(true);
-  const [organizationCredits, setOrganizationCredits] = useState(null);
-  const [isOrgCreditsLoading, setIsOrgCreditsLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState(() => {
-    if (typeof window !== "undefined") {
-      const savedStep = localStorage.getItem("currentFormStep");
-      return savedStep ? parseInt(savedStep, 10) : 0;
-    }
-    return 0;
-  });
+  const { userId, selectedContext } = useAccountContext();
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("currentFormStep", currentStep.toString());
-    }
-  }, [currentStep]);
+  // ONLY fetch personal credits. This is the single source of truth for the user.
+  const {
+    credits: userCredits,
+    isLoading: isCreditsLoading,
+    error: creditsError,
+  } = useCredits(userId);
 
-  const [previousStep, setPreviousStep] = useState(0);
-  const [shouldValidate, setShouldValidate] = useState(false);
-  const [studioMessage, setStudioMessage] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorDetails, setErrorDetails] = useState(null);
-  const [isBuyingPlan, setIsBuyingPlan] = useState(false);
+  // Determine if we're in organization context AND the user has team credits on their personal account.
+  const isOrgWithTeamCredits = useMemo(() => {
+    return selectedContext?.type === "organization" && userCredits?.team > 0;
+  }, [selectedContext?.type, userCredits?.team]);
 
-  const [orgApprovedClothing, setOrgApprovedClothing] = useState(null);
-  const [orgApprovedBackgrounds, setOrgApprovedBackgrounds] = useState(null);
-  const [isOrgSettingsLoading, setIsOrgSettingsLoading] = useState(false);
+  // Better naming convention for localStorage keys
+  const getStepStorageKey = () => {
+    const contextType = selectedContext?.type || "personal";
+    const hasTeamCredits = isOrgWithTeamCredits ? "team" : "individual";
+    return `headsshot_studio_step_${contextType}_${hasTeamCredits}`;
+  };
 
-  const savedFormValuesString =
-    typeof window !== "undefined" ? localStorage.getItem("formValues") : null;
+  const getFormStorageKey = () => {
+    const contextType = selectedContext?.type || "personal";
+    const hasTeamCredits = isOrgWithTeamCredits ? "team" : "individual";
+    return `headsshot_studio_form_${contextType}_${hasTeamCredits}`;
+  };
 
-  let parsedLocalStorageValues = {};
-  if (savedFormValuesString) {
-    try {
-      parsedLocalStorageValues = JSON.parse(savedFormValuesString);
-    } catch (e) {
-      console.error("Error parsing formValues from localStorage:", e);
-      parsedLocalStorageValues = {}; // Reset to empty if parsing fails
-    }
-  }
+  const {
+    currentStep,
+    setCurrentStep,
+    initializeStep,
+    previousStep,
+    setPreviousStep,
+    shouldValidate,
+    setShouldValidate,
+    isSubmitting,
+    setIsSubmitting,
+    studioMessage,
+    setStudioMessage,
+    errorDetails,
+    setErrorDetails,
+    clothingError,
+    setClothingError,
+    backgroundsError,
+    setBackgroundsError,
+    isBuyingPlan,
+    setIsBuyingPlan,
+    orgApprovedClothing,
+    setOrgApprovedClothing,
+    orgApprovedBackgrounds,
+    setOrgApprovedBackgrounds,
+    isOrgSettingsLoading,
+    setIsOrgSettingsLoading,
+    resetStudioForm,
+  } = useDashboardStore();
+
+  // Load saved form values with context-aware key
+  const savedFormValues = useFormPersistence(
+    getFormStorageKey(),
+    {},
+    []
+  ).loadFormValues();
 
   const {
     register,
@@ -116,36 +147,21 @@ export default function StudioCreate() {
     trigger,
     reset,
     getValues,
-    control,
   } = useForm({
     mode: "onChange",
     resolver: zodResolver(extendedFormSchema),
     defaultValues: {
-      clothing:
-        Array.isArray(parsedLocalStorageValues.clothing) &&
-        parsedLocalStorageValues.clothing.every(
-          (item) =>
-            typeof item === "object" && "name" in item && "theme" in item
-        )
-          ? [...parsedLocalStorageValues.clothing]
-          : [],
-      backgrounds:
-        Array.isArray(parsedLocalStorageValues.backgrounds) &&
-        parsedLocalStorageValues.backgrounds.every(
-          (item) =>
-            typeof item === "object" && "name" in item && "theme" in item
-        )
-          ? [...parsedLocalStorageValues.backgrounds]
-          : [],
-      gender: parsedLocalStorageValues.gender || "",
-      age: parsedLocalStorageValues.age || "",
-      ethnicity: parsedLocalStorageValues.ethnicity || "",
-      hairStyle: parsedLocalStorageValues.hairStyle || "",
-      eyeColor: parsedLocalStorageValues.eyeColor || "",
-      glasses: parsedLocalStorageValues.glasses || "No",
-      images: parsedLocalStorageValues.images || "", // Initialize as string
-      studioName: parsedLocalStorageValues.studioName || "",
-      plan: parsedLocalStorageValues.plan || "",
+      clothing: savedFormValues.clothing || [],
+      backgrounds: savedFormValues.backgrounds || [],
+      gender: savedFormValues.gender || "",
+      age: savedFormValues.age || "",
+      ethnicity: savedFormValues.ethnicity || "",
+      hairStyle: savedFormValues.hairStyle || "",
+      eyeColor: savedFormValues.eyeColor || "",
+      glasses: savedFormValues.glasses || "No",
+      images: savedFormValues.images || "",
+      studioName: savedFormValues.studioName || "",
+      plan: savedFormValues.plan || "",
     },
   });
 
@@ -163,121 +179,189 @@ export default function StudioCreate() {
   const watchedImages = watch("images");
   const watchedStudioName = watch("studioName");
 
+  // Use form persistence hook for auto-saving with context-aware key
+  const formValues = getValues();
+  const { saveFormValues, clearFormValues } = useFormPersistence(
+    getFormStorageKey(),
+    formValues,
+    [
+      selectedPlan,
+      watchedClothing,
+      watchedBackgrounds,
+      watchedGender,
+      watchedAge,
+      watchedEthnicity,
+      watchedHairStyle,
+      watchedEyeColor,
+      watchedGlasses,
+      watchedImages,
+      watchedStudioName,
+    ]
+  );
+
+  const stylesLimit = selectedPlan
+    ? config.PLANS[selectedPlan]?.styles || 0
+    : 0;
+
+  // Define all possible steps with metadata
+  const allSteps = useMemo(
+    () => [
+      {
+        id: "plan-selector",
+        component: "PlanSelector",
+        title: "Select Plan",
+        data: [
+          {
+            title: "Please select your plan.",
+            subtitle:
+              "You can see available plan credits below the name of plan name.",
+            fieldName: "plan",
+          },
+          null,
+        ],
+        showInOrg: true, // Show in org context for auto-selection
+      },
+      {
+        id: "clothing-selector",
+        component: "ClothingSelector",
+        title: "Select Clothing",
+        showInOrg: true,
+      },
+      {
+        id: "background-selector",
+        component: "BackgroundSelector",
+        title: "Select Backgrounds",
+        showInOrg: true,
+      },
+      {
+        id: "gender-selector",
+        component: "VariableSelector",
+        title: "Select Gender",
+        data: GENDERS,
+        showInOrg: true,
+      },
+      {
+        id: "age-selector",
+        component: "VariableSelector",
+        title: "Select Age",
+        data: AGES,
+        showInOrg: true,
+      },
+      {
+        id: "ethnicity-selector",
+        component: "VariableSelector",
+        title: "Select Ethnicity",
+        data: ETHNICITIES,
+        showInOrg: true,
+      },
+      {
+        id: "hair-style-selector",
+        component: "VariableSelector",
+        title: "Select Hair Style",
+        data: HAIR_STYLES,
+        showInOrg: true,
+      },
+      {
+        id: "eye-color-selector",
+        component: "VariableSelector",
+        title: "Select Eye Color",
+        data: EYE_COLORS,
+        showInOrg: true,
+      },
+      {
+        id: "glasses-selector",
+        component: "VariableSelector",
+        title: "Select Glasses",
+        data: GLASSES,
+        showInOrg: true,
+      },
+      {
+        id: "studio-name-selector",
+        component: "VariableSelector",
+        title: "Studio Name",
+        data: STUDIO_NAME_SELECTOR,
+        showInOrg: true,
+      },
+      {
+        id: "referral-selector",
+        component: "VariableSelector",
+        title: "How did you hear about us?",
+        data: HOW_DID_YOU_HEAR_ABOUT_US,
+        showInOrg: true,
+      },
+      {
+        id: "file-uploader",
+        component: "FileUploader",
+        title: "Upload Images",
+        showInOrg: true,
+      },
+    ],
+    []
+  );
+
+  // Filter and prepare steps based on context - simplified approach
+  const steps = useMemo(() => {
+    const filteredSteps = allSteps.filter((step) => {
+      // For organizations with team credits, skip PlanSelector
+      if (isOrgWithTeamCredits && step.component === "PlanSelector") {
+        return false;
+      }
+
+      // Show all other steps for both personal and organization contexts
+      return step.showInOrg || selectedContext?.type === "personal";
+    });
+
+    // Add step numbers for display
+    const stepsWithNumbers = filteredSteps.map((step, index) => ({
+      ...step,
+      stepNumber: index,
+      totalSteps: filteredSteps.length,
+    }));
+
+    return stepsWithNumbers;
+  }, [allSteps, selectedContext?.type, isOrgWithTeamCredits]);
+
+  // Initialize step from localStorage when context and steps are ready
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const currentFormValues = getValues();
-
-      const clothingToSave =
-        Array.isArray(currentFormValues.clothing) &&
-        currentFormValues.clothing.every(
-          (item) =>
-            typeof item === "object" && "name" in item && "theme" in item
-        )
-          ? currentFormValues.clothing
-          : [];
-      const backgroundsToSave =
-        Array.isArray(currentFormValues.backgrounds) &&
-        currentFormValues.backgrounds.every(
-          (item) =>
-            typeof item === "object" && "name" in item && "theme" in item
-        )
-          ? currentFormValues.backgrounds
-          : [];
-
-      const valuesToSave = {
-        plan: currentFormValues.plan || "",
-        clothing: clothingToSave,
-        backgrounds: backgroundsToSave,
-        gender: currentFormValues.gender || "",
-        age: currentFormValues.age || "",
-        ethnicity: currentFormValues.ethnicity || "",
-        hairStyle: currentFormValues.hairStyle || "",
-        eyeColor: currentFormValues.eyeColor || "",
-        glasses: currentFormValues.glasses || "No",
-        images: currentFormValues.images || "", // Save as string
-        studioName: currentFormValues.studioName || "",
-      };
-      localStorage.setItem("formValues", JSON.stringify(valuesToSave));
+    if (
+      typeof window === "undefined" ||
+      !selectedContext ||
+      steps.length === 0
+    ) {
+      return;
     }
+
+    const contextType = selectedContext.type;
+    const hasTeamCredits = isOrgWithTeamCredits;
+
+    // Use store method to initialize step with persistence
+    const restoredStep = initializeStep(
+      contextType,
+      hasTeamCredits,
+      steps.length
+    );
   }, [
-    selectedPlan,
-    watchedClothing,
-    watchedBackgrounds,
-    watchedGender,
-    watchedAge,
-    watchedEthnicity,
-    watchedHairStyle,
-    watchedEyeColor,
-    watchedGlasses,
-    watchedImages,
-    watchedStudioName,
+    selectedContext?.type,
+    selectedContext?.id,
+    isOrgWithTeamCredits,
+    steps.length,
+    initializeStep,
   ]);
 
+  // Auto-set plan to "Team" when in organization context with team credits
   useEffect(() => {
-    return () => {
-      if (typeof window !== "undefined") {
-        if (isSubmitting) {
-          localStorage.removeItem("formValues");
-          localStorage.removeItem("currentFormStep");
-        }
-      }
-    };
-  }, [isSubmitting]);
+    if (isOrgWithTeamCredits && selectedContext) {
+      // Set the plan value since PlanSelector step is skipped
+      setValue("plan", "Team", { shouldValidate: true });
+    }
+  }, [
+    isOrgWithTeamCredits,
+    setValue,
+    selectedContext?.type,
+    selectedContext?.id,
+  ]);
 
-  useEffect(() => {
-    const fetchCredits = async () => {
-      if (!userId) {
-        setPersonalCredits(null);
-        setOrganizationCredits(null);
-        setIsCreditsLoading(false);
-        setIsOrgCreditsLoading(false);
-        return;
-      }
-
-      setIsCreditsLoading(true);
-      setIsOrgCreditsLoading(true);
-
-      const supabase = createSupabaseBrowserClient();
-      const { data, error } = await supabase
-        .from("credits")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (!error && data) {
-        // For personal context, use personal plan credits
-        const personalCreditsData = {
-          starter: data.starter || 0,
-          pro: data.pro || 0,
-          elite: data.elite || 0,
-          studio: data.studio || 0,
-          team: 0, // Set team to 0 for personal context
-        };
-
-        // For organization context, use team credits
-        const orgCreditsData = {
-          team: data.team || 0,
-          starter: 0,
-          pro: 0,
-          elite: 0,
-          studio: 0,
-        };
-
-        setPersonalCredits(personalCreditsData);
-        setOrganizationCredits(orgCreditsData);
-      } else {
-        console.error("Error fetching credits:", error);
-        setPersonalCredits(null);
-        setOrganizationCredits(null);
-      }
-
-      setIsCreditsLoading(false);
-      setIsOrgCreditsLoading(false);
-    };
-
-    fetchCredits();
-  }, [userId, selectedContext?.type]);
-
+  // Fetch organization settings
   useEffect(() => {
     if (selectedContext?.type === "organization" && selectedContext.id) {
       const supabase = createSupabaseBrowserClient();
@@ -343,7 +427,9 @@ export default function StudioCreate() {
           }
         } catch (error) {
           console.error("Error fetching org studio settings:", error);
-          // Handle error (e.g., show a toast)
+          setStudioMessage(
+            "Error loading organization settings. Please try again."
+          );
         } finally {
           setIsOrgSettingsLoading(false);
         }
@@ -355,127 +441,209 @@ export default function StudioCreate() {
       setOrgApprovedBackgrounds(null);
       setIsOrgSettingsLoading(false);
     }
-  }, [selectedContext]);
+  }, [
+    selectedContext,
+    setIsOrgSettingsLoading,
+    setOrgApprovedClothing,
+    setOrgApprovedBackgrounds,
+    setStudioMessage,
+  ]);
 
-  const stylesLimit = selectedPlan
-    ? config.PLANS[selectedPlan]?.styles || 0
-    : 0;
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && isSubmitting) {
+        const contextType = selectedContext?.type;
+        const hasTeamCredits = isOrgWithTeamCredits;
 
-  const steps = useMemo(() => {
-    const baseSteps = [
-      {
-        id: "Step 0",
-        component: "PlanSelector",
-        data: [
-          {
-            title: "Please select your plan.",
-            subtitle:
-              "You can see available plan credits below the name of plan name.",
-            fieldName: "plan",
-          },
-          null,
-        ],
-      },
-      {
-        id: "Step 1",
-        component: "ClothingSelector",
-      },
-      {
-        id: "Step 2",
-        component: "BackgroundSelector",
-      },
-      { id: "Step 3", component: "VariableSelector", data: GENDERS },
-      { id: "Step 4", component: "VariableSelector", data: AGES },
-      { id: "Step 5", component: "VariableSelector", data: ETHNICITIES },
-      { id: "Step 6", component: "VariableSelector", data: HAIR_STYLES },
-      { id: "Step 7", component: "VariableSelector", data: EYE_COLORS },
-      { id: "Step 8", component: "VariableSelector", data: GLASSES },
-      {
-        id: "Step 9",
-        component: "VariableSelector",
-        data: STUDIO_NAME_SELECTOR,
-      },
-      { id: "Step 10", component: "FileUploader" },
-    ];
+        // Use store method to clean up
+        resetStudioForm(contextType, hasTeamCredits);
 
-    if (
-      selectedContext?.type === "organization" &&
-      organizationCredits?.team > 0
-    ) {
-      return baseSteps.filter((step) => step.component !== "PlanSelector");
+        // Also clear form storage
+        const formStorageKey = getFormStorageKey();
+        localStorage.removeItem(formStorageKey);
+        localStorage.removeItem("formValues"); // Legacy cleanup
+      }
+    };
+  }, [
+    isSubmitting,
+    selectedContext?.type,
+    selectedContext?.id,
+    isOrgWithTeamCredits,
+    resetStudioForm,
+  ]);
+
+  // Get current step data safely
+  const getCurrentStepData = () => {
+    if (currentStep >= 0 && currentStep < steps.length) {
+      return steps[currentStep];
+    }
+    return null;
+  };
+
+  const currentStepData = getCurrentStepData();
+
+  // Safely get current step values for display
+  const getCurrentStepInfo = () => {
+    if (!currentStepData || steps.length === 0) {
+      return {
+        isValid: false,
+        stepNumber: 0,
+        totalSteps: 0,
+        title: "Loading...",
+      };
     }
 
-    return baseSteps;
-  }, [selectedContext?.type, organizationCredits?.team]);
+    return {
+      isValid: true,
+      stepNumber: currentStep + 1,
+      totalSteps: steps.length,
+      title: currentStepData.title || `Step ${currentStep + 1}`,
+    };
+  };
 
-  const [clothingError, setClothingError] = useState("");
-  const [backgroundsError, setBackgroundsError] = useState("");
+  const stepInfo = getCurrentStepInfo();
+
+  // Main button disabled logic
+  const getMainButtonDisabled = () => {
+    if (isSubmitting || !stepInfo.isValid) return true;
+
+    if (currentStep === steps.length - 1) {
+      const imagesValue = getValues("images");
+      return typeof imagesValue !== "string" || imagesValue.trim() === "";
+    }
+
+    return false;
+  };
+
+  const mainButtonDisabled = getMainButtonDisabled();
+
+  // Credit check for buy plan flow
+  const selectedPlanName = getValues("plan");
+  const selectedPlanCredits = selectedPlanName
+    ? userCredits?.[selectedPlanName.toLowerCase()]
+    : 0;
+
+  const shouldShowBuyPlan =
+    selectedContext?.type === "personal" &&
+    currentStep === steps.length - 2 &&
+    selectedPlanName &&
+    (!selectedPlanCredits || selectedPlanCredits < 1);
+
+  // Render current step safely
+  const renderCurrentStep = () => {
+    if (!stepInfo.isValid || !currentStepData) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Loading step...</p>
+        </div>
+      );
+    }
+
+    return renderStep(currentStepData);
+  };
+
+  // Validation function for current step
+  const validateCurrentStep = async () => {
+    if (!currentStepData) {
+      console.error("No current step data available");
+      return false;
+    }
+
+    try {
+      switch (currentStepData.component) {
+        case "ClothingSelector":
+          if (!watchedClothing || watchedClothing.length < 1) {
+            setClothingError("Please select at least 1 clothing option.");
+            return false;
+          }
+          if (watchedClothing.length > stylesLimit) {
+            setClothingError(
+              `You can select up to ${stylesLimit} clothing options.`
+            );
+            return false;
+          }
+          setClothingError("");
+          return true;
+
+        case "BackgroundSelector":
+          if (!watchedBackgrounds || watchedBackgrounds.length < 1) {
+            setBackgroundsError("Please select at least 1 background.");
+            return false;
+          }
+          if (watchedBackgrounds.length > stylesLimit) {
+            setBackgroundsError(
+              `You can select up to ${stylesLimit} backgrounds.`
+            );
+            return false;
+          }
+          setBackgroundsError("");
+          return true;
+
+        case "PlanSelector":
+          if (isOrgWithTeamCredits) {
+            setValue("plan", "Team", { shouldValidate: true });
+            return true;
+          }
+          return await trigger(currentStepData.data[0].fieldName);
+
+        case "VariableSelector":
+          return await trigger(currentStepData.data[0].fieldName);
+
+        case "FileUploader":
+          return await trigger("images");
+
+        default:
+          return await trigger();
+      }
+    } catch (error) {
+      console.error("Validation error:", error);
+      setStudioMessage("Validation error occurred. Please try again.");
+      return false;
+    }
+  };
 
   const next = async () => {
+    if (!currentStepData) {
+      console.error("Cannot navigate: no current step data");
+      setStudioMessage("Navigation error. Please refresh the page.");
+      return;
+    }
+
     setShouldValidate(true);
-    const currentStepData = steps[currentStep];
-    let isValid = false;
+
     try {
-      if (currentStepData.component === "ClothingSelector") {
-        if (!watchedClothing || watchedClothing.length < 1) {
-          setClothingError("Please select at least 1 clothing option.");
-          return;
-        }
-        if (watchedClothing.length > stylesLimit) {
-          setClothingError(
-            `You can select up to ${stylesLimit} clothing options.`
-          );
-          return;
-        }
-        setClothingError("");
-        isValid = true;
-      } else if (currentStepData.component === "BackgroundSelector") {
-        if (!watchedBackgrounds || watchedBackgrounds.length < 1) {
-          setBackgroundsError("Please select at least 1 background.");
-          return;
-        }
-        if (watchedBackgrounds.length > stylesLimit) {
-          setBackgroundsError(
-            `You can select up to ${stylesLimit} backgrounds.`
-          );
-          return;
-        }
-        setBackgroundsError("");
-        isValid = true;
-      } else if (currentStepData.component === "PlanSelector") {
-        if (
-          selectedContext?.type === "organization" &&
-          organizationCredits?.team > 0
-        ) {
-          setValue("plan", "team", { shouldValidate: true });
-          isValid = true;
-        } else {
-          isValid = await trigger(currentStepData.data[0].fieldName);
-        }
-      } else if (currentStepData.component === "VariableSelector") {
-        isValid = await trigger(currentStepData.data[0].fieldName);
-      } else if (currentStepData.component === "FileUploader") {
-        isValid = await trigger("images");
-      } else {
-        isValid = await trigger();
+      const isValid = await validateCurrentStep();
+
+      if (!isValid) {
+        return;
       }
-      if (isValid && currentStep < steps.length - 1) {
-        if (currentStep === steps.length - 2) {
-          const plan = getValues("plan");
-          const planCredits =
-            selectedContext?.type === "organization"
-              ? organizationCredits
-              : personalCredits?.[plan?.toLowerCase()];
-          if (plan && (!planCredits || planCredits < 1)) {
-            return;
-          }
+
+      // Check credits before final step
+      if (currentStep === steps.length - 2) {
+        const plan = getValues("plan");
+        const planCredits =
+          selectedContext?.type === "organization"
+            ? userCredits?.team // For org member, check team credits
+            : userCredits?.[plan?.toLowerCase()]; // For personal, check plan credits
+
+        if (plan && (!planCredits || planCredits < 1)) {
+          setStudioMessage("You don't have enough credits for this plan.");
+          return;
         }
+      }
+
+      if (currentStep < steps.length - 1) {
         setPreviousStep(currentStep);
-        setCurrentStep((step) => step + 1);
+        const nextStep = currentStep + 1;
+        setCurrentStep(nextStep, selectedContext?.type, isOrgWithTeamCredits);
         setShouldValidate(false);
       }
     } catch (error) {
-      console.error("Validation error in next():", error);
+      console.error("Navigation error in next():", error);
+      setStudioMessage(
+        "An error occurred during navigation. Please try again."
+      );
       setShouldValidate(false);
     }
   };
@@ -483,13 +651,32 @@ export default function StudioCreate() {
   const prev = () => {
     if (currentStep > 0) {
       setPreviousStep(currentStep);
-      setCurrentStep((step) => step - 1);
+      const prevStep = currentStep - 1;
+      setCurrentStep(prevStep, selectedContext?.type, isOrgWithTeamCredits);
       setShouldValidate(false);
+    }
+  };
+
+  const handleReset = () => {
+    try {
+      const contextType = selectedContext?.type;
+      const hasTeamCredits = isOrgWithTeamCredits;
+
+      // Use store method to reset with storage cleanup
+      resetStudioForm(contextType, hasTeamCredits);
+
+      // Clear form values
+      clearFormValues();
+      reset();
+    } catch (error) {
+      console.error("Reset error:", error);
+      setStudioMessage("Error resetting form. Please refresh the page.");
     }
   };
 
   const onSubmit = async (data) => {
     console.log("onSubmit", data);
+    const studio_id = uuidv4();
     try {
       setIsSubmitting(true);
       let sanitizedData;
@@ -516,16 +703,14 @@ export default function StudioCreate() {
         ethnicity: sanitizedData.ethnicity,
         hairStyle: sanitizedData.hairStyle,
         eyeColor: sanitizedData.eyeColor,
-        glasses: sanitizedData.glasses, // Ensure prompts.js handles boolean 'glasses'
+        glasses: sanitizedData.glasses,
       };
 
-      // Ensure watchedClothing and watchedBackgrounds are the current, correct arrays of {name, theme}
-      // stylesLimit should also be correctly derived from the selected plan at this point.
       const finalPrompts = generatePrompts(
         characterDetails,
-        watchedClothing, // This is an array of {name, theme}
-        watchedBackgrounds, // This is an array of {name, theme}
-        stylesLimit // Ensure stylesLimit is correctly determined from the selected plan
+        watchedClothing,
+        watchedBackgrounds,
+        stylesLimit
       );
       console.log("Final Prompts:", finalPrompts);
 
@@ -535,22 +720,18 @@ export default function StudioCreate() {
           "Could not generate image prompts based on selections. Please try different options or contact support."
         );
         setIsSubmitting(false);
-        return; // Prevent submission if no prompts
+        return;
       }
-
-      // Add the generated prompts to the data to be sent to the backend
-      // Your backend will expect an array of prompt strings.
       sanitizedData.prompts = finalPrompts;
       sanitizedData.organization_id =
         selectedContext?.type === "organization" ? selectedContext.id : null;
-      // console.log("Generated Prompts for API:", finalPrompts); // For debugging
       try {
         const response = await fetch("/api/lora-training", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(sanitizedData), // sanitizedData now includes .prompts
+          body: JSON.stringify(sanitizedData),
         });
 
         if (!response.ok) {
@@ -571,8 +752,16 @@ export default function StudioCreate() {
         }
 
         const result = await response.json();
-        localStorage.removeItem("currentFormStep");
+
+        const contextType = selectedContext?.type;
+        const hasTeamCredits = isOrgWithTeamCredits;
+
+        resetStudioForm(contextType, hasTeamCredits);
+
+        const formStorageKey = getFormStorageKey();
+        localStorage.removeItem(formStorageKey);
         localStorage.removeItem("formValues");
+
         setStudioMessage(result.message || "Studio created successfully!");
         router.push("/dashboard/studio/" + result.studioId);
       } catch (error) {
@@ -591,17 +780,6 @@ export default function StudioCreate() {
       );
       setIsSubmitting(false);
     }
-  };
-
-  const handleReset = () => {
-    localStorage.removeItem("currentFormStep");
-    localStorage.removeItem("formValues");
-    reset();
-    setCurrentStep(0);
-    setStudioMessage(false);
-    setIsSubmitting(false);
-    setClothingError("");
-    setBackgroundsError("");
   };
 
   const renderStep = (step) => {
@@ -656,16 +834,8 @@ export default function StudioCreate() {
         return (
           <PlanSelector
             data={step.data}
-            isPending={
-              selectedContext?.type === "organization"
-                ? isOrgCreditsLoading
-                : isCreditsLoading
-            }
-            credits={
-              selectedContext?.type === "organization"
-                ? organizationCredits
-                : personalCredits
-            }
+            isPending={isCreditsLoading}
+            credits={userCredits}
             isOrgContext={selectedContext?.type === "organization"}
             register={register}
             setValue={setValue}
@@ -705,23 +875,7 @@ export default function StudioCreate() {
     }
   };
 
-  const isPlanSelectorStep = steps[currentStep].component === "PlanSelector";
-  const selectedPlanName = getValues("plan");
-
-  const currentContextCredits =
-    selectedContext?.type === "organization"
-      ? organizationCredits
-      : personalCredits;
-
-  const selectedPlanCredits = selectedPlanName
-    ? currentContextCredits?.[selectedPlanName.toLowerCase()]
-    : 0;
-
-  const shouldShowBuyPlan =
-    selectedContext?.type === "personal" &&
-    currentStep === steps.length - 2 &&
-    selectedPlanName &&
-    (!selectedPlanCredits || selectedPlanCredits < 1);
+  const isPlanSelectorStep = currentStepData?.component === "PlanSelector";
 
   const handleBuyPlan = async () => {
     setIsBuyingPlan(true);
@@ -750,19 +904,16 @@ export default function StudioCreate() {
     }
   };
 
-  let mainButtonDisabled = isSubmitting;
-  if (
-    currentStep === 0 &&
-    !selectedPlan &&
-    steps[currentStep].component !== "PlanSelector"
-  ) {
-  }
-  if (currentStep === steps.length - 1) {
-    const imagesValue = getValues("images");
-    if (typeof imagesValue !== "string" || imagesValue.trim() === "") {
-      mainButtonDisabled = true;
+  // Redirect if in org context with no team credits after loading is complete
+  useEffect(() => {
+    if (
+      !isCreditsLoading &&
+      selectedContext?.type === "organization" &&
+      (!userCredits || userCredits.team === 0)
+    ) {
+      router.push("/dashboard/buy");
     }
-  }
+  }, [isCreditsLoading, userCredits, selectedContext, router]);
 
   useEffect(() => {
     const errorKeys = Object.keys(errors);
@@ -771,84 +922,155 @@ export default function StudioCreate() {
     }
   }, [errors]);
 
-  // Add this effect to handle automatic plan selection for org context
-  useEffect(() => {
-    if (
-      selectedContext?.type === "organization" &&
-      organizationCredits?.team > 0
-    ) {
-      // Set the plan value to "team" automatically
-      setValue("plan", "team", { shouldValidate: true });
-
-      // If we're on the plan selector step (step 0), move to the next step
-      if (currentStep === 0) {
-        setCurrentStep(1);
-      }
-    }
-  }, [selectedContext?.type, organizationCredits?.team, setValue, currentStep]);
+  // Display a redirecting message to prevent form flashing
+  if (
+    !isCreditsLoading &&
+    selectedContext?.type === "organization" &&
+    (!userCredits || userCredits.team === 0)
+  ) {
+    return (
+      <ContentLayout navbar={false} title="Create Studio">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">
+            No team credits available. Redirecting to purchase page...
+          </p>
+        </div>
+      </ContentLayout>
+    );
+  }
 
   return (
     <ContentLayout navbar={false} title="Create Studio">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-          }
-        }}
-        className="max-w-7xl mx-auto mt-8"
-      >
-        <>
-          <div className="mb-6">
-            {steps[currentStep] && renderStep(steps[currentStep])}
-          </div>
+      {isCreditsLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Loading credits...</p>
+        </div>
+      ) : (
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+            }
+          }}
+          className="max-w-7xl mx-auto mt-8"
+          role="form"
+          aria-label="Create AI Headshot Studio Form"
+        >
+          <>
+            <div className="mb-6" role="main" aria-live="polite">
+              {currentStepData ? (
+                renderStep(currentStepData)
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Loading step...</p>
+                </div>
+              )}
+            </div>
 
-          <div className="flex justify-between items-center flex-wrap gap-2">
-            <Button
-              className="disabled:opacity-50"
-              type="button"
-              onClick={prev}
-              disabled={currentStep === 0 || isSubmitting}
+            <div
+              className="flex justify-between items-center flex-wrap gap-2"
+              role="navigation"
+              aria-label="Form navigation"
             >
-              <ChevronLeft strokeWidth={2} />
-              Previous
-            </Button>
-
-            {shouldShowBuyPlan ? (
               <Button
                 className="disabled:opacity-50"
                 type="button"
-                onClick={handleBuyPlan}
-                disabled={isBuyingPlan || !selectedPlanName}
+                onClick={prev}
+                disabled={currentStep === 0 || isSubmitting}
+                aria-label={`Go to previous step. Currently on step ${
+                  currentStep + 1
+                } of ${steps.length}`}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    if (currentStep > 0 && !isSubmitting) {
+                      prev();
+                    }
+                  }
+                }}
               >
-                {isBuyingPlan ? "Redirecting..." : `Proceed to Payment`}
-                <ChevronRight strokeWidth={2} />
+                <ChevronLeft strokeWidth={2} aria-hidden="true" />
+                Previous
               </Button>
-            ) : (
+
+              {shouldShowBuyPlan ? (
+                <Button
+                  className="disabled:opacity-50"
+                  type="button"
+                  onClick={handleBuyPlan}
+                  disabled={isBuyingPlan || !selectedPlanName}
+                  aria-label={`Proceed to payment for ${selectedPlanName} plan`}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      if (!isBuyingPlan && selectedPlanName) {
+                        handleBuyPlan();
+                      }
+                    }
+                  }}
+                >
+                  {isBuyingPlan ? "Redirecting..." : `Proceed to Payment`}
+                  <ChevronRight strokeWidth={2} aria-hidden="true" />
+                </Button>
+              ) : (
+                <Button
+                  className="disabled:opacity-50"
+                  type={currentStep === steps.length - 1 ? "submit" : "button"}
+                  onClick={currentStep === steps.length - 1 ? undefined : next}
+                  disabled={mainButtonDisabled}
+                  aria-label={
+                    currentStep === steps.length - 1
+                      ? "Create your AI headshot studio"
+                      : `Go to next step. Currently on step ${
+                          currentStep + 1
+                        } of ${steps.length}`
+                  }
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      if (!mainButtonDisabled) {
+                        if (currentStep === steps.length - 1) {
+                          handleSubmit(onSubmit)();
+                        } else {
+                          next();
+                        }
+                      }
+                    }
+                  }}
+                >
+                  {currentStep === steps.length - 1 ? "Create Studio" : "Next"}
+                  <ChevronRight strokeWidth={2} aria-hidden="true" />
+                </Button>
+              )}
+            </div>
+            <div className="flex justify-between items-center flex-wrap gap-2 mt-4">
               <Button
-                className="disabled:opacity-50"
-                type={currentStep === steps.length - 1 ? "submit" : "button"}
-                onClick={currentStep === steps.length - 1 ? undefined : next}
-                disabled={mainButtonDisabled}
+                type="button"
+                variant="outline"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                aria-label="Reset form and start over"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    if (!isSubmitting) {
+                      handleReset();
+                    }
+                  }
+                }}
               >
-                {currentStep === steps.length - 1 ? "Create Studio" : "Next"}
-                <ChevronRight strokeWidth={2} />
+                <RotateCcw className="text-destructive" aria-hidden="true" />
+                Start Over
               </Button>
-            )}
-          </div>
-          <div className="flex justify-between items-center flex-wrap gap-2 mt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
-              <RotateCcw className="text-destructive" />
-              Start Over
-            </Button>
-          </div>
-        </>
-      </form>
+            </div>
+          </>
+        </form>
+      )}
     </ContentLayout>
   );
 }

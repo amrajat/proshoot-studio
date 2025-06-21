@@ -75,7 +75,8 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^9.0.1",
     "zeptomail": "^6.2.1",
-    "zod": "^3.25.7"
+    "zod": "^3.25.7",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@types/node": "^20.17.48",

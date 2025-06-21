@@ -20,12 +20,11 @@ export async function POST(request) {
       const { error: profileError } = await supabase
         .from("profiles")
         .update({ referred_by: requestData.howDidYouHearAboutUs })
-        .eq("id", user.id)
+        .eq("user_id", user.id)
         .is("referred_by", null);
-      // TODO: this needs update, it's not working
 
       if (profileError) {
-        console.error("Error updating profile:", profileError);
+        console.error("Error updating profile referred_by:", profileError);
         // Not a critical error, so we just log it and continue.
       }
     }

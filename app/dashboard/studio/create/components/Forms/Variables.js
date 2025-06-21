@@ -207,8 +207,36 @@ export const STUDIO_NAME_SELECTOR = [
   },
 ];
 
+export const HOW_DID_YOU_HEAR_ABOUT_US = [
+  {
+    title: "How did you hear about us?",
+    subtitle: null,
+    fieldName: "howDidYouHearAboutUs",
+  },
+  {
+    Google: "Google",
+    Reddit: "Reddit",
+    Instagram: "Instagram",
+    "X (Twitter)": "X (Twitter)",
+    LinkedIn: "LinkedIn",
+    TikTok: "TikTok",
+    YouTube: "YouTube",
+    Friend: "Friend & Colleague",
+    Facebook: "Facebook",
+  },
+  {
+    isRequired: false,
+    placeholderText: null,
+    helpText:
+      "Please select the option that best matches how you heard about us.",
+    regexPattern: null,
+    radioOptions: true,
+    customOption: true,
+  },
+];
+
 export const formSchema = z.object({
-  plan: z.enum(["Starter", "Pro", "Elite", "Studio", "Team"], {
+  plan: z.enum(["Starter", "Pro", "Studio", "Team"], {
     message: "Please select a valid plan.",
   }),
   gender: z.string().min(3, { message: "Please select your gender." }),
@@ -225,8 +253,8 @@ export const formSchema = z.object({
   backgrounds: z
     .array(z.object({ name: z.string(), theme: z.string() }))
     .min(1, { message: "Please select at least 1 background." }),
-  images: z
-    .string()
-    .url({ message: "Please upload images first to create studio." }),
+  images: z.string(),
+  // .url({ message: "Please upload images first to create studio." }),
+  howDidYouHearAboutUs: z.string().optional(),
   studioName: z.string().min(1, "Please enter your studio name."),
 });

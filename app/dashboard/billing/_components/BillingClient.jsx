@@ -112,9 +112,6 @@ export default function BillingClient({
                   <strong>Pro:</strong> {personalCredits.pro ?? 0}
                 </p>
                 <p>
-                  <strong>Elite:</strong> {personalCredits.elite ?? 0}
-                </p>
-                <p>
                   <strong>Studio:</strong> {personalCredits.studio ?? 0}
                 </p>
                 <p className="text-xs text-gray-500 pt-2">
@@ -144,9 +141,7 @@ export default function BillingClient({
                     <p>
                       <strong>Pro:</strong> {org.credits.pro ?? 0}
                     </p>
-                    <p>
-                      <strong>Elite:</strong> {org.credits.elite ?? 0}
-                    </p>
+
                     <p>
                       <strong>Studio:</strong> {org.credits.studio ?? 0}
                     </p>
@@ -183,9 +178,7 @@ export default function BillingClient({
                     <p>
                       <strong>Pro:</strong> {org.credits.pro ?? 0}
                     </p>
-                    <p>
-                      <strong>Elite:</strong> {org.credits.elite ?? 0}
-                    </p>
+
                     <p>
                       <strong>Studio:</strong> {org.credits.studio ?? 0}
                     </p>

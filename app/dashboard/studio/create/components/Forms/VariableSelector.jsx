@@ -77,9 +77,7 @@ export default function VariableSelector({
         variant={isRequired ? "destructive" : "secondary"}
         className="mb-2 uppercase"
       >
-        {isRequired
-          ? "This field is required"
-          : "Optional: Select only if you have a specific interest"}
+        {isRequired ? "This field is required" : "Optional"}
       </Badge>
       <Heading variant={"hero"}>{details.title}</Heading>
       <p className="text-muted-foreground">{details.subtitle}</p>

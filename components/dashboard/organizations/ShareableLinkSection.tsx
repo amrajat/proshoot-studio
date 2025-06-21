@@ -4,10 +4,10 @@ import { useState, useEffect, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { Copy, RefreshCw, Loader2, Ban, AlertTriangle } from "lucide-react";
+import { Copy, RefreshCw, Loader2, Ban } from "lucide-react";
 import {
-  generateNewShareableLinkAction,
-  revokeUniversalInviteTokenAction,
+  generateShareableLinkAction,
+  revokeShareableLinkAction,
 } from "@/app/dashboard/organization/_actions/invitationActions";
 import {
   AlertDialog,
@@ -26,51 +26,22 @@ interface ShareableLinkSectionProps {
   onLinkChange: () => void;
 }
 
-interface GenerateLinkState {
-  success: boolean;
-  newLink?: string;
-  message?: string;
-}
-
 export function ShareableLinkSection({
   organizationId,
   initialInviteToken,
   onLinkChange,
 }: ShareableLinkSectionProps) {
-  const [currentLink, setCurrentLink] = useState<string | null>(null);
-  const [generateState, setGenerateState] = useState<GenerateLinkState | null>(
-    null
-  );
-  const [isGenerating, startGenerateTransition] = useTransition();
-  const [isRevoking, startRevokeTransition] = useTransition();
+  const [inviteToken, setInviteToken] = useState(initialInviteToken);
+  const [isLoading, startTransition] = useTransition();
   const [showGenerateConfirm, setShowGenerateConfirm] = useState(false);
 
   useEffect(() => {
-    if (initialInviteToken) {
-      const link = `${
-        window.location.origin
-      }/accept-invite?token=${encodeURIComponent(
-        initialInviteToken
-      )}&orgId=${encodeURIComponent(organizationId)}`;
-      setCurrentLink(link);
-    } else {
-      setCurrentLink(null);
-    }
-  }, [initialInviteToken, organizationId]);
+    setInviteToken(initialInviteToken);
+  }, [initialInviteToken]);
 
-  useEffect(() => {
-    if (generateState?.message) {
-      toast({
-        title: generateState.success ? "Success" : "Error",
-        description: generateState.message,
-        variant: generateState.success ? "default" : "destructive",
-      });
-    }
-    if (generateState?.success && generateState.newLink) {
-      onLinkChange();
-    }
-    if (generateState !== null) setGenerateState(null);
-  }, [generateState, onLinkChange]);
+  const currentLink = inviteToken
+    ? `${window.location.origin}/accept-invite?token=${inviteToken}&orgId=${organizationId}`
+    : null;
 
   const handleCopy = () => {
     if (currentLink) {
@@ -79,16 +50,10 @@ export function ShareableLinkSection({
         title: "Copied!",
         description: "Invite link copied to clipboard.",
       });
-    } else {
-      toast({
-        title: "Error",
-        description: "No active link to copy.",
-        variant: "destructive",
-      });
     }
   };
 
-  const triggerGenerate = () => {
+  const handleGenerate = () => {
     if (currentLink) {
       setShowGenerateConfirm(true);
     } else {
@@ -98,56 +63,57 @@ export function ShareableLinkSection({
 
   const performGenerate = () => {
     setShowGenerateConfirm(false);
-    startGenerateTransition(async () => {
-      const formData = new FormData();
-      formData.append("organizationId", organizationId);
-      formData.append("host", window.location.origin);
-      const result = await generateNewShareableLinkAction(formData);
-      setGenerateState(result);
-    });
-  };
-
-  const handleRevoke = () => {
-    startRevokeTransition(async () => {
-      const result = await revokeUniversalInviteTokenAction(organizationId);
-      if (result.success) {
-        toast({ title: "Success", description: "Shareable link revoked." });
-        setCurrentLink(null);
-        onLinkChange();
-      } else {
+    startTransition(async () => {
+      const result = await generateShareableLinkAction(organizationId);
+      if (result.error) {
         toast({
-          title: "Error Revoking Link",
-          description: result.error || "An unexpected error occurred.",
+          title: "Error Generating Link",
+          description: result.error,
           variant: "destructive",
         });
+      } else {
+        toast({
+          title: "Success",
+          description: "New shareable link generated.",
+        });
+        setInviteToken(result.data!);
+        onLinkChange(); // Refresh context to get new token
       }
     });
   };
 
-  const canCopy = !!currentLink;
-  const canRevoke = !!currentLink;
-  const isLoading = isGenerating || isRevoking;
+  const handleRevoke = () => {
+    startTransition(async () => {
+      const result = await revokeShareableLinkAction(organizationId);
+      if (result.error) {
+        toast({
+          title: "Error Revoking Link",
+          description: result.error,
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "Success", description: "Shareable link revoked." });
+        setInviteToken(null);
+        onLinkChange(); // Refresh context
+      }
+    });
+  };
 
   return (
     <div className="space-y-3 rounded-md border p-4">
       <h4 className="font-medium">Shareable Invite Link</h4>
       <p className="text-sm text-muted-foreground">
         {currentLink
-          ? "Anyone with this link can join your organization as a member. Joining uses 1 Team Credit."
+          ? "Anyone with this link can join your organization. This will use 1 Team Credit."
           : "Generate a link to allow anyone to join your organization."}
       </p>
       <div className="flex items-center space-x-2">
-        <Input
-          value={currentLink ?? "No active link"}
-          readOnly
-          className="flex-1"
-        />
+        <Input value={currentLink ?? "No active link"} readOnly />
         <Button
-          type="button"
           size="icon"
           variant="outline"
           onClick={handleCopy}
-          disabled={!canCopy || isLoading}
+          disabled={!currentLink}
           aria-label="Copy link"
         >
           <Copy className="h-4 w-4" />
@@ -155,13 +121,12 @@ export function ShareableLinkSection({
       </div>
       <div className="flex items-center space-x-2 pt-2">
         <Button
-          type="button"
           variant="outline"
-          onClick={triggerGenerate}
+          onClick={handleGenerate}
           disabled={isLoading}
           className="flex-grow"
         >
-          {isGenerating ? (
+          {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -169,13 +134,12 @@ export function ShareableLinkSection({
           {currentLink ? "Generate New Link" : "Generate Link"}
         </Button>
         <Button
-          type="button"
           variant="destructive"
           onClick={handleRevoke}
-          disabled={!canRevoke || isLoading}
+          disabled={!currentLink || isLoading}
           className="flex-grow"
         >
-          {isRevoking ? (
+          {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <Ban className="mr-2 h-4 w-4" />
@@ -191,22 +155,14 @@ export function ShareableLinkSection({
           <AlertDialogHeader>
             <AlertDialogTitle>Generate New Invite Link?</AlertDialogTitle>
             <AlertDialogDescription>
-              Generating a new link will invalidate the current shareable link.
-              Anyone using the old link will no longer be able to join. Are you
-              sure you want to continue?
+              This will invalidate the current shareable link. Are you sure you
+              want to continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isGenerating}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={performGenerate}
-              disabled={isGenerating}
-            >
-              {isGenerating && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={performGenerate} disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Generate New Link
             </AlertDialogAction>
           </AlertDialogFooter>

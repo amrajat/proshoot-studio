@@ -3,8 +3,8 @@ CREATE TYPE public.invitation_status AS ENUM ('pending', 'accepted', 'expired', 
 CREATE TYPE public.organization_role AS ENUM ('admin', 'member');
 CREATE TYPE public.studio_status AS ENUM ('pending', 'processing', 'completed', 'failed', 'images_uploaded', 'done');
 CREATE TYPE public.purchase_status AS ENUM ('succeeded', 'pending', 'failed');
-CREATE TYPE public.transaction_type AS ENUM ('purchase', 'studio_creation', 'refund', 'admin_grant', 'initial');
-CREATE TYPE public.credit_transfer_type AS ENUM ('starter', 'pro', 'elite', 'studio', 'balance', 'none');
+CREATE TYPE public.transaction_type AS ENUM ('purchase', 'studio_creation', 'refund', 'admin_grant', 'initial', 'invite_accept_deduct');
+CREATE TYPE public.credit_transfer_type AS ENUM ('starter', 'pro', 'studio', 'team', 'balance', 'none');
 
 -- Helper Functions
 CREATE OR REPLACE FUNCTION is_org_member(org_id uuid)
@@ -394,7 +394,6 @@ CREATE TABLE public.credits (
     balance integer NOT NULL DEFAULT 0 CHECK (balance >= 0), -- Consider if this is still needed or just use plan columns
     starter integer NOT NULL DEFAULT 0 CHECK (starter >= 0), -- Added from 20250504084305
     pro integer NOT NULL DEFAULT 0 CHECK (pro >= 0), -- Added from 20250504084305
-    elite integer NOT NULL DEFAULT 0 CHECK (elite >= 0), -- Added from 20250504084305
     studio integer NOT NULL DEFAULT 0 CHECK (studio >= 0), -- Added from 20250504084305
     team integer NOT NULL DEFAULT 0 CHECK (team >= 0), -- Added from 20250512104258
     updated_at timestamptz DEFAULT now() NOT NULL,
@@ -530,223 +529,6 @@ BEGIN
 END;
 $$;
 
--- Function to deduct team credits from the org owner's credit row and log the transaction.
-CREATE OR REPLACE FUNCTION public.transfer_org_team_credit(
-    p_org_id UUID,
-    p_admin_user_id UUID,
-    p_amount INT,
-    p_transaction_type public.transaction_type,
-    p_description TEXT DEFAULT NULL,
-    p_related_studio_id UUID DEFAULT NULL,
-    p_related_purchase_id UUID DEFAULT NULL
-)
-RETURNS BOOLEAN
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_credit_account_id UUID;
-  v_current_team_balance INT;
-BEGIN
-  IF p_amount <= 0 THEN
-    RAISE EXCEPTION 'Deduction amount must be positive.';
-  END IF;
-
-  SELECT id, team
-  INTO v_credit_account_id, v_current_team_balance
-  FROM public.credits
-  WHERE user_id = p_admin_user_id
-    AND organization_id = p_org_id;
-
-  IF v_credit_account_id IS NULL THEN
-     RAISE EXCEPTION 'Credit account not found for user % in organization %.', p_admin_user_id, p_org_id;
-  END IF;
-
-  IF v_current_team_balance < p_amount THEN
-    RAISE EXCEPTION 'Insufficient team credits. Required: %, Available: %', p_amount, v_current_team_balance;
-  END IF;
-
-  UPDATE public.credits
-  SET team = team - p_amount,
-      updated_at = now()
-  WHERE id = v_credit_account_id;
-
-  INSERT INTO public.transactions (
-      user_id,
-      organization_id,
-      credit_account_id,
-      change_amount,
-      type,
-      related_purchase_id,
-      related_studio_id,
-      description
-  ) VALUES (
-      p_admin_user_id,
-      p_org_id,
-      v_credit_account_id,
-      -p_amount,
-      p_transaction_type,
-      p_related_purchase_id,
-      p_related_studio_id,
-      p_description
-  );
-
-  RETURN TRUE;
-
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE WARNING 'Error in transfer_org_team_credit: %', SQLERRM;
-        RAISE;
-END;
-$$;
-
--- Function to accept an organization invite, handle credit transfer, and log transactions.
-CREATE OR REPLACE FUNCTION public.accept_organization_invite_with_credit_transfer(
-    p_user_id UUID,
-    p_organization_id UUID,
-    p_invite_token TEXT
-)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-    v_org_owner_id UUID;
-    v_org_name TEXT;
-    v_org_token TEXT;
-    v_new_member_id UUID;
-    v_user_credit_account_id UUID;
-    v_credit_deducted BOOLEAN := false;
-    v_credit_added BOOLEAN := false;
-    v_deduction_error TEXT := NULL;
-    v_addition_error TEXT := NULL;
-    result JSONB;
-BEGIN
-    SELECT owner_user_id, name, invite_token
-    INTO v_org_owner_id, v_org_name, v_org_token
-    FROM public.organizations
-    WHERE id = p_organization_id;
-
-    IF NOT FOUND THEN
-        RETURN jsonb_build_object('error', 'Organization not found.');
-    END IF;
-
-    IF v_org_token IS NULL OR v_org_token != p_invite_token THEN
-        RETURN jsonb_build_object('error', 'Invalid or expired invite token.');
-    END IF;
-
-    IF EXISTS (SELECT 1 FROM public.organization_members WHERE user_id = p_user_id AND organization_id = p_organization_id) THEN
-        RETURN jsonb_build_object('success', true, 'message', 'Already a member.', 'organization_name', v_org_name);
-    END IF;
-
-    BEGIN
-        SELECT transfer_org_team_credit(
-            p_org_id := p_organization_id,
-            p_admin_user_id := v_org_owner_id,
-            p_amount := 1,
-            p_transaction_type := 'invite_accept_deduct'::transaction_type,
-            p_description := 'Team credit deducted for invite acceptance by user ' || p_user_id::TEXT
-        )
-        INTO v_credit_deducted;
-    EXCEPTION
-        WHEN OTHERS THEN
-            v_deduction_error := SQLERRM;
-            RAISE WARNING 'Credit deduction failed for org % owner % upon invite accept by user %: %', p_organization_id, v_org_owner_id, p_user_id, v_deduction_error;
-            IF v_deduction_error LIKE '%Insufficient team credits%' THEN
-                 RETURN jsonb_build_object('error', 'Organization has insufficient Team Credits to accept new members via this link.');
-            ELSE
-                 RETURN jsonb_build_object('error', 'Failed to process organization credits: ' || v_deduction_error);
-            END IF;
-    END;
-
-    v_credit_deducted := true; 
-
-    INSERT INTO public.organization_members (user_id, organization_id, role)
-    VALUES (p_user_id, p_organization_id, 'member'::organization_role)
-    RETURNING id INTO v_new_member_id;
-
-    BEGIN
-        SELECT id
-        INTO v_user_credit_account_id
-        FROM public.credits
-        WHERE user_id = p_user_id
-          AND organization_id IS NULL;
-
-        IF v_user_credit_account_id IS NULL THEN
-            RAISE WARNING 'Personal credit row not found for user % during invite accept. Attempting to create.', p_user_id;
-            INSERT INTO public.credits (user_id, organization_id, team)
-            VALUES (p_user_id, NULL, 0)
-            ON CONFLICT (user_id) WHERE organization_id IS NULL
-            DO NOTHING;
-
-             SELECT id
-             INTO v_user_credit_account_id
-             FROM public.credits
-             WHERE user_id = p_user_id
-               AND organization_id IS NULL;
-
-             IF v_user_credit_account_id IS NULL THEN
-                 RAISE WARNING 'Failed to find or create personal credit row for user %. Cannot add team credit.', p_user_id;
-                 v_addition_error := 'Failed to locate user personal credit account.';
-             ELSE
-                 UPDATE public.credits
-                 SET team = team + 1,
-                     updated_at = now()
-                 WHERE id = v_user_credit_account_id;
-
-                 INSERT INTO public.transactions (
-                     user_id, organization_id, credit_account_id, change_amount, type, description
-                 ) VALUES (
-                     p_user_id, p_organization_id, v_user_credit_account_id, 1, 'invite_accept_add'::transaction_type,
-                     'Team credit added from organization invite acceptance (Org: ' || p_organization_id::TEXT || ')'
-                 );
-                 v_credit_added := true;
-             END IF;
-        ELSE
-            UPDATE public.credits
-            SET team = team + 1,
-                updated_at = now()
-            WHERE id = v_user_credit_account_id;
-
-            INSERT INTO public.transactions (
-                user_id, organization_id, credit_account_id, change_amount, type, description
-            ) VALUES (
-                p_user_id, p_organization_id, v_user_credit_account_id, 1, 'invite_accept_add'::transaction_type,
-                'Team credit added from organization invite acceptance (Org: ' || p_organization_id::TEXT || ')'
-            );
-            v_credit_added := true;
-        END IF;
-
-    EXCEPTION
-        WHEN OTHERS THEN
-            v_addition_error := SQLERRM;
-            RAISE WARNING 'Credit addition failed for user % upon accepting invite for org %: %', p_user_id, p_organization_id, v_addition_error;
-            v_credit_added := false;
-    END;
-
-    result := jsonb_build_object(
-        'success', true,
-        'member_id', v_new_member_id,
-        'organization_name', v_org_name,
-        'credit_deducted', v_credit_deducted,
-        'credit_added', v_credit_added
-    );
-
-    IF v_addition_error IS NOT NULL THEN
-        result := result || jsonb_build_object('credit_addition_error', v_addition_error);
-    END IF;
-
-    RETURN result;
-
-EXCEPTION
-    WHEN others THEN
-        RAISE WARNING 'Error in accept_organization_invite_with_credit_transfer: %', SQLERRM;
-        RETURN jsonb_build_object('error', 'An unexpected error occurred: ' || SQLERRM);
-END;
-$$;
-
 -- Generic function to deduct credits from a user's account for a specific plan.
 CREATE OR REPLACE FUNCTION deduct_credits(
     p_user_id UUID,
@@ -765,11 +547,10 @@ BEGIN
     CASE lower(p_plan_name)
         WHEN 'starter' THEN column_name := 'starter';
         WHEN 'pro' THEN column_name := 'pro';
-        WHEN 'elite' THEN column_name := 'elite';
         WHEN 'studio' THEN column_name := 'studio';
         WHEN 'balance' THEN column_name := 'balance';
         ELSE
-            RAISE EXCEPTION 'Invalid plan name: %', p_plan_name USING ERRCODE = 'P0001', HINT = 'Valid plans are: starter, pro, elite, studio, balance.';
+            RAISE EXCEPTION 'Invalid plan name: %', p_plan_name USING ERRCODE = 'P0001', HINT = 'Valid plans are: starter, pro, studio, balance.';
     END CASE;
 
     query := format('SELECT %I FROM public.credits WHERE user_id = %L', column_name, p_user_id);
@@ -816,7 +597,6 @@ BEGIN
     CASE lower(p_plan_name)
         WHEN 'starter' THEN column_name := 'starter';
         WHEN 'pro' THEN column_name := 'pro';
-        WHEN 'elite' THEN column_name := 'elite';
         WHEN 'studio' THEN column_name := 'studio';
         WHEN 'balance' THEN column_name := 'balance';
         ELSE
@@ -874,7 +654,7 @@ SECURITY DEFINER SET SEARCH_PATH = public
 AS $$
 BEGIN
   -- Insert a row specifically for personal credits (organization_id IS NULL)
-  INSERT INTO public.credits (user_id, organization_id, balance, starter, pro, elite, studio, team)
+  INSERT INTO public.credits (user_id, organization_id, balance, starter, pro, studio, team)
   VALUES (NEW.user_id, NULL, 0, 0, 0, 0, 0, 0); -- Start with 0 credits for all plans
   RETURN NEW;
 END;
@@ -908,14 +688,13 @@ ON CONFLICT (user_id) DO NOTHING; -- Avoid errors if a profile somehow already e
 -- Create initial PERSONAL credit balances for existing users
 -- Only inserts if a personal credit row doesn't already exist for the user
 /*
-INSERT INTO public.credits (user_id, organization_id, balance, starter, pro, elite, studio, team)
+INSERT INTO public.credits (user_id, organization_id, balance, starter, pro, studio, team)
 SELECT
     p.user_id,
     NULL, -- Explicitly NULL for personal credits
     0, -- Initial balance
     0, -- Initial starter
     0, -- Initial pro
-    0, -- Initial elite
     0, -- Initial studio
     0  -- Initial team (always 0 for personal rows)
 FROM

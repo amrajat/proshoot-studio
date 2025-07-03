@@ -2,12 +2,9 @@
 
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { lemonSqueezySetup } from "@/lib/lemonsqueezy"; // Assuming you have this setup
-import { createCheckout } from "@lemonsqueezy/lemonsqueezy.js";
-import {
-  organizationCreditPlans,
-  type CreditPlan,
-} from "@/config/lemonsqueezyConfig";
+
+import { createCheckout, lemonSqueezySetup } from "@lemonsqueezy/lemonsqueezy.js";
+import { lemonsqueezy } from "@/config/lemonsqueezy";
 
 const createServerActionClient = () => {
   const cookieStore = cookies();
@@ -45,7 +42,13 @@ interface CreateOrgCreditsCheckoutParams {
 export async function createOrganizationCreditCheckoutAction(
   params: CreateOrgCreditsCheckoutParams
 ): Promise<{ checkoutUrl?: string; error?: string }> {
-  lemonSqueezySetup(); // Initialize Lemon Squeezy client
+  if (!process.env.LS_API_KEY) {
+    throw new Error("LS_API_KEY is not set in environment variables");
+  }
+
+  lemonSqueezySetup({
+    apiKey: process.env.LS_API_KEY,
+  });
   const supabase = createServerActionClient();
 
   const {
@@ -56,7 +59,7 @@ export async function createOrganizationCreditCheckoutAction(
     return { error: "User not authenticated." };
   }
 
-  const plan = organizationCreditPlans.find((p) => p.id === params.planId);
+  const plan = lemonsqueezy.organizationCreditPlans.find((p) => p.id === params.planId);
   if (!plan) {
     return { error: "Selected credit plan not found." };
   }

@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAccountContext } from "@/context/AccountContext";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
 import { createOrganizationCreditCheckoutAction } from "@/app/dashboard/organization/_actions/lemonSqueezyActions";
-import { organizationCreditPlans } from "@/config/lemonsqueezyConfig";
+import { lemonsqueezy } from "@/config/lemonsqueezy";
 import { ShoppingCart, Loader2 } from "lucide-react";
 import { InviteMembersDialog } from "./InviteMembersDialog";
 import { ShareableLinkSection } from "./ShareableLinkSection";
@@ -50,7 +50,7 @@ export default function OrgAdminDashboard({
   }, [fetchCredits]);
 
   const handleBuyTeamCredits = async () => {
-    const teamPlan = organizationCreditPlans.find(
+    const teamPlan = lemonsqueezy.organizationCreditPlans.find(
       (p) => p.name.toLowerCase() === "team"
     );
     if (!teamPlan || !userId) {

@@ -1,8 +1,8 @@
 // import LemonSqueezy from "@lemonsqueezy/lemonsqueezy.js"; // This line will be commented out or removed
 
 export const lemonSqueezySetup = () => {
-  if (!process.env.LEMONSQUEEZY_API_KEY) {
-    throw new Error("LEMONSQUEEZY_API_KEY is not set in environment variables");
+  if (!process.env.LS_API_KEY) {
+    throw new Error("LS_API_KEY is not set in environment variables");
   }
   // The library typically initializes globally or you pass the key to methods.
   // For this specific library, you usually pass the API key directly when making calls if not configured globally.
@@ -17,4 +17,4 @@ export const lemonSqueezySetup = () => {
 };
 
 // If you have a global instance, you might export it:
-// export const ls = new LemonSqueezy(process.env.LEMONSQUEEZY_API_KEY);
+// export const ls = new LemonSqueezy(process.env.LS_API_KEY);

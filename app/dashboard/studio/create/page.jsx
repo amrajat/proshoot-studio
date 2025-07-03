@@ -18,7 +18,7 @@ import { useCredits } from "@/hooks/useCredits";
 import useDashboardStore from "@/stores/dashboardStore";
 import useFormPersistence from "@/hooks/useFormPersistence";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
-import config from "@/config";
+import { lemonsqueezy } from "@/config/lemonsqueezy";
 import { generatePrompts } from "@/utils/prompts";
 import {
   ALL_CLOTHING_OPTIONS as GLOBAL_ALL_CLOTHING_OPTIONS,
@@ -40,6 +40,7 @@ import PlanSelector from "./components/Forms/PlanSelector";
 import ImageUploader from "./components/Forms/ImageUploader";
 import ClothingSelector from "./components/Forms/ClothingSelector";
 import BackgroundSelector from "./components/Forms/BackgroundSelector";
+import { createCheckoutUrl } from "../_actions/checkout";
 
 // Studio Create Component - Refactored for better maintainability
 
@@ -74,7 +75,7 @@ const extendedFormSchema = baseFormSchema.extend({
 
 export default function StudioCreate() {
   const router = useRouter();
-  const { userId, selectedContext } = useAccountContext();
+  const { userId, selectedContext, userEmail } = useAccountContext();
 
   // ONLY fetch personal credits. This is the single source of truth for the user.
   const {
@@ -199,9 +200,8 @@ export default function StudioCreate() {
     ]
   );
 
-  const stylesLimit = selectedPlan
-    ? config.PLANS[selectedPlan]?.styles || 0
-    : 0;
+  const planConfig = lemonsqueezy.plans[selectedPlan];
+  const stylesLimit = planConfig?.styles || 0;
 
   // Define all possible steps with metadata
   const allSteps = useMemo(
@@ -662,12 +662,35 @@ export default function StudioCreate() {
       const contextType = selectedContext?.type;
       const hasTeamCredits = isOrgWithTeamCredits;
 
-      // Use store method to reset with storage cleanup
-      resetStudioForm(contextType, hasTeamCredits);
+      if (contextType === "organization") {
+        const currentValues = getValues(); // Get all current form values
+        const newValues = {
+          ...currentValues, // Spread current values
+        };
 
-      // Clear form values
-      clearFormValues();
-      reset();
+        // Reset all fields except for 'plan'
+        Object.keys(newValues).forEach((key) => {
+          if (key !== "plan") {
+            newValues[key] = null; // Or set to a default value
+          }
+        });
+
+        //  Reset the form with the updated values
+        reset(newValues);
+
+        // Also reset the current step to the beginning
+        setCurrentStep(0);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(getStepStorageKey(), "0");
+        }
+      } else {
+        // Use store method to reset with storage cleanup for non-organization contexts
+        resetStudioForm(contextType, hasTeamCredits);
+
+        // Clear form values
+        clearFormValues();
+        reset();
+      }
     } catch (error) {
       console.error("Reset error:", error);
       setStudioMessage("Error resetting form. Please refresh the page.");
@@ -881,24 +904,10 @@ export default function StudioCreate() {
     setIsBuyingPlan(true);
     try {
       const plan = getValues("plan");
-      const planConfig = config.PLANS[plan];
-      if (!planConfig || !planConfig.variantId || !userId)
-        throw new Error("Invalid plan or user for checkout");
-      const { createCheckout } = await import("@lemonsqueezy/lemonsqueezy.js");
-      const checkout = await createCheckout({
-        variantId: planConfig.variantId,
-        checkoutOptions: {
-          successUrl: `${window.location.origin}/dashboard/studio/create`,
-        },
-        checkoutData: {
-          custom: {
-            user_id: userId,
-          },
-        },
-      });
-      window.location.href = checkout.data.data.attributes.url;
+      const checkoutUrl = await createCheckoutUrl(plan, userId, userEmail);
+      router.push(checkoutUrl);
     } catch (err) {
-      console.error("LemonSqueezy checkout error:", err);
+      console.error("Checkout error:", err);
       alert("Failed to start checkout. Please try again.");
       setIsBuyingPlan(false);
     }

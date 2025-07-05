@@ -110,20 +110,6 @@ export function InviteMembersDialog({
 
   const hasEnoughCredits = currentTeamCredits >= emailCount;
 
-  // Add console logging for debugging
-  console.log("InviteMembersDialog Render:", {
-    pending,
-    isValid: form.formState.isValid,
-    emailCount,
-    currentTeamCredits,
-    hasEnoughCredits,
-    buttonDisabled:
-      pending ||
-      !form.formState.isValid ||
-      !hasEnoughCredits ||
-      emailCount === 0,
-  });
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>

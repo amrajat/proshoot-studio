@@ -27,11 +27,11 @@ export default function DashboardView({ userId }: DashboardClientProps) {
   }
 
   // Render based on context type and user role
-  if (selectedContext.type === "personal") {
+  if (selectedContext?.type === "personal") {
     return <StudioCreate />;
   }
 
-  if (selectedContext.type === "organization") {
+  if (selectedContext?.type === "organization") {
     return isCurrentUserOrgAdmin ? (
       <OrgAdminDashboard orgContext={selectedContext} />
     ) : (

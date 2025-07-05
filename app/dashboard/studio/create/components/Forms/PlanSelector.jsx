@@ -13,7 +13,7 @@ import Heading from "@/components/shared/heading";
 import { useRouter } from "next/navigation";
 
 // Define which plans are available per context
-const PERSONAL_PLANS = ["starter", "pro", "studio"];
+const PERSONAL_PLANS = ["starter", "professional", "studio"];
 const ORG_PLANS = ["team"];
 
 export default function PlanSelector({

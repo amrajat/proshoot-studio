@@ -236,7 +236,7 @@ export const HOW_DID_YOU_HEAR_ABOUT_US = [
 ];
 
 export const formSchema = z.object({
-  plan: z.enum(["Starter", "Pro", "Studio", "Team"], {
+  plan: z.enum(["Starter", "Professional", "Studio", "Team"], {
     message: "Please select a valid plan.",
   }),
   gender: z.string().min(3, { message: "Please select your gender." }),

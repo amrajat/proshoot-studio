@@ -6,15 +6,10 @@ import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw,
-  AlertCircle,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { ContentLayout } from "@/components/dashboard/sidebar/content-layout";
 import { useAccountContext } from "@/context/AccountContext";
-import { useCredits } from "@/hooks/useCredits";
+import { useCredits, hasPlanCredits } from "@/hooks/useCredits";
 import useDashboardStore from "@/stores/dashboardStore";
 import useFormPersistence from "@/hooks/useFormPersistence";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
@@ -83,6 +78,8 @@ export default function StudioCreate() {
     isLoading: isCreditsLoading,
     error: creditsError,
   } = useCredits(userId);
+
+  console.log("userCredits", userCredits);
 
   // Determine if we're in organization context AND the user has team credits on their personal account.
   const isOrgWithTeamCredits = useMemo(() => {
@@ -913,14 +910,27 @@ export default function StudioCreate() {
     }
   };
 
-  // Redirect if in org context with no team credits after loading is complete
   useEffect(() => {
-    if (
-      !isCreditsLoading &&
-      selectedContext?.type === "organization" &&
-      (!userCredits || userCredits.team === 0)
-    ) {
-      router.push("/dashboard/buy");
+    console.log("Redirect effect triggered. Loading:", isCreditsLoading);
+    if (isCreditsLoading) {
+      return;
+    }
+
+    console.log("Credits loaded. Context:", selectedContext, "Credits:", userCredits);
+
+    const inOrgContext = selectedContext?.type === 'organization';
+    console.log("Is Org Context?", inOrgContext);
+
+    // Per user request, redirection is only for organization account context
+    if (inOrgContext) {
+      if (!userCredits || userCredits.team === 0) {
+        console.log("Redirecting: No team credits in organization context.");
+        router.push('/dashboard/buy');
+      } else {
+        console.log("Not redirecting: User has team credits in organization context.");
+      }
+    } else {
+        console.log("Not redirecting: User is in personal context.");
     }
   }, [isCreditsLoading, userCredits, selectedContext, router]);
 
@@ -931,22 +941,7 @@ export default function StudioCreate() {
     }
   }, [errors]);
 
-  // Display a redirecting message to prevent form flashing
-  if (
-    !isCreditsLoading &&
-    selectedContext?.type === "organization" &&
-    (!userCredits || userCredits.team === 0)
-  ) {
-    return (
-      <ContentLayout navbar={false} title="Create Studio">
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">
-            No team credits available. Redirecting to purchase page...
-          </p>
-        </div>
-      </ContentLayout>
-    );
-  }
+
 
   return (
     <ContentLayout navbar={false} title="Create Studio">

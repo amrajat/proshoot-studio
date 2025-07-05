@@ -4,14 +4,14 @@ export type Credits = {
   organization_id: string | null;
   balance: number;
   starter: number;
-  pro: number;
+  professional: number;
   studio: number;
   team?: number;
 };
 
 export type CreditTransferType =
   | "starter"
-  | "pro"
+  | "professional"
   | "studio"
   | "balance"
   | "none";

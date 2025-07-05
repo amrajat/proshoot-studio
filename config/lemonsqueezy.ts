@@ -6,7 +6,7 @@ export const lemonsqueezy = {
       headshots: 40,
       styles: 10,
     },
-    Pro: {
+    Professional: {
       planPrice: 39,
       variantId: 387811,
       headshots: 60,
@@ -40,7 +40,7 @@ export const lemonsqueezy = {
       description: "10 Pro Credits for your Organization",
       price: "$19.99",
       variantId: "YOUR_LSQ_PRO_PACK_VARIANT_ID",
-      credits: { type: "pro", amount: 10 },
+      credits: { type: "professional", amount: 10 },
     },
     {
       id: "org-balance-100",
@@ -52,4 +52,3 @@ export const lemonsqueezy = {
     },
   ],
 };
-

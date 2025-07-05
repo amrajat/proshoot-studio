@@ -8,12 +8,15 @@ export const useCredits = (
   shouldFetch: boolean = true
 ) => {
   const [credits, setCredits] = useState<Credits | null | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCredits = useCallback(async () => {
+    const fetchCredits = useCallback(async () => {
+    console.log("useCredits: Fetching credits for userId:", userId);
     if (!shouldFetch || !userId) {
+      console.log("useCredits: Aborting fetch - shouldFetch is false or no userId.");
       setCredits(undefined);
+      setIsLoading(false);
       return;
     }
 
@@ -22,12 +25,14 @@ export const useCredits = (
 
     try {
       const supabase = createSupabaseBrowserClient();
+      console.log("useCredits: Supabase client created. Querying credits table...");
       const { data, error: fetchError } = await supabase
         .from("credits")
         .select("*")
-        .eq("user_id", userId)
-        .is("organization_id", null)
+        .eq('user_id', userId)
         .maybeSingle();
+
+      console.log("useCredits: Query finished.", { data, fetchError });
 
       if (fetchError) {
         const errorMessage = `Failed to fetch personal credits: ${fetchError.message}`;
@@ -71,5 +76,5 @@ export const hasPlanCredits = (
   credits: Credits | null | undefined
 ): boolean => {
   if (!credits) return false;
-  return credits.starter > 0 || credits.pro > 0 || credits.studio > 0;
+  return credits.starter > 0 || credits.professional > 0 || credits.studio > 0;
 };

@@ -58,6 +58,7 @@ export async function acceptInvitationAction(
     const { data, error: rpcError } = await supabase.rpc("accept_invitation", {
       p_invite_token: params.token,
       p_accepting_user_id: user.id,
+      p_accepting_user_email: user.email,
     });
 
     if (rpcError) {

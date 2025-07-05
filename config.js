@@ -16,7 +16,7 @@ const config = {
       styles: 10,
     },
 
-    Pro: {
+    Professional: {
       planPrice: 39,
       variantId: 387811,
       headshots: 60,

@@ -1,10 +1,8 @@
--- Drop the old, insecure function first to avoid conflicts.
-DROP FUNCTION IF EXISTS public.accept_organization_invite_with_credit_transfer(uuid, uuid, text);
-
 -- Create a new, secure, and unified function to handle all invitation types.
 CREATE OR REPLACE FUNCTION public.accept_invitation(
     p_invite_token TEXT,
-    p_accepting_user_id UUID
+    p_accepting_user_id UUID,
+    p_accepting_user_email TEXT
 )
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -23,6 +21,11 @@ BEGIN
     SELECT * INTO v_invite FROM public.invitations WHERE token = p_invite_token;
 
     IF FOUND THEN
+        -- Check if the invitation is email-specific and if the user's email matches.
+        IF v_invite.invited_email IS NOT NULL AND v_invite.invited_email != p_accepting_user_email THEN
+            RETURN jsonb_build_object('success', false, 'error', 'This invitation is intended for ' || v_invite.invited_email || '. Please log in with the correct account.');
+        END IF;
+
         -- Case A: This is a unique email invitation.
         v_org_id := v_invite.organization_id;
         v_invite_role := v_invite.role;

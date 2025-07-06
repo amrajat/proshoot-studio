@@ -1,0 +1,23 @@
+name = "r2-proxy-worker"
+main = "src/index.js"
+compatibility_date = "2023-10-30"
+
+# This tells Cloudflare to route traffic from your custom domain to this worker.
+routes = ["api.proshoot.co/*"]
+
+# This is how you connect your R2 buckets to the worker.
+# The `binding` name is what you use in your code (e.g., env.DATASETS).
+# It MUST be in all caps.
+# The `bucket_name` is the actual name of your bucket in Cloudflare.
+#
+# Add one entry for each bucket you want the worker to access.
+
+[[r2_buckets]]
+binding = "DATASETS"
+bucket_name = "datasets" # Make sure this matches your R2 bucket name
+
+[[r2_buckets]]
+binding = "WEIGHTS"
+bucket_name = "weights" # Make sure this matches your R2 bucket name
+
+# Add more bucket bindings here if needed

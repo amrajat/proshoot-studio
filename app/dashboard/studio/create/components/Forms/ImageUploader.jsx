@@ -1115,7 +1115,8 @@ function ImageUploader({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fileName: zipFileName,
-          contentType: zipBlob.type,
+          contentType: "application/zip",
+          bucketName: "datasets", // Specify the bucket for this uploader
           userToken: userToken,
         }),
         cache: "no-store",

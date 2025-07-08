@@ -6,7 +6,21 @@ const useFormPersistence = (formKey, formValues, dependencies = []) => {
     if (typeof window !== "undefined") {
       try {
         const valuesToSave = {
-          ...formValues,
+          studioName: formValues.studioName || "",
+          gender: formValues.gender || "",
+          age: formValues.age || "",
+          ethnicity: formValues.ethnicity || "",
+          hairLength: formValues.hairLength || "",
+          hairColor: formValues.hairColor || "",
+          hairType: formValues.hairType || "",
+          eyeColor: formValues.eyeColor || "",
+          glasses: formValues.glasses || "No",
+          bodyType: formValues.bodyType || "",
+          height: formValues.height || "",
+          weight: formValues.weight || "",
+          howDidYouHearAboutUs: formValues.howDidYouHearAboutUs || "",
+          plan: formValues.plan || "",
+          images: formValues.images || "",
           // Ensure arrays are properly structured
           clothing: Array.isArray(formValues.clothing)
             ? formValues.clothing.filter(

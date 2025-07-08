@@ -22,51 +22,14 @@ import {
 import {
   formSchema as baseFormSchema,
   GENDERS,
-  AGES,
-  ETHNICITIES,
-  HAIR_STYLES,
-  EYE_COLORS,
-  GLASSES,
-  STUDIO_NAME_SELECTOR,
-  HOW_DID_YOU_HEAR_ABOUT_US,
 } from "./components/Forms/Variables";
 import VariableSelector from "./components/Forms/VariableSelector";
 import PlanSelector from "./components/Forms/PlanSelector";
 import ImageUploader from "./components/Forms/ImageUploader";
 import ClothingSelector from "./components/Forms/ClothingSelector";
 import BackgroundSelector from "./components/Forms/BackgroundSelector";
+import AttributeSelector from "./components/Forms/AttributeSelector";
 import { createCheckoutUrl } from "../_actions/checkout";
-
-// Studio Create Component - Refactored for better maintainability
-
-const FileUploader = ({
-  errors,
-  setValue,
-  isSubmitting,
-  studioMessage,
-  watch,
-}) => (
-  <div>
-    {errors.images && (
-      <p className="text-red-500 mt-2">{errors.images.message}</p>
-    )}
-    <ImageUploader
-      setValue={setValue}
-      errors={errors}
-      isSubmitting={isSubmitting}
-      studioMessage={studioMessage}
-      watch={watch}
-    />
-  </div>
-);
-
-const extendedFormSchema = baseFormSchema.extend({
-  images: z
-    .string()
-    // .url({ message: "A valid pre-signed URL for the ZIP file is required." })
-    .min(1, "Please upload the ZIP file to get a pre-signed URL."),
-  // Keep other extended fields if any, or remove .extend if 'images' was the only one
-});
 
 export default function StudioCreate() {
   const router = useRouter();
@@ -139,29 +102,38 @@ export default function StudioCreate() {
     register,
     handleSubmit,
     setValue,
+    control,
     watch,
-    formState: { errors },
+    formState,
     clearErrors,
     trigger,
     reset,
     getValues,
   } = useForm({
     mode: "onChange",
-    resolver: zodResolver(extendedFormSchema),
+    resolver: zodResolver(baseFormSchema),
     defaultValues: {
       clothing: savedFormValues.clothing || [],
       backgrounds: savedFormValues.backgrounds || [],
       gender: savedFormValues.gender || "",
       age: savedFormValues.age || "",
       ethnicity: savedFormValues.ethnicity || "",
-      hairStyle: savedFormValues.hairStyle || "",
+      hairLength: savedFormValues.hairLength || "",
+      hairColor: savedFormValues.hairColor || "",
+      hairType: savedFormValues.hairType || "",
       eyeColor: savedFormValues.eyeColor || "",
       glasses: savedFormValues.glasses || "No",
+      bodyType: savedFormValues.bodyType || "",
+      height: savedFormValues.height || "",
+      weight: savedFormValues.weight || "",
+      howDidYouHearAboutUs: savedFormValues.howDidYouHearAboutUs || "",
       images: savedFormValues.images || "",
       studioName: savedFormValues.studioName || "",
       plan: savedFormValues.plan || "",
     },
   });
+
+  const { errors } = formState;
 
   const formValuesFromWatch = watch();
   const selectedPlan = watch("plan");
@@ -171,9 +143,15 @@ export default function StudioCreate() {
   const watchedGender = watch("gender");
   const watchedAge = watch("age");
   const watchedEthnicity = watch("ethnicity");
-  const watchedHairStyle = watch("hairStyle");
+  const watchedHairLength = watch("hairLength");
+  const watchedHairColor = watch("hairColor");
+  const watchedHairType = watch("hairType");
   const watchedEyeColor = watch("eyeColor");
   const watchedGlasses = watch("glasses");
+  const watchedBodyType = watch("bodyType");
+  const watchedHeight = watch("height");
+  const watchedWeight = watch("weight");
+  const watchedHowDidYouHearAboutUs = watch("howDidYouHearAboutUs");
   const watchedImages = watch("images");
   const watchedStudioName = watch("studioName");
 
@@ -189,9 +167,15 @@ export default function StudioCreate() {
       watchedGender,
       watchedAge,
       watchedEthnicity,
-      watchedHairStyle,
+      watchedHairLength,
+      watchedHairColor,
+      watchedHairType,
       watchedEyeColor,
       watchedGlasses,
+      watchedBodyType,
+      watchedHeight,
+      watchedWeight,
+      watchedHowDidYouHearAboutUs,
       watchedImages,
       watchedStudioName,
     ]
@@ -219,6 +203,13 @@ export default function StudioCreate() {
         showInOrg: true, // Show in org context for auto-selection
       },
       {
+        id: "gender-selector",
+        component: "VariableSelector",
+        title: "Select Gender",
+        data: GENDERS,
+        showInOrg: true,
+      },
+      {
         id: "clothing-selector",
         component: "ClothingSelector",
         title: "Select Clothing",
@@ -231,65 +222,15 @@ export default function StudioCreate() {
         showInOrg: true,
       },
       {
-        id: "gender-selector",
-        component: "VariableSelector",
-        title: "Select Gender",
-        data: GENDERS,
-        showInOrg: true,
-      },
-      {
-        id: "age-selector",
-        component: "VariableSelector",
-        title: "Select Age",
-        data: AGES,
-        showInOrg: true,
-      },
-      {
-        id: "ethnicity-selector",
-        component: "VariableSelector",
-        title: "Select Ethnicity",
-        data: ETHNICITIES,
-        showInOrg: true,
-      },
-      {
-        id: "hair-style-selector",
-        component: "VariableSelector",
-        title: "Select Hair Style",
-        data: HAIR_STYLES,
-        showInOrg: true,
-      },
-      {
-        id: "eye-color-selector",
-        component: "VariableSelector",
-        title: "Select Eye Color",
-        data: EYE_COLORS,
-        showInOrg: true,
-      },
-      {
-        id: "glasses-selector",
-        component: "VariableSelector",
-        title: "Select Glasses",
-        data: GLASSES,
-        showInOrg: true,
-      },
-      {
-        id: "studio-name-selector",
-        component: "VariableSelector",
-        title: "Studio Name",
-        data: STUDIO_NAME_SELECTOR,
-        showInOrg: true,
-      },
-      {
-        id: "referral-selector",
-        component: "VariableSelector",
-        title: "How did you hear about us?",
-        data: HOW_DID_YOU_HEAR_ABOUT_US,
-        showInOrg: true,
-      },
-      {
         id: "file-uploader",
-        component: "FileUploader",
+        component: "ImageUploader",
         title: "Upload Images",
+        showInOrg: true,
+      },
+      {
+        id: "attributes-selector",
+        component: "AttributeSelector",
+        title: "Your Attributes",
         showInOrg: true,
       },
     ],
@@ -523,7 +464,7 @@ export default function StudioCreate() {
 
   const shouldShowBuyPlan =
     selectedContext?.type === "personal" &&
-    currentStep === steps.length - 2 &&
+    currentStep === steps.length - 3 &&
     selectedPlanName &&
     (!selectedPlanCredits || selectedPlanCredits < 1);
 
@@ -587,8 +528,20 @@ export default function StudioCreate() {
         case "VariableSelector":
           return await trigger(currentStepData.data[0].fieldName);
 
-        case "FileUploader":
+        case "ImageUploader":
           return await trigger("images");
+
+        case "AttributeSelector":
+          return await trigger([
+            "age",
+            "ethnicity",
+            "hairLength",
+            "hairColor",
+            "hairType",
+            "eyeColor",
+            "glasses",
+            "studioName",
+          ]);
 
         default:
           return await trigger();
@@ -743,8 +696,10 @@ export default function StudioCreate() {
         return;
       }
       sanitizedData.prompts = finalPrompts;
+
       sanitizedData.organization_id =
         selectedContext?.type === "organization" ? selectedContext.id : null;
+      console.log("sanitizedData", sanitizedData);
       try {
         const response = await fetch("/api/lora-training", {
           method: "POST",
@@ -820,6 +775,7 @@ export default function StudioCreate() {
             isSubmitting={isSubmitting || isOrgSettingsLoading}
             errors={clothingError}
             shouldValidate={shouldValidate}
+            selectedGender={getValues("gender")}
             availableItems={
               selectedContext?.type === "organization"
                 ? orgApprovedClothing
@@ -843,6 +799,7 @@ export default function StudioCreate() {
             isSubmitting={isSubmitting || isOrgSettingsLoading}
             errors={backgroundsError}
             shouldValidate={shouldValidate}
+            selectedGender={getValues("gender")}
             availableItems={
               selectedContext?.type === "organization"
                 ? orgApprovedBackgrounds
@@ -880,9 +837,20 @@ export default function StudioCreate() {
             shouldValidate={shouldValidate}
           />
         );
-      case "FileUploader":
+      case "AttributeSelector":
         return (
-          <FileUploader
+          <AttributeSelector
+            control={control}
+            register={register}
+            formState={formState}
+            setValue={setValue}
+            watch={watch}
+            isSubmitting={isSubmitting}
+          />
+        );
+      case "ImageUploader":
+        return (
+          <ImageUploader
             errors={errors}
             setValue={setValue}
             isSubmitting={isSubmitting}
@@ -916,21 +884,28 @@ export default function StudioCreate() {
       return;
     }
 
-    console.log("Credits loaded. Context:", selectedContext, "Credits:", userCredits);
+    console.log(
+      "Credits loaded. Context:",
+      selectedContext,
+      "Credits:",
+      userCredits
+    );
 
-    const inOrgContext = selectedContext?.type === 'organization';
+    const inOrgContext = selectedContext?.type === "organization";
     console.log("Is Org Context?", inOrgContext);
 
     // Per user request, redirection is only for organization account context
     if (inOrgContext) {
       if (!userCredits || userCredits.team === 0) {
         console.log("Redirecting: No team credits in organization context.");
-        router.push('/dashboard/buy');
+        router.push("/dashboard/buy");
       } else {
-        console.log("Not redirecting: User has team credits in organization context.");
+        console.log(
+          "Not redirecting: User has team credits in organization context."
+        );
       }
     } else {
-        console.log("Not redirecting: User is in personal context.");
+      console.log("Not redirecting: User is in personal context.");
     }
   }, [isCreditsLoading, userCredits, selectedContext, router]);
 
@@ -940,8 +915,6 @@ export default function StudioCreate() {
       console.log("Form validation errors from React Hook Form:", errors);
     }
   }, [errors]);
-
-
 
   return (
     <ContentLayout navbar={false} title="Create Studio">

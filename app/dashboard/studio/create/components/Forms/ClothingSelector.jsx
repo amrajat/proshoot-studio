@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import Image from "next/image";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import Heading from "@/components/shared/heading";
 import {
-  CLOTHING_OPTIONS as GLOBAL_CLOTHING_OPTIONS,
-  ALL_CLOTHING_OPTIONS as GLOBAL_ALL_CLOTHING_OPTIONS,
+  getClothingOptions,
   findClothingTheme as globalFindClothingTheme,
 } from "@/app/utils/studioOptions";
 
@@ -18,34 +17,45 @@ export default function ClothingSelector({
   errors,
   shouldValidate,
   availableItems = null,
+  selectedGender = "default", // default fallback
 }) {
   const [activeTab, setActiveTab] = useState("All");
 
-  const currentClothingOptions = availableItems
-    ? availableItems.reduce((acc, item) => {
-        if (!acc[item.theme]) acc[item.theme] = [];
-        acc[item.theme].push({
-          name: item.name,
-          image: item.image,
-          theme: item.theme,
-        });
-        return acc;
-      }, {})
-    : GLOBAL_CLOTHING_OPTIONS;
+  // Dynamically get clothing options based on gender and available items
+  const { currentClothingOptions, currentAllClothingOptions } = useMemo(() => {
+    const { options, allOptions } = getClothingOptions(selectedGender);
 
-  const currentAllClothingOptions = availableItems
-    ? availableItems.map((item) => ({
-        name: item.name,
-        image: item.image,
-        theme: item.theme,
-      }))
-    : GLOBAL_ALL_CLOTHING_OPTIONS;
+    if (!availableItems) {
+      return {
+        currentClothingOptions: options,
+        currentAllClothingOptions: allOptions,
+      };
+    }
 
-  const findCurrentTheme = availableItems
-    ? (itemName) =>
-        currentAllClothingOptions.find((item) => item.name === itemName)
-          ?.theme || "Unknown"
-    : globalFindClothingTheme;
+    // Filter options based on organization's available items
+    const availableNames = new Set(availableItems.map((item) => item.name));
+    const filteredOptions = {};
+    for (const theme in options) {
+      const themeItems = options[theme].filter((item) =>
+        availableNames.has(item.name)
+      );
+      if (themeItems.length > 0) {
+        filteredOptions[theme] = themeItems;
+      }
+    }
+    const filteredAllOptions = allOptions.filter((item) =>
+      availableNames.has(item.name)
+    );
+
+    return {
+      currentClothingOptions: filteredOptions,
+      currentAllClothingOptions: filteredAllOptions,
+    };
+  }, [selectedGender, availableItems]);
+
+  const findCurrentTheme = (itemName) => {
+    return globalFindClothingTheme(itemName);
+  };
 
   const tabKeys = ["All", ...Object.keys(currentClothingOptions)];
 
@@ -77,12 +87,43 @@ export default function ClothingSelector({
     return value.some((selected) => selected.name === item.name);
   };
 
+  // Helper to get correct image src for gender
+  const getImageSrc = (imagesObj) => {
+    return "/images/outfit.jpg";
+    if (!imagesObj) return "/images/placeholder.svg";
+    if (selectedGender === "non-binary") {
+      return imagesObj.default || imagesObj.man || "/images/placeholder.svg";
+    }
+    return (
+      imagesObj[selectedGender] ||
+      imagesObj.default ||
+      "/images/placeholder.svg"
+    );
+  };
+
+  // Loading state management
+  const [imagesLoading, setImagesLoading] = useState(true);
+  const [loadedCount, setLoadedCount] = useState(0);
+  const options = getOptions();
+
+  React.useEffect(() => {
+    setLoadedCount(0);
+    setImagesLoading(true);
+  }, [selectedGender, activeTab]); // Reset on gender or tab change
+
+  const handleImageLoaded = () => {
+    setLoadedCount((prevCount) => {
+      const newCount = prevCount + 1;
+      if (newCount >= options.length) {
+        setImagesLoading(false);
+      }
+      return newCount;
+    });
+  };
+
   return (
     <fieldset disabled={isSubmitting} className="space-y-4">
-      <Badge variant="destructive" className="mb-2 uppercase">
-        This field is required
-      </Badge>
-      <Heading variant={"hero"}>Select Clothing</Heading>
+      <Heading variant={"hero"}>Please choose your attires.</Heading>
       <p className="text-muted-foreground mb-2">
         Choose up to {max} clothing styles. At least {min} required.
       </p>
@@ -102,14 +143,14 @@ export default function ClothingSelector({
             ))}
         </TabsList>
       </Tabs>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {getOptions().map((item) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {options.map((item) => (
           <Card
             key={item.name}
-            className={`relative cursor-pointer ${
+            className={`relative cursor-pointer overflow-hidden rounded transition-all duration-200 ${
               isSelected(item)
-                ? "border-primary ring-2 ring-primary"
-                : "border-border"
+                ? "ring-2 ring-primary ring-offset-2"
+                : "ring-1 ring-border"
             }`}
             onClick={() => handleSelect(item)}
             tabIndex={0}
@@ -118,18 +159,38 @@ export default function ClothingSelector({
               if (e.key === "Enter" || e.key === " ") handleSelect(item);
             }}
           >
-            <CardContent className="flex flex-col items-center p-4">
-              <img
-                src={item.image}
+            <CardContent className="p-0">
+              <Image
+                src={getImageSrc(item.images)}
                 alt={item.name}
-                className="w-24 h-24 object-cover rounded mb-2"
+                width={256}
+                height={256}
                 loading="lazy"
+                className="aspect-square w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                onLoadingComplete={handleImageLoaded}
               />
-              <span className="font-medium text-center">{item.name}</span>
-              {isSelected(item) && (
-                <span className="absolute top-2 right-2 text-primary font-bold">
-                  ✓
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-8">
+                <span className="font-semibold text-white text-sm text-center block truncate">
+                  {item.name}
                 </span>
+              </div>
+              {isSelected(item) && (
+                <div className="absolute top-2 right-2 bg-primary rounded-full w-6 h-6 flex items-center justify-center z-10">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
               )}
             </CardContent>
           </Card>

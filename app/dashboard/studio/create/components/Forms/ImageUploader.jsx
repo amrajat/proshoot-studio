@@ -284,13 +284,6 @@ function ImageUploader({
   }, [files, warningMessage]);
 
   useEffect(() => {
-    return () => {
-      cleanupObjectUrls();
-      setValue("images", "");
-    };
-  }, [setValue]);
-
-  useEffect(() => {
     if (files.length === 0 && analysisState !== "idle") {
       resetAnalysis();
     }
@@ -1331,7 +1324,13 @@ function ImageUploader({
   else if (isCompleted) uploadButtonTitle = "Upload complete.";
 
   return (
-    <>
+    <div className="space-y-4">
+      <Heading variant={"hero"}>Upload Your Photos</Heading>
+      <p className="text-muted-foreground">
+        Upload {MIN_NUM_IMAGES_RECOMMENDED}-{MAX_NUM_IMAGES} good quality
+        photos. Click "Show Image Guidelines" for details.
+      </p>
+
       <Dialog
         open={showRemoveDialog}
         onOpenChange={(open) =>
@@ -1403,15 +1402,6 @@ function ImageUploader({
         )
       ) : (
         <div className="space-y-6">
-          <Badge variant="destructive" className="uppercase">
-            This field is required
-          </Badge>
-          <Heading variant={"hero"}>Please upload your images.</Heading>
-          <p className="text-muted-foreground">
-            Upload {MIN_NUM_IMAGES_RECOMMENDED}-{MAX_NUM_IMAGES} good quality
-            photos. Click "Show Image Guidelines" for details.
-          </p>
-
           <Dialog
             open={showGuidelinesDialog}
             onOpenChange={(open) =>
@@ -1439,7 +1429,6 @@ function ImageUploader({
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
           {isAnalysisInProgress && (
             <Alert
               variant="default"
@@ -1497,7 +1486,6 @@ function ImageUploader({
                 </AlertDescription>
               </Alert>
             )}
-
           {!isCompleted ? (
             <div className="space-y-4">
               {processing && ( // This is for SmartCrop etc.
@@ -1763,10 +1751,10 @@ function ImageUploader({
             <p className="text-sm text-destructive">
               {errors["images"]?.message}
             </p>
-          )}
+          )}{" "}
         </div>
       )}
-    </>
+    </div>
   );
 }
 

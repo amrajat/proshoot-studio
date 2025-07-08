@@ -94,15 +94,12 @@ export default function PlanSelector({
 
     return (
       <div className="space-y-4">
-        <Badge variant="destructive" className="mb-2 uppercase">
-          This field is required
-        </Badge>
         <Heading variant={"hero"}>{details.title}</Heading>
         <p className="text-muted-foreground">{details.subtitle}</p>
         <RadioGroup
           onValueChange={handleRadioChange}
           value={currentValue}
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3"
         >
           {availablePlans.map(([planName, planDetails]) => {
             const randomKey = uuidv4();

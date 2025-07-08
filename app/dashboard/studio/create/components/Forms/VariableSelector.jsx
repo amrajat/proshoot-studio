@@ -73,12 +73,6 @@ export default function VariableSelector({
 
   return (
     <fieldset disabled={isSubmitting} className="space-y-4">
-      <Badge
-        variant={isRequired ? "destructive" : "secondary"}
-        className="mb-2 uppercase"
-      >
-        {isRequired ? "This field is required" : "Optional"}
-      </Badge>
       <Heading variant={"hero"}>{details.title}</Heading>
       <p className="text-muted-foreground">{details.subtitle}</p>
       {radioOptions && options && (

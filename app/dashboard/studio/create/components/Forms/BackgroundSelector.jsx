@@ -1,134 +1,68 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import Image from "next/image";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import Heading from "@/components/shared/heading";
 import {
-  BACKGROUND_OPTIONS as GLOBAL_BACKGROUND_OPTIONS,
-  ALL_BACKGROUND_OPTIONS as GLOBAL_ALL_BACKGROUND_OPTIONS,
+  BACKGROUND_OPTIONS,
+  ALL_BACKGROUND_OPTIONS,
   findBackgroundTheme as globalFindBackgroundTheme,
 } from "@/app/utils/studioOptions";
 
-// Updated BACKGROUND_OPTIONS
-const BACKGROUND_OPTIONS = {
-  "Studio (Solid Colors)": [
-    { name: "Grey Studio Backdrop", image: "/images/placeholder.svg" },
-    { name: "Dark Studio Backdrop", image: "/images/placeholder.svg" },
-    { name: "Blue Studio Backdrop", image: "/images/placeholder.svg" },
-    { name: "Green Studio Backdrop", image: "/images/placeholder.svg" }, // Assuming a solid green screen
-  ],
-  "Office (Modern or Traditional)": [
-    { name: "Modern Office Interior", image: "/images/placeholder.svg" },
-    { name: "Office Lobby", image: "/images/placeholder.svg" },
-    { name: "Loft-Style Office", image: "/images/placeholder.svg" },
-    { name: "Office Window View", image: "/images/placeholder.svg" },
-  ],
-  "City (Urban, Rooftop, Street View)": [
-    { name: "Cityscape Window View", image: "/images/placeholder.svg" },
-    { name: "Urban Building Exterior", image: "/images/placeholder.svg" },
-    { name: "French Rooftop View", image: "/images/placeholder.svg" },
-    { name: "Red Brick Wall (Urban)", image: "/images/placeholder.svg" },
-    { name: "City Street Scene", image: "/images/placeholder.svg" },
-    { name: "Urban Sunlight Effect", image: "/images/placeholder.svg" },
-    { name: "Urban Alleyway", image: "/images/placeholder.svg" },
-    { name: "Brooklyn Waterfront View", image: "/images/placeholder.svg" },
-    { name: "Golden Gate Bridge View", image: "/images/placeholder.svg" },
-    { name: "Yellow Brick Wall (Urban)", image: "/images/placeholder.svg" },
-    { name: "Urban Marina View", image: "/images/placeholder.svg" },
-    { name: "Hotel (City Context)", image: "/images/placeholder.svg" }, // e.g., lobby or exterior city view
-  ],
-  "Nature (Parks, Trees, Outdoors)": [
-    { name: "Garden Scenery", image: "/images/placeholder.svg" },
-    { name: "Lush Greenery Backdrop", image: "/images/placeholder.svg" },
-    { name: "Park Setting", image: "/images/placeholder.svg" },
-    { name: "Forest Woods", image: "/images/placeholder.svg" },
-    { name: "Lakeside View", image: "/images/placeholder.svg" },
-    { name: "Sunset Over Landscape", image: "/images/placeholder.svg" },
-    { name: "Beachside Stairs", image: "/images/placeholder.svg" },
-    { name: "Tulip Field", image: "/images/placeholder.svg" },
-    { name: "Wildflower Meadow", image: "/images/placeholder.svg" },
-    { name: "Outdoor Wooden Fence", image: "/images/placeholder.svg" },
-    { name: "Natural Marina View", image: "/images/placeholder.svg" },
-  ],
-  "Abstract / Gradient": [
-    // This category can be populated if you have abstract/gradient images
-    // { name: "Soft Blue Gradient", image: "/images/placeholder.svg" },
-    // { name: "Geometric Abstract", image: "/images/placeholder.svg" },
-  ],
-  "Bookshelves / Intellectual": [
-    {
-      name: "Bookshelf Backdrop (Intellectual)",
-      image: "/images/placeholder.svg",
-    },
-  ],
-  "Home Office / Hybrid Work": [
-    { name: "Home Office with Window", image: "/images/placeholder.svg" },
-    { name: "Loft-Style Home Workspace", image: "/images/placeholder.svg" },
-    { name: "Cafe as a Workspace", image: "/images/placeholder.svg" },
-    { name: "Home Kitchen Backdrop", image: "/images/placeholder.svg" },
-    { name: "Rustic Charm Home Interior", image: "/images/placeholder.svg" },
-  ],
-};
-
-const ALL_BACKGROUND_OPTIONS = Object.values(BACKGROUND_OPTIONS).flat();
-
-// Helper function to find the theme for a given background item name
-const findBackgroundTheme = (itemName) => {
-  for (const theme in BACKGROUND_OPTIONS) {
-    if (BACKGROUND_OPTIONS[theme].some((option) => option.name === itemName)) {
-      return theme;
-    }
-  }
-  return "Unknown"; // Should not happen if item is from BACKGROUND_OPTIONS
-};
-
 export default function BackgroundSelector({
-  value = [], // Array of { name: string, theme: string }
+  value = [],
   onChange,
   max,
   min = 1,
   isSubmitting,
   errors,
   shouldValidate,
-  availableItems = null, // New prop: array of {name, theme, image}
+  availableItems = null,
+  selectedGender = "default",
 }) {
   const [activeTab, setActiveTab] = useState("All");
 
-  const currentBackgroundOptions = availableItems
-    ? availableItems.reduce((acc, item) => {
-        if (!acc[item.theme]) acc[item.theme] = [];
-        acc[item.theme].push({
-          name: item.name,
-          image: item.image,
-          theme: item.theme,
-        });
-        return acc;
-      }, {})
-    : GLOBAL_BACKGROUND_OPTIONS;
+  const { currentBackgroundOptions, currentAllBackgroundOptions } =
+    useMemo(() => {
+      if (!availableItems) {
+        return {
+          currentBackgroundOptions: BACKGROUND_OPTIONS,
+          currentAllBackgroundOptions: ALL_BACKGROUND_OPTIONS,
+        };
+      }
 
-  const currentAllBackgroundOptions = availableItems
-    ? availableItems.map((item) => ({
-        name: item.name,
-        image: item.image,
-        theme: item.theme,
-      }))
-    : GLOBAL_ALL_BACKGROUND_OPTIONS;
+      const availableNames = new Set(availableItems.map((item) => item.name));
+      const filteredOptions = {};
+      for (const theme in BACKGROUND_OPTIONS) {
+        const themeItems = BACKGROUND_OPTIONS[theme].filter((item) =>
+          availableNames.has(item.name)
+        );
+        if (themeItems.length > 0) {
+          filteredOptions[theme] = themeItems;
+        }
+      }
+      const filteredAllOptions = ALL_BACKGROUND_OPTIONS.filter((item) =>
+        availableNames.has(item.name)
+      );
 
-  const findCurrentTheme = availableItems
-    ? (itemName) =>
-        currentAllBackgroundOptions.find((item) => item.name === itemName)
-          ?.theme || "Unknown"
-    : globalFindBackgroundTheme;
+      return {
+        currentBackgroundOptions: filteredOptions,
+        currentAllBackgroundOptions: filteredAllOptions,
+      };
+    }, [availableItems]);
+
+  const findCurrentTheme = (itemName) => {
+    return globalFindBackgroundTheme(itemName);
+  };
 
   const tabKeys = ["All", ...Object.keys(currentBackgroundOptions)];
 
   const getOptions = () => {
     if (activeTab === "All") return currentAllBackgroundOptions;
-    return currentBackgroundOptions[activeTab];
+    return currentBackgroundOptions[activeTab] || [];
   };
 
   const handleSelect = (item) => {
-    // item is { name: string, image: string } from getOptions()
     const itemTheme =
       activeTab === "All" ? findCurrentTheme(item.name) : activeTab;
     const selectedItemObject = { name: item.name, theme: itemTheme };
@@ -148,36 +82,68 @@ export default function BackgroundSelector({
   };
 
   const isSelected = (item) => {
-    // item is { name: string, image: string }
     return value.some((selected) => selected.name === item.name);
+  };
+
+  const getImageSrc = (imagesObj) => {
+    // return "/images/background.jpg";
+    if (!imagesObj) return "/images/placeholder.svg";
+    return (
+      imagesObj[selectedGender] ||
+      imagesObj.default ||
+      "/images/placeholder.svg"
+    );
+  };
+
+  const [imagesLoading, setImagesLoading] = useState(true);
+  const [loadedCount, setLoadedCount] = useState(0);
+  const options = getOptions();
+
+  React.useEffect(() => {
+    setLoadedCount(0);
+    setImagesLoading(true);
+  }, [selectedGender, activeTab]);
+
+  const handleImageLoaded = () => {
+    setLoadedCount((prevCount) => {
+      const newCount = prevCount + 1;
+      if (newCount >= options.length) {
+        setImagesLoading(false);
+      }
+      return newCount;
+    });
   };
 
   return (
     <fieldset disabled={isSubmitting} className="space-y-4">
-      <Badge variant="destructive" className="mb-2 uppercase">
-        This field is required
-      </Badge>
-      <Heading variant={"hero"}>Select Backgrounds</Heading>
+      <Heading variant={"hero"}>Please choose your backgrounds.</Heading>
       <p className="text-muted-foreground mb-2">
         Choose up to {max} backgrounds. At least {min} required.
       </p>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
         <TabsList>
-          {tabKeys.map((group) => (
-            <TabsTrigger key={group} value={group}>
-              {group}
-            </TabsTrigger>
-          ))}
+          {tabKeys
+            .filter(
+              (key) =>
+                key === "All" ||
+                (currentBackgroundOptions[key] &&
+                  currentBackgroundOptions[key].length > 0)
+            )
+            .map((group) => (
+              <TabsTrigger key={group} value={group}>
+                {group}
+              </TabsTrigger>
+            ))}
         </TabsList>
       </Tabs>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {getOptions().map((item) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {options.map((item) => (
           <Card
             key={item.name}
-            className={`relative cursor-pointer ${
+            className={`relative cursor-pointer overflow-hidden rounded transition-all duration-200 ${
               isSelected(item)
-                ? "border-primary ring-2 ring-primary"
-                : "border-border"
+                ? "ring-2 ring-primary ring-offset-2"
+                : "ring-1 ring-border"
             }`}
             onClick={() => handleSelect(item)}
             tabIndex={0}
@@ -186,18 +152,38 @@ export default function BackgroundSelector({
               if (e.key === "Enter" || e.key === " ") handleSelect(item);
             }}
           >
-            <CardContent className="flex flex-col items-center p-4">
-              <img
-                src={item.image}
+            <CardContent className="p-0">
+              <Image
+                src={getImageSrc(item.images)}
                 alt={item.name}
-                className="w-24 h-24 object-cover rounded mb-2"
+                width={256}
+                height={256}
                 loading="lazy"
+                className="aspect-square w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                onLoadingComplete={handleImageLoaded}
               />
-              <span className="font-medium text-center">{item.name}</span>
-              {isSelected(item) && (
-                <span className="absolute top-2 right-2 text-primary font-bold">
-                  ✓
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-8">
+                <span className="font-semibold text-white text-sm text-center block truncate">
+                  {item.name}
                 </span>
+              </div>
+              {isSelected(item) && (
+                <div className="absolute top-2 right-2 bg-primary rounded-full w-6 h-6 flex items-center justify-center z-10">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
               )}
             </CardContent>
           </Card>

@@ -259,32 +259,18 @@ export default function StudioCreate() {
     return stepsWithNumbers;
   }, [allSteps, selectedContext?.type, isOrgWithTeamCredits]);
 
-  // Initialize step from localStorage when context and steps are ready
+  const isInitialized = useRef(false);
+
+  // Initialize step from localStorage on component mount, only once.
   useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      !selectedContext ||
-      steps.length === 0
-    ) {
+    // Ensure this runs only once and that context is available.
+    if (isInitialized.current || !selectedContext) {
       return;
     }
 
-    const contextType = selectedContext.type;
-    const hasTeamCredits = isOrgWithTeamCredits;
-
-    // Use store method to initialize step with persistence
-    const restoredStep = initializeStep(
-      contextType,
-      hasTeamCredits,
-      steps.length
-    );
-  }, [
-    selectedContext?.type,
-    selectedContext?.id,
-    isOrgWithTeamCredits,
-    steps.length,
-    initializeStep,
-  ]);
+    initializeStep(getStepStorageKey());
+    isInitialized.current = true;
+  }, [selectedContext, initializeStep]); // Stable dependencies
 
   // Auto-set plan to "Team" when in organization context with team credits
   useEffect(() => {
@@ -654,7 +640,7 @@ export default function StudioCreate() {
       setIsSubmitting(true);
       let sanitizedData;
       try {
-        sanitizedData = extendedFormSchema.parse(data);
+        sanitizedData = baseFormSchema.parse(data);
         sanitizedData.glasses = sanitizedData.glasses === "Yes";
       } catch (error) {
         console.error("Form validation error:", error);

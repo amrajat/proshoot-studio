@@ -447,105 +447,316 @@ export const CLOTHING_OPTIONS_WOMAN = {
 
 export const BACKGROUND_OPTIONS = {
   Studio: [
+    // Core Neutrals
     {
-      name: "Light Gray Gradient",
+      name: "Light Gray",
       images: {
-        man: "/images/backgrounds/man/light-gray-gradient.jpg",
-        woman: "/images/backgrounds/woman/light-gray-gradient.jpg",
-        "non-binary": "/images/backgrounds/non-binary/light-gray-gradient.jpg",
-        default: "/images/backgrounds/default/light-gray-gradient.jpg",
+        man: "/images/backgrounds/light-gray.jpg",
+        woman: "/images/backgrounds/light-gray.jpg",
+        "non-binary": "/images/backgrounds/light-gray.jpg",
+        default: "/images/backgrounds/light-gray.jpg",
       },
     },
     {
-      name: "Deep Blue Vignette",
+      name: "Medium Gray",
       images: {
-        man: "/images/backgrounds/man/deep-blue-vignette.jpg",
-        woman: "/images/backgrounds/woman/deep-blue-vignette.jpg",
-        "non-binary": "/images/backgrounds/non-binary/deep-blue-vignette.jpg",
-        default: "/images/backgrounds/default/deep-blue-vignette.jpg",
+        man: "/images/backgrounds/medium-gray.jpg",
+        woman: "/images/backgrounds/medium-gray.jpg",
+        "non-binary": "/images/backgrounds/medium-gray.jpg",
+        default: "/images/backgrounds/medium-gray.jpg",
       },
     },
     {
-      name: "Clean White Background",
+      name: "Charcoal Gray",
       images: {
-        man: "/images/backgrounds/man/clean-white.jpg",
-        woman: "/images/backgrounds/woman/clean-white.jpg",
-        "non-binary": "/images/backgrounds/non-binary/clean-white.jpg",
-        default: "/images/backgrounds/default/clean-white.jpg",
+        man: "/images/backgrounds/charcoal-gray.jpg",
+        woman: "/images/backgrounds/charcoal-gray.jpg",
+        "non-binary": "/images/backgrounds/charcoal-gray.jpg",
+        default: "/images/backgrounds/charcoal-gray.jpg",
       },
     },
     {
-      name: "Soft Tan or Beige",
+      name: "Cool White",
       images: {
-        man: "/images/backgrounds/man/soft-tan-beige.jpg",
-        woman: "/images/backgrounds/woman/soft-tan-beige.jpg",
-        "non-binary": "/images/backgrounds/non-binary/soft-tan-beige.jpg",
-        default: "/images/backgrounds/default/soft-tan-beige.jpg",
+        man: "/images/backgrounds/cool-white.jpg",
+        woman: "/images/backgrounds/cool-white.jpg",
+        "non-binary": "/images/backgrounds/cool-white.jpg",
+        default: "/images/backgrounds/cool-white.jpg",
       },
     },
     {
-      name: "Textured Charcoal Gray",
+      name: "Warm White",
       images: {
-        man: "/images/backgrounds/man/textured-charcoal.jpg",
-        woman: "/images/backgrounds/woman/textured-charcoal.jpg",
-        "non-binary": "/images/backgrounds/non-binary/textured-charcoal.jpg",
-        default: "/images/backgrounds/default/textured-charcoal.jpg",
+        man: "/images/backgrounds/warm-white.jpg",
+        woman: "/images/backgrounds/warm-white.jpg",
+        "non-binary": "/images/backgrounds/warm-white.jpg",
+        default: "/images/backgrounds/warm-white.jpg",
+      },
+    },
+    {
+      name: "Soft Black",
+      images: {
+        man: "/images/backgrounds/soft-black.jpg",
+        woman: "/images/backgrounds/soft-black.jpg",
+        "non-binary": "/images/backgrounds/soft-black.jpg",
+        default: "/images/backgrounds/soft-black.jpg",
+      },
+    },
+    {
+      name: "Muted Navy",
+      images: {
+        man: "/images/backgrounds/muted-navy.jpg",
+        woman: "/images/backgrounds/muted-navy.jpg",
+        "non-binary": "/images/backgrounds/muted-navy.jpg",
+        default: "/images/backgrounds/muted-navy.jpg",
+      },
+    },
+
+    // Inclusive Tones
+    {
+      name: "Pewter Blue",
+      images: {
+        man: "/images/backgrounds/pewter-blue.jpg",
+        woman: "/images/backgrounds/pewter-blue.jpg",
+        "non-binary": "/images/backgrounds/pewter-blue.jpg",
+        default: "/images/backgrounds/pewter-blue.jpg",
+      },
+    },
+    {
+      name: "Dusty Mauve",
+      images: {
+        man: "/images/backgrounds/dusty-mauve.jpg",
+        woman: "/images/backgrounds/dusty-mauve.jpg",
+        "non-binary": "/images/backgrounds/dusty-mauve.jpg",
+        default: "/images/backgrounds/dusty-mauve.jpg",
+      },
+    },
+    {
+      name: "Olive Gray",
+      images: {
+        man: "/images/backgrounds/olive-gray.jpg",
+        woman: "/images/backgrounds/olive-gray.jpg",
+        "non-binary": "/images/backgrounds/olive-gray.jpg",
+        default: "/images/backgrounds/olive-gray.jpg",
+      },
+    },
+    {
+      name: "Terracotta",
+      images: {
+        man: "/images/backgrounds/terracotta.jpg",
+        woman: "/images/backgrounds/terracotta.jpg",
+        "non-binary": "/images/backgrounds/terracotta.jpg",
+        default: "/images/backgrounds/terracotta.jpg",
+      },
+    },
+    {
+      name: "Taupe",
+      images: {
+        man: "/images/backgrounds/taupe.jpg",
+        woman: "/images/backgrounds/taupe.jpg",
+        "non-binary": "/images/backgrounds/taupe.jpg",
+        default: "/images/backgrounds/taupe.jpg",
+      },
+    },
+    {
+      name: "Camel Beige",
+      images: {
+        man: "/images/backgrounds/camel-beige.jpg",
+        woman: "/images/backgrounds/camel-beige.jpg",
+        "non-binary": "/images/backgrounds/camel-beige.jpg",
+        default: "/images/backgrounds/camel-beige.jpg",
+      },
+    },
+
+    // Creative & Warm
+    {
+      name: "Peach Beige",
+      images: {
+        man: "/images/backgrounds/peach-beige.jpg",
+        woman: "/images/backgrounds/peach-beige.jpg",
+        "non-binary": "/images/backgrounds/peach-beige.jpg",
+        default: "/images/backgrounds/peach-beige.jpg",
+      },
+    },
+    {
+      name: "Soft Coral",
+      images: {
+        man: "/images/backgrounds/soft-coral.jpg",
+        woman: "/images/backgrounds/soft-coral.jpg",
+        "non-binary": "/images/backgrounds/soft-coral.jpg",
+        default: "/images/backgrounds/soft-coral.jpg",
+      },
+    },
+    {
+      name: "Lavender Gray",
+      images: {
+        man: "/images/backgrounds/lavender-gray.jpg",
+        woman: "/images/backgrounds/lavender-gray.jpg",
+        "non-binary": "/images/backgrounds/lavender-gray.jpg",
+        default: "/images/backgrounds/lavender-gray.jpg",
+      },
+    },
+    {
+      name: "Muted Teal",
+      images: {
+        man: "/images/backgrounds/muted-teal.jpg",
+        woman: "/images/backgrounds/muted-teal.jpg",
+        "non-binary": "/images/backgrounds/muted-teal.jpg",
+        default: "/images/backgrounds/muted-teal.jpg",
+      },
+    },
+    {
+      name: "Slate Blue",
+      images: {
+        man: "/images/backgrounds/slate-blue.jpg",
+        woman: "/images/backgrounds/slate-blue.jpg",
+        "non-binary": "/images/backgrounds/slate-blue.jpg",
+        default: "/images/backgrounds/slate-blue.jpg",
+      },
+    },
+    {
+      name: "Sandstone",
+      images: {
+        man: "/images/backgrounds/sandstone.jpg",
+        woman: "/images/backgrounds/sandstone.jpg",
+        "non-binary": "/images/backgrounds/sandstone.jpg",
+        default: "/images/backgrounds/sandstone.jpg",
+      },
+    },
+
+    // Bold & Modern
+    {
+      name: "Emerald Green",
+      images: {
+        man: "/images/backgrounds/emerald-green.jpg",
+        woman: "/images/backgrounds/emerald-green.jpg",
+        "non-binary": "/images/backgrounds/emerald-green.jpg",
+        default: "/images/backgrounds/emerald-green.jpg",
+      },
+    },
+    {
+      name: "Cobalt Blue",
+      images: {
+        man: "/images/backgrounds/cobalt-blue.jpg",
+        woman: "/images/backgrounds/cobalt-blue.jpg",
+        "non-binary": "/images/backgrounds/cobalt-blue.jpg",
+        default: "/images/backgrounds/cobalt-blue.jpg",
+      },
+    },
+    {
+      name: "Crimson Red",
+      images: {
+        man: "/images/backgrounds/crimson-red.jpg",
+        woman: "/images/backgrounds/crimson-red.jpg",
+        "non-binary": "/images/backgrounds/crimson-red.jpg",
+        default: "/images/backgrounds/crimson-red.jpg",
+      },
+    },
+    {
+      name: "Royal Purple",
+      images: {
+        man: "/images/backgrounds/royal-purple.jpg",
+        woman: "/images/backgrounds/royal-purple.jpg",
+        "non-binary": "/images/backgrounds/royal-purple.jpg",
+        default: "/images/backgrounds/royal-purple.jpg",
+      },
+    },
+    {
+      name: "Amber Yellow",
+      images: {
+        man: "/images/backgrounds/amber-yellow.jpg",
+        woman: "/images/backgrounds/amber-yellow.jpg",
+        "non-binary": "/images/backgrounds/amber-yellow.jpg",
+        default: "/images/backgrounds/amber-yellow.jpg",
+      },
+    },
+    {
+      name: "Matte Clay",
+      images: {
+        man: "/images/backgrounds/matte-clay.jpg",
+        woman: "/images/backgrounds/matte-clay.jpg",
+        "non-binary": "/images/backgrounds/matte-clay.jpg",
+        default: "/images/backgrounds/matte-clay.jpg",
       },
     },
   ],
   Office: [
     {
-      name: "Minimalistic Modern Office Interior",
+      name: "modern high-rise office with a blurred city skyline",
       images: {
-        man: "/images/backgrounds/man/minimalistic-modern-office.jpg",
-        woman: "/images/backgrounds/woman/minimalistic-modern-office.jpg",
+        man: "/images/backgrounds/man/modern-high-rise-office-with-a-blurred-city-skyline.jpg",
+        woman:
+          "/images/backgrounds/woman/modern-high-rise-office-with-a-blurred-city-skyline.jpg",
         "non-binary":
-          "/images/backgrounds/non-binary/minimalistic-modern-office.jpg",
-        default: "/images/backgrounds/default/minimalistic-modern-office.jpg",
+          "/images/backgrounds/non-binary/modern-high-rise-office-with-a-blurred-city-skyline.jpg",
+        default:
+          "/images/backgrounds/default/modern-high-rise-office-with-a-blurred-city-skyline.jpg",
       },
     },
     {
-      name: "Glass-Walled Conference Room",
+      name: "corporate office with large windows and a blurred city skyline",
       images: {
-        man: "/images/backgrounds/man/glass-walled-conference.jpg",
-        woman: "/images/backgrounds/woman/glass-walled-conference.jpg",
+        man: "/images/backgrounds/man/corporate-office-with-large-windows-and-a-blurred-city-skyline.jpg",
+        woman:
+          "/images/backgrounds/woman/corporate-office-with-large-windows-and-a-blurred-city-skyline.jpg",
         "non-binary":
-          "/images/backgrounds/non-binary/glass-walled-conference.jpg",
-        default: "/images/backgrounds/default/glass-walled-conference.jpg",
+          "/images/backgrounds/non-binary/corporate-office-with-large-windows-and-a-blurred-city-skyline.jpg",
+        default:
+          "/images/backgrounds/default/corporate-office-with-large-windows-and-a-blurred-city-skyline.jpg",
       },
     },
     {
-      name: "Blurred Open-Plan Workspace",
+      name: "modern office featuring glass windows and desks",
       images: {
-        man: "/images/backgrounds/man/blurred-open-plan.jpg",
-        woman: "/images/backgrounds/woman/blurred-open-plan.jpg",
-        "non-binary": "/images/backgrounds/non-binary/blurred-open-plan.jpg",
-        default: "/images/backgrounds/default/blurred-open-plan.jpg",
-      },
-    },
-    {
-      name: "Simple Cubicle With Computer Screen",
-      images: {
-        man: "/images/backgrounds/man/simple-cubicle.jpg",
-        woman: "/images/backgrounds/woman/simple-cubicle.jpg",
-        "non-binary": "/images/backgrounds/non-binary/simple-cubicle.jpg",
-        default: "/images/backgrounds/default/simple-cubicle.jpg",
-      },
-    },
-    {
-      name: "Co-Working Space With Books/Plants",
-      images: {
-        man: "/images/backgrounds/man/coworking-books-plants.jpg",
-        woman: "/images/backgrounds/woman/coworking-books-plants.jpg",
+        man: "/images/backgrounds/man/modern-office-featuring-glass-windows-and-desks.jpg",
+        woman:
+          "/images/backgrounds/woman/modern-office-featuring-glass-windows-and-desks.jpg",
         "non-binary":
-          "/images/backgrounds/non-binary/coworking-books-plants.jpg",
-        default: "/images/backgrounds/default/coworking-books-plants.jpg",
+          "/images/backgrounds/non-binary/modern-office-featuring-glass-windows-and-desks.jpg",
+        default:
+          "/images/backgrounds/default/modern-office-featuring-glass-windows-and-desks.jpg",
+      },
+    },
+    {
+      name: "modern office with floor-to-ceiling windows, a blurred desk, and indoor potted plants",
+      images: {
+        man: "/images/backgrounds/man/modern-office-with-floor-to-ceiling-windows-a-blurred-desk-and-indoor-potted-plants.jpg",
+        woman:
+          "/images/backgrounds/woman/modern-office-with-floor-to-ceiling-windows-a-blurred-desk-and-indoor-potted-plants.jpg",
+        "non-binary":
+          "/images/backgrounds/non-binary/modern-office-with-floor-to-ceiling-windows-a-blurred-desk-and-indoor-potted-plants.jpg",
+        default:
+          "/images/backgrounds/default/modern-office-with-floor-to-ceiling-windows-a-blurred-desk-and-indoor-potted-plants.jpg",
+      },
+    },
+    {
+      name: "minimalistic modern office interior",
+      images: {
+        man: "/images/backgrounds/man/minimalistic-modern-office-interior.jpg",
+        woman:
+          "/images/backgrounds/woman/minimalistic-modern-office-interior.jpg",
+        "non-binary":
+          "/images/backgrounds/non-binary/minimalistic-modern-office-interior.jpg",
+        default:
+          "/images/backgrounds/default/minimalistic-modern-office-interior.jpg",
       },
     },
   ],
   Cityscape: [
     {
-      name: "Blurred Skyline At Dusk",
+      name: "bustling urban outdoor setting, with blurred skyscrapers and city streets",
+      images: {
+        man: "/images/backgrounds/man/bustling-urban-outdoor-setting-with-blurred-skyscrapers-and-city-streets.jpg",
+        woman:
+          "/images/backgrounds/woman/bustling-urban-outdoor-setting-with-blurred-skyscrapers-and-city-streets.jpg",
+        "non-binary":
+          "/images/backgrounds/non-binary/bustling-urban-outdoor-setting-with-blurred-skyscrapers-and-city-streets.jpg",
+        default:
+          "/images/backgrounds/default/bustling-urban-outdoor-setting-with-blurred-skyscrapers-and-city-streets.jpg",
+      },
+    },
+    {
+      name: "blurred skyline at dusk",
       images: {
         man: "/images/backgrounds/man/blurred-skyline-dusk.jpg",
         woman: "/images/backgrounds/woman/blurred-skyline-dusk.jpg",
@@ -554,7 +765,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Modern Architecture With Depth Of Field",
+      name: "modern architecture with depth of field",
       images: {
         man: "/images/backgrounds/man/modern-architecture-dof.jpg",
         woman: "/images/backgrounds/woman/modern-architecture-dof.jpg",
@@ -564,7 +775,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Urban Rooftop With Soft Light",
+      name: "urban rooftop with soft light",
       images: {
         man: "/images/backgrounds/man/urban-rooftop-soft-light.jpg",
         woman: "/images/backgrounds/woman/urban-rooftop-soft-light.jpg",
@@ -574,7 +785,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Brick Street With Bokeh",
+      name: "brick street with bokeh",
       images: {
         man: "/images/backgrounds/man/brick-street-bokeh.jpg",
         woman: "/images/backgrounds/woman/brick-street-bokeh.jpg",
@@ -583,7 +794,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "High-Rise Reflections",
+      name: "high-rise reflections",
       images: {
         man: "/images/backgrounds/man/high-rise-reflections.jpg",
         woman: "/images/backgrounds/woman/high-rise-reflections.jpg",
@@ -595,56 +806,93 @@ export const BACKGROUND_OPTIONS = {
   ],
   Nature: [
     {
-      name: "Green Park With Blurred Trees",
+      name: "sunlit park with blurred greenery",
       images: {
-        man: "/images/backgrounds/man/green-park-blurred-trees.jpg",
-        woman: "/images/backgrounds/woman/green-park-blurred-trees.jpg",
+        man: "/images/backgrounds/man/sunlit-park-with-blurred-greenery.jpg",
+        woman:
+          "/images/backgrounds/woman/sunlit-park-with-blurred-greenery.jpg",
         "non-binary":
-          "/images/backgrounds/non-binary/green-park-blurred-trees.jpg",
-        default: "/images/backgrounds/default/green-park-blurred-trees.jpg",
+          "/images/backgrounds/non-binary/sunlit-park-with-blurred-greenery.jpg",
+        default:
+          "/images/backgrounds/default/sunlit-park-with-blurred-greenery.jpg",
       },
     },
     {
-      name: "Sunlit Path With Leafy Shadows",
+      name: "tulip field with blurred colorful flowers",
       images: {
-        man: "/images/backgrounds/man/sunlit-path-leafy-shadows.jpg",
-        woman: "/images/backgrounds/woman/sunlit-path-leafy-shadows.jpg",
+        man: "/images/backgrounds/man/tulip-field-with-blurred-colorful-flowers.jpg",
+        woman:
+          "/images/backgrounds/woman/tulip-field-with-blurred-colorful-flowers.jpg",
         "non-binary":
-          "/images/backgrounds/non-binary/sunlit-path-leafy-shadows.jpg",
-        default: "/images/backgrounds/default/sunlit-path-leafy-shadows.jpg",
+          "/images/backgrounds/non-binary/tulip-field-with-blurred-colorful-flowers.jpg",
+        default:
+          "/images/backgrounds/default/tulip-field-with-blurred-colorful-flowers.jpg",
       },
     },
     {
-      name: "Soft-Focus Garden",
+      name: "garden with lush greenery and blooming flowers",
       images: {
-        man: "/images/backgrounds/man/soft-focus-garden.jpg",
-        woman: "/images/backgrounds/woman/soft-focus-garden.jpg",
-        "non-binary": "/images/backgrounds/non-binary/soft-focus-garden.jpg",
-        default: "/images/backgrounds/default/soft-focus-garden.jpg",
+        man: "/images/backgrounds/man/garden-with-lush-greenery-and-blooming-flowers.jpg",
+        woman:
+          "/images/backgrounds/woman/garden-with-lush-greenery-and-blooming-flowers.jpg",
+        "non-binary":
+          "/images/backgrounds/non-binary/garden-with-lush-greenery-and-blooming-flowers.jpg",
+        default:
+          "/images/backgrounds/default/garden-with-lush-greenery-and-blooming-flowers.jpg",
       },
     },
     {
-      name: "Mountain Or Lakeside Backdrop",
+      name: "grass field full of dandelions with trees softly blurred",
       images: {
-        man: "/images/backgrounds/man/mountain-lakeside.jpg",
-        woman: "/images/backgrounds/woman/mountain-lakeside.jpg",
-        "non-binary": "/images/backgrounds/non-binary/mountain-lakeside.jpg",
-        default: "/images/backgrounds/default/mountain-lakeside.jpg",
+        man: "/images/backgrounds/man/grass-field-full-of-dandelions-with-trees-softly-blurred.jpg",
+        woman:
+          "/images/backgrounds/woman/grass-field-full-of-dandelions-with-trees-softly-blurred.jpg",
+        "non-binary":
+          "/images/backgrounds/non-binary/grass-field-full-of-dandelions-with-trees-softly-blurred.jpg",
+        default:
+          "/images/backgrounds/default/grass-field-full-of-dandelions-with-trees-softly-blurred.jpg",
       },
     },
     {
-      name: "Natural Wood Tones",
+      name: "wooded area with blurred vibrant green foliage",
       images: {
-        man: "/images/backgrounds/man/natural-wood-tones.jpg",
-        woman: "/images/backgrounds/woman/natural-wood-tones.jpg",
-        "non-binary": "/images/backgrounds/non-binary/natural-wood-tones.jpg",
-        default: "/images/backgrounds/default/natural-wood-tones.jpg",
+        man: "/images/backgrounds/man/wooded-area-with-blurred-vibrant-green-foliage.jpg",
+        woman:
+          "/images/backgrounds/woman/wooded-area-with-blurred-vibrant-green-foliage.jpg",
+        "non-binary":
+          "/images/backgrounds/non-binary/wooded-area-with-blurred-vibrant-green-foliage.jpg",
+        default:
+          "/images/backgrounds/default/wooded-area-with-blurred-vibrant-green-foliage.jpg",
+      },
+    },
+    {
+      name: "natural landscape with blurred trees and gentle sunlight filtering through",
+      images: {
+        man: "/images/backgrounds/man/natural-landscape-with-blurred-trees-and-gentle-sunlight-filtering-through.jpg",
+        woman:
+          "/images/backgrounds/woman/natural-landscape-with-blurred-trees-and-gentle-sunlight-filtering-through.jpg",
+        "non-binary":
+          "/images/backgrounds/non-binary/natural-landscape-with-blurred-trees-and-gentle-sunlight-filtering-through.jpg",
+        default:
+          "/images/backgrounds/default/natural-landscape-with-blurred-trees-and-gentle-sunlight-filtering-through.jpg",
+      },
+    },
+    {
+      name: "lush green field surrounded by colorful wildflowers",
+      images: {
+        man: "/images/backgrounds/man/lush-green-field-surrounded-by-colorful-wildflowers.jpg",
+        woman:
+          "/images/backgrounds/woman/lush-green-field-surrounded-by-colorful-wildflowers.jpg",
+        "non-binary":
+          "/images/backgrounds/non-binary/lush-green-field-surrounded-by-colorful-wildflowers.jpg",
+        default:
+          "/images/backgrounds/default/lush-green-field-surrounded-by-colorful-wildflowers.jpg",
       },
     },
   ],
   Medical: [
     {
-      name: "Sterile White Exam Room",
+      name: "sterile white exam room",
       images: {
         man: "/images/backgrounds/man/sterile-white-exam-room.jpg",
         woman: "/images/backgrounds/woman/sterile-white-exam-room.jpg",
@@ -654,7 +902,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Hospital Corridor (Blurred)",
+      name: "hospital corridor (blurred)",
       images: {
         man: "/images/backgrounds/man/hospital-corridor-blurred.jpg",
         woman: "/images/backgrounds/woman/hospital-corridor-blurred.jpg",
@@ -664,7 +912,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Dental Or Therapy Office",
+      name: "dental or therapy office",
       images: {
         man: "/images/backgrounds/man/dental-therapy-office.jpg",
         woman: "/images/backgrounds/woman/dental-therapy-office.jpg",
@@ -674,7 +922,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Medical Tools Subtly In Background",
+      name: "medical tools subtly in background",
       images: {
         man: "/images/backgrounds/man/medical-tools-background.jpg",
         woman: "/images/backgrounds/woman/medical-tools-background.jpg",
@@ -686,7 +934,7 @@ export const BACKGROUND_OPTIONS = {
   ],
   Academic: [
     {
-      name: "Bookshelves",
+      name: "bookshelves",
       images: {
         man: "/images/backgrounds/man/bookshelves.jpg",
         woman: "/images/backgrounds/woman/bookshelves.jpg",
@@ -695,7 +943,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Library Interior",
+      name: "library interior",
       images: {
         man: "/images/backgrounds/man/library-interior.jpg",
         woman: "/images/backgrounds/woman/library-interior.jpg",
@@ -704,7 +952,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Blurred Classroom Chalkboard",
+      name: "blurred classroom chalkboard",
       images: {
         man: "/images/backgrounds/man/blurred-classroom-chalkboard.jpg",
         woman: "/images/backgrounds/woman/blurred-classroom-chalkboard.jpg",
@@ -714,7 +962,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Graduation Stage Backdrop",
+      name: "graduation stage backdrop",
       images: {
         man: "/images/backgrounds/man/graduation-stage.jpg",
         woman: "/images/backgrounds/woman/graduation-stage.jpg",
@@ -725,7 +973,7 @@ export const BACKGROUND_OPTIONS = {
   ],
   Creative: [
     {
-      name: "Art Studio With Canvas & Paint",
+      name: "art studio with canvas & paint",
       images: {
         man: "/images/backgrounds/man/art-studio-canvas-paint.jpg",
         woman: "/images/backgrounds/woman/art-studio-canvas-paint.jpg",
@@ -735,7 +983,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Co-Working Area With Color Pops",
+      name: "co-working area with color pops",
       images: {
         man: "/images/backgrounds/man/coworking-color-pops.jpg",
         woman: "/images/backgrounds/woman/coworking-color-pops.jpg",
@@ -744,7 +992,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Creative Loft With Brick Wall",
+      name: "creative loft with brick wall",
       images: {
         man: "/images/backgrounds/man/creative-loft-brick-wall.jpg",
         woman: "/images/backgrounds/woman/creative-loft-brick-wall.jpg",
@@ -754,7 +1002,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Colorful Blurred Workspace",
+      name: "colorful blurred workspace",
       images: {
         man: "/images/backgrounds/man/colorful-blurred-workspace.jpg",
         woman: "/images/backgrounds/woman/colorful-blurred-workspace.jpg",
@@ -764,9 +1012,9 @@ export const BACKGROUND_OPTIONS = {
       },
     },
   ],
-  "Home Office": [
+  Home_Office: [
     {
-      name: "Bookshelf & Laptop",
+      name: "bookshelf & laptop",
       images: {
         man: "/images/backgrounds/man/bookshelf-laptop.jpg",
         woman: "/images/backgrounds/woman/bookshelf-laptop.jpg",
@@ -775,7 +1023,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Modern WFH Desk",
+      name: "modern wfh desk",
       images: {
         man: "/images/backgrounds/man/modern-wfh-desk.jpg",
         woman: "/images/backgrounds/woman/modern-wfh-desk.jpg",
@@ -784,7 +1032,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Plants And Framed Photos",
+      name: "plants and framed photos",
       images: {
         man: "/images/backgrounds/man/plants-framed-photos.jpg",
         woman: "/images/backgrounds/woman/plants-framed-photos.jpg",
@@ -793,7 +1041,7 @@ export const BACKGROUND_OPTIONS = {
       },
     },
     {
-      name: "Cozy Decor With Daylight",
+      name: "cozy decor with daylight",
       images: {
         man: "/images/backgrounds/man/cozy-decor-daylight.jpg",
         woman: "/images/backgrounds/woman/cozy-decor-daylight.jpg",

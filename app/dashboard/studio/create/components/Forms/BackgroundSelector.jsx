@@ -85,14 +85,10 @@ export default function BackgroundSelector({
     return value.some((selected) => selected.name === item.name);
   };
 
-  const getImageSrc = (imagesObj) => {
-    // return "/images/background.jpg";
-    if (!imagesObj) return "/images/placeholder.svg";
-    return (
-      imagesObj[selectedGender] ||
-      imagesObj.default ||
-      "/images/placeholder.svg"
-    );
+  const getImageSrc = (imageFilename) => {
+    if (!imageFilename) return "/images/placeholder.svg";
+    // Construct path: /images/backgrounds/default/{filename}
+    return `/images/backgrounds/default/${imageFilename}`;
   };
 
   const [imagesLoading, setImagesLoading] = useState(true);
@@ -154,7 +150,7 @@ export default function BackgroundSelector({
           >
             <CardContent className="p-0">
               <Image
-                src={getImageSrc(item.images)}
+                src={getImageSrc(item.image)}
                 alt={item.name}
                 width={256}
                 height={256}

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useMemo, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
@@ -16,7 +16,7 @@ import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
 import { lemonsqueezy } from "@/config/lemonsqueezy";
 import { generatePrompts } from "@/utils/prompts";
 import {
-  ALL_CLOTHING_OPTIONS as GLOBAL_ALL_CLOTHING_OPTIONS,
+  GLOBAL_ALL_CLOTHING_OPTIONS,
   ALL_BACKGROUND_OPTIONS as GLOBAL_ALL_BACKGROUND_OPTIONS,
 } from "@/app/utils/studioOptions";
 import {
@@ -26,8 +26,8 @@ import {
 import VariableSelector from "./components/Forms/VariableSelector";
 import PlanSelector from "./components/Forms/PlanSelector";
 import ImageUploader from "./components/Forms/ImageUploader";
-import ClothingSelector from "./components/Forms/ClothingSelector";
-import BackgroundSelector from "./components/Forms/BackgroundSelector";
+
+import StylePairing from "./components/Forms/StylePairing";
 import AttributeSelector from "./components/Forms/AttributeSelector";
 import { createCheckoutUrl } from "../_actions/checkout";
 
@@ -47,7 +47,7 @@ export default function StudioCreate() {
   // Determine if we're in organization context AND the user has team credits on their personal account.
   const isOrgWithTeamCredits = useMemo(() => {
     return selectedContext?.type === "organization" && userCredits?.team > 0;
-  }, [selectedContext?.type, userCredits?.team]);
+  }, [selectedContext, userCredits]);
 
   // Better naming convention for localStorage keys
   const getStepStorageKey = () => {
@@ -76,10 +76,7 @@ export default function StudioCreate() {
     setStudioMessage,
     errorDetails,
     setErrorDetails,
-    clothingError,
-    setClothingError,
-    backgroundsError,
-    setBackgroundsError,
+
     isBuyingPlan,
     setIsBuyingPlan,
     orgApprovedClothing,
@@ -91,12 +88,35 @@ export default function StudioCreate() {
     resetStudioForm,
   } = useDashboardStore();
 
-  // Load saved form values with context-aware key
-  const savedFormValues = useFormPersistence(
-    getFormStorageKey(),
-    {},
-    []
-  ).loadFormValues();
+  const clothingOptions = useMemo(() => {
+    const isOrgContext = selectedContext?.type === "organization";
+    // Only use org-approved clothes if they exist, otherwise use global
+    if (
+      isOrgContext &&
+      Array.isArray(orgApprovedClothing) &&
+      orgApprovedClothing.length > 0
+    ) {
+      return orgApprovedClothing;
+    }
+    // Fallback to global options, ensuring it's an array
+    return GLOBAL_ALL_CLOTHING_OPTIONS || [];
+  }, [selectedContext, orgApprovedClothing]);
+
+  const backgroundOptions = useMemo(() => {
+    const isOrgContext = selectedContext?.type === "organization";
+    // Only use org-approved backgrounds if they exist, otherwise use global
+    if (
+      isOrgContext &&
+      Array.isArray(orgApprovedBackgrounds) &&
+      orgApprovedBackgrounds.length > 0
+    ) {
+      return orgApprovedBackgrounds;
+    }
+    // Fallback to global options, ensuring it's an array
+    return Array.isArray(GLOBAL_ALL_BACKGROUND_OPTIONS)
+      ? GLOBAL_ALL_BACKGROUND_OPTIONS
+      : [];
+  }, [selectedContext, orgApprovedBackgrounds]);
 
   const {
     register,
@@ -113,75 +133,46 @@ export default function StudioCreate() {
     mode: "onChange",
     resolver: zodResolver(baseFormSchema),
     defaultValues: {
-      clothing: savedFormValues.clothing || [],
-      backgrounds: savedFormValues.backgrounds || [],
-      gender: savedFormValues.gender || "",
-      age: savedFormValues.age || "",
-      ethnicity: savedFormValues.ethnicity || "",
-      hairLength: savedFormValues.hairLength || "",
-      hairColor: savedFormValues.hairColor || "",
-      hairType: savedFormValues.hairType || "",
-      eyeColor: savedFormValues.eyeColor || "",
-      glasses: savedFormValues.glasses || "No",
-      bodyType: savedFormValues.bodyType || "",
-      height: savedFormValues.height || "",
-      weight: savedFormValues.weight || "",
-      howDidYouHearAboutUs: savedFormValues.howDidYouHearAboutUs || "",
-      images: savedFormValues.images || "",
-      studioName: savedFormValues.studioName || "",
-      plan: savedFormValues.plan || "",
+      style_pairs: [],
+      gender: "",
+      age: "",
+      ethnicity: "",
+      hairLength: "",
+      hairColor: "",
+      hairType: "",
+      eyeColor: "",
+      glasses: "No",
+      bodyType: "",
+      height: "",
+      weight: "",
+      howDidYouHearAboutUs: "",
+      images: "",
+      studioName: "",
+      plan: "",
     },
   });
 
   const { errors } = formState;
 
-  const formValuesFromWatch = watch();
-  const selectedPlan = watch("plan");
+  // Watch all form values for the persistence hook.
+  const watchedFormValues = watch();
 
-  const watchedClothing = watch("clothing");
-  const watchedBackgrounds = watch("backgrounds");
-  const watchedGender = watch("gender");
-  const watchedAge = watch("age");
-  const watchedEthnicity = watch("ethnicity");
-  const watchedHairLength = watch("hairLength");
-  const watchedHairColor = watch("hairColor");
-  const watchedHairType = watch("hairType");
-  const watchedEyeColor = watch("eyeColor");
-  const watchedGlasses = watch("glasses");
-  const watchedBodyType = watch("bodyType");
-  const watchedHeight = watch("height");
-  const watchedWeight = watch("weight");
-  const watchedHowDidYouHearAboutUs = watch("howDidYouHearAboutUs");
-  const watchedImages = watch("images");
-  const watchedStudioName = watch("studioName");
-
-  // Use form persistence hook for auto-saving with context-aware key
-  const formValues = getValues();
-  const { saveFormValues, clearFormValues } = useFormPersistence(
+  // Use form persistence hook for auto-saving with context-aware key.
+  const { loadFormValues, clearFormValues } = useFormPersistence(
     getFormStorageKey(),
-    formValues,
-    [
-      selectedPlan,
-      watchedClothing,
-      watchedBackgrounds,
-      watchedGender,
-      watchedAge,
-      watchedEthnicity,
-      watchedHairLength,
-      watchedHairColor,
-      watchedHairType,
-      watchedEyeColor,
-      watchedGlasses,
-      watchedBodyType,
-      watchedHeight,
-      watchedWeight,
-      watchedHowDidYouHearAboutUs,
-      watchedImages,
-      watchedStudioName,
-    ]
+    watchedFormValues, // Pass all watched values to be saved.
+    [JSON.stringify(watchedFormValues), selectedContext] // Use a stringified dependency for deep comparison.
   );
 
-  const planConfig = lemonsqueezy.plans[selectedPlan];
+  // Load saved values on initial render and when context changes.
+  useEffect(() => {
+    const savedValues = loadFormValues();
+    if (savedValues && Object.keys(savedValues).length > 0) {
+      reset(savedValues, { keepDefaultValues: true });
+    }
+  }, [loadFormValues, reset, selectedContext]);
+
+  const planConfig = lemonsqueezy.plans[watch("plan")];
   const stylesLimit = planConfig?.styles || 0;
 
   // Define all possible steps with metadata
@@ -209,16 +200,11 @@ export default function StudioCreate() {
         data: GENDERS,
         showInOrg: true,
       },
+
       {
-        id: "clothing-selector",
-        component: "ClothingSelector",
-        title: "Select Clothing",
-        showInOrg: true,
-      },
-      {
-        id: "background-selector",
-        component: "BackgroundSelector",
-        title: "Select Backgrounds",
+        id: "style-pairing",
+        component: "StylePairing",
+        title: "Style Pairing",
         showInOrg: true,
       },
       {
@@ -274,104 +260,84 @@ export default function StudioCreate() {
 
   // Auto-set plan to "Team" when in organization context with team credits
   useEffect(() => {
-    if (isOrgWithTeamCredits && selectedContext) {
-      // Set the plan value since PlanSelector step is skipped
+    if (isOrgWithTeamCredits) {
       setValue("plan", "Team", { shouldValidate: true });
     }
-  }, [
-    isOrgWithTeamCredits,
-    setValue,
-    selectedContext?.type,
-    selectedContext?.id,
-  ]);
+  }, [isOrgWithTeamCredits, setValue]);
 
-  // Fetch organization settings
-  useEffect(() => {
-    if (selectedContext?.type === "organization" && selectedContext.id) {
-      const supabase = createSupabaseBrowserClient();
-      const fetchOrgStudioSettings = async () => {
-        setIsOrgSettingsLoading(true);
-        try {
-          const { data: orgSettings, error: orgErr } = await supabase
-            .from("organizations")
-            .select("restrict_clothing_options, restrict_background_options")
-            .eq("id", selectedContext.id)
-            .single();
+  const supabase = createSupabaseBrowserClient();
 
-          if (orgErr) throw orgErr;
+  // Define the function to fetch organization-specific settings
+  const fetchOrgStudioSettings = async () => {
+    if (selectedContext?.type !== "organization" || !selectedContext.id) {
+      setOrgApprovedClothing([]);
+      setOrgApprovedBackgrounds([]);
+      return;
+    }
 
-          if (orgSettings.restrict_clothing_options) {
-            const { data: approvedClothing, error: clothingErr } =
-              await supabase
-                .from("organization_approved_clothing")
-                .select("clothing_name, clothing_theme")
-                .eq("organization_id", selectedContext.id);
-            if (clothingErr) throw clothingErr;
-            const clothingWithCorrectKeys = approvedClothing.map((item) => {
-              const globalItem = GLOBAL_ALL_CLOTHING_OPTIONS.find(
-                (gi) =>
-                  gi.name === item.clothing_name &&
-                  gi.theme === item.clothing_theme
-              );
-              return {
-                name: item.clothing_name,
-                theme: item.clothing_theme,
-                image: globalItem?.image || "/placeholder.svg",
-              };
-            });
-            setOrgApprovedClothing(clothingWithCorrectKeys);
-          } else {
-            setOrgApprovedClothing(null);
-          }
+    setIsOrgSettingsLoading(true);
+    try {
+      const { data: orgSettings, error: orgError } = await supabase
+        .from("organizations")
+        .select(
+          "restrict_clothing_options, approved_clothing, restrict_background_options, approved_backgrounds"
+        )
+        .eq("id", selectedContext.id)
+        .single();
 
-          if (orgSettings.restrict_background_options) {
-            const { data: approvedBackgrounds, error: backgroundsErr } =
-              await supabase
-                .from("organization_approved_backgrounds")
-                .select("background_name, background_theme")
-                .eq("organization_id", selectedContext.id);
-            if (backgroundsErr) throw backgroundsErr;
-            const backgroundsWithCorrectKeys = approvedBackgrounds.map(
-              (item) => {
-                const globalItem = GLOBAL_ALL_BACKGROUND_OPTIONS.find(
-                  (gi) =>
-                    gi.name === item.background_name &&
-                    gi.theme === item.background_theme
-                );
-                return {
-                  name: item.background_name,
-                  theme: item.background_theme,
-                  image: globalItem?.image || "/placeholder.svg",
-                };
-              }
-            );
-            setOrgApprovedBackgrounds(backgroundsWithCorrectKeys);
-          } else {
-            setOrgApprovedBackgrounds(null);
-          }
-        } catch (error) {
-          console.error("Error fetching org studio settings:", error);
-          setStudioMessage(
-            "Error loading organization settings. Please try again."
+      if (orgError) {
+        throw new Error(
+          `Error fetching organization settings: ${orgError.message}`
+        );
+      }
+
+      if (orgSettings) {
+        // Handle clothing restrictions
+        if (
+          orgSettings.restrict_clothing_options &&
+          orgSettings.approved_clothing?.length > 0
+        ) {
+          const approvedClothingIds = new Set(orgSettings.approved_clothing);
+          const filteredClothing = GLOBAL_ALL_CLOTHING_OPTIONS.filter((item) =>
+            approvedClothingIds.has(item.id)
           );
-        } finally {
-          setIsOrgSettingsLoading(false);
+          setOrgApprovedClothing(filteredClothing);
+        } else {
+          setOrgApprovedClothing([]); // Clear if restrictions are off or no items are approved
         }
-      };
-      fetchOrgStudioSettings();
-    } else {
-      // Clear if not in org context or no org id
-      setOrgApprovedClothing(null);
-      setOrgApprovedBackgrounds(null);
+
+        // Handle background restrictions
+        if (
+          orgSettings.restrict_background_options &&
+          orgSettings.approved_backgrounds?.length > 0
+        ) {
+          const approvedBackgroundIds = new Set(
+            orgSettings.approved_backgrounds
+          );
+          const filteredBackgrounds = GLOBAL_ALL_BACKGROUND_OPTIONS.filter(
+            (item) => approvedBackgroundIds.has(item.id)
+          );
+          setOrgApprovedBackgrounds(filteredBackgrounds);
+        } else {
+          setOrgApprovedBackgrounds([]); // Clear if restrictions are off or no items are approved
+        }
+      }
+    } catch (error) {
+      console.error(error.message);
+      setErrorDetails(
+        "Failed to load organization settings. Please refresh the page."
+      );
+      setOrgApprovedClothing([]);
+      setOrgApprovedBackgrounds([]);
+    } finally {
       setIsOrgSettingsLoading(false);
     }
-  }, [
-    selectedContext,
-    setIsOrgSettingsLoading,
-    setOrgApprovedClothing,
-    setOrgApprovedBackgrounds,
-    setStudioMessage,
-  ]);
+  };
+
+  // Effect to fetch organization settings when the context changes
+  useEffect(() => {
+    fetchOrgStudioSettings();
+  }, [selectedContext?.id]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -468,118 +434,70 @@ export default function StudioCreate() {
   };
 
   // Validation function for current step
-  const validateCurrentStep = async () => {
-    if (!currentStepData) {
-      console.error("No current step data available");
-      return false;
+  const validateCurrentStep = () => {
+    if (!shouldValidate) return true;
+
+    const currentStepData = getCurrentStepData();
+
+    switch (currentStepData?.component) {
+      case "VariableSelector":
+        if (currentStepData.id === "gender-selector") {
+          if (!watchedFormValues.gender) {
+            setError("gender", {
+              type: "manual",
+              message: "Please select a gender.",
+            });
+            return false;
+          }
+          clearErrors("gender");
+        }
+        return true;
+
+      case "StylePairing":
+        if (!watchedFormValues.style_pairs || watchedFormValues.style_pairs.length < 1) {
+          setError("style_pairs", {
+            type: "manual",
+            message: "Please create at least 1 style pair.",
+          });
+          return false;
+        }
+        if (watchedFormValues.style_pairs.length > stylesLimit) {
+          setError("style_pairs", {
+            type: "manual",
+            message: `You can create up to ${stylesLimit} style pairs.`,
+          });
+          return false;
+        }
+        clearErrors("style_pairs");
+        return true;
+
+      case "PlanSelector":
+        if (isOrgWithTeamCredits) {
+          return true; // No validation needed if using team credits
+        }
+        if (!watchedFormValues.plan) {
+          setError("plan", {
+            type: "manual",
+            message: "Please select a plan to continue.",
+          });
+          return false;
+        } else {
+          clearErrors("plan");
+        }
+        break;
+
+      default:
+        return true;
     }
-
-    try {
-      switch (currentStepData.component) {
-        case "ClothingSelector":
-          if (!watchedClothing || watchedClothing.length < 1) {
-            setClothingError("Please select at least 1 clothing option.");
-            return false;
-          }
-          if (watchedClothing.length > stylesLimit) {
-            setClothingError(
-              `You can select up to ${stylesLimit} clothing options.`
-            );
-            return false;
-          }
-          setClothingError("");
-          return true;
-
-        case "BackgroundSelector":
-          if (!watchedBackgrounds || watchedBackgrounds.length < 1) {
-            setBackgroundsError("Please select at least 1 background.");
-            return false;
-          }
-          if (watchedBackgrounds.length > stylesLimit) {
-            setBackgroundsError(
-              `You can select up to ${stylesLimit} backgrounds.`
-            );
-            return false;
-          }
-          setBackgroundsError("");
-          return true;
-
-        case "PlanSelector":
-          if (isOrgWithTeamCredits) {
-            setValue("plan", "Team", { shouldValidate: true });
-            return true;
-          }
-          return await trigger(currentStepData.data[0].fieldName);
-
-        case "VariableSelector":
-          return await trigger(currentStepData.data[0].fieldName);
-
-        case "ImageUploader":
-          return await trigger("images");
-
-        case "AttributeSelector":
-          return await trigger([
-            "age",
-            "ethnicity",
-            "hairLength",
-            "hairColor",
-            "hairType",
-            "eyeColor",
-            "glasses",
-            "studioName",
-          ]);
-
-        default:
-          return await trigger();
-      }
-    } catch (error) {
-      console.error("Validation error:", error);
-      setStudioMessage("Validation error occurred. Please try again.");
-      return false;
-    }
+    return true;
   };
 
-  const next = async () => {
-    if (!currentStepData) {
-      console.error("Cannot navigate: no current step data");
-      setStudioMessage("Navigation error. Please refresh the page.");
-      return;
-    }
-
-    setShouldValidate(true);
-
-    try {
-      const isValid = await validateCurrentStep();
-
-      if (!isValid) {
-        return;
-      }
-
-      // Check credits before final step
-      if (currentStep === steps.length - 2) {
-        const plan = getValues("plan");
-        const planCredits =
-          selectedContext?.type === "organization"
-            ? userCredits?.team // For org member, check team credits
-            : userCredits?.[plan?.toLowerCase()]; // For personal, check plan credits
-
-        if (plan && (!planCredits || planCredits < 1)) {
-          setStudioMessage("You don't have enough credits for this plan.");
-          return;
-        }
-      }
-
-      if (currentStep < steps.length - 1) {
-        setPreviousStep(currentStep);
-        const nextStep = currentStep + 1;
-        setCurrentStep(nextStep, selectedContext?.type, isOrgWithTeamCredits);
-        setShouldValidate(false);
-      }
-    } catch (error) {
-      console.error("Navigation error in next():", error);
-      setStudioMessage(
-        "An error occurred during navigation. Please try again."
-      );
+  const next = () => {
+    const isValid = validateCurrentStep();
+    if (isValid && currentStep < steps.length - 1) {
+      setPreviousStep(currentStep);
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep, selectedContext?.type, isOrgWithTeamCredits);
       setShouldValidate(false);
     }
   };
@@ -667,8 +585,7 @@ export default function StudioCreate() {
 
       const finalPrompts = generatePrompts(
         characterDetails,
-        watchedClothing,
-        watchedBackgrounds,
+        sanitizedData.style_pairs,
         stylesLimit
       );
       console.log("Final Prompts:", finalPrompts);
@@ -687,13 +604,13 @@ export default function StudioCreate() {
         selectedContext?.type === "organization" ? selectedContext.id : null;
       console.log("sanitizedData", sanitizedData);
       try {
-        const response = await fetch("/api/lora-training", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(sanitizedData),
-        });
+        // const response = await fetch("/api/lora-training", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   body: JSON.stringify(sanitizedData),
+        // });
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -745,54 +662,6 @@ export default function StudioCreate() {
 
   const renderStep = (step) => {
     switch (step.component) {
-      case "ClothingSelector":
-        return (
-          <ClothingSelector
-            value={watchedClothing || []}
-            onChange={(newVal) => {
-              setValue("clothing", newVal, {
-                shouldValidate: true,
-                shouldDirty: true,
-                shouldTouch: true,
-              });
-            }}
-            max={stylesLimit}
-            min={1}
-            isSubmitting={isSubmitting || isOrgSettingsLoading}
-            errors={clothingError}
-            shouldValidate={shouldValidate}
-            selectedGender={getValues("gender")}
-            availableItems={
-              selectedContext?.type === "organization"
-                ? orgApprovedClothing
-                : null
-            }
-          />
-        );
-      case "BackgroundSelector":
-        return (
-          <BackgroundSelector
-            value={watchedBackgrounds || []}
-            onChange={(newVal) => {
-              setValue("backgrounds", newVal, {
-                shouldValidate: true,
-                shouldDirty: true,
-                shouldTouch: true,
-              });
-            }}
-            max={stylesLimit}
-            min={1}
-            isSubmitting={isSubmitting || isOrgSettingsLoading}
-            errors={backgroundsError}
-            shouldValidate={shouldValidate}
-            selectedGender={getValues("gender")}
-            availableItems={
-              selectedContext?.type === "organization"
-                ? orgApprovedBackgrounds
-                : null
-            }
-          />
-        );
       case "PlanSelector":
         return (
           <PlanSelector
@@ -842,6 +711,23 @@ export default function StudioCreate() {
             isSubmitting={isSubmitting}
             studioMessage={studioMessage}
             watch={watch}
+          />
+        );
+      case "StylePairing":
+        return (
+          <Controller
+            name="style_pairs"
+            control={control}
+            render={({ field }) => (
+              <StylePairing
+                {...field}
+                max={stylesLimit}
+                isSubmitting={isSubmitting}
+                selectedGender={watchedFormValues.gender}
+                clothingOptions={clothingOptions}
+                backgroundOptions={backgroundOptions}
+              />
+            )}
           />
         );
       default:
@@ -982,7 +868,11 @@ export default function StudioCreate() {
                 <Button
                   className="disabled:opacity-50"
                   type={currentStep === steps.length - 1 ? "submit" : "button"}
-                  onClick={currentStep === steps.length - 1 ? undefined : next}
+                  onClick={
+                    currentStep === steps.length - 1
+                      ? handleSubmit(onSubmit)
+                      : next
+                  }
                   disabled={mainButtonDisabled}
                   aria-label={
                     currentStep === steps.length - 1

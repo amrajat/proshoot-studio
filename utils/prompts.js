@@ -19,7 +19,7 @@ export const PROMPT_TEMPLATES = [
     id: "studio_01",
     name: "Studio Solid Colors",
     description: "Clean, professional studio shot on a solid background.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Studio"],
     promptFunction: (character, clothingName, backgroundName) => {
       return `a photorealistic studio portrait of ${character.trigger_word} ${
@@ -33,7 +33,7 @@ export const PROMPT_TEMPLATES = [
     id: "studio_02",
     name: "Studio Casual",
     description: "Clean, professional studio shot on a solid background.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Studio"],
     promptFunction: (character, clothingName, backgroundName) => {
       return `casual studio portrait of a confident ${character.trigger_word} ${
@@ -47,7 +47,7 @@ export const PROMPT_TEMPLATES = [
     id: "creative_01",
     name: "Creative Professionals",
     description: "Approachable professional in a modern office setting.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Creative"],
     promptFunction: (character, clothingName, backgroundName) => {
       return `a realistic portrait of a cheerful ${character.trigger_word} ${
@@ -61,7 +61,7 @@ export const PROMPT_TEMPLATES = [
     id: "office_01",
     name: "Office",
     description: "Professional office portrait.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Office", "Creative"],
     promptFunction: (character, clothingName, backgroundName) => {
       return `professional corporate portrait photo of ${
@@ -76,12 +76,8 @@ export const PROMPT_TEMPLATES = [
     id: "monochrome_01",
     name: "Monochrome",
     description: "Professional monochrome portrait.",
-    compatibleClothingThemes: ["Any"],
-    compatibleBackgroundThemes: [
-      "Monochrome",
-      "Studio (Solid Colors)",
-      "Abstract / Gradient",
-    ],
+
+    compatibleBackgroundThemes: ["Monochrome"],
     promptFunction: (character, clothingName, backgroundName) => {
       return `Expertly shot studio portrait of an attractive professional ${
         character.trigger_word
@@ -96,7 +92,7 @@ export const PROMPT_TEMPLATES = [
     id: "office_02",
     name: "High-Rise Office",
     description: "Sleek portrait in a high-rise office with a city skyline.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Office"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a sleek and professional portrait of ${character.trigger_word} ${
@@ -110,7 +106,7 @@ export const PROMPT_TEMPLATES = [
     name: "Corporate Office",
     description:
       "Professional portrait in a corporate office with large windows.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Office"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a sleek professional portrait of ${character.trigger_word} ${
@@ -123,7 +119,7 @@ export const PROMPT_TEMPLATES = [
     id: "office_04",
     name: "Modern Office",
     description: "Cinematic portrait in a modern office with glass windows.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Office"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a cinematic-style studio portrait of ${character.trigger_word} ${
@@ -137,7 +133,7 @@ export const PROMPT_TEMPLATES = [
     name: "Office With Plants",
     description:
       "Approachable portrait in an office with floor-to-ceiling windows and plants.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Office"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a sleek and professional portrait of ${character.trigger_word} ${
@@ -150,7 +146,7 @@ export const PROMPT_TEMPLATES = [
     id: "office_06",
     name: "Minimalist Office",
     description: "Refined portrait in a minimalistic modern office interior.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Office"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a refined professional portrait of ${character.trigger_word} ${
@@ -165,7 +161,7 @@ export const PROMPT_TEMPLATES = [
     id: "cityscape_01",
     name: "Cityscape",
     description: "Professional cityscape portrait.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Cityscape"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a vibrant professional portrait of ${character.trigger_word} ${
@@ -181,7 +177,7 @@ export const PROMPT_TEMPLATES = [
     name: "Sunlit Park",
     description:
       "Professional portrait in a sunlit park with blurred greenery.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Nature"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a photorealistic professional portrait of ${character.trigger_word} ${
@@ -194,7 +190,7 @@ export const PROMPT_TEMPLATES = [
     id: "nature_02",
     name: "Tulip Field",
     description: "Vibrant headshot in a tulip field with colorful flowers.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Nature"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a vibrant and professional headshot of ${character.trigger_word} ${
@@ -207,7 +203,7 @@ export const PROMPT_TEMPLATES = [
     id: "nature_03",
     name: "Vibrant Garden",
     description: "Serene portrait in a vibrant garden with lush greenery.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Nature"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a serene professional portrait of ${character.trigger_word} ${
@@ -220,7 +216,7 @@ export const PROMPT_TEMPLATES = [
     id: "nature_04",
     name: "Dandelion Field",
     description: "Warm portrait in a grass field full of dandelions.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Nature"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a warm and professional portrait of ${character.trigger_word} ${
@@ -234,7 +230,7 @@ export const PROMPT_TEMPLATES = [
     name: "Wooded Area",
     description:
       "Calm and professional headshot in a wooded area with vibrant foliage.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Nature"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a calm and professional headshot of ${character.trigger_word} ${
@@ -248,7 +244,7 @@ export const PROMPT_TEMPLATES = [
     name: "Natural Landscape",
     description:
       "Serene professional portrait in a natural landscape with gentle sunlight.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Nature"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a serene professional portrait of ${character.trigger_word} ${
@@ -262,7 +258,7 @@ export const PROMPT_TEMPLATES = [
     name: "Lush Wildflower Field",
     description:
       "Captivating portrait in a lush green field with colorful wildflowers.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Nature"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a captivating, photorealistic image of ${character.trigger_word} ${
@@ -277,7 +273,7 @@ export const PROMPT_TEMPLATES = [
     id: "medical_01",
     name: "Medical",
     description: "Professional medical portrait.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Medical"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a warm and professional portrait of ${character.trigger_word} ${
@@ -292,8 +288,8 @@ export const PROMPT_TEMPLATES = [
     id: "home_office_01",
     name: "Home Office",
     description: "Professional home office portrait.",
-    compatibleClothingThemes: ["Any"],
-    compatibleBackgroundThemes: ["Home_Office", "Academic"],
+
+    compatibleBackgroundThemes: ["Home Office", "Academic"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a warm and professional portrait of ${character.trigger_word} ${
         character.gender
@@ -308,7 +304,7 @@ export const PROMPT_TEMPLATES = [
     id: "creative_02",
     name: "Creative",
     description: "Professional creative portrait.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Creative"],
     promptFunction: (character, clothingName, backgroundName) =>
       `a warm and professional portrait of ${character.trigger_word} ${
@@ -323,7 +319,7 @@ export const PROMPT_TEMPLATES = [
     id: "generic_any_any_01", // Fallback generic template
     name: "Generic Professional Headshot",
     description: "A versatile fallback prompt.",
-    compatibleClothingThemes: ["Any"],
+
     compatibleBackgroundThemes: ["Any"],
     promptFunction: (character, clothingName, backgroundName) => {
       return `generic prompt, ${character.trigger_word} ${
@@ -344,237 +340,99 @@ export const PROMPT_TEMPLATES = [
   // - etc.
 ];
 
-export function generatePrompts(
-  userCharacterInputs,
-  selectedClothing,
-  selectedBackgrounds,
-  stylesLimit
-) {
-  if (
-    !userCharacterInputs ||
-    !selectedClothing?.length ||
-    !selectedBackgrounds?.length ||
-    !stylesLimit
-  ) {
+export function generatePrompts(userCharacterInputs, stylePairs, stylesLimit) {
+  if (!userCharacterInputs || !stylePairs?.length || !stylesLimit) {
     console.error("generatePrompts: Invalid inputs", {
       userCharacterInputs,
-      selectedClothing,
-      selectedBackgrounds,
+      stylePairs,
       stylesLimit,
     });
     return [];
   }
 
-  const allPossiblePromptObjects = [];
-  const uniquePromptStrings = new Set();
+  // Group style pairs by background theme for balanced distribution
+  const pairsByTheme = {};
+  stylePairs.forEach((pair, index) => {
+    const { clothing, background } = pair;
+    if (!clothing || !background) return;
 
-  for (const clothing of selectedClothing) {
-    for (const background of selectedBackgrounds) {
-      const suitableTemplates = PROMPT_TEMPLATES.filter(
-        (template) =>
-          (template.compatibleClothingThemes.includes(clothing.theme) ||
-            template.compatibleClothingThemes.includes("Any")) &&
-          (template.compatibleBackgroundThemes.includes(background.theme) ||
-            template.compatibleBackgroundThemes.includes("Any"))
-      );
-
-      for (const template of suitableTemplates) {
-        const promptString = template.promptFunction(
-          userCharacterInputs,
-          clothing.name,
-          background.name
-        );
-        if (!uniquePromptStrings.has(promptString)) {
-          allPossiblePromptObjects.push({
-            prompt: promptString,
-            clothingName: clothing.name,
-            clothingTheme: clothing.theme,
-            backgroundName: background.name,
-            backgroundTheme: background.theme,
-            templateId: template.id,
-          });
-          uniquePromptStrings.add(promptString);
-        }
-      }
+    const theme = background.theme;
+    if (!pairsByTheme[theme]) {
+      pairsByTheme[theme] = [];
     }
-  }
+    pairsByTheme[theme].push({ pair, originalIndex: index });
+  });
 
-  if (allPossiblePromptObjects.length === 0) {
-    const genericTemplate = PROMPT_TEMPLATES.find(
-      (t) => t.id === "generic_any_any_01"
-    );
-    if (
-      genericTemplate &&
-      selectedClothing.length > 0 &&
-      selectedBackgrounds.length > 0
-    ) {
-      const C = selectedClothing[0];
-      const B = selectedBackgrounds[0];
-      const promptString = genericTemplate.promptFunction(
-        userCharacterInputs,
-        C.name,
-        B.name
-      );
-      if (!uniquePromptStrings.has(promptString)) {
-        allPossiblePromptObjects.push({
-          prompt: promptString,
-          clothingName: C.name,
-          clothingTheme: C.theme,
-          backgroundName: B.name,
-          backgroundTheme: B.theme,
-          templateId: genericTemplate.id,
-        });
-        uniquePromptStrings.add(promptString);
-      }
-    }
-    if (allPossiblePromptObjects.length === 0) {
-      console.warn(
-        "generatePrompts: No suitable prompts could be generated, returning empty array."
-      );
-      return [];
-    }
-  }
+  const themes = Object.keys(pairsByTheme);
+  const numThemes = themes.length;
 
-  let finalPrompts = [];
-  if (allPossiblePromptObjects.length > stylesLimit) {
-    // Simple shuffle to get a somewhat random assortment if we have more unique prompts than the limit
-    const shuffled = [...allPossiblePromptObjects].sort(
-      () => 0.5 - Math.random()
-    );
-    finalPrompts = shuffled.slice(0, stylesLimit).map((p) => p.prompt);
-  } else {
-    finalPrompts = allPossiblePromptObjects.map((p) => p.prompt);
-  }
-
-  // If we still have fewer prompts than stylesLimit and need to fill up to the limit
-  if (finalPrompts.length < stylesLimit && finalPrompts.length > 0) {
-    const needed = stylesLimit - finalPrompts.length;
-    for (let i = 0; i < needed; i++) {
-      // Cycle through the unique prompts we were able to generate
-      finalPrompts.push(finalPrompts[i % finalPrompts.length]);
-    }
-  }
-  return finalPrompts;
-}
-
-export function _generatePrompts(
-  userCharacterInputs,
-  selectedClothing,
-  selectedBackgrounds,
-  stylesLimit
-) {
-  // Ensure inputs are valid
-  if (
-    !userCharacterInputs ||
-    !selectedClothing?.length ||
-    !selectedBackgrounds?.length ||
-    !stylesLimit
-  ) {
-    console.error("generatePrompts: Invalid inputs", {
-      userCharacterInputs,
-      selectedClothing,
-      selectedBackgrounds,
-      stylesLimit,
-    });
+  if (numThemes === 0) {
+    console.warn("No valid style pairs found");
     return [];
   }
 
-  const allPossiblePromptObjects = [];
+  // Calculate balanced distribution
+  const basePromptsPerTheme = Math.floor(stylesLimit / numThemes);
+  const extraPrompts = stylesLimit % numThemes;
+  
+  console.log(`Distribution: ${numThemes} themes, ${stylesLimit} prompts`);
+  console.log(`Base per theme: ${basePromptsPerTheme}, Extra: ${extraPrompts}`);
+  
+  const finalPrompts = [];
   const uniquePromptStrings = new Set();
 
-  // 1. Generate all unique combinations of (clothing, background, compatible_template)
-  for (const clothing of selectedClothing) {
-    for (const background of selectedBackgrounds) {
-      const suitableTemplates = PROMPT_TEMPLATES.filter(
-        (template) =>
-          (template.compatibleClothingThemes.includes(clothing.theme) ||
-            template.compatibleClothingThemes.includes("Any")) &&
-          (template.compatibleBackgroundThemes.includes(background.theme) ||
-            template.compatibleBackgroundThemes.includes("Any"))
-      );
+  // Process each theme
+  themes.forEach((theme, themeIndex) => {
+    const themePairs = pairsByTheme[theme];
+    const promptsForTheme =
+      basePromptsPerTheme + (themeIndex < extraPrompts ? 1 : 0);
 
-      for (const template of suitableTemplates) {
-        const promptString = template.promptFunction(
-          userCharacterInputs,
-          clothing.name,
-          background.name
-        );
-        if (!uniquePromptStrings.has(promptString)) {
-          allPossiblePromptObjects.push({
-            prompt: promptString,
-            clothingName: clothing.name,
-            clothingTheme: clothing.theme,
-            backgroundName: background.name,
-            backgroundTheme: background.theme,
-            templateId: template.id,
-            // Add a score for sorting/selection if needed in the future
-            // score: calculateScore(clothing.theme, background.theme, template),
-          });
-          uniquePromptStrings.add(promptString);
-        }
-      }
-    }
-  }
+    console.log(`Theme ${themeIndex} (${theme}): ${promptsForTheme} prompts`);
 
-  // If no unique prompts were generated (e.g. no matching templates at all)
-  if (allPossiblePromptObjects.length === 0) {
-    // Try with the most generic template if available
-    const genericTemplate = PROMPT_TEMPLATES.find(
-      (t) => t.id === "generic_any_any_01"
+    if (promptsForTheme === 0) return;
+
+    // Find templates for this theme
+    const themeTemplates = PROMPT_TEMPLATES.filter(
+      (template) =>
+        (template.compatibleBackgroundThemes.includes(theme) ||
+          template.compatibleBackgroundThemes.includes("Any")) &&
+        !template.id.startsWith("generic_any_any")
     );
-    if (
-      genericTemplate &&
-      selectedClothing.length > 0 &&
-      selectedBackgrounds.length > 0
-    ) {
-      const C = selectedClothing[0];
-      const B = selectedBackgrounds[0];
-      const promptString = genericTemplate.promptFunction(
+
+    console.log(`Found ${themeTemplates.length} templates for ${theme}`);
+
+    if (themeTemplates.length === 0) {
+      console.warn(`No templates found for theme: ${theme}`);
+      return;
+    }
+
+    // Generate prompts for this theme - cycle through templates as needed
+    for (let i = 0; i < promptsForTheme; i++) {
+      const pairData = themePairs[i % themePairs.length];
+      const { clothing, background } = pairData.pair;
+      const template = themeTemplates[i % themeTemplates.length];
+
+      const promptString = template.promptFunction(
         userCharacterInputs,
-        C.name,
-        B.name
+        clothing.name,
+        background.name
       );
-      if (!uniquePromptStrings.has(promptString)) {
-        allPossiblePromptObjects.push({
-          prompt: promptString,
-          clothingName: C.name,
-          clothingTheme: C.theme,
-          backgroundName: B.name,
-          backgroundTheme: B.theme,
-          templateId: genericTemplate.id,
-        });
-        uniquePromptStrings.add(promptString);
-      }
+
+      // Always add the prompt - we want to cycle through templates even if they repeat
+      finalPrompts.push({
+        prompt: promptString,
+        clothingName: clothing.name,
+        clothingTheme: clothing.theme,
+        backgroundName: background.name,
+        backgroundTheme: background.theme,
+        templateId: template.id,
+      });
     }
-    if (allPossiblePromptObjects.length === 0) return []; // Still nothing, return empty
-  }
+    console.log(`Generated ${promptsForTheme} prompts for ${theme}`);
+  });
 
-  // 2. Select prompts up to stylesLimit, prioritizing diversity.
-  let finalPrompts = [];
+  console.log(`Total prompts generated: ${finalPrompts.length}`);
+  // No generic fallback - we cycle through available templates
 
-  // Shuffle to get random assortment if we have more than stylesLimit
-  if (allPossiblePromptObjects.length > stylesLimit) {
-    // Simple shuffle
-    const shuffled = [...allPossiblePromptObjects].sort(
-      () => 0.5 - Math.random()
-    );
-    finalPrompts = shuffled.slice(0, stylesLimit).map((p) => p.prompt);
-  } else {
-    finalPrompts = allPossiblePromptObjects.map((p) => p.prompt);
-  }
-
-  // If we have fewer prompts than stylesLimit and want to fill it up
-  // (e.g. by reusing clothing/backgrounds with different templates, or cycling)
-  // This part can be complex. For now, we return what we have up to stylesLimit.
-  // If allPossiblePromptObjects.length < stylesLimit, we might want to duplicate or generate variants.
-  // Example: if stylesLimit is 10 and we only have 5 unique prompts, we return 5.
-  // If requirements are to *always* return stylesLimit (by duplication if needed):
-  if (finalPrompts.length < stylesLimit && finalPrompts.length > 0) {
-    const needed = stylesLimit - finalPrompts.length;
-    for (let i = 0; i < needed; i++) {
-      finalPrompts.push(finalPrompts[i % finalPrompts.length]); // Cycle through existing prompts
-    }
-  }
-
-  return finalPrompts;
+  return finalPrompts.slice(0, stylesLimit);
 }

@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 export async function POST(request) {
   const supabase = await createSupabaseServerClient();
   const requestData = await request.json();
+  console.log("requestData", requestData);
+  return NextResponse.json({ message: "good" }, { status: 200 });
 
   try {
     const {

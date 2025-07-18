@@ -335,6 +335,24 @@ export const ATTRIBUTES = {
 // Updated Zod Form Schema
 export const formSchema = z
   .object({
+    style_pairs: z
+      .array(
+        z.object({
+          clothing: z.object({
+            id: z.string(),
+            name: z.string(),
+            theme: z.string(),
+            image: z.string(),
+          }),
+          background: z.object({
+            id: z.string(),
+            name: z.string(),
+            theme: z.string(),
+            image: z.string(),
+          }),
+        })
+      )
+      .min(1, "Please create at least one style pair."),
     plan: z.enum(["Starter", "Professional", "Studio", "Team"], {
       message: "Please select a valid plan.",
     }),
@@ -353,12 +371,7 @@ export const formSchema = z
     bodyType: z.string().optional(),
     height: z.string().optional(),
     weight: z.string().optional(),
-    clothing: z
-      .array(z.object({ name: z.string(), theme: z.string() }))
-      .min(1, { message: "Please select at least 1 clothing option." }),
-    backgrounds: z
-      .array(z.object({ name: z.string(), theme: z.string() }))
-      .min(1, { message: "Please select at least 1 background." }),
+
     images: z.string(),
     howDidYouHearAboutUs: z.string().optional(),
     studioName: z.string().min(1, "Please enter your studio name."),

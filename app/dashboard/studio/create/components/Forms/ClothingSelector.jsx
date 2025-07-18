@@ -88,17 +88,11 @@ export default function ClothingSelector({
   };
 
   // Helper to get correct image src for gender
-  const getImageSrc = (imagesObj) => {
-    return "/images/outfit.jpg";
-    if (!imagesObj) return "/images/placeholder.svg";
-    if (selectedGender === "non-binary") {
-      return imagesObj.default || imagesObj.man || "/images/placeholder.svg";
-    }
-    return (
-      imagesObj[selectedGender] ||
-      imagesObj.default ||
-      "/images/placeholder.svg"
-    );
+  const getImageSrc = (imageFilename) => {
+    if (!imageFilename) return "/images/placeholder.svg";
+    // Construct path: /images/clothing/{gender}/{filename}
+    // selectedGender can be 'man', 'woman', or 'non-binary'
+    return `/images/clothing/${selectedGender}/${imageFilename}`;
   };
 
   // Loading state management
@@ -161,7 +155,7 @@ export default function ClothingSelector({
           >
             <CardContent className="p-0">
               <Image
-                src={getImageSrc(item.images)}
+                src={getImageSrc(item.image)}
                 alt={item.name}
                 width={256}
                 height={256}

@@ -22,16 +22,12 @@ const useFormPersistence = (formKey, formValues, dependencies = []) => {
           plan: formValues.plan || "",
           images: formValues.images || "",
           // Ensure arrays are properly structured
-          clothing: Array.isArray(formValues.clothing)
-            ? formValues.clothing.filter(
-                (item) =>
-                  typeof item === "object" && "name" in item && "theme" in item
-              )
-            : [],
-          backgrounds: Array.isArray(formValues.backgrounds)
-            ? formValues.backgrounds.filter(
-                (item) =>
-                  typeof item === "object" && "name" in item && "theme" in item
+          style_pairs: Array.isArray(formValues.style_pairs)
+            ? formValues.style_pairs.filter(
+                (pair) =>
+                  typeof pair === "object" &&
+                  pair.clothing &&
+                  pair.background
               )
             : [],
         };
@@ -54,16 +50,12 @@ const useFormPersistence = (formKey, formValues, dependencies = []) => {
         return {
           ...parsed,
           // Validate array structures
-          clothing: Array.isArray(parsed.clothing)
-            ? parsed.clothing.filter(
-                (item) =>
-                  typeof item === "object" && "name" in item && "theme" in item
-              )
-            : [],
-          backgrounds: Array.isArray(parsed.backgrounds)
-            ? parsed.backgrounds.filter(
-                (item) =>
-                  typeof item === "object" && "name" in item && "theme" in item
+          style_pairs: Array.isArray(parsed.style_pairs)
+            ? parsed.style_pairs.filter(
+                (pair) =>
+                  typeof pair === "object" &&
+                  pair.clothing &&
+                  pair.background
               )
             : [],
         };

@@ -126,12 +126,14 @@ export default function StudioCreate() {
     watch,
     formState,
     clearErrors,
+    setError,
     trigger,
     reset,
     getValues,
   } = useForm({
-    mode: "onChange",
-    resolver: zodResolver(baseFormSchema),
+    mode: "onSubmit", // Only validate on form submission
+    // Remove zodResolver to prevent premature validation of all fields
+    // We'll handle validation manually per step
     defaultValues: {
       style_pairs: [],
       gender: "",
@@ -454,7 +456,10 @@ export default function StudioCreate() {
         return true;
 
       case "StylePairing":
-        if (!watchedFormValues.style_pairs || watchedFormValues.style_pairs.length < 1) {
+        if (
+          !watchedFormValues.style_pairs ||
+          watchedFormValues.style_pairs.length < 1
+        ) {
           setError("style_pairs", {
             type: "manual",
             message: "Please create at least 1 style pair.",
@@ -470,6 +475,93 @@ export default function StudioCreate() {
         }
         clearErrors("style_pairs");
         return true;
+
+      case "ImageUploader":
+        if (
+          !watchedFormValues.images ||
+          watchedFormValues.images.trim() === ""
+        ) {
+          setError("images", {
+            type: "manual",
+            message: "Please upload at least one image.",
+          });
+          return false;
+        }
+        clearErrors("images");
+        return true;
+
+      case "AttributeSelector":
+        // Validate required fields for AttributeSelector
+        let hasErrors = false;
+
+        // Hair length is required
+        if (!watchedFormValues.hairLength) {
+          setError("hairLength", {
+            type: "manual",
+            message: "Please select your hair length.",
+          });
+          hasErrors = true;
+        } else {
+          clearErrors("hairLength");
+        }
+
+        // Glasses preference is required
+        if (!watchedFormValues.glasses) {
+          setError("glasses", {
+            type: "manual",
+            message: "Please choose your glass preference.",
+          });
+          hasErrors = true;
+        } else {
+          clearErrors("glasses");
+        }
+
+        // Studio name is required
+        if (
+          !watchedFormValues.studioName ||
+          watchedFormValues.studioName.trim() === ""
+        ) {
+          setError("studioName", {
+            type: "manual",
+            message: "Please enter your studio name.",
+          });
+          hasErrors = true;
+        } else {
+          clearErrors("studioName");
+        }
+
+        // Hair color and type are required unless hair length is "Bald" or "Hisab"
+        if (
+          watchedFormValues.hairLength &&
+          watchedFormValues.hairLength !== "Bald" &&
+          watchedFormValues.hairLength !== "Hisab"
+        ) {
+          if (!watchedFormValues.hairColor) {
+            setError("hairColor", {
+              type: "manual",
+              message: "Please select your hair color.",
+            });
+            hasErrors = true;
+          } else {
+            clearErrors("hairColor");
+          }
+
+          if (!watchedFormValues.hairType) {
+            setError("hairType", {
+              type: "manual",
+              message: "Please select your hair type.",
+            });
+            hasErrors = true;
+          } else {
+            clearErrors("hairType");
+          }
+        } else {
+          // Clear hair color and type errors if hair length is Bald or Hisab
+          clearErrors("hairColor");
+          clearErrors("hairType");
+        }
+
+        return !hasErrors;
 
       case "PlanSelector":
         if (isOrgWithTeamCredits) {
@@ -493,12 +585,13 @@ export default function StudioCreate() {
   };
 
   const next = () => {
+    setShouldValidate(true); // Enable validation for current step
     const isValid = validateCurrentStep();
     if (isValid && currentStep < steps.length - 1) {
       setPreviousStep(currentStep);
       const nextStep = currentStep + 1;
       setCurrentStep(nextStep, selectedContext?.type, isOrgWithTeamCredits);
-      setShouldValidate(false);
+      setShouldValidate(false); // Disable validation for next step until user tries to proceed
     }
   };
 
@@ -567,12 +660,7 @@ export default function StudioCreate() {
         return;
       }
 
-      const isValid = await trigger();
-      if (!isValid) {
-        setStudioMessage("Please check all required fields");
-        setIsSubmitting(false);
-        return;
-      }
+      // Form validation is handled by baseFormSchema.parse(data) above
 
       const characterDetails = {
         gender: sanitizedData.gender,
@@ -788,6 +876,8 @@ export default function StudioCreate() {
     }
   }, [errors]);
 
+  // Note: Removed automatic error clearing to prevent ImageUploader issues
+
   return (
     <ContentLayout navbar={false} title="Create Studio">
       {isCreditsLoading ? (
@@ -796,7 +886,13 @@ export default function StudioCreate() {
         </div>
       ) : (
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={(e) => {
+            e.preventDefault(); // Prevent default form submission
+            // Only submit if we're on the final step and user clicks submit
+            if (currentStep === steps.length - 1) {
+              handleSubmit(onSubmit)(e);
+            }
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -867,10 +963,10 @@ export default function StudioCreate() {
               ) : (
                 <Button
                   className="disabled:opacity-50"
-                  type={currentStep === steps.length - 1 ? "submit" : "button"}
+                  type="button" // Always button to prevent form submission
                   onClick={
                     currentStep === steps.length - 1
-                      ? handleSubmit(onSubmit)
+                      ? handleSubmit(onSubmit) // This will handle validation and submission
                       : next
                   }
                   disabled={mainButtonDisabled}

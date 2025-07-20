@@ -1,5 +1,5 @@
 import { unstable_noStore as noStore } from "next/cache";
-import StudioDetailClient from "./components/StudioDetailClient";
+import StudioDetailClient from "../../components/studio/StudioDetailClient";
 
 export default function StudioDetailPage({ params }) {
   noStore();

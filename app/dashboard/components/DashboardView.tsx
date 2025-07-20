@@ -3,7 +3,7 @@
 import { useAccountContext } from "@/context/AccountContext";
 import { LoadingSkeleton, ErrorMessage } from "@/components/ui/loading";
 import StudioCreate from "@/app/dashboard/studio/create/page";
-import OrgAdminDashboard from "@/components/dashboard/organizations/OrgAdminDashboard";
+import OrgAdminDashboard from "@/app/dashboard/components/organizations/OrgAdminDashboard";
 
 interface DashboardClientProps {
   userId: string;

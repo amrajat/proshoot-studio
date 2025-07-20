@@ -1,7 +1,7 @@
 import { MenuIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Menu } from "@/components/dashboard/sidebar/menu";
+import { Menu } from "./menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AccountSwitcher } from "./account-switcher";
 import { SidebarProvider } from "@/components/ui/sidebar";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Sidebar } from "@/components/dashboard/sidebar/sidebar";
+import { Sidebar } from "./sidebar";
 import { useSidebarContext } from "@/context/SidebarContext";
 import { cn } from "@/lib/utils";
 import Link from "next/link";

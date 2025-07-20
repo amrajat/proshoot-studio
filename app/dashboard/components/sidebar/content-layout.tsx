@@ -1,4 +1,4 @@
-import { Navbar } from "@/components/dashboard/sidebar/navbar";
+import { Navbar } from "./navbar";
 
 interface ContentLayoutProps {
   title: string;

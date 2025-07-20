@@ -15,13 +15,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, AlertCircle, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { sendOrganizationInvitesAction } from "@/app/dashboard/organization/_actions/invitationActions";
+import { sendOrganizationInvitesAction } from "./actions/invitationActions";
 import { usePathname } from "next/navigation";
 
 const emailListSchema = z.object({

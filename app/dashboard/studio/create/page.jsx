@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
-import { ContentLayout } from "@/components/dashboard/sidebar/content-layout";
+import { ContentLayout } from "../../components/sidebar/content-layout";
 import { useAccountContext } from "@/context/AccountContext";
 import { useCredits, hasPlanCredits } from "@/hooks/useCredits";
 import useDashboardStore from "@/stores/dashboardStore";
@@ -18,18 +18,18 @@ import { generatePrompts } from "@/utils/prompts";
 import {
   GLOBAL_ALL_CLOTHING_OPTIONS,
   ALL_BACKGROUND_OPTIONS as GLOBAL_ALL_BACKGROUND_OPTIONS,
-} from "@/app/utils/studioOptions";
+} from "@/app/utils/styleOptions";
 import {
   formSchema as baseFormSchema,
   GENDERS,
-} from "./components/Forms/Variables";
-import VariableSelector from "./components/Forms/VariableSelector";
-import PlanSelector from "./components/Forms/PlanSelector";
-import ImageUploader from "./components/Forms/ImageUploader";
+} from "../../components/studio/create/Variables";
+import VariableSelector from "../../components/studio/create/VariableSelector";
+import PlanSelector from "../../components/studio/create/PlanSelector";
+import ImageUploader from "../../components/studio/create/ImageUploader";
 
-import StylePairing from "./components/Forms/StylePairing";
-import AttributeSelector from "./components/Forms/AttributeSelector";
-import { createCheckoutUrl } from "../_actions/checkout";
+import StylePairing from "../../components/studio/create/StylePairing";
+import AttributeSelector from "../../components/studio/create/AttributeSelector";
+import { createCheckoutUrl } from "../../actions/checkout";
 
 export default function StudioCreate() {
   const router = useRouter();

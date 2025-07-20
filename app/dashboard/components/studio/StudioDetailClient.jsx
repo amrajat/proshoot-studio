@@ -5,8 +5,8 @@ import { useAccountContext } from "@/context/AccountContext";
 import {
   getStudioDetailsData,
   toggleFavoriteAction,
-} from "../_actions/getStudioDetailsData";
-import { updateStudioDownloadedStatusAction } from "../_actions/studioActions";
+} from "../../actions/getStudioDetailsData";
+import { updateStudioDownloadedStatusAction } from "../../actions/studioActions";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {

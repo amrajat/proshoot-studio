@@ -1,7 +1,7 @@
 import createSupabaseServerClient from "@/lib/supabase/server-client";
 import { redirect } from "next/navigation";
-import { ContentLayout } from "@/components/dashboard/sidebar/content-layout";
-import BillingClient from "@/app/dashboard/billing/_components/BillingClient";
+import { ContentLayout } from "../components/sidebar/content-layout";
+import BillingClient from "../components/billing/BillingClient";
 import { unstable_noStore as noStore } from "next/cache";
 
 export default async function BillingPage() {

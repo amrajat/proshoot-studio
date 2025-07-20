@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { acceptInvitationAction } from "./_actions/acceptInviteActions"; // Use the new unified action
+import { acceptInvitationAction } from "./actions/acceptInviteActions"; // Use the new unified action
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -11,7 +11,9 @@ import { Loader2 } from "lucide-react";
 function AcceptInvitePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading"
+  );
   const [message, setMessage] = useState<string | null>(null);
 
   // Use a ref to prevent useEffect from running twice in dev strict mode
@@ -27,7 +29,7 @@ function AcceptInvitePageContent() {
     const processInvite = async () => {
       if (!token) {
         setMessage("The invitation link is missing a token.");
-        setStatus('error');
+        setStatus("error");
         return;
       }
 
@@ -35,7 +37,7 @@ function AcceptInvitePageContent() {
 
       if (result.error) {
         setMessage(result.error);
-        setStatus('error');
+        setStatus("error");
         toast({
           title: "Error Accepting Invitation",
           description: result.error,
@@ -45,7 +47,7 @@ function AcceptInvitePageContent() {
         const successMsg =
           result.data.message || `Successfully joined the organization!`;
         setMessage(successMsg);
-        setStatus('success');
+        setStatus("success");
         toast({ title: "Invite Accepted!", description: successMsg });
         // Redirect to the dashboard after a short delay to allow user to read the message
         setTimeout(() => router.push("/dashboard"), 2000);
@@ -55,7 +57,7 @@ function AcceptInvitePageContent() {
     processInvite();
   }, [token, router]);
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin mb-4" />
@@ -66,7 +68,7 @@ function AcceptInvitePageContent() {
 
   return (
     <div className="flex flex-col justify-center items-center min-h-screen p-4 text-center">
-      {status === 'error' && (
+      {status === "error" && (
         <div className="mb-4 max-w-md p-4 bg-red-100 text-red-700 border border-red-300 rounded-md">
           <h2 className="text-xl font-semibold mb-2">
             Error Accepting Invitation
@@ -74,7 +76,7 @@ function AcceptInvitePageContent() {
           <p>{message}</p>
         </div>
       )}
-      {status === 'success' && (
+      {status === "success" && (
         <div className="mb-4 max-w-md p-4 bg-green-100 text-green-700 border border-green-300 rounded-md">
           <h2 className="text-xl font-semibold mb-2">Invitation Processed</h2>
           <p>{message}</p>

@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useAccountContext } from "@/context/AccountContext";
-import { ContentLayout } from "@/components/dashboard/sidebar/content-layout";
+import { ContentLayout } from "../components/sidebar/content-layout";
+import { useRouter } from "next/navigation";
+import { createCheckout } from "@lemonsqueezy/lemonsqueezy.js";
+import config from "@/config";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,9 +20,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { createCheckout } from "@lemonsqueezy/lemonsqueezy.js";
-import config from "@/config";
 
 // Define bulk discount tiers
 const BULK_DISCOUNT_TIERS = [

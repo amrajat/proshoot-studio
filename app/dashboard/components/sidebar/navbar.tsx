@@ -1,7 +1,7 @@
 "use client";
 
-import { UserNav } from "@/components/dashboard/sidebar/user-nav";
-import { SheetMenu } from "@/components/dashboard/sidebar/sheet-menu";
+import { UserNav } from "./user-nav";
+import { SheetMenu } from "./sheet-menu";
 // import { AccountSwitcher } from "./account-switcher";
 import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-react";
 

@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useAccountContext } from "@/context/AccountContext";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
-import { ContentLayout } from "@/components/dashboard/sidebar/content-layout";
+import { ALL_BACKGROUND_OPTIONS } from "@/app/utils/styleOptions";
+
+import { ContentLayout } from "../components/sidebar/content-layout";
+
 import Heading from "@/components/shared/heading";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -11,7 +14,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ALL_BACKGROUND_OPTIONS } from "@/app/utils/studioOptions";
 
 export default function ManageBackgroundsPage() {
   const { selectedContext, isCurrentUserOrgAdmin } = useAccountContext();
@@ -99,12 +101,15 @@ export default function ManageBackgroundsPage() {
     }
   };
 
-  const backgroundThemes = [...new Set(ALL_BACKGROUND_OPTIONS.map((item) => item.theme))];
+  const backgroundThemes = [
+    ...new Set(ALL_BACKGROUND_OPTIONS.map((item) => item.theme)),
+  ];
   const tabKeys = ["All", ...backgroundThemes];
 
-  const itemsToDisplay = activeTab === "All"
-    ? ALL_BACKGROUND_OPTIONS
-    : ALL_BACKGROUND_OPTIONS.filter((item) => item.theme === activeTab);
+  const itemsToDisplay =
+    activeTab === "All"
+      ? ALL_BACKGROUND_OPTIONS
+      : ALL_BACKGROUND_OPTIONS.filter((item) => item.theme === activeTab);
 
   if (selectedContext?.type === "personal") {
     return (
@@ -113,12 +118,15 @@ export default function ManageBackgroundsPage() {
           Available Background Styles
         </Heading>
         <p className="text-muted-foreground mb-6">
-          Management of restrictions is available for organization administrators.
+          Management of restrictions is available for organization
+          administrators.
         </p>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
           <TabsList className="mb-4">
             {tabKeys.map((group) => (
-              <TabsTrigger key={group} value={group}>{group}</TabsTrigger>
+              <TabsTrigger key={group} value={group}>
+                {group}
+              </TabsTrigger>
             ))}
           </TabsList>
           <TabsContent value={activeTab}>
@@ -159,7 +167,8 @@ export default function ManageBackgroundsPage() {
     <ContentLayout title="Manage Organization Background Options">
       <div className="flex justify-between items-center mb-6">
         <Heading variant={"h2"}>
-          Background Preferences for {selectedContext?.name || "Your Organization"}
+          Background Preferences for{" "}
+          {selectedContext?.name || "Your Organization"}
         </Heading>
         {isCurrentUserOrgAdmin && (
           <Button onClick={handleSaveChanges} disabled={isLoading || isSaving}>
@@ -169,7 +178,9 @@ export default function ManageBackgroundsPage() {
       </div>
 
       {error && <p className="text-destructive mb-4">Error: {error}</p>}
-      {successMessage && <p className="text-green-600 mb-4">{successMessage}</p>}
+      {successMessage && (
+        <p className="text-green-600 mb-4">{successMessage}</p>
+      )}
       {!isCurrentUserOrgAdmin && (
         <p className="text-orange-600 mb-4">
           You do not have permission to modify these settings.
@@ -189,12 +200,16 @@ export default function ManageBackgroundsPage() {
                 onCheckedChange={handleToggleRestrictBackgrounds}
                 disabled={isLoading || isSaving}
               />
-              <Label htmlFor="restrict-backgrounds-toggle" className="text-base">
+              <Label
+                htmlFor="restrict-backgrounds-toggle"
+                className="text-base"
+              >
                 Restrict background options for organization members
               </Label>
             </div>
             <p className="text-sm text-muted-foreground">
-              If enabled, only the background items selected below will be available.
+              If enabled, only the background items selected below will be
+              available.
             </p>
           </CardContent>
         </Card>
@@ -206,7 +221,9 @@ export default function ManageBackgroundsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
           <TabsList className="mb-4">
             {tabKeys.map((group) => (
-              <TabsTrigger key={group} value={group}>{group}</TabsTrigger>
+              <TabsTrigger key={group} value={group}>
+                {group}
+              </TabsTrigger>
             ))}
           </TabsList>
           <TabsContent value={activeTab}>
@@ -244,7 +261,9 @@ export default function ManageBackgroundsPage() {
                       {restrictBackgrounds && isCurrentUserOrgAdmin && (
                         <Switch
                           checked={isApproved}
-                          onCheckedChange={() => handleBackgroundItemToggle(item.id)}
+                          onCheckedChange={() =>
+                            handleBackgroundItemToggle(item.id)
+                          }
                           aria-label={`Approve ${item.name}`}
                           disabled={!restrictBackgrounds || isSaving}
                         />

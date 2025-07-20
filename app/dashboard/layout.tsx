@@ -1,4 +1,4 @@
-import DashboardLayout from "@/components/dashboard/sidebar/dashboard-layout";
+import DashboardLayout from "./components/sidebar/dashboard-layout";
 import createSupabaseServerClient from "@/lib/supabase/server-client"; // Use ServerClient for layouts
 import { redirect } from "next/navigation";
 

@@ -6,7 +6,7 @@ import { GeistSans } from "geist/font/sans";
 // import FirstPromoterScript from "@/components/services/first-promoter";
 // import { PostHogProvider } from "@/components/services/posthog";
 import { SidebarProvider } from "@/context/SidebarContext";
-import GoogleOneTapComponent from "@/components/google-one-tap";
+import GoogleOneTapComponent from "@/app/auth/components/google-one-tap";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.URL || "http://localhost:3000"),

@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import OrganizationForm from "@/components/dashboard/organizations/OrganizationForm";
+import OrganizationForm from "@/app/dashboard/components/organizations/OrganizationForm";
 
 import {
   DropdownMenu,

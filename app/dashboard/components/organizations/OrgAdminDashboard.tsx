@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { useAccountContext } from "@/context/AccountContext";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
-import { createOrganizationCreditCheckoutAction } from "@/app/dashboard/organization/_actions/lemonSqueezyActions";
+import { createOrganizationCreditCheckoutAction } from "@/app/dashboard/components/organizations/actions/lemonSqueezyActions";
 import { lemonsqueezy } from "@/config/lemonsqueezy";
 import { ShoppingCart, Loader2 } from "lucide-react";
 import { InviteMembersDialog } from "./InviteMembersDialog";

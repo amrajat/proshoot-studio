@@ -1,14 +1,13 @@
-// app/dashboard/_components/OrganizationForm.tsx
+// app/dashboard/components/OrganizationForm.tsx
 "use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   createOrganizationAction,
   updateOrganizationAction,
-} from "@/app/dashboard/organization/_actions/organizationActions";
+} from "./actions/organizationActions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "@/hooks/use-toast";

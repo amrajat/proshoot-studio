@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useAccountContext } from "@/context/AccountContext";
-import { getStudiosData } from "../_actions/getStudiosData"; // Action import
+import { getStudiosData } from "../../actions/getStudiosData"; // Action import
 import StudioGridItem from "./StudioGridItem";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Info, RefreshCw } from "lucide-react";
-import { ContentLayout } from "@/components/dashboard/sidebar/content-layout"; // If title is dynamic from here
+import { ContentLayout } from "../../components/sidebar/content-layout"; // If title is dynamic from here
 
 export default function StudioListClient() {
   const {

@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { useAccountContext } from "@/context/AccountContext";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
-import { ContentLayout } from "@/components/dashboard/sidebar/content-layout";
+import { ContentLayout } from "../components/sidebar/content-layout";
+import { GLOBAL_ALL_CLOTHING_OPTIONS } from "@/app/utils/styleOptions";
+
 import Heading from "@/components/shared/heading";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -11,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { GLOBAL_ALL_CLOTHING_OPTIONS } from "@/app/utils/studioOptions";
 
 export default function ManageClothingPage() {
   const { selectedContext, isCurrentUserOrgAdmin } = useAccountContext();
@@ -99,12 +100,15 @@ export default function ManageClothingPage() {
     }
   };
 
-  const clothingThemes = [...new Set(GLOBAL_ALL_CLOTHING_OPTIONS.map(item => item.theme))];
+  const clothingThemes = [
+    ...new Set(GLOBAL_ALL_CLOTHING_OPTIONS.map((item) => item.theme)),
+  ];
   const tabKeys = ["All", ...clothingThemes];
 
-  const itemsToDisplay = activeTab === 'All' 
-    ? GLOBAL_ALL_CLOTHING_OPTIONS 
-    : GLOBAL_ALL_CLOTHING_OPTIONS.filter(item => item.theme === activeTab);
+  const itemsToDisplay =
+    activeTab === "All"
+      ? GLOBAL_ALL_CLOTHING_OPTIONS
+      : GLOBAL_ALL_CLOTHING_OPTIONS.filter((item) => item.theme === activeTab);
 
   if (selectedContext?.type === "personal") {
     return (
@@ -113,32 +117,35 @@ export default function ManageClothingPage() {
           Available Clothing Styles
         </Heading>
         <p className="text-muted-foreground mb-6">
-          Management of restrictions is available for organization administrators.
+          Management of restrictions is available for organization
+          administrators.
         </p>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
           <TabsList className="mb-4">
             {tabKeys.map((group) => (
-              <TabsTrigger key={group} value={group}>{group}</TabsTrigger>
+              <TabsTrigger key={group} value={group}>
+                {group}
+              </TabsTrigger>
             ))}
           </TabsList>
           {tabKeys.map((group) => (
             <TabsContent key={group} value={group}>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {itemsToDisplay.map((item) => (
-                    <Card key={item.name} className="relative">
-                      <CardContent className="flex flex-col items-center p-4">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-24 h-24 object-cover rounded mb-2"
-                          loading="lazy"
-                        />
-                        <span className="font-medium text-center text-sm">
-                          {item.name}
-                        </span>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  <Card key={item.name} className="relative">
+                    <CardContent className="flex flex-col items-center p-4">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-24 h-24 object-cover rounded mb-2"
+                        loading="lazy"
+                      />
+                      <span className="font-medium text-center text-sm">
+                        {item.name}
+                      </span>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </TabsContent>
           ))}
@@ -161,7 +168,8 @@ export default function ManageClothingPage() {
     <ContentLayout title="Manage Organization Clothing Options">
       <div className="flex justify-between items-center mb-6">
         <Heading variant={"h2"}>
-          Clothing Preferences for {selectedContext?.name || "Your Organization"}
+          Clothing Preferences for{" "}
+          {selectedContext?.name || "Your Organization"}
         </Heading>
         {isCurrentUserOrgAdmin && (
           <Button onClick={handleSaveChanges} disabled={isLoading || isSaving}>
@@ -171,7 +179,9 @@ export default function ManageClothingPage() {
       </div>
 
       {error && <p className="text-destructive mb-4">Error: {error}</p>}
-      {successMessage && <p className="text-green-600 mb-4">{successMessage}</p>}
+      {successMessage && (
+        <p className="text-green-600 mb-4">{successMessage}</p>
+      )}
       {!isCurrentUserOrgAdmin && (
         <p className="text-orange-600 mb-4">
           You do not have permission to modify these settings.
@@ -196,7 +206,8 @@ export default function ManageClothingPage() {
               </Label>
             </div>
             <p className="text-sm text-muted-foreground">
-              If enabled, only the clothing items selected below will be available.
+              If enabled, only the clothing items selected below will be
+              available.
             </p>
           </CardContent>
         </Card>
@@ -208,7 +219,9 @@ export default function ManageClothingPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
           <TabsList className="mb-4">
             {tabKeys.map((group) => (
-              <TabsTrigger key={group} value={group}>{group}</TabsTrigger>
+              <TabsTrigger key={group} value={group}>
+                {group}
+              </TabsTrigger>
             ))}
           </TabsList>
           <TabsContent value={activeTab}>
@@ -246,7 +259,9 @@ export default function ManageClothingPage() {
                       {restrictClothing && isCurrentUserOrgAdmin && (
                         <Switch
                           checked={isApproved}
-                          onCheckedChange={() => handleClothingItemToggle(item.id)}
+                          onCheckedChange={() =>
+                            handleClothingItemToggle(item.id)
+                          }
                           aria-label={`Approve ${item.name}`}
                           disabled={!restrictClothing || isSaving}
                         />

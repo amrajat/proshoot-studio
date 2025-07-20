@@ -1,7 +1,7 @@
 import { unstable_noStore as noStore } from "next/cache";
 // ContentLayout is now used within StudioListClient, can be removed here if not used otherwise
 // import { ContentLayout } from "@/components/dashboard/sidebar/content-layout";
-import StudioListClient from "./components/StudioListClient";
+import StudioListClient from "../components/studio/StudioListClient";
 
 export default async function StudioListPage() {
   noStore(); // Good practice for pages that might host dynamic client components

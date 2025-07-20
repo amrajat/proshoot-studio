@@ -8,7 +8,7 @@ import { Copy, RefreshCw, Loader2, Ban } from "lucide-react";
 import {
   generateShareableLinkAction,
   revokeShareableLinkAction,
-} from "@/app/dashboard/organization/_actions/invitationActions";
+} from "./actions/invitationActions";
 import {
   AlertDialog,
   AlertDialogAction,

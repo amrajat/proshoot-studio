@@ -53,7 +53,7 @@ BEGIN
     END IF;
     
     -- Check if user is already a member of the determined organization
-    IF EXISTS (SELECT 1 FROM public.organization_members WHERE user_id = p_accepting_user_id AND organization_id = v_org_id) THEN
+    IF EXISTS (SELECT 1 FROM public.members WHERE user_id = p_accepting_user_id AND organization_id = v_org_id) THEN
         IF v_invite.id IS NOT NULL AND v_invite.status = 'pending' THEN
              UPDATE public.invitations SET status = 'accepted', updated_at = now() WHERE id = v_invite.id;
         END IF;
@@ -70,7 +70,7 @@ BEGIN
         DO UPDATE SET team = credits.team + 1, updated_at = now() RETURNING id INTO v_user_credit_id;
         IF NOT FOUND THEN RAISE EXCEPTION 'Failed to find or create a personal credit account for the user.'; END IF;
         
-        INSERT INTO public.organization_members (user_id, organization_id, role) VALUES (p_accepting_user_id, v_org_id, v_invite_role);
+        INSERT INTO public.members (user_id, organization_id, role) VALUES (p_accepting_user_id, v_org_id, v_invite_role);
 
         IF v_invite.id IS NOT NULL THEN
             UPDATE public.invitations SET status = 'accepted', updated_at = now() WHERE id = v_invite.id;

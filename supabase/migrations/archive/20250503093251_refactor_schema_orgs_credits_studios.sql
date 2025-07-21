@@ -17,7 +17,7 @@ DECLARE
 BEGIN
   SELECT EXISTS (
     SELECT 1
-    FROM public.organization_members om
+    FROM public.members om
     WHERE om.organization_id = org_id
     AND om.user_id = auth.uid()
   ) INTO is_member;
@@ -35,7 +35,7 @@ DECLARE
 BEGIN
   SELECT EXISTS (
     SELECT 1
-    FROM public.organization_members om
+    FROM public.members om
     WHERE om.organization_id = org_id
     AND om.user_id = auth.uid()
     AND om.role = 'admin'::public.organization_role
@@ -112,67 +112,67 @@ CREATE POLICY "Allow admins full access to approved backgrounds" ON public.organ
 CREATE POLICY "Allow members to read approved backgrounds" ON public.organization_approved_backgrounds FOR SELECT USING (is_org_member(organization_id));
 
 -- 5. Organization Members Table
-CREATE TABLE public.organization_members (
+CREATE TABLE public.members (
     id uuid PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
     user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     role public.organization_role NOT NULL DEFAULT 'member',
     joined_at timestamptz DEFAULT now() NOT NULL,
-    CONSTRAINT organization_members_uq UNIQUE (organization_id, user_id)
+    CONSTRAINT members_uq UNIQUE (organization_id, user_id)
 );
-ALTER TABLE public.organization_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.members ENABLE ROW LEVEL SECURITY;
 -- RLS Policies for Organization Members
 -- Policy 1: Allow users to SELECT their own membership record(s)
-CREATE POLICY "Allow users SELECT own membership" ON public.organization_members
+CREATE POLICY "Allow users SELECT own membership" ON public.members
   FOR SELECT
   USING ( auth.uid() = user_id );
 
 -- Policy 2: Allow organization admins to INSERT members into their org
-CREATE POLICY "Allow org admins to INSERT new members" ON public.organization_members
+CREATE POLICY "Allow org admins to INSERT new members" ON public.members
   FOR INSERT
   WITH CHECK (
     EXISTS (
       SELECT 1
-      FROM public.organization_members mem
-      WHERE mem.organization_id = organization_members.organization_id
+      FROM public.members mem
+      WHERE mem.organization_id = members.organization_id
       AND mem.user_id = auth.uid()
       AND mem.role = 'admin'::public.organization_role
     )
   );
 
 -- Policy 3: Allow organization admins to UPDATE members in their org (e.g., change role)
-CREATE POLICY "Allow org admins UPDATE members" ON public.organization_members
+CREATE POLICY "Allow org admins UPDATE members" ON public.members
   FOR UPDATE
   USING (
     EXISTS (
       SELECT 1
-      FROM public.organization_members mem
-      WHERE mem.organization_id = organization_members.organization_id
+      FROM public.members mem
+      WHERE mem.organization_id = members.organization_id
       AND mem.user_id = auth.uid()
       AND mem.role = 'admin'::public.organization_role
     )
   );
 
 -- Policy 4: Allow organization admins to DELETE members from their org
-CREATE POLICY "Allow org admins DELETE members" ON public.organization_members
+CREATE POLICY "Allow org admins DELETE members" ON public.members
   FOR DELETE
   USING (
     EXISTS (
       SELECT 1
-      FROM public.organization_members mem
-      WHERE mem.organization_id = organization_members.organization_id
+      FROM public.members mem
+      WHERE mem.organization_id = members.organization_id
       AND mem.user_id = auth.uid()
       AND mem.role = 'admin'::public.organization_role
     )
   );
 
--- RLS Policies for Organizations (Now after organization_members table exists)
+-- RLS Policies for Organizations (Now after members table exists)
 CREATE POLICY "Allow owner full access to org" ON public.organizations FOR ALL USING (auth.uid() = owner_user_id);
-CREATE POLICY "Allow members read access to their orgs" ON public.organizations FOR SELECT USING ( id IN (SELECT organization_id FROM public.organization_members WHERE user_id = auth.uid()) );
+CREATE POLICY "Allow members read access to their orgs" ON public.organizations FOR SELECT USING ( id IN (SELECT organization_id FROM public.members WHERE user_id = auth.uid()) );
 CREATE POLICY "Allow org admins to update restriction flags" ON public.organizations FOR UPDATE USING (
     EXISTS (
         SELECT 1
-        FROM public.organization_members mem
+        FROM public.members mem
         WHERE mem.organization_id = organizations.id
         AND mem.user_id = auth.uid()
         AND mem.role = 'admin'::public.organization_role
@@ -201,7 +201,7 @@ CREATE TABLE public.invitations (
 );
 COMMENT ON COLUMN public.invitations.token IS 'Stores the specific invite token used, if applicable. Can be NULL or store a non-unique universal organization token for email invites.';
 ALTER TABLE public.invitations ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow org admins full access to invitations" ON public.invitations FOR ALL USING ( (SELECT role FROM public.organization_members mem WHERE mem.user_id = auth.uid() AND mem.organization_id = invitations.organization_id) = 'admin'::public.organization_role );
+CREATE POLICY "Allow org admins full access to invitations" ON public.invitations FOR ALL USING ( (SELECT role FROM public.members mem WHERE mem.user_id = auth.uid() AND mem.organization_id = invitations.organization_id) = 'admin'::public.organization_role );
 -- Add policy for invited users to view based on email? Requires careful thought.
 
 -- 7. Studios Table
@@ -265,7 +265,7 @@ CREATE POLICY "Allow select for creators or org members direct join" ON public.p
                 s.organization_id IS NOT NULL
                 AND EXISTS (
                     SELECT 1
-                    FROM public.organization_members om
+                    FROM public.members om
                     WHERE om.organization_id = s.organization_id
                       AND om.user_id = auth.uid()
                 )
@@ -308,7 +308,7 @@ CREATE POLICY "Allow select for creators or org members direct join" ON public.r
                 s.organization_id IS NOT NULL
                 AND EXISTS (
                     SELECT 1
-                    FROM public.organization_members om
+                    FROM public.members om
                     WHERE om.organization_id = s.organization_id
                       AND om.user_id = auth.uid()
                 )
@@ -384,7 +384,7 @@ CREATE TABLE public.purchases (
 );
 ALTER TABLE public.purchases ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow user read access to own purchases" ON public.purchases FOR SELECT USING ( auth.uid() = user_id );
-CREATE POLICY "Allow org admin read access to org purchases" ON public.purchases FOR SELECT USING ( organization_id IS NOT NULL AND (SELECT role FROM public.organization_members mem WHERE mem.user_id = auth.uid() AND mem.organization_id = purchases.organization_id) = 'admin'::public.organization_role );
+CREATE POLICY "Allow org admin read access to org purchases" ON public.purchases FOR SELECT USING ( organization_id IS NOT NULL AND (SELECT role FROM public.members mem WHERE mem.user_id = auth.uid() AND mem.organization_id = purchases.organization_id) = 'admin'::public.organization_role );
 
 -- 12. Credits Table (Refactored for Model 1)
 CREATE TABLE public.credits (
@@ -410,7 +410,7 @@ ALTER TABLE public.credits ENABLE ROW LEVEL SECURITY;
 -- RLS Policy for personal credits (user_id matches AND org_id IS NULL)
 CREATE POLICY "Allow user read access to own PERSONAL credit balance" ON public.credits FOR SELECT USING ( auth.uid() = user_id AND organization_id IS NULL );
 -- RLS Policy for organization credits (org_id matches user's membership)
-CREATE POLICY "Allow org members read access to ORG credit balance" ON public.credits FOR SELECT USING ( organization_id IS NOT NULL AND organization_id IN (SELECT organization_id FROM public.organization_members WHERE user_id = auth.uid()) );
+CREATE POLICY "Allow org members read access to ORG credit balance" ON public.credits FOR SELECT USING ( organization_id IS NOT NULL AND organization_id IN (SELECT organization_id FROM public.members WHERE user_id = auth.uid()) );
 -- Note: Update/Insert/Delete should likely be restricted to backend/triggers/functions
 
 -- 13. Transactions Table
@@ -478,7 +478,7 @@ BEGIN
     VALUES (p_owner_user_id, BTRIM(p_org_name), p_team_size, p_website, p_industry, p_department, p_position)
     RETURNING id, name INTO v_created_org_id, v_created_org_name;
 
-    INSERT INTO organization_members (organization_id, user_id, role)
+    INSERT INTO members (organization_id, user_id, role)
     VALUES (v_created_org_id, p_owner_user_id, 'admin'::organization_role);
 
     UPDATE public.credits
@@ -506,7 +506,7 @@ DECLARE
 BEGIN
   SELECT EXISTS (
     SELECT 1
-    FROM public.organization_members mem
+    FROM public.members mem
     WHERE mem.organization_id = p_org_id
       AND mem.user_id = auth.uid()
       AND mem.role = 'admin'::organization_role

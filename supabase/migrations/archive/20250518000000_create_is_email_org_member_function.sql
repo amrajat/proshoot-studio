@@ -10,7 +10,7 @@ DECLARE
 BEGIN
   SELECT EXISTS (
     SELECT 1
-    FROM organization_members om
+    FROM members om
     JOIN profiles p ON om.user_id = p.user_id
     WHERE p.email = p_email
     AND om.organization_id = p_org_id

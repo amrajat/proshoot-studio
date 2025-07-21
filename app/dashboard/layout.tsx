@@ -50,7 +50,7 @@ export default async function DemoLayout({
       .eq("user_id", user.id)
       .maybeSingle(),
     supabase
-      .from("organization_members")
+      .from("members")
       // Update select to fetch all needed fields
       .select(
         "organizations (id, name, owner_user_id, team_size, website, industry, department, position)"

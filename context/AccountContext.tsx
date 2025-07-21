@@ -162,7 +162,7 @@ export const AccountProvider = ({
             .eq("user_id", user.id)
             .maybeSingle(),
           supabase
-            .from("organization_members")
+            .from("members")
             .select(
               "organizations (id, name, owner_user_id, team_size, website, industry, department, position, invite_token, invite_token_generated_at)"
             )

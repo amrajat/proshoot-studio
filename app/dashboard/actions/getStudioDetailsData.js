@@ -58,7 +58,7 @@ export async function getStudioDetailsData(
     currentContextId === studio.organization_id
   ) {
     const { data: orgMember, error: orgMemberError } = await supabase
-      .from("organization_members")
+      .from("members")
       .select("role, organizations (owner_user_id)")
       .eq("user_id", currentUserId)
       .eq("organization_id", studio.organization_id)
@@ -76,12 +76,13 @@ export async function getStudioDetailsData(
   }
 
   if (!studio.downloaded) {
-    // PREVIEW MODE: Only show preview_headshots, no favorites, no result_headshots
+    // PREVIEW MODE: Only show preview images from headshots table
     viewMode = "preview";
     const { data: preview, error: previewError } = await supabase
-      .from("preview_headshots")
-      .select("id, image_url, created_at")
+      .from("headshots")
+      .select("id, preview as image_url, created_at")
       .eq("studio_id", studioId)
+      .not("preview", "is", null)
       .order("created_at", { ascending: true });
 
     previewHeadshots = preview || [];
@@ -101,16 +102,17 @@ export async function getStudioDetailsData(
       // Fetch favorites for this user and studio
       const { data: favs, error: favsError } = await supabase
         .from("favorites")
-        .select("headshot_id, result_headshots (id, image_url, created_at)")
+        .select("headshot_id, headshots (id, result as image_url, created_at)")
         .eq("user_id", currentUserId)
         .eq("studio_id", studioId);
 
-      favorites = (favs || []).map((f) => f.result_headshots).filter(Boolean);
+      favorites = (favs || []).map((f) => f.headshots).filter(Boolean);
       // Fetch all result headshots
       const { data: results, error: resultsError } = await supabase
-        .from("result_headshots")
-        .select("id, image_url, created_at")
+        .from("headshots")
+        .select("id, result as image_url, created_at")
         .eq("studio_id", studioId)
+        .not("result", "is", null)
         .order("created_at", { ascending: true });
 
       resultHeadshots = results || [];
@@ -125,12 +127,12 @@ export async function getStudioDetailsData(
       // Fetch favorites for the studio creator
       const { data: adminFavoritesData, error: adminFavError } = await supabase
         .from("favorites")
-        .select("headshot_id, result_headshots (id, image_url, created_at)")
+        .select("headshot_id, headshots (id, result as image_url, created_at)")
         .eq("studio_id", studioId)
         .eq("user_id", studio.creator_user_id);
 
       favorites = (adminFavoritesData || [])
-        .map((f) => f.result_headshots)
+        .map((f) => f.headshots)
         .filter(Boolean);
       resultHeadshots = [];
     } else {
@@ -138,9 +140,10 @@ export async function getStudioDetailsData(
       viewMode = "creator";
       canFavorite = false;
       const { data: results, error: resultsError } = await supabase
-        .from("result_headshots")
-        .select("id, image_url, created_at")
+        .from("headshots")
+        .select("id, result as image_url, created_at")
         .eq("studio_id", studioId)
+        .not("result", "is", null)
         .order("created_at", { ascending: true });
 
       resultHeadshots = results || [];

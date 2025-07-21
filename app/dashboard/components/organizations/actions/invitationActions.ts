@@ -28,7 +28,7 @@ async function verifyAdmin(
   }
 
   const { data: memberData, error: memberError } = await supabase
-    .from("organization_members")
+    .from("members")
     .select("role")
     .eq("user_id", user.id)
     .eq("organization_id", organization_id)

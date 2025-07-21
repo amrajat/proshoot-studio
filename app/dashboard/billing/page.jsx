@@ -30,7 +30,7 @@ export default async function BillingPage() {
 
   // 3. Fetch organization memberships (including role)
   const { data: membershipsData, error: membershipsError } = await supabase
-    .from("organization_members")
+    .from("members")
     .select("organization_id, user_id, role")
     .eq("user_id", user.id);
   if (membershipsError)

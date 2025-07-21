@@ -19,7 +19,7 @@ async function getStudioDisplayImage(
   // Logic for favorite image
   const favoriteQuery = supabase
     .from("favorites")
-    .select("result_headshots (image_url)")
+    .select("headshots (result)")
     .eq("studio_id", studio.id);
 
   if (isOrgAdminViewingOrgStudio) {
@@ -34,12 +34,8 @@ async function getStudioDisplayImage(
     .limit(1)
     .maybeSingle();
 
-  if (
-    favorite &&
-    favorite.result_headshots &&
-    favorite.result_headshots.image_url
-  ) {
-    favoriteImageUrl = favorite.result_headshots.image_url;
+  if (favorite && favorite.headshots && favorite.headshots.result) {
+    favoriteImageUrl = favorite.headshots.result;
   }
   if (favoriteError && favoriteError.code !== "PGRST116") {
     console.warn(
@@ -50,17 +46,18 @@ async function getStudioDisplayImage(
 
   if (favoriteImageUrl) return favoriteImageUrl;
 
-  // If no favorite, get the first result_headshot
+  // If no favorite, get the first result headshot
   const { data: resultHeadshot, error: resultHeadshotError } = await supabase
-    .from("result_headshots")
-    .select("image_url")
+    .from("headshots")
+    .select("result")
     .eq("studio_id", studio.id)
+    .not("result", "is", null)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
 
-  if (resultHeadshot && resultHeadshot.image_url) {
-    return resultHeadshot.image_url;
+  if (resultHeadshot && resultHeadshot.result) {
+    return resultHeadshot.result;
   }
   if (resultHeadshotError && resultHeadshotError.code !== "PGRST116") {
     console.warn(
@@ -99,7 +96,7 @@ export async function getStudiosData(currentUserId, contextType, contextId) {
   } else if (contextType === "organization" && contextId) {
     effectiveContextId = contextId;
     const { data: orgMember, error: orgMemberError } = await supabase
-      .from("organization_members")
+      .from("members")
       .select("role, organizations (name, owner_user_id)")
       .eq("user_id", currentUserId)
       .eq("organization_id", contextId)

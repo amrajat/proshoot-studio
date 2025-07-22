@@ -19,35 +19,13 @@ CREATE POLICY "organizations_owner_full_access" ON public.organizations
 -- Policy: Organization members can view their organizations
 CREATE POLICY "organizations_members_select" ON public.organizations
     FOR SELECT
-    USING (
-        id IN (
-            SELECT organization_id 
-            FROM public.members 
-            WHERE user_id = auth.uid()
-        )
-    );
+    USING (is_org_member(id));
 
 -- Policy: Organization admins can update organization settings
 CREATE POLICY "organizations_admins_update" ON public.organizations
     FOR UPDATE
-    USING (
-        EXISTS (
-            SELECT 1
-            FROM public.members om
-            WHERE om.organization_id = organizations.id
-            AND om.user_id = auth.uid()
-            AND om.role = 'ADMIN'::public.organization_role
-        )
-    )
-    WITH CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.members om
-            WHERE om.organization_id = organizations.id
-            AND om.user_id = auth.uid()
-            AND om.role = 'ADMIN'::public.organization_role
-        )
-    );
+    USING (is_org_admin(id))
+    WITH CHECK (is_org_admin(id));
 
 -- ============================================================================
 -- members TABLE POLICIES
@@ -61,50 +39,18 @@ CREATE POLICY "members_select_own" ON public.members
 -- Policy: Organization admins can view all members of their organizations
 CREATE POLICY "members_admins_select_all" ON public.members
     FOR SELECT
-    USING (
-        EXISTS (
-            SELECT 1
-            FROM public.members admin_mem
-            WHERE admin_mem.organization_id = members.organization_id
-            AND admin_mem.user_id = auth.uid()
-            AND admin_mem.role = 'ADMIN'::public.organization_role
-        )
-    );
+    USING (is_org_admin(organization_id));
 
 -- Policy: Organization admins can add new members
 CREATE POLICY "members_admins_insert" ON public.members
     FOR INSERT
-    WITH CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.members admin_mem
-            WHERE admin_mem.organization_id = members.organization_id
-            AND admin_mem.user_id = auth.uid()
-            AND admin_mem.role = 'ADMIN'::public.organization_role
-        )
-    );
+    WITH CHECK (is_org_admin(organization_id));
 
 -- Policy: Organization admins can update member roles
 CREATE POLICY "members_admins_update" ON public.members
     FOR UPDATE
-    USING (
-        EXISTS (
-            SELECT 1
-            FROM public.members admin_mem
-            WHERE admin_mem.organization_id = members.organization_id
-            AND admin_mem.user_id = auth.uid()
-            AND admin_mem.role = 'ADMIN'::public.organization_role
-        )
-    )
-    WITH CHECK (
-        EXISTS (
-            SELECT 1
-            FROM public.members admin_mem
-            WHERE admin_mem.organization_id = members.organization_id
-            AND admin_mem.user_id = auth.uid()
-            AND admin_mem.role = 'ADMIN'::public.organization_role
-        )
-    );
+    USING (is_org_admin(organization_id))
+    WITH CHECK (is_org_admin(organization_id));
 
 -- Policy: Organization admins can remove members, users can remove themselves
 CREATE POLICY "members_delete" ON public.members
@@ -114,13 +60,7 @@ CREATE POLICY "members_delete" ON public.members
         auth.uid() = user_id
         OR
         -- Organization admins can remove any member
-        EXISTS (
-            SELECT 1
-            FROM public.members admin_mem
-            WHERE admin_mem.organization_id = members.organization_id
-            AND admin_mem.user_id = auth.uid()
-            AND admin_mem.role = 'ADMIN'::public.organization_role
-        )
+        is_org_admin(organization_id)
     );
 
 -- ============================================================================

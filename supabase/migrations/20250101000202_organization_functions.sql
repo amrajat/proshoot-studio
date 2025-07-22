@@ -14,11 +14,12 @@
 CREATE OR REPLACE FUNCTION public.is_org_member(org_id UUID)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     is_member BOOLEAN;
 BEGIN
+    -- Use SECURITY DEFINER to bypass RLS and prevent infinite recursion
     SELECT EXISTS (
         SELECT 1
         FROM public.members om
@@ -42,11 +43,12 @@ $$;
 CREATE OR REPLACE FUNCTION public.is_org_admin(org_id UUID)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     is_admin BOOLEAN;
 BEGIN
+    -- Use SECURITY DEFINER to bypass RLS and prevent infinite recursion
     SELECT EXISTS (
         SELECT 1
         FROM public.members om
@@ -71,11 +73,12 @@ $$;
 CREATE OR REPLACE FUNCTION public.is_org_owner(org_id UUID)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     is_owner BOOLEAN;
 BEGIN
+    -- Use SECURITY DEFINER to bypass RLS and prevent infinite recursion
     SELECT EXISTS (
         SELECT 1
         FROM public.organizations o
@@ -99,11 +102,12 @@ $$;
 CREATE OR REPLACE FUNCTION public.is_email_org_member(p_email TEXT, p_org_id UUID)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     is_member BOOLEAN;
 BEGIN
+    -- Use SECURITY DEFINER to bypass RLS and prevent infinite recursion
     SELECT EXISTS (
         SELECT 1
         FROM public.members om

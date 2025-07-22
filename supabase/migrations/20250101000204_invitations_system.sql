@@ -119,7 +119,7 @@ CREATE OR REPLACE FUNCTION public.accept_invitation(
 )
 RETURNS JSONB
 LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     v_invite RECORD;

@@ -14,6 +14,7 @@
 CREATE OR REPLACE FUNCTION public.generate_random_token(token_length INTEGER DEFAULT 32)
 RETURNS TEXT
 LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
     -- Generate random token using pgcrypto
@@ -29,6 +30,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.is_valid_email(email_address TEXT)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
     IF email_address IS NULL THEN
@@ -48,6 +50,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.is_valid_url(url_string TEXT)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
     IF url_string IS NULL THEN
@@ -67,6 +70,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.slugify(input_text TEXT)
 RETURNS TEXT
 LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
     IF input_text IS NULL THEN
@@ -98,6 +102,7 @@ CREATE OR REPLACE FUNCTION public.calculate_percentage(
 )
 RETURNS NUMERIC
 LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
     IF total_value = 0 OR total_value IS NULL THEN
@@ -116,6 +121,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.format_file_size(bytes_size BIGINT)
 RETURNS TEXT
 LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     units TEXT[] := ARRAY['B', 'KB', 'MB', 'GB', 'TB'];
@@ -147,6 +153,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.get_time_ago(input_timestamp TIMESTAMPTZ)
 RETURNS TEXT
 LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     time_diff INTERVAL;
@@ -190,6 +197,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.clean_jsonb(input_jsonb JSONB)
 RETURNS JSONB
 LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     key TEXT;
@@ -221,6 +229,7 @@ CREATE OR REPLACE FUNCTION public.safe_divide(
 )
 RETURNS NUMERIC
 LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
     IF denominator = 0 OR denominator IS NULL THEN

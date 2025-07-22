@@ -34,6 +34,19 @@ CREATE TRIGGER on_studios_updated
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_updated_at();
 
+
+-- Trigger: Update timestamp on purchases changes
+CREATE TRIGGER on_purchases_updated
+    BEFORE UPDATE ON public.purchases
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_updated_at();
+
+-- Trigger: Update timestamp on transactions changes
+CREATE TRIGGER on_transactions_updated
+    BEFORE UPDATE ON public.transactions
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_updated_at();
+
 -- ============================================================================
 -- TRIGGER COMMENTS
 -- ============================================================================
@@ -49,3 +62,9 @@ COMMENT ON TRIGGER on_credits_updated ON public.credits IS
 
 COMMENT ON TRIGGER on_studios_updated ON public.studios IS 
     'Automatically updates updated_at timestamp when studio is modified';
+
+COMMENT ON TRIGGER on_purchases_updated ON public.purchases IS 
+    'Automatically updates updated_at timestamp when purchase is modified';
+
+COMMENT ON TRIGGER on_transactions_updated ON public.transactions IS 
+    'Automatically updates updated_at timestamp when transaction is modified';

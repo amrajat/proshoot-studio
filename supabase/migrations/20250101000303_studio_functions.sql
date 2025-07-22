@@ -17,7 +17,7 @@ CREATE OR REPLACE FUNCTION public.update_downloaded_value(
 )
 RETURNS VOID
 LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
     UPDATE public.studios
@@ -48,7 +48,7 @@ CREATE OR REPLACE FUNCTION public.append_preview_image_urls(
 )
 RETURNS VOID
 LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     i INTEGER;
@@ -103,7 +103,7 @@ CREATE OR REPLACE FUNCTION public.append_results_image_urls(
 )
 RETURNS VOID
 LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     i INTEGER;
@@ -200,7 +200,7 @@ RETURNS TABLE (
     result_count BIGINT
 )
 LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     target_user_id UUID;
@@ -257,7 +257,7 @@ CREATE OR REPLACE FUNCTION public.create_studio_with_credits(
 )
 RETURNS UUID
 LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     v_studio_id UUID;

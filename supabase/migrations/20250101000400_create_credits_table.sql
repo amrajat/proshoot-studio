@@ -45,39 +45,12 @@ CREATE INDEX idx_credits_team ON public.credits(team) WHERE team > 0;
 -- CONSTRAINTS
 -- ============================================================================
 
--- Ensure credit values are non-negative
-ALTER TABLE public.credits 
-ADD CONSTRAINT credits_balance_non_negative_check 
-CHECK (balance >= 0);
-
-ALTER TABLE public.credits 
-ADD CONSTRAINT credits_starter_non_negative_check 
-CHECK (starter >= 0);
-
-ALTER TABLE public.credits 
-ADD CONSTRAINT credits_professional_non_negative_check 
-CHECK (professional >= 0);
-
-ALTER TABLE public.credits 
-ADD CONSTRAINT credits_studio_non_negative_check 
-CHECK (studio >= 0);
-
-ALTER TABLE public.credits 
-ADD CONSTRAINT credits_team_non_negative_check 
-CHECK (team >= 0);
+-- Essential business logic constraints only
 
 -- Unique constraint: one credit record per user per organization (NULL for personal)
 ALTER TABLE public.credits 
 ADD CONSTRAINT credits_user_org_unique 
 UNIQUE (user_id, organization_id);
-
--- Business rule: team credits only exist for organizations
-ALTER TABLE public.credits 
-ADD CONSTRAINT credits_team_org_only_check 
-CHECK (
-    (organization_id IS NULL AND team = 0) OR 
-    (organization_id IS NOT NULL)
-);
 
 -- ============================================================================
 -- TABLE OWNERSHIP AND COMMENTS

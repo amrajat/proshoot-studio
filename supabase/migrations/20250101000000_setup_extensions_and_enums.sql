@@ -70,15 +70,6 @@ CREATE TYPE public.purchase_status AS ENUM (
     'FAILED'
 );
 
--- Transaction types for credit system
-CREATE TYPE public.transaction_type AS ENUM (
-    'PURCHASE',
-    'STUDIO_CREATION',
-    'REFUND',
-    'ADMIN_GRANT',
-    'INITIAL',
-    'INVITE_ACCEPT_DEDUCT'
-);
 
 -- Credit transfer types for different plans
 CREATE TYPE public.credit_transfer_type AS ENUM (
@@ -90,6 +81,19 @@ CREATE TYPE public.credit_transfer_type AS ENUM (
     'NONE'
 );
 
+-- Account context for transactions
+CREATE TYPE public.account_type AS ENUM (
+    'PERSONAL',
+    'ORGANIZATION'
+);
+
+-- Payment providers for purchases
+CREATE TYPE public.payment_provider AS ENUM (
+    'STRIPE',
+    'LEMONSQUEEZY'
+);
+
+
 -- ============================================================================
 -- COMMENTS
 -- ============================================================================
@@ -98,8 +102,9 @@ COMMENT ON TYPE public.invitation_status IS 'Status of organization invitations'
 COMMENT ON TYPE public.organization_role IS 'Roles within an organization';
 COMMENT ON TYPE public.studio_status IS 'Processing status of studio creation';
 COMMENT ON TYPE public.purchase_status IS 'Status of purchase transactions';
-COMMENT ON TYPE public.transaction_type IS 'Types of credit transactions';
 COMMENT ON TYPE public.credit_transfer_type IS 'Types of credit transfers between plans';
+COMMENT ON TYPE public.account_type IS 'Type of account context.';
+COMMENT ON TYPE public.payment_provider IS 'Payment provider used (e.g., stripe, paypal)';
 
 -- Reset session settings
 RESET ALL;

@@ -18,16 +18,13 @@ const useFormPersistence = (formKey, formValues, dependencies = []) => {
           bodyType: formValues.bodyType || "",
           height: formValues.height || "",
           weight: formValues.weight || "",
-          howDidYouHearAboutUs: formValues.howDidYouHearAboutUs || "",
           plan: formValues.plan || "",
           images: formValues.images || "",
           // Ensure arrays are properly structured
           style_pairs: Array.isArray(formValues.style_pairs)
             ? formValues.style_pairs.filter(
                 (pair) =>
-                  typeof pair === "object" &&
-                  pair.clothing &&
-                  pair.background
+                  typeof pair === "object" && pair.clothing && pair.background
               )
             : [],
         };
@@ -53,9 +50,7 @@ const useFormPersistence = (formKey, formValues, dependencies = []) => {
           style_pairs: Array.isArray(parsed.style_pairs)
             ? parsed.style_pairs.filter(
                 (pair) =>
-                  typeof pair === "object" &&
-                  pair.clothing &&
-                  pair.background
+                  typeof pair === "object" && pair.clothing && pair.background
               )
             : [],
         };

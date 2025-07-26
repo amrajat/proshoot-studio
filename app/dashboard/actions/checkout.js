@@ -20,7 +20,7 @@ import config from "@/config";
  * @throws {Error} When LemonSqueezy API fails
  * @throws {Error} When plan configuration is invalid
  */
-export async function createCheckoutUrl(plan, user, email) {
+export async function createCheckoutUrl(plan, user, email, customData = {}) {
   // ===== ENVIRONMENT VALIDATION =====
   if (!process.env.LS_API_KEY) {
     throw new Error("Lemon Squeezy API key not set in environment variables.");
@@ -44,17 +44,18 @@ export async function createCheckoutUrl(plan, user, email) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   
   const planConfig = config.PLANS[plan];
-  if (!planConfig || !planConfig.variantId) {
+  if (!planConfig || !planConfig.variantID) {
     throw new Error(`Invalid plan selected for checkout: ${plan}`);
   }
 
   try {
     // ===== CREATE CHECKOUT SESSION =====
-    const checkout = await createCheckout(storeId, planConfig.variantId, {
+    const checkout = await createCheckout(storeId, planConfig.variantID, {
       checkoutData: {
         email,
         custom: {
           user_id: user,
+          ...customData,
         },
       },
       productOptions: {

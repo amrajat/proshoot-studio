@@ -30,22 +30,7 @@ const getInitialStep = (contextType, hasTeamCredits) => {
 const useDashboardStore = create(
   devtools(
     (set, get) => ({
-      // Studio Create Form State
-      currentStep: 0,
-      previousStep: 0,
-      shouldValidate: false,
-      studioMessage: false,
-      isSubmitting: false,
-      errorDetails: null,
-      isBuyingPlan: false,
-      clothingError: "",
-      backgroundsError: "",
-
-      // Context tracking for step persistence
-      currentContext: null,
-      hasTeamCredits: false,
-
-      // Organization Settings State
+      // Organization Settings State (kept for backwards compatibility)
       orgApprovedClothing: null,
       orgApprovedBackgrounds: null,
       isOrgSettingsLoading: false,
@@ -95,16 +80,6 @@ const useDashboardStore = create(
 
         return validStep;
       },
-
-      // Actions for Studio Create
-      setPreviousStep: (step) => set({ previousStep: step }),
-      setShouldValidate: (validate) => set({ shouldValidate: validate }),
-      setStudioMessage: (message) => set({ studioMessage: message }),
-      setIsSubmitting: (submitting) => set({ isSubmitting: submitting }),
-      setErrorDetails: (details) => set({ errorDetails: details }),
-      setIsBuyingPlan: (buying) => set({ isBuyingPlan: buying }),
-      setClothingError: (error) => set({ clothingError: error }),
-      setBackgroundsError: (error) => set({ backgroundsError: error }),
 
       // Actions for Organization Settings
       setOrgApprovedClothing: (clothing) =>
@@ -202,32 +177,6 @@ const useDashboardStore = create(
           set({ isInviting: false });
           return { success: false, error: message };
         }
-      },
-
-      // Enhanced reset function with storage cleanup
-      resetStudioForm: (contextType, hasTeamCredits) => {
-        // Clear localStorage
-        if (typeof window !== "undefined") {
-          const storageKey = getStepStorageKey(contextType, hasTeamCredits);
-          localStorage.removeItem(storageKey);
-
-          // Also clear old keys for cleanup
-          localStorage.removeItem("currentFormStep");
-
-          console.log(`[Store] Cleared storage for ${storageKey}`);
-        }
-
-        set({
-          currentStep: 0,
-          previousStep: 0,
-          shouldValidate: false,
-          studioMessage: false,
-          isSubmitting: false,
-          errorDetails: null,
-          isBuyingPlan: false,
-          clothingError: "",
-          backgroundsError: "",
-        });
       },
 
       resetOrgAdmin: () =>

@@ -182,14 +182,6 @@ export default function AttributeSelector({
           error={errors.weight}
           isSubmitting={isSubmitting}
         />
-        <AttributeSelect
-          control={control}
-          fieldName="howDidYouHearAboutUs"
-          label="How did you hear about us?"
-          options={ATTRIBUTES.howDidYouHearAboutUs.options}
-          error={errors.howDidYouHearAboutUs}
-          isSubmitting={isSubmitting}
-        />
       </div>
     </fieldset>
   );

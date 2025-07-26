@@ -315,21 +315,6 @@ export const ATTRIBUTES = {
     label: "Studio Name",
     description: "Usually it's your name, e.g., 'yourname'",
   },
-  howDidYouHearAboutUs: {
-    label: "How did you hear about us?",
-    description: "Please select an option",
-    options: [
-      "Google",
-      "Reddit",
-      "Instagram",
-      "X (Twitter)",
-      "LinkedIn",
-      "TikTok",
-      "YouTube",
-      "Friend & Colleague",
-      "Facebook",
-    ],
-  },
 };
 
 // Updated Zod Form Schema
@@ -373,7 +358,6 @@ export const formSchema = z
     weight: z.string().optional(),
 
     images: z.string(),
-    howDidYouHearAboutUs: z.string().optional(),
     studioName: z.string().min(1, "Please enter your studio name."),
   })
   .refine(

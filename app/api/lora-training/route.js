@@ -17,20 +17,6 @@ export async function POST(request) {
       return NextResponse.json({ error: "User not found." }, { status: 401 });
     }
 
-    // 1. Update 'referred_by' in profiles if applicable
-    if (requestData.howDidYouHearAboutUs) {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ referred_by: requestData.howDidYouHearAboutUs })
-        .eq("user_id", user.id)
-        .is("referred_by", null);
-
-      if (profileError) {
-        console.error("Error updating profile referred_by:", profileError);
-        // Not a critical error, so we just log it and continue.
-      }
-    }
-
     const studioId = uuidv4();
 
     // 2. Create a new entry in public.studios table

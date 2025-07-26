@@ -18,20 +18,6 @@ export async function addStudio(formData, accountContext) {
       throw new Error("User not found.");
     }
 
-    // 1. Update 'refered_by' in profiles if applicable
-    if (formData.howDidYouHearAboutUs) {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ refered_by: formData.howDidYouHearAboutUs })
-        .eq("id", user.id)
-        .is("refered_by", null);
-
-      if (profileError) {
-        console.error("Error updating profile:", profileError);
-        // We can decide not to block studio creation for this, so just log it.
-      }
-    }
-
     studioId = uuidv4();
 
     // 2. Create a new entry in public.studios table

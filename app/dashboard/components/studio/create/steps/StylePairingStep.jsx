@@ -1,0 +1,619 @@
+/**
+ * Style Pairing Step Component
+ * Allows users to create clothing and background combinations
+ */
+
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Plus,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Shirt,
+  Image as ImageIcon,
+  Info,
+  Shuffle,
+  RotateCcw,
+} from "lucide-react";
+import useStudioCreateStore from "@/stores/studioCreateStore";
+import {
+  GLOBAL_ALL_CLOTHING_OPTIONS,
+  ALL_BACKGROUND_OPTIONS,
+} from "@/app/utils/styleOptions";
+import { useStudioForm } from "../forms/StudioFormProvider";
+import config from "@/config";
+
+const StylePairingStep = ({ formData, errors, accountContext }) => {
+  // Get fresh data directly from store to avoid stale props
+  const {
+    updateFormField,
+    nextStep,
+    prevStep,
+    setErrors,
+    formData: storeFormData,
+  } = useStudioCreateStore();
+
+  const { validateCurrentStep } = useStudioForm();
+  const [selectedClothing, setSelectedClothing] = useState("");
+  const [selectedBackground, setSelectedBackground] = useState("");
+  const [showClearDialog, setShowClearDialog] = useState(false);
+
+  // Store previous values in localStorage for persistence across component mounts
+  const PREV_VALUES_KEY = "style-pairing-prev-values";
+
+  const getPrevValues = () => {
+    if (typeof window === "undefined") return { plan: null, gender: null };
+    try {
+      const stored = localStorage.getItem(PREV_VALUES_KEY);
+      return stored ? JSON.parse(stored) : { plan: null, gender: null };
+    } catch {
+      return { plan: null, gender: null };
+    }
+  };
+
+  const setPrevValues = (values) => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(PREV_VALUES_KEY, JSON.stringify(values));
+    } catch (error) {}
+  };
+
+  // Use store data as source of truth
+  const currentPlan = storeFormData.plan;
+  const currentGender = storeFormData.gender;
+  const currentPairs = storeFormData.style_pairs || [];
+
+  // Keep prop data for compatibility
+  const stylePairs = formData.style_pairs || [];
+  const selectedPlan = formData.plan;
+  const selectedGender = formData.gender;
+
+  // Get plan configuration from config using store data
+  const planConfig = useMemo(() => {
+    return config.PLANS[currentPlan] || config.PLANS.starter;
+  }, [currentPlan]);
+
+  // Filter clothing options by gender using store data
+  const filteredClothingOptions = useMemo(() => {
+    if (!currentGender) return [];
+    return GLOBAL_ALL_CLOTHING_OPTIONS.filter(
+      (item) => item.gender === currentGender || item.gender === "unisex"
+    );
+  }, [currentGender]);
+
+  // Use all background options
+  const backgroundOptions = ALL_BACKGROUND_OPTIONS;
+
+  // Clear style pairs when plan or gender changes - USING STORE DATA WITH PERSISTENCE
+  useEffect(() => {
+    const prevValues = getPrevValues();
+
+    // If this is the first time we see these values, just store them
+    if (prevValues.plan === null || prevValues.gender === null) {
+      setPrevValues({ plan: currentPlan, gender: currentGender });
+      return;
+    }
+
+    // Check for actual changes using stored previous values
+    const planChanged = prevValues.plan !== currentPlan;
+    const genderChanged = prevValues.gender !== currentGender;
+
+    // If plan or gender changed and we have pairs, clear them
+    if ((planChanged || genderChanged) && currentPairs.length > 0) {
+      // Clear the pairs immediately
+      updateFormField("style_pairs", []);
+
+      // Show message
+      const changeType =
+        planChanged && genderChanged
+          ? "plan and gender"
+          : planChanged
+          ? "plan"
+          : "gender";
+      setErrors({
+        style_pairs: `Style pairs cleared due to ${changeType} change. Please select new combinations.`,
+      });
+    }
+
+    // Always update the stored previous values
+    setPrevValues({ plan: currentPlan, gender: currentGender });
+  }, [
+    currentPlan,
+    currentGender,
+    currentPairs.length,
+    updateFormField,
+    setErrors,
+  ]);
+
+  // Additional useEffect to monitor plan config changes and enforce limits
+  useEffect(() => {
+    if (currentPairs.length > planConfig.stylesLimit) {
+      // Trim to plan limit
+      const trimmedPairs = currentPairs.slice(0, planConfig.stylesLimit);
+      updateFormField("style_pairs", trimmedPairs);
+      setErrors({
+        style_pairs: `Reduced to ${planConfig.stylesLimit} combinations due to plan limit`,
+      });
+    }
+  }, [
+    planConfig.stylesLimit,
+    currentPairs.length,
+    currentPlan,
+    updateFormField,
+    setErrors,
+  ]);
+
+  const addStylePair = () => {
+    if (!selectedClothing || !selectedBackground) {
+      setErrors({ stylePair: "Please select both clothing and background" });
+      return;
+    }
+
+    // Check plan limit
+    if (currentPairs.length >= planConfig.stylesLimit) {
+      setErrors({
+        stylePair: `Maximum ${planConfig.stylesLimit} style combinations allowed for your plan`,
+      });
+      return;
+    }
+
+    // Check if this combination already exists
+    const exists = currentPairs.some(
+      (pair) =>
+        pair.clothing === selectedClothing &&
+        pair.background === selectedBackground
+    );
+
+    if (exists) {
+      setErrors({ stylePair: "This combination already exists" });
+      return;
+    }
+
+    const newPairs = [
+      ...currentPairs,
+      {
+        clothing: selectedClothing,
+        background: selectedBackground,
+        id: Date.now(), // Simple ID for React keys
+      },
+    ];
+
+    updateFormField("style_pairs", newPairs);
+    setSelectedClothing("");
+    setSelectedBackground("");
+    setErrors({});
+  };
+
+  const handleAutoPair = () => {
+    const newPairs = [];
+    const clothingCount = filteredClothingOptions.length;
+    const backgroundCount = backgroundOptions.length;
+
+    if (clothingCount === 0 || backgroundCount === 0) {
+      setErrors({ stylePair: "No clothing or background options available" });
+      return;
+    }
+
+    const maxPairs = Math.min(
+      planConfig.stylesLimit,
+      clothingCount * backgroundCount
+    );
+
+    // Create arrays of shuffled indexes for random selection
+    const shuffledClothingIndexes = [...Array(clothingCount).keys()].sort(
+      () => Math.random() - 0.5
+    );
+    const shuffledBackgroundIndexes = [...Array(backgroundCount).keys()].sort(
+      () => Math.random() - 0.5
+    );
+
+    // Keep track of used combinations to avoid duplicates
+    const usedCombinations = new Set();
+
+    let attempts = 0;
+    const maxAttempts = maxPairs * 3; // Prevent infinite loops
+
+    while (newPairs.length < maxPairs && attempts < maxAttempts) {
+      // Get random clothing and background
+      const clothingIndex = shuffledClothingIndexes[attempts % clothingCount];
+      const backgroundIndex =
+        shuffledBackgroundIndexes[attempts % backgroundCount];
+
+      const clothing = filteredClothingOptions[clothingIndex];
+      const background = backgroundOptions[backgroundIndex];
+
+      const combinationKey = `${clothing.id}-${background.id}`;
+
+      // Only add if this combination hasn't been used
+      if (!usedCombinations.has(combinationKey)) {
+        newPairs.push({
+          clothing: clothing.id,
+          background: background.id,
+          id: Date.now() + newPairs.length,
+        });
+        usedCombinations.add(combinationKey);
+      }
+
+      attempts++;
+    }
+
+    updateFormField("style_pairs", newPairs);
+    setErrors({});
+  };
+
+  const handleClearAll = () => {
+    updateFormField("style_pairs", []);
+    setShowClearDialog(false);
+    setErrors({});
+  };
+
+  const removeStylePair = (index) => {
+    const newPairs = currentPairs.filter((_, i) => i !== index);
+    updateFormField("style_pairs", newPairs);
+  };
+
+  const handleNext = () => {
+    // Get the latest pairs from store to ensure we have fresh data
+    const latestPairs = storeFormData.style_pairs || [];
+
+    // Validate that at least one combination is selected
+    if (latestPairs.length === 0) {
+      setErrors({
+        style_pairs: "At least one style combination is required.",
+      });
+      return;
+    }
+
+    // Clear any existing errors
+    setErrors({});
+    nextStep();
+  };
+
+  // Helper function to get item details by ID
+  const getClothingById = (id) =>
+    filteredClothingOptions.find((item) => item.id === id);
+  const getBackgroundById = (id) =>
+    backgroundOptions.find((item) => item.id === id);
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-semibold">Style Combinations</h2>
+        <p className="text-muted-foreground">
+          Create combinations of clothing and backgrounds for your headshots
+        </p>
+        <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+          <Badge variant="outline">
+            {currentPairs.length} / {planConfig.stylesLimit} combinations
+          </Badge>
+          <span>•</span>
+          <span>Gender: {currentGender}</span>
+          <span>•</span>
+          <span>Plan: {currentPlan}</span>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-center gap-3">
+        <Button
+          variant="outline"
+          onClick={handleAutoPair}
+          disabled={currentPairs.length >= planConfig.stylesLimit}
+          className="flex items-center gap-2"
+        >
+          <Shuffle className="h-4 w-4" />
+          Auto Pair (
+          {Math.min(
+            planConfig.stylesLimit,
+            filteredClothingOptions.length,
+            backgroundOptions.length
+          )}
+          )
+        </Button>
+
+        <Dialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              disabled={currentPairs.length === 0}
+              className="flex items-center gap-2"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Clear All
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Clear All Style Combinations</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to clear all {currentPairs.length} style
+                combinations? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowClearDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleClearAll}>
+                Clear All
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Style Pair Creator */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plus className="h-5 w-5" />
+            Create New Combination
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Two Column Layout */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Clothing Column */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Shirt className="h-5 w-5" />
+                <h4 className="font-medium">
+                  Clothing ({filteredClothingOptions.length} options)
+                </h4>
+              </div>
+              <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto p-2">
+                {filteredClothingOptions.map((option) => (
+                  <Card
+                    key={option.id}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      selectedClothing === option.id
+                        ? "ring-2 ring-primary bg-primary/5"
+                        : "hover:bg-muted/50"
+                    }`}
+                    onClick={() => setSelectedClothing(option.id)}
+                  >
+                    <div className="aspect-square relative overflow-hidden bg-muted rounded-t-lg">
+                      <img
+                        src={option.image}
+                        alt={option.name}
+                        className="w-full h-full object-cover transition-transform duration-200 hover:scale-105 p-1"
+                        loading="lazy"
+                      />
+                    </div>
+                    <CardContent className="p-1">
+                      <h5 className="font-medium text-[10px] text-center leading-tight">
+                        {option.name}
+                      </h5>
+                      {option.theme && (
+                        <Badge
+                          variant="secondary"
+                          className="text-[8px] mt-1 w-full justify-center px-1 py-0"
+                        >
+                          {option.theme}
+                        </Badge>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Background Column */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <ImageIcon className="h-5 w-5" />
+                <h4 className="font-medium">
+                  Backgrounds ({backgroundOptions.length} options)
+                </h4>
+              </div>
+              <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto p-2">
+                {backgroundOptions.map((option) => (
+                  <Card
+                    key={option.id}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      selectedBackground === option.id
+                        ? "ring-2 ring-primary bg-primary/5"
+                        : "hover:bg-muted/50"
+                    }`}
+                    onClick={() => setSelectedBackground(option.id)}
+                  >
+                    <div className="aspect-square relative overflow-hidden bg-muted rounded-t-lg">
+                      <img
+                        src={option.image}
+                        alt={option.name}
+                        className="w-full h-full object-cover transition-transform duration-200 hover:scale-105 p-1"
+                        loading="lazy"
+                      />
+                    </div>
+                    <CardContent className="p-1">
+                      <h5 className="font-medium text-[10px] text-center leading-tight">
+                        {option.name}
+                      </h5>
+                      {option.theme && (
+                        <Badge
+                          variant="secondary"
+                          className="text-[8px] mt-1 w-full justify-center px-1 py-0"
+                        >
+                          {option.theme}
+                        </Badge>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Selected Combination Preview */}
+          {(selectedClothing || selectedBackground) && (
+            <div className="mt-4 p-3 bg-muted rounded-lg">
+              <h5 className="font-medium mb-2">Current Selection:</h5>
+              <div className="flex items-center gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Clothing:</span>{" "}
+                  <span className="font-medium">
+                    {getClothingById(selectedClothing)?.name || "Not selected"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Background:</span>{" "}
+                  <span className="font-medium">
+                    {getBackgroundById(selectedBackground)?.name ||
+                      "Not selected"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Add Button */}
+          <div className="mt-6">
+            <Button
+              onClick={addStylePair}
+              disabled={
+                !selectedClothing ||
+                !selectedBackground ||
+                currentPairs.length >= planConfig.stylesLimit
+              }
+              className="w-full"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Combination ({currentPairs.length}/{planConfig.stylesLimit})
+            </Button>
+          </div>
+
+          {/* Error Display */}
+          {errors.stylePair && (
+            <Alert variant="destructive" className="mt-4">
+              <Info className="h-4 w-4" />
+              <AlertDescription>{errors.stylePair}</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Created Style Pairs */}
+      {currentPairs.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Your Style Combinations ({currentPairs.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {currentPairs.map((pair, index) => {
+                const clothingItem = getClothingById(pair.clothing);
+                const backgroundItem = getBackgroundById(pair.background);
+
+                return (
+                  <div
+                    key={pair.id || index}
+                    className="flex items-center justify-between p-4 border rounded-lg bg-card"
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      {/* Clothing Preview */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-12 h-12 rounded-md overflow-hidden bg-muted">
+                          <img
+                            src={
+                              clothingItem?.image || "/placeholder-clothing.jpg"
+                            }
+                            alt={clothingItem?.name || pair.clothing}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="text-sm">
+                          <div className="font-medium">
+                            {clothingItem?.name || pair.clothing}
+                          </div>
+                          <div className="text-muted-foreground text-xs">
+                            {clothingItem?.theme}
+                          </div>
+                        </div>
+                      </div>
+
+                      <span className="text-muted-foreground text-lg">+</span>
+
+                      {/* Background Preview */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-12 h-12 rounded-md overflow-hidden bg-muted">
+                          <img
+                            src={
+                              backgroundItem?.image ||
+                              "/placeholder-background.jpg"
+                            }
+                            alt={backgroundItem?.name || pair.background}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="text-sm">
+                          <div className="font-medium">
+                            {backgroundItem?.name || pair.background}
+                          </div>
+                          <div className="text-muted-foreground text-xs">
+                            {backgroundItem?.theme}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeStylePair(index)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error Display */}
+      {(errors.style_pairs || errors.stylePair) && (
+        <Alert variant="destructive">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            {errors.style_pairs || errors.stylePair}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Navigation */}
+      <div className="flex justify-between">
+        <Button variant="outline" onClick={prevStep}>
+          <ChevronLeft className="h-4 w-4 mr-2" />
+          Previous
+        </Button>
+        <Button onClick={handleNext} disabled={stylePairs.length === 0}>
+          Next Step
+          <ChevronRight className="h-4 w-4 ml-2" />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default StylePairingStep;

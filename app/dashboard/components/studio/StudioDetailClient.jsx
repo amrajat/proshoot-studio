@@ -5,8 +5,8 @@ import { useAccountContext } from "@/context/AccountContext";
 import {
   getStudioDetailsData,
   toggleFavoriteAction,
-} from "../../actions/getStudioDetailsData";
-import { updateStudioDownloadedStatusAction } from "../../actions/studioActions";
+} from "@/app/dashboard/actions/studio/getStudioDetailsData";
+import { updateStudioDownloadedStatusAction } from "@/app/dashboard/actions/studio/studioActions";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +30,7 @@ import {
   Maximize,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { ContentLayout } from "@/components/dashboard/sidebar/content-layout";
+import { ContentLayout } from "@/app/dashboard/components/sidebar/content-layout";
 import { toast } from "sonner";
 
 // Lightbox-like modal for viewing image larger

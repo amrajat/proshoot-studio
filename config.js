@@ -9,31 +9,42 @@ const config = {
   baseUrl: "https://www.proshoot.co",
 
   PLANS: {
-    Starter: {
+    starter: {
       planPrice: 29,
-      variantId: 387793,
-      headshots: 40,
-      styles: 10,
+      variantID: 387793,
+      totalHeadshots: 40,
+      stylesLimit: 10,
+      accountContext: "personal",
+      mostPopular: false,
     },
 
-    Professional: {
+    professional: {
       planPrice: 39,
-      variantId: 387811,
-      headshots: 60,
-      styles: 15,
+      variantID: 387811,
+      totalHeadshots: 60,
+      stylesLimit: 15,
+      accountContext: "personal",
+      mostPopular: true,
+      features: ["feature one", "feature two", "feature three"],
     },
 
-    Studio: {
+    studio: {
       planPrice: 59,
-      variantId: 387813,
-      headshots: 100,
-      styles: 25,
+      variantID: 387813,
+      totalHeadshots: 100,
+      stylesLimit: 25,
+      accountContext: "personal",
+      mostPopular: false,
+      features: ["feature one", "feature two", "feature three"],
     },
-    Team: {
+    team: {
       planPrice: 49,
-      variantId: 387813,
-      headshots: 100,
-      styles: 25,
+      variantID: 387813,
+      totalHeadshots: 100,
+      stylesLimit: 25,
+      accountContext: "team",
+      mostPopular: false,
+      features: ["feature one", "feature two", "feature three"],
     },
   },
 };

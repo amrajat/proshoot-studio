@@ -2,8 +2,6 @@
 
 import { UserNav } from "./user-nav";
 import { SheetMenu } from "./sheet-menu";
-// import { AccountSwitcher } from "./account-switcher";
-import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-react";
 
 interface NavbarProps {
   title: string;
@@ -19,7 +17,6 @@ export function Navbar({ title }: NavbarProps) {
         </div>
         <div className="flex flex-1 items-center justify-end">
           <UserNav />
-          {/* <AccountSwitcher teams={teams} /> */}
         </div>
       </div>
     </header>

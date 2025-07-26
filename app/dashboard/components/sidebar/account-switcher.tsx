@@ -1,22 +1,15 @@
 "use client";
 
 import * as React from "react";
-import {
-  Building,
-  ChevronsUpDown,
-  Plus,
-  User as LucideUser,
-} from "lucide-react";
+import { Building, ChevronsUpDown, User as LucideUser } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import OrganizationForm from "@/app/dashboard/components/organizations/OrganizationForm";
+import UpdateOrganizationForm from "@/app/dashboard/components/organizations/UpdateOrganizationForm";
 
 import {
   DropdownMenu,
@@ -32,29 +25,27 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  useAccountContext,
-  OrganizationContext,
-  AvailableContext,
-} from "@/context/AccountContext";
-import { useRouter, usePathname } from "next/navigation";
+import { useAccountContext } from "@/context/AccountContext";
+import { useRouter } from "next/navigation";
+
+// Type definition for backward compatibility
+type AvailableContext =
+  | ({ type: "personal" } & { id: "personal"; name: string })
+  | ({ type: "organization" } & {
+      id: string;
+      name: string;
+      owner_user_id: string;
+      team_size?: number | null;
+      invite_token?: string | null;
+    });
 
 export function AccountSwitcher() {
   const { isMobile } = useSidebar();
   const router = useRouter();
-  const pathname = usePathname();
-  const {
-    userId,
-    availableContexts,
-    selectedContext,
-    setSelectedContext,
-    isLoading,
-    refreshContext,
-  } = useAccountContext();
+  const { availableContexts, selectedContext, setSelectedContext, isLoading } =
+    useAccountContext();
 
-  const [isCreateOrgDialogOpen, setCreateOrgDialogOpen] = React.useState(false);
   const [isEditOrgDialogOpen, setEditOrgDialogOpen] = React.useState(false);
-  const [switchToOrgId, setSwitchToOrgId] = React.useState<string | null>(null);
 
   const handleContextSwitch = React.useCallback(
     async (context: AvailableContext) => {
@@ -77,36 +68,6 @@ export function AccountSwitcher() {
     [selectedContext, setSelectedContext, router]
   );
 
-  const ownedOrg = React.useMemo(() => {
-    if (!userId) return null;
-    return availableContexts.find(
-      (context) =>
-        context.type === "organization" && context.owner_user_id === userId
-    ) as OrganizationContext | undefined;
-  }, [availableContexts, userId]);
-
-  const userOwnsAnOrg = React.useMemo(() => {
-    if (!userId) return false;
-    return availableContexts.some(
-      (context) =>
-        context.type === "organization" && context.owner_user_id === userId
-    );
-  }, [availableContexts, userId]);
-
-  React.useEffect(() => {
-    if (switchToOrgId && availableContexts.length > 0) {
-      const targetOrg = availableContexts.find(
-        (ctx) => ctx.type === "organization" && ctx.id === switchToOrgId
-      ) as Extract<AvailableContext, { type: "organization" }> | undefined;
-
-      if (targetOrg) {
-        setSelectedContext(targetOrg);
-        setSwitchToOrgId(null);
-      }
-    }
-  }, [availableContexts, switchToOrgId, setSelectedContext, userId]);
-
-  const handleOpenCreateDialog = () => setCreateOrgDialogOpen(true);
   const handleOpenEditDialog = () => setEditOrgDialogOpen(true);
 
   if (isLoading) {
@@ -151,7 +112,6 @@ export function AccountSwitcher() {
 
   const ActiveIcon =
     selectedContext.type === "personal" ? LucideUser : Building;
-  const activeDescription = selectedContext.name;
 
   return (
     <>
@@ -161,29 +121,31 @@ export function AccountSwitcher() {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                className="data-[state=open]:bg-primary/10 data-[state=open]:text-primary hover:bg-primary/5 transition-colors min-h-[60px] p-3"
               >
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <ActiveIcon className="size-4" />
+                <div className="flex aspect-square size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+                  <ActiveIcon className="size-5" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
+                <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
+                  <span className="truncate font-semibold text-foreground text-base">
+                    {selectedContext.name}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">
                     {selectedContext.type === "personal"
-                      ? "Personal"
+                      ? "Personal Account"
                       : "Organization"}
                   </span>
-                  <span className="truncate text-xs">{activeDescription}</span>
                 </div>
-                <ChevronsUpDown className="ml-auto size-4" />
+                <ChevronsUpDown className="ml-auto size-4 text-muted-foreground flex-shrink-0" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+              className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-lg shadow-lg border"
               align="start"
               side={isMobile ? "bottom" : "right"}
-              sideOffset={4}
+              sideOffset={8}
             >
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
+              <DropdownMenuLabel className="text-xs text-muted-foreground px-3 py-2">
                 Switch Account
               </DropdownMenuLabel>
               {availableContexts.map((context, index) => {
@@ -193,88 +155,54 @@ export function AccountSwitcher() {
                   <DropdownMenuItem
                     key={context.id}
                     onClick={() => handleContextSwitch(context)}
-                    className="gap-2 p-2"
+                    className="gap-3 p-3 cursor-pointer"
                     disabled={context.id === selectedContext?.id}
                   >
-                    <div className="flex size-6 items-center justify-center rounded-sm border">
+                    <div className="flex size-8 items-center justify-center rounded-lg border bg-background">
                       <Icon className="size-4 shrink-0" />
                     </div>
-                    {context.name}
+                    <div className="flex flex-col">
+                      <span className="font-medium">{context.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {context.type === "personal"
+                          ? "Personal"
+                          : "Organization"}
+                      </span>
+                    </div>
                   </DropdownMenuItem>
                 );
               })}
               <DropdownMenuSeparator />
-              {!ownedOrg ? (
-                <DropdownMenuItem
-                  className="gap-2 p-2"
-                  onClick={handleOpenCreateDialog}
-                >
-                  <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                    <Plus className="size-4" />
-                  </div>
-                  <div className="font-medium text-muted-foreground">
-                    Create Organization
-                  </div>
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem
-                  className="gap-2 p-2"
-                  onClick={handleOpenEditDialog}
-                >
-                  <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                    <Building className="size-4" />
-                  </div>
-                  <div className="font-medium text-muted-foreground">
-                    Edit Organization
-                  </div>
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem
+                className="gap-3 p-3 cursor-pointer"
+                onClick={handleOpenEditDialog}
+              >
+                <div className="flex size-8 items-center justify-center rounded-lg border bg-primary/10">
+                  <Building className="size-4 text-primary" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-medium">Edit Organization</span>
+                  <span className="text-xs text-muted-foreground">
+                    Update settings
+                  </span>
+                </div>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-
-      <Dialog
-        open={isCreateOrgDialogOpen}
-        onOpenChange={setCreateOrgDialogOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Organization</DialogTitle>
-            <DialogDescription>
-              Set up a new organization to collaborate with your team.
-            </DialogDescription>
-          </DialogHeader>
-          <OrganizationForm
-            mode="create"
-            onSuccess={async (newOrgId?: string) => {
-              setCreateOrgDialogOpen(false);
-              if (newOrgId) {
-                setSwitchToOrgId(newOrgId);
-              }
-              await refreshContext();
-            }}
-          />
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={isEditOrgDialogOpen} onOpenChange={setEditOrgDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Organization</DialogTitle>
             <DialogDescription>
-              Update the details for your organization: {ownedOrg?.name}
+              Update your organization details
             </DialogDescription>
           </DialogHeader>
-          <OrganizationForm
-            mode="edit"
-            initialData={ownedOrg}
+          <UpdateOrganizationForm
             onSuccess={async () => {
               setEditOrgDialogOpen(false);
-              if (ownedOrg?.id) {
-                setSwitchToOrgId(ownedOrg.id);
-              }
-              await refreshContext();
             }}
           />
         </DialogContent>

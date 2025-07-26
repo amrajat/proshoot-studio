@@ -87,26 +87,26 @@ ALTER TABLE public.invitations ENABLE ROW LEVEL SECURITY;
 -- RLS POLICIES
 -- ============================================================================
 
--- Policy: Organization admins can view all invitations for their org
-CREATE POLICY "invitations_select_org_admins" ON public.invitations
+-- Policy: Organization owners can view all invitations for their org
+CREATE POLICY "invitations_select_org_owners" ON public.invitations
     FOR SELECT
-    USING (is_org_admin(organization_id));
+    USING (is_org_owner(organization_id));
 
--- Policy: Organization admins can create invitations
-CREATE POLICY "invitations_insert_org_admins" ON public.invitations
+-- Policy: Organization owners can create invitations
+CREATE POLICY "invitations_owners_insert" ON public.invitations
     FOR INSERT
-    WITH CHECK (is_org_admin(organization_id));
+    WITH CHECK (is_org_owner(organization_id));
 
--- Policy: Organization admins can update invitations
-CREATE POLICY "invitations_update_org_admins" ON public.invitations
+-- Policy: Organization owners can update invitations
+CREATE POLICY "invitations_owners_update" ON public.invitations
     FOR UPDATE
-    USING (is_org_admin(organization_id))
-    WITH CHECK (is_org_admin(organization_id));
+    USING (is_org_owner(organization_id))
+    WITH CHECK (is_org_owner(organization_id));
 
--- Policy: Organization admins can delete invitations
-CREATE POLICY "invitations_delete_org_admins" ON public.invitations
+-- Policy: Organization owners can delete invitations
+CREATE POLICY "invitations_owners_delete" ON public.invitations
     FOR DELETE
-    USING (is_org_admin(organization_id));
+    USING (is_org_owner(organization_id));
 
 -- ============================================================================
 -- INVITATION ACCEPTANCE FUNCTION

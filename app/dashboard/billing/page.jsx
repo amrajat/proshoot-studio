@@ -92,12 +92,12 @@ export default async function BillingPage() {
     console.error("Transactions Error:", transactionsError.message);
   }
 
-  // Fetch user credits
+  // Fetch user credits (single record per user with their organization_id)
   const { data: credits, error: creditsError } = await supabase
     .from("credits")
     .select("*")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (creditsError) {
     console.error("Credits Error:", creditsError.message);

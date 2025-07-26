@@ -14,13 +14,8 @@ CREATE TABLE public.organizations (
     id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     owner_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
     name TEXT NOT NULL,
-    team_size INTEGER,
-    website TEXT,
-    industry TEXT,
-    department TEXT,
-    "position" TEXT,
+    team_size INTEGER NOT NULL DEFAULT 2,
     invite_token TEXT UNIQUE,
-    invite_token_generated_at TIMESTAMPTZ,
     restrict_clothing_options BOOLEAN NOT NULL DEFAULT FALSE,
     restrict_background_options BOOLEAN NOT NULL DEFAULT FALSE,
     approved_clothing TEXT[] NOT NULL DEFAULT '{}',
@@ -37,9 +32,6 @@ CREATE TABLE public.organizations (
 CREATE INDEX idx_organizations_owner_user_id ON public.organizations(owner_user_id);
 CREATE INDEX idx_organizations_name ON public.organizations(name);
 CREATE INDEX idx_organizations_invite_token ON public.organizations(invite_token) WHERE invite_token IS NOT NULL;
-
--- Secondary access patterns
-CREATE INDEX idx_organizations_industry ON public.organizations(industry) WHERE industry IS NOT NULL;
 CREATE INDEX idx_organizations_created_at ON public.organizations(created_at);
 
 -- ============================================================================
@@ -55,11 +47,6 @@ CHECK (LENGTH(TRIM(name)) > 0);
 ALTER TABLE public.organizations 
 ADD CONSTRAINT organizations_team_size_positive_check 
 CHECK (team_size IS NULL OR team_size > 0);
-
--- Ensure website format when provided
-ALTER TABLE public.organizations 
-ADD CONSTRAINT organizations_website_format_check 
-CHECK (website IS NULL OR website ~* '^https?://');
 
 -- Unique constraints
 ALTER TABLE public.organizations 
@@ -77,12 +64,7 @@ COMMENT ON COLUMN public.organizations.id IS 'Unique organization identifier';
 COMMENT ON COLUMN public.organizations.owner_user_id IS 'User who owns/created the organization';
 COMMENT ON COLUMN public.organizations.name IS 'Organization display name';
 COMMENT ON COLUMN public.organizations.team_size IS 'Number of team members';
-COMMENT ON COLUMN public.organizations.website IS 'Organization website URL';
-COMMENT ON COLUMN public.organizations.industry IS 'Industry/sector of organization';
-COMMENT ON COLUMN public.organizations.department IS 'Department within organization';
-COMMENT ON COLUMN public.organizations."position" IS 'Position/role within organization';
 COMMENT ON COLUMN public.organizations.invite_token IS 'Universal invite token for organization';
-COMMENT ON COLUMN public.organizations.invite_token_generated_at IS 'When the current invite token was generated';
 COMMENT ON COLUMN public.organizations.restrict_clothing_options IS 'Whether to restrict clothing options to approved list';
 COMMENT ON COLUMN public.organizations.restrict_background_options IS 'Whether to restrict background options to approved list';
 COMMENT ON COLUMN public.organizations.approved_clothing IS 'Array of approved clothing option IDs';

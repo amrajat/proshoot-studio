@@ -36,34 +36,9 @@ END;
 $$;
 
 -- ============================================================================
--- FUNCTION: is_org_admin
--- DESCRIPTION: Check if current user is an admin of specified organization
+-- NOTE: is_org_admin function removed - using owner-only model
+-- All organization permissions are now owner-based via is_org_owner()
 -- ============================================================================
-
-CREATE OR REPLACE FUNCTION public.is_org_admin(org_id UUID)
-RETURNS BOOLEAN
-LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = ''
-AS $$
-DECLARE
-    is_admin BOOLEAN;
-BEGIN
-    -- Use SECURITY DEFINER to bypass RLS and prevent infinite recursion
-    SELECT EXISTS (
-        SELECT 1
-        FROM public.members om
-        WHERE om.organization_id = org_id
-        AND om.user_id = auth.uid()
-        AND om.role = 'ADMIN'::public.organization_role
-    ) INTO is_admin;
-    
-    RETURN COALESCE(is_admin, FALSE);
-EXCEPTION
-    WHEN others THEN
-        RAISE WARNING 'Error in is_org_admin for org % and user %: %', org_id, auth.uid(), SQLERRM;
-        RETURN FALSE;
-END;
-$$;
 
 -- ============================================================================
 -- FUNCTION: is_org_owner
@@ -131,15 +106,11 @@ $$;
 -- ============================================================================
 
 ALTER FUNCTION public.is_org_member(UUID) OWNER TO postgres;
-ALTER FUNCTION public.is_org_admin(UUID) OWNER TO postgres;
 ALTER FUNCTION public.is_org_owner(UUID) OWNER TO postgres;
 ALTER FUNCTION public.is_email_org_member(TEXT, UUID) OWNER TO postgres;
 
 COMMENT ON FUNCTION public.is_org_member(UUID) IS 
     'Check if current authenticated user is a member of the specified organization';
-
-COMMENT ON FUNCTION public.is_org_admin(UUID) IS 
-    'Check if current authenticated user is an admin of the specified organization';
 
 COMMENT ON FUNCTION public.is_org_owner(UUID) IS 
     'Check if current authenticated user is the owner of the specified organization';
@@ -153,6 +124,5 @@ COMMENT ON FUNCTION public.is_email_org_member(TEXT, UUID) IS
 
 -- Grant execute permissions to all roles
 GRANT EXECUTE ON FUNCTION public.is_org_member(UUID) TO anon, authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.is_org_admin(UUID) TO anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.is_org_owner(UUID) TO anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.is_email_org_member(TEXT, UUID) TO anon, authenticated, service_role;

@@ -200,7 +200,7 @@ CREATE POLICY "favorites_select_org_admins" ON public.favorites
             FROM public.studios s
             WHERE s.id = favorites.studio_id
             AND s.organization_id IS NOT NULL
-            AND is_org_admin(s.organization_id)
+            AND is_org_owner(s.organization_id)
         )
     );
 

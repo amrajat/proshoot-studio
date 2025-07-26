@@ -14,12 +14,15 @@ export function SheetMenu() {
           <MenuIcon size={20} />
         </Button>
       </SheetTrigger>
-      <SheetContent className="sm:w-72 px-3 h-full flex flex-col" side="left">
+      <SheetContent
+        className="sm:w-80 px-4 h-full flex flex-col bg-background"
+        side="left"
+      >
         <SidebarProvider>
-          <div className="flex-shrink-0 mt-2 text-primary underline-offset-4 hover:underline">
+          <div className="flex-shrink-0 py-6">
             <AccountSwitcher />
           </div>
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto py-4">
             <Menu isOpen />
           </div>
         </SidebarProvider>

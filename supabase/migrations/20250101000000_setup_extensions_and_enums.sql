@@ -49,7 +49,7 @@ CREATE TYPE public.invitation_status AS ENUM (
 
 -- Organization member roles
 CREATE TYPE public.organization_role AS ENUM (
-    'ADMIN',
+    'OWNER',
     'MEMBER'
 );
 

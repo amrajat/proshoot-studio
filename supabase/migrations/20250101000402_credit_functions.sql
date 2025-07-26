@@ -47,50 +47,19 @@ $$;
 -- Removed get_user_credits function - credits are fetched directly via SELECT queries
 
 -- ============================================================================
--- FUNCTION: handle_new_profile_credit
--- DESCRIPTION: Create initial credit record for new user profiles (simplified)
+-- NOTE: Credit initialization is now handled in handle_new_user() function
+-- in auth_functions_and_triggers.sql to consolidate user setup process.
+-- This eliminates the need for separate triggers and functions.
 -- ============================================================================
-
-CREATE OR REPLACE FUNCTION public.handle_new_profile_credit()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = ''
-AS $$
-BEGIN
-    -- Simply insert user_id - all other fields use table defaults (0)
-    INSERT INTO public.credits (user_id)
-    VALUES (NEW.user_id);
-    
-    RETURN NEW;
-EXCEPTION
-    WHEN others THEN
-        RAISE WARNING 'Failed to create initial credits for user %: %', NEW.user_id, SQLERRM;
-        RETURN NEW;
-END;
-$$;
-
--- ============================================================================
--- TRIGGERS
--- ============================================================================
-
--- Trigger: Create initial credit balance for new profiles
-CREATE TRIGGER on_profile_created_add_credits
-    AFTER INSERT ON public.profiles
-    FOR EACH ROW 
-    EXECUTE FUNCTION public.handle_new_profile_credit();
 
 -- ============================================================================
 -- FUNCTION OWNERSHIP AND COMMENTS
 -- ============================================================================
 
 ALTER FUNCTION public.add_credits(UUID, public.credit_transfer_type, INTEGER) OWNER TO postgres;
-ALTER FUNCTION public.handle_new_profile_credit() OWNER TO postgres;
 
 COMMENT ON FUNCTION public.add_credits(UUID, public.credit_transfer_type, INTEGER) IS 
     'Simple credit addition for webhook use';
-
-COMMENT ON FUNCTION public.handle_new_profile_credit() IS 
-    'Create initial credit record when a new profile is created';
 
 -- ============================================================================
 -- PERMISSIONS
@@ -98,4 +67,3 @@ COMMENT ON FUNCTION public.handle_new_profile_credit() IS
 
 -- Grant execute permissions
 GRANT EXECUTE ON FUNCTION public.add_credits(UUID, public.credit_transfer_type, INTEGER) TO service_role;
-GRANT EXECUTE ON FUNCTION public.handle_new_profile_credit() TO anon, authenticated, service_role;

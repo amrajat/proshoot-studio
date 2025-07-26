@@ -18,39 +18,42 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, AlertCircle, Info } from "lucide-react";
+import { Loader2, AlertCircle, Info, Send } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { sendOrganizationInvitesAction } from "./actions/invitationActions";
-import { usePathname } from "next/navigation";
+import { sendOrganizationInvitesAction } from "../../actions/organizations/invitationActions";
 
+// ===== VALIDATION SCHEMA =====
 const emailListSchema = z.object({
   emails: z.string().min(1, "Please enter at least one email address."),
-  // We rely on the server for detailed email format validation per address
+  // Server handles detailed email format validation per address
 });
 
-type InviteFormState = {
-  success: boolean;
-  message?: string;
-  errors?: { email: string; error: string }[];
-};
-
-const initialFormState: InviteFormState = {
+// ===== INITIAL STATE =====
+const initialFormState = {
   success: false,
 };
 
-interface InviteMembersDialogProps {
-  organizationId: string;
-  organizationName: string;
-  ownerUserId: string;
-  currentTeamCredits: number;
-}
-
+/**
+ * Invite Members Dialog Component
+ *
+ * Allows organization owners to invite new members via email:
+ * - Bulk email invitation with comma/newline separation
+ * - Real-time email count and credit validation
+ * - Team credit consumption (1 credit per invite)
+ * - Comprehensive error handling and feedback
+ *
+ * @param {string} organizationId - Organization ID for invitations
+ * @param {string} organizationName - Organization name for display
+ * @param {string} ownerUserId - Owner user ID for validation
+ * @param {number} currentTeamCredits - Available team credits
+ */
 export function InviteMembersDialog({
   organizationId,
   organizationName,
   ownerUserId,
   currentTeamCredits,
-}: InviteMembersDialogProps) {
+}) {
+  // ===== STATE MANAGEMENT =====
   const [isOpen, setIsOpen] = useState(false);
   const [formState, formAction] = useFormState(
     sendOrganizationInvitesAction,
@@ -59,16 +62,18 @@ export function InviteMembersDialog({
   const [pending, setPending] = useState(false);
   const [emailCount, setEmailCount] = useState(0);
 
-  const pathname = usePathname();
-
-  const form = useForm<z.infer<typeof emailListSchema>>({
+  // ===== FORM SETUP =====
+  const form = useForm({
     resolver: zodResolver(emailListSchema),
     defaultValues: { emails: "" },
     mode: "onChange",
   });
+
   const watchedEmails = form.watch("emails");
 
+  // ===== EMAIL COUNT TRACKING =====
   useEffect(() => {
+    // Count valid email addresses (containing @)
     const count =
       watchedEmails
         ?.split(/[\s,]+/)
@@ -76,15 +81,20 @@ export function InviteMembersDialog({
     setEmailCount(count);
   }, [watchedEmails]);
 
+  // ===== FORM STATE HANDLING =====
   useEffect(() => {
     if (formState.message) {
       if (formState.success) {
-        toast({ title: "Success", description: formState.message });
-        setIsOpen(false); // Close dialog on full success
+        // Success: close dialog and reset form
+        toast({
+          title: "Success",
+          description: formState.message,
+        });
+        setIsOpen(false);
         form.reset();
         setEmailCount(0);
       } else {
-        // Keep dialog open on partial success or failure to show errors
+        // Error: keep dialog open to show errors
         toast({
           title: "Error",
           description: formState.message,
@@ -95,25 +105,40 @@ export function InviteMembersDialog({
     setPending(false);
   }, [formState, form]);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  // ===== FORM SUBMISSION =====
+  const handleSubmit = (event) => {
     event.preventDefault();
     form.handleSubmit((data) => {
       setPending(true);
+
+      // Prepare form data for server action
       const formData = new FormData();
       formData.append("emails", data.emails);
       formData.append("organizationId", organizationId);
       formData.append("host", window.location.origin);
+
       formAction(formData);
     })(event);
   };
 
+  // ===== VALIDATION CHECKS =====
   const hasEnoughCredits = currentTeamCredits >= emailCount;
+  const canSubmit =
+    form.formState.isValid && hasEnoughCredits && emailCount > 0 && !pending;
 
+  // ===== RENDER =====
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>Invite Members</Button>
+        <Button
+          className="w-full h-full min-h-[120px] flex flex-col items-center justify-center space-y-2 text-secondary-foreground"
+          variant="secondary"
+        >
+          <Send className="h-6 w-6" />
+          <span className="text-sm font-medium">Invite Members via Email</span>
+        </Button>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Invite Members to {organizationName}</DialogTitle>
@@ -122,7 +147,9 @@ export function InviteMembersDialog({
             costs 1 Team Credit.
           </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Email Input */}
           <div className="grid gap-2">
             <Label htmlFor="emails">Email Addresses</Label>
             <Textarea
@@ -131,33 +158,41 @@ export function InviteMembersDialog({
               placeholder="member1@example.com, member2@example.com"
               rows={5}
               disabled={pending}
+              className="resize-none"
             />
             {form.formState.errors.emails && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.emails.message}
               </p>
             )}
           </div>
 
+          {/* Credits Check Alert */}
           <Alert variant={hasEnoughCredits ? "default" : "destructive"}>
             <Info className="h-4 w-4" />
             <AlertTitle>Credits Check</AlertTitle>
             <AlertDescription>
               Inviting {emailCount} member(s). Available Team Credits:{" "}
-              {currentTeamCredits}.
-              {!hasEnoughCredits && " Insufficient credits."}
+              <span className="font-medium">{currentTeamCredits}</span>.
+              {!hasEnoughCredits && (
+                <span className="block mt-1 font-medium">
+                  ⚠️ Insufficient credits for this invitation.
+                </span>
+              )}
             </AlertDescription>
           </Alert>
 
+          {/* Error Display */}
           {formState.errors && formState.errors.length > 0 && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Invitation Issues</AlertTitle>
               <AlertDescription>
-                <ul className="list-disc pl-5">
+                <ul className="list-disc pl-5 space-y-1">
                   {formState.errors.map((err, i) => (
-                    <li key={i}>
-                      {err.email}: {err.error}
+                    <li key={i} className="text-sm">
+                      <span className="font-medium">{err.email}:</span>{" "}
+                      {err.error}
                     </li>
                   ))}
                 </ul>
@@ -165,20 +200,17 @@ export function InviteMembersDialog({
             </Alert>
           )}
 
+          {/* Submit Button */}
           <DialogFooter>
-            <Button
-              type="submit"
-              disabled={
-                pending ||
-                !form.formState.isValid ||
-                !hasEnoughCredits ||
-                emailCount === 0
-              }
-            >
-              {pending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              Send {emailCount > 0 ? `${emailCount} Invite(s)` : "Invites"}
+            <Button type="submit" disabled={!canSubmit} className="w-full">
+              {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {pending
+                ? "Sending Invites..."
+                : `Send ${
+                    emailCount > 0
+                      ? `${emailCount} Invite${emailCount > 1 ? "s" : ""}`
+                      : "Invites"
+                  }`}
             </Button>
           </DialogFooter>
         </form>

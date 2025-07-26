@@ -21,11 +21,11 @@ CREATE POLICY "organizations_members_select" ON public.organizations
     FOR SELECT
     USING (is_org_member(id));
 
--- Policy: Organization admins can update organization settings
-CREATE POLICY "organizations_admins_update" ON public.organizations
+-- Policy: Organization owners can update organization settings
+CREATE POLICY "organizations_owner_update" ON public.organizations
     FOR UPDATE
-    USING (is_org_admin(id))
-    WITH CHECK (is_org_admin(id));
+    USING (auth.uid() = owner_user_id)
+    WITH CHECK (auth.uid() = owner_user_id);
 
 -- ============================================================================
 -- members TABLE POLICIES
@@ -36,31 +36,31 @@ CREATE POLICY "members_select_own" ON public.members
     FOR SELECT
     USING (auth.uid() = user_id);
 
--- Policy: Organization admins can view all members of their organizations
-CREATE POLICY "members_admins_select_all" ON public.members
+-- Policy: Organization owners can view all members of their organizations
+CREATE POLICY "members_owners_select_all" ON public.members
     FOR SELECT
-    USING (is_org_admin(organization_id));
+    USING (is_org_owner(organization_id));
 
--- Policy: Organization admins can add new members
-CREATE POLICY "members_admins_insert" ON public.members
+-- Policy: Organization owners can add new members
+CREATE POLICY "members_owners_insert" ON public.members
     FOR INSERT
-    WITH CHECK (is_org_admin(organization_id));
+    WITH CHECK (is_org_owner(organization_id));
 
--- Policy: Organization admins can update member roles
-CREATE POLICY "members_admins_update" ON public.members
+-- Policy: Organization owners can update member roles
+CREATE POLICY "members_owners_update" ON public.members
     FOR UPDATE
-    USING (is_org_admin(organization_id))
-    WITH CHECK (is_org_admin(organization_id));
+    USING (is_org_owner(organization_id))
+    WITH CHECK (is_org_owner(organization_id));
 
--- Policy: Organization admins can remove members, users can remove themselves
+-- Policy: Organization owners can remove members, users can remove themselves
 CREATE POLICY "members_delete" ON public.members
     FOR DELETE
     USING (
         -- User can remove themselves
         auth.uid() = user_id
         OR
-        -- Organization admins can remove any member
-        is_org_admin(organization_id)
+        -- Organization owners can remove any member
+        is_org_owner(organization_id)
     );
 
 -- ============================================================================
@@ -73,20 +73,20 @@ COMMENT ON POLICY "organizations_owner_full_access" ON public.organizations IS
 COMMENT ON POLICY "organizations_members_select" ON public.organizations IS 
     'Organization members can view basic organization information';
 
-COMMENT ON POLICY "organizations_admins_update" ON public.organizations IS 
-    'Organization admins can update organization settings';
+COMMENT ON POLICY "organizations_owner_update" ON public.organizations IS 
+    'Organization owners can update organization settings';
 
 COMMENT ON POLICY "members_select_own" ON public.members IS 
     'Users can view their own organization memberships';
 
-COMMENT ON POLICY "members_admins_select_all" ON public.members IS 
-    'Organization admins can view all members of their organizations';
+COMMENT ON POLICY "members_owners_select_all" ON public.members IS 
+    'Organization owners can view all members of their organizations';
 
-COMMENT ON POLICY "members_admins_insert" ON public.members IS 
-    'Organization admins can add new members to their organizations';
+COMMENT ON POLICY "members_owners_insert" ON public.members IS 
+    'Organization owners can add new members to their organizations';
 
-COMMENT ON POLICY "members_admins_update" ON public.members IS 
-    'Organization admins can update member roles in their organizations';
+COMMENT ON POLICY "members_owners_update" ON public.members IS 
+    'Organization owners can update member roles in their organizations';
 
 COMMENT ON POLICY "members_delete" ON public.members IS 
-    'Users can leave organizations, admins can remove members';
+    'Users can leave organizations, owners can remove members';

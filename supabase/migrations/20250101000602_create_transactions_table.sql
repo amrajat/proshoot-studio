@@ -15,7 +15,9 @@ CREATE TABLE public.transactions (
     related_studio_id UUID REFERENCES public.studios(id) ON DELETE SET NULL,
     description TEXT,
     created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+    updated_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+    related_transaction_id UUID REFERENCES public.transactions(id) ON DELETE SET NULL,
+    CONSTRAINT chk_no_self_reference CHECK (id != related_transaction_id)
 );
 
 -- Add table comment
@@ -27,16 +29,20 @@ COMMENT ON COLUMN public.transactions.user_id IS 'User performing/initiating the
 COMMENT ON COLUMN public.transactions.credits_used IS 'Amount of credit change (positive for add, negative for spend)';
 COMMENT ON COLUMN public.transactions.credit_type IS 'Type of transaction (PURCHASE, SPEND, REFUND, etc.)';
 COMMENT ON COLUMN public.transactions.related_studio_id IS 'Related studio if transaction is from studio creation';
+COMMENT ON COLUMN public.transactions.related_transaction_id IS 'References the related transaction for credit transfers (links debit and credit transactions)';
 COMMENT ON COLUMN public.transactions.description IS 'Human-readable description of the transaction';
 COMMENT ON COLUMN public.transactions.created_at IS 'Transaction creation timestamp';
 COMMENT ON COLUMN public.transactions.updated_at IS 'Transaction update timestamp';
 COMMENT ON COLUMN public.transactions.context IS 'Context of the transaction (personal or organization)';
+
 
 -- Create indexes for performance
 CREATE INDEX idx_transactions_user_id ON public.transactions(user_id);
 CREATE INDEX idx_transactions_credit_type ON public.transactions(credit_type);
 CREATE INDEX idx_transactions_created_at ON public.transactions(created_at);
 CREATE INDEX idx_transactions_related_studio_id ON public.transactions(related_studio_id) WHERE related_studio_id IS NOT NULL;
+CREATE INDEX idx_transactions_related_transaction_id ON public.transactions(related_transaction_id) WHERE related_transaction_id IS NOT NULL;
+
 
 -- Enable Row Level Security
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;

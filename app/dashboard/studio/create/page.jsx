@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { ContentLayout } from "../../components/sidebar/content-layout";
 import { useAccountContext } from "@/context/AccountContext";
-import { useCredits, hasPlanCredits } from "@/hooks/useCredits";
+import { useCredits } from "@/hooks/useCredits";
 import useDashboardStore from "@/stores/dashboardStore";
 import useFormPersistence from "@/hooks/useFormPersistence";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";

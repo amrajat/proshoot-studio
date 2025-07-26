@@ -55,12 +55,12 @@ CREATE TYPE public.organization_role AS ENUM (
 
 -- Studio processing status
 CREATE TYPE public.studio_status AS ENUM (
-    'PENDING',
+    'FAILED',
     'PROCESSING',
     'COMPLETED',
-    'FAILED',
-    'IMAGES_UPLOADED',
-    'DONE'
+    'DONE',
+    'REFUNDED',
+    'DELETED'
 );
 
 -- Purchase transaction status

@@ -1,3 +1,132 @@
+// FIXME: TODO: THIS IS NOT IN USED SO FEEL FREE TO REMOVE IT
+
+/**
+ * Convert percentage-based crop coordinates to pixel coordinates
+ * @param {Object} crop - Crop data with x, y, width, height in percentages
+ * @param {number} imageWidth - Original image width in pixels
+ * @param {number} imageHeight - Original image height in pixels
+ * @returns {Object} Pixel-based crop coordinates
+ */
+export const convertCropToPixels = (crop, imageWidth, imageHeight) => {
+  console.log("🔄 Converting crop to pixels:", {
+    crop,
+    imageWidth,
+    imageHeight,
+  });
+
+  const pixelCrop = {
+    x: Math.round((crop.x / 100) * imageWidth),
+    y: Math.round((crop.y / 100) * imageHeight),
+    width: Math.round((crop.width / 100) * imageWidth),
+    height: Math.round((crop.height / 100) * imageHeight),
+  };
+
+  console.log("✅ Pixel coordinates:", pixelCrop);
+  return pixelCrop;
+};
+
+/**
+ * Manually crop an image using Canvas API
+ * @param {string|HTMLImageElement} imageSrc - Image source or image element
+ * @param {Object} crop - Crop coordinates in percentages
+ * @param {number} outputWidth - Desired output width (optional)
+ * @param {number} outputHeight - Desired output height (optional)
+ * @returns {Promise<Blob>} Cropped image as blob
+ */
+export const manualCropImage = async (
+  imageSrc,
+  crop,
+  outputWidth = null,
+  outputHeight = null
+) => {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log("✂️ Manual crop started:", {
+        crop,
+        outputWidth,
+        outputHeight,
+      });
+
+      const image = new Image();
+
+      image.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+
+          // Convert percentage crop to pixels
+          const pixelCrop = convertCropToPixels(
+            crop,
+            image.width,
+            image.height
+          );
+
+          // Set canvas size (use crop dimensions if output size not specified)
+          canvas.width = outputWidth || pixelCrop.width;
+          canvas.height = outputHeight || pixelCrop.height;
+
+          console.log("🖼️ Canvas setup:", {
+            canvasWidth: canvas.width,
+            canvasHeight: canvas.height,
+            sourceRegion: pixelCrop,
+          });
+
+          // Draw the cropped portion
+          ctx.drawImage(
+            image,
+            pixelCrop.x, // Source X
+            pixelCrop.y, // Source Y
+            pixelCrop.width, // Source Width
+            pixelCrop.height, // Source Height
+            0, // Destination X
+            0, // Destination Y
+            canvas.width, // Destination Width
+            canvas.height // Destination Height
+          );
+
+          // Convert to blob
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                console.log("✅ Manual crop completed:", {
+                  originalSize: `${image.width}x${image.height}`,
+                  croppedSize: `${canvas.width}x${canvas.height}`,
+                  blobSize: (blob.size / 1024).toFixed(2) + "KB",
+                });
+                resolve(blob);
+              } else {
+                reject(new Error("Failed to create blob from canvas"));
+              }
+            },
+            "image/jpeg",
+            0.95
+          );
+        } catch (error) {
+          console.error("❌ Canvas processing error:", error);
+          reject(error);
+        }
+      };
+
+      image.onerror = () => {
+        console.error("❌ Failed to load image for cropping");
+        reject(new Error("Failed to load image"));
+      };
+
+      // Handle both string URLs and image elements
+      if (typeof imageSrc === "string") {
+        image.src = imageSrc;
+      } else if (imageSrc instanceof HTMLImageElement) {
+        image.src = imageSrc.src;
+      } else {
+        reject(new Error("Invalid image source"));
+      }
+    } catch (error) {
+      console.error("❌ Manual crop setup error:", error);
+      reject(error);
+    }
+  });
+};
+
 export const getCroppedImage = async (
   imageSrc,
   crop,

@@ -1,110 +1,837 @@
 /**
- * Image Upload Step Component
- * Handles image upload and studio naming
+ * Enhanced Image Upload Step Component with ReactCrop
+ * Features: Auto-upload, 1:1 crop ratio, compression, R2 deletion, single JSON crop file
  */
 
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useDropzone } from "react-dropzone";
+import Image from "next/image";
+import { v4 as uuidv4 } from "uuid";
+import SmartCrop from "smartcrop";
+import ReactCrop from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+import Masonry from "react-masonry-css";
+
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  Upload,
-  X,
-  Image as ImageIcon,
-  ChevronLeft,
-  Rocket,
-  Info,
-  Loader2,
-} from "lucide-react";
-import useStudioCreateStore from "@/stores/studioCreateStore";
-import { useStudioForm } from "../forms/StudioFormProvider";
-import { createStudio } from "../../../actions/studio/createStudio";
-import { createCheckoutUrl } from "@/app/dashboard/actions/checkout";
-import { hasSufficientCredits } from "@/services/creditService";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Upload, X, AlertCircle, RefreshCw, Info, Trash2 } from "lucide-react";
 
-const ImageUploadStep = ({
-  formData,
-  errors,
-  credits,
-  isOrgWithTeamCredits,
-  selectedContext,
-}) => {
+import useStudioCreateStore from "@/stores/studioCreateStore";
+import { createStudio } from "@/app/dashboard/components/actions/studio/createStudio";
+import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
+
+// Constants
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_IMAGES = 20;
+const MIN_IMAGES = 1;
+const CROP_DIMENSION = 1024;
+const CROP_ASPECT = 1; // 1:1 aspect ratio
+const MIN_IMAGE_DIMENSION = 256;
+const SMART_CROP_TIMEOUT = 600000; // TIME TO LOAD SMARTCROP
+const COMPRESSION_THRESHOLD = 4 * 1024 * 1024; // 4MB - compress above this size
+const ACCEPTED_TYPES = {
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/png": [".png"],
+  "image/heic": [".heic"],
+  "image/heif": [".heif"],
+};
+
+// Helper functions - exact copy from working ImageUploader
+const normalizeCropData = (crop, imageWidth, imageHeight) => {
+  if (!crop) return null;
+
+  // Ensure crop values are within 0-100 range
+  const x = Math.max(0, Math.min(100, crop.x));
+  const y = Math.max(0, Math.min(100, crop.y));
+
+  // Ensure width and height don't exceed image bounds
+  const width = Math.min(100 - x, crop.width);
+  const height = Math.min(100 - y, crop.height);
+
+  return {
+    unit: "%",
+    x,
+    y,
+    width,
+    height,
+  };
+};
+
+// Function to check for duplicate files - robust production-ready approach
+const isDuplicateFile = (newFile, existingFiles) => {
+  return existingFiles.some((existingFile) => {
+    // Primary check: name, size, and lastModified (most reliable)
+    const basicMatch =
+      existingFile.file.name === newFile.name &&
+      existingFile.file.size === newFile.size &&
+      existingFile.file.lastModified === newFile.lastModified;
+
+    // Secondary check: same name and size but different lastModified
+    // This catches files that might be the same but re-saved
+    const nameAndSizeMatch =
+      existingFile.file.name === newFile.name &&
+      existingFile.file.size === newFile.size;
+
+    // For images, if name and size match exactly, it's very likely a duplicate
+    // even if lastModified differs (could be due to file system differences)
+    return basicMatch || nameAndSizeMatch;
+  });
+};
+
+const createImagePromise = (src) => {
+  return new Promise((resolve, reject) => {
+    const img = document.createElement("img");
+    img.onload = () => {
+      console.log("🖼️ Image loaded:", { width: img.width, height: img.height });
+      resolve(img);
+    };
+    img.onerror = () => {
+      console.error("❌ Failed to load image:", src);
+      reject(new Error("Failed to load image"));
+    };
+    img.src = src;
+  });
+};
+
+const ImageUploadStep = () => {
   const router = useRouter();
-  const {
-    updateFormField,
-    prevStep,
-    setErrors,
-    setIsSubmitting,
-    setStudioMessage,
-    resetStore,
-  } = useStudioCreateStore();
-  const { validateCurrentStep } = useStudioForm();
-  const [dragOver, setDragOver] = useState(false);
-  const [isSubmitting, setLocalSubmitting] = useState(false);
+  const { formData, setFormData, isSubmitting, setIsSubmitting } =
+    useStudioCreateStore();
+
+  // Component state
+  const [uploadState, setUploadState] = useState({
+    files: [],
+    uploading: false,
+    uploadProgress: {},
+    uploadedFiles: [],
+    currentUUID: uuidv4(),
+    completedCrops: {},
+    processing: false,
+  });
+
+  const [errors, setErrors] = useState({});
+  const [showGuidelines, setShowGuidelines] = useState(false);
+  const [showRemoveAllDialog, setShowRemoveAllDialog] = useState(false);
+  const [localSubmitting, setLocalSubmitting] = useState(false);
+  const [studioMessage, setStudioMessage] = useState("");
+  const [isRemovingAll, setIsRemovingAll] = useState(false);
+  const [removingFiles, setRemovingFiles] = useState(new Set()); // Track which files are being removed
+
+  console.log("🖼️ ImageUploadStep render:", {
+    filesCount: uploadState.files.length,
+    uploading: uploadState.uploading,
+    currentUUID: uploadState.currentUUID,
+    completedCrops: Object.keys(uploadState.completedCrops).length,
+  });
+
+  // File processing functions
+  const convertHeicToJpeg = async (file) => {
+    try {
+      console.log("🔄 Converting HEIC/HEIF to JPEG:", file.name);
+
+      // Dynamic import to avoid SSR issues
+      const heic2any = (await import("heic2any")).default;
+
+      const convertedBlob = await heic2any({
+        blob: file,
+        toType: "image/jpeg",
+        quality: 0.9,
+      });
+
+      const convertedFile = new File(
+        [convertedBlob],
+        file.name.replace(/\.(heic|heif)$/i, ".jpg"),
+        { type: "image/jpeg" }
+      );
+
+      console.log("✅ HEIC conversion successful:", convertedFile.name);
+      return convertedFile;
+    } catch (error) {
+      console.error("❌ HEIC conversion failed:", error);
+      throw new Error(`HEIC conversion failed: ${error.message}`);
+    }
+  };
+
+  const compressImage = async (file) => {
+    try {
+      const fileSizeMB = file.size / 1024 / 1024;
+      console.log(
+        "📏 Checking compression for:",
+        file.name,
+        "Size:",
+        fileSizeMB.toFixed(2),
+        "MB"
+      );
+
+      // Only compress if file is above 4MB threshold
+      if (file.size <= COMPRESSION_THRESHOLD) {
+        console.log("✅ File under 4MB, skipping compression");
+        return file;
+      }
+
+      console.log("🗜️ Compressing image above 4MB threshold...");
+
+      // Dynamic import to avoid SSR issues
+      const imageCompression = (await import("browser-image-compression"))
+        .default;
+
+      // Progressive compression approach to maintain quality
+      const options = {
+        maxSizeMB: 3.8, // Target under 4MB with some buffer
+        maxWidthOrHeight: 4096, // Keep higher resolution
+        useWebWorker: true,
+        initialQuality: 0.92, // Start with high quality
+        alwaysKeepResolution: true, // Try to maintain resolution
+      };
+
+      // Don't change file type for PNG to preserve transparency
+      if (file.type !== "image/png") {
+        options.fileType = "image/jpeg";
+      }
+
+      let compressedFile = await imageCompression(file, options);
+
+      // If still too large, try with slightly lower quality but maintain resolution
+      if (compressedFile.size > COMPRESSION_THRESHOLD) {
+        console.log("🔄 File still large, applying secondary compression...");
+        const secondaryOptions = {
+          ...options,
+          maxSizeMB: 3.5,
+          initialQuality: 0.85,
+          maxWidthOrHeight: 3840, // Slightly reduce max dimension
+        };
+        compressedFile = await imageCompression(file, secondaryOptions);
+      }
+
+      const compressedSizeMB = compressedFile.size / 1024 / 1024;
+      const savings = ((file.size - compressedFile.size) / file.size) * 100;
+
+      console.log("✅ Compression successful:", {
+        original: fileSizeMB.toFixed(2) + "MB",
+        compressed: compressedSizeMB.toFixed(2) + "MB",
+        savings: savings.toFixed(1) + "%",
+      });
+
+      return compressedFile;
+    } catch (error) {
+      console.error("❌ Compression failed:", error);
+      return file; // Return original if compression fails
+    }
+  };
+
+  // Exact copy of applySmartCrop from working ImageUploader
+  const applySmartCrop = async (file) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const objectUrl = URL.createObjectURL(file);
+        const img = await createImagePromise(objectUrl).catch((err) => {
+          throw new Error(
+            `Failed to load image for smart crop: ${err.message}`
+          );
+        });
+
+        const cropPromise = SmartCrop.crop(img, {
+          width: CROP_DIMENSION,
+          height: CROP_DIMENSION,
+          minScale: 1.0,
+          ruleOfThirds: true,
+          samples: 8,
+        });
+        const timeoutPromise = new Promise((_, rej) =>
+          setTimeout(
+            () => rej(new Error("Smart crop timed out")),
+            SMART_CROP_TIMEOUT
+          )
+        );
+        const result = await Promise.race([cropPromise, timeoutPromise]);
+
+        if (!result || !result.topCrop)
+          throw new Error("Smart crop failed to generate valid crop data");
+
+        const crop = {
+          x: (result.topCrop.x / img.width) * 100,
+          y: (result.topCrop.y / img.height) * 100,
+          width: (result.topCrop.width / img.width) * 100,
+          height: (result.topCrop.height / img.height) * 100,
+          unit: "%",
+        };
+        URL.revokeObjectURL(objectUrl);
+        resolve(crop);
+      } catch (error) {
+        console.error("❌ Smart crop failed:", error);
+        resolve({ unit: "%", x: 25, y: 25, width: 50, height: 50 }); // Fallback
+      }
+    });
+  };
+
+  const deleteFromR2 = async (objectKey) => {
+    try {
+      console.log("🗑️ Deleting from R2:", objectKey);
+
+      const response = await fetch("/api/r2/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          objectKey,
+          bucketName: "datasets",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete from R2");
+      }
+
+      const result = await response.json();
+      console.log("✅ Deleted from R2:", result);
+      return result;
+    } catch (error) {
+      console.error("❌ R2 deletion failed:", error);
+      throw error;
+    }
+  };
+
+  const deleteAllFromR2 = async () => {
+    try {
+      // Extract user_id from any uploaded file's objectKey
+      let deletePath = uploadState.currentUUID;
+
+      if (uploadState.uploadedFiles.length > 0) {
+        // Get user_id from the first uploaded file's objectKey
+        // objectKey format: "user_id/uuid/filename.ext"
+        const firstObjectKey = uploadState.uploadedFiles[0].objectKey;
+        const pathParts = firstObjectKey.split("/");
+        if (pathParts.length >= 2) {
+          const userId = pathParts[0];
+          deletePath = `${userId}/${uploadState.currentUUID}`;
+        }
+      }
+
+      console.log("🗑️ Deleting all files from path:", deletePath);
+
+      const response = await fetch("/api/r2/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deletePath: deletePath,
+          bucketName: "datasets",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete all files from R2");
+      }
+
+      const result = await response.json();
+      console.log("✅ Deleted all files from R2:", result);
+      return result;
+    } catch (error) {
+      console.error("❌ R2 bulk deletion failed:", error);
+      throw error;
+    }
+  };
+
+  const uploadToR2 = async (file, fileName) => {
+    try {
+      console.log("☁️ Uploading to R2:", fileName);
+
+      const response = await fetch("/api/r2/upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: `${uploadState.currentUUID}/${fileName}`,
+          contentType: file.type,
+          bucketName: "datasets",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get upload URL");
+      }
+
+      const { uploadUrl, objectKey } = await response.json();
+      console.log("📝 Got pre-signed URL for:", objectKey);
+
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": file.type },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload file");
+      }
+
+      console.log("✅ Upload successful:", objectKey);
+      return { objectKey, fileName };
+    } catch (error) {
+      console.error("❌ Upload failed:", error);
+      throw new Error(`Upload failed: ${error.message}`);
+    }
+  };
+
+  // Auto-upload function for individual files
+  const processAndUploadFile = async (file, index) => {
+    try {
+      console.log("🚀 Auto-uploading file:", file.name, "Index:", index);
+
+      setUploadState((prev) => ({
+        ...prev,
+        uploadProgress: {
+          ...prev.uploadProgress,
+          [index]: { status: "processing", progress: 10 },
+        },
+      }));
+
+      let processedFile = file;
+
+      // Convert HEIC/HEIF to JPEG
+      if (file.type === "image/heic" || file.type === "image/heif") {
+        processedFile = await convertHeicToJpeg(file);
+        setUploadState((prev) => ({
+          ...prev,
+          uploadProgress: {
+            ...prev.uploadProgress,
+            [index]: { status: "processing", progress: 30 },
+          },
+        }));
+      }
+
+      // Compress if needed (above 1MB)
+      processedFile = await compressImage(processedFile);
+      setUploadState((prev) => ({
+        ...prev,
+        uploadProgress: {
+          ...prev.uploadProgress,
+          [index]: { status: "uploading", progress: 50 },
+        },
+      }));
+
+      // Upload to R2
+      const { objectKey } = await uploadToR2(processedFile, processedFile.name);
+
+      setUploadState((prev) => ({
+        ...prev,
+        uploadProgress: {
+          ...prev.uploadProgress,
+          [index]: { status: "completed", progress: 100 },
+        },
+        uploadedFiles: [
+          ...prev.uploadedFiles,
+          { objectKey, fileName: processedFile.name, index },
+        ],
+      }));
+
+      console.log("✅ Auto-upload complete:", processedFile.name);
+    } catch (error) {
+      console.error("❌ Auto-upload failed:", error);
+      setUploadState((prev) => ({
+        ...prev,
+        uploadProgress: {
+          ...prev.uploadProgress,
+          [index]: { status: "failed", progress: 0, error: error.message },
+        },
+      }));
+    }
+  };
+
+  // Exact copy of processImage from working ImageUploader
+  const processImage = async (file) => {
+    return new Promise(async (resolve) => {
+      try {
+        const objectUrl = URL.createObjectURL(file);
+        const img = await createImagePromise(objectUrl).catch((err) => {
+          throw new Error(
+            `Failed to load image for processing: ${err.message}`
+          );
+        });
+        let accepted = true;
+        let declineReason = "";
+        if (
+          img.width < MIN_IMAGE_DIMENSION ||
+          img.height < MIN_IMAGE_DIMENSION
+        ) {
+          declineReason = `This image is smaller than ${MIN_IMAGE_DIMENSION}x${MIN_IMAGE_DIMENSION} pixels, but we will still use it, it may not be perfect.`;
+        }
+        const smartCropResult = await applySmartCrop(file);
+        resolve({
+          file,
+          preview: objectUrl,
+          accepted,
+          declineReason,
+          initialCrop: smartCropResult,
+          dimensions: { width: img.width, height: img.height },
+        });
+      } catch (error) {
+        console.error("❌ Image processing failed:", error);
+        const objectUrl = URL.createObjectURL(file); // Create new URL as previous might be revoked on error
+        resolve({
+          file,
+          preview: objectUrl,
+          accepted: false,
+          declineReason: "Failed to process image: " + error.message,
+          initialCrop: { unit: "%", x: 25, y: 25, width: 50, height: 50 },
+          error: true,
+        });
+      }
+    });
+  };
+
+  // Exact copy of handleCropComplete from working ImageUploader
+  const handleCropComplete = useCallback(
+    (crop, percentCrop, index) => {
+      if (!percentCrop) return;
+      const file = uploadState.files[index];
+      if (!file) return; // File might have been removed
+      const dimensions = file.dimensions || { width: 1024, height: 1024 }; // Default if not set
+      const normalizedCrop = normalizeCropData(
+        percentCrop,
+        dimensions.width,
+        dimensions.height
+      );
+      setUploadState((prev) => ({
+        ...prev,
+        completedCrops: {
+          ...prev.completedCrops,
+          [index]: normalizedCrop,
+        },
+      }));
+    },
+    [uploadState.files]
+  );
+
+  // Drop zone handlers
+  const handleDropRejected = useCallback((rejectedFiles) => {
+    console.log("❌ Files rejected:", rejectedFiles);
+
+    const errors = rejectedFiles.map(({ file, errors }) => {
+      const errorMessages = errors.map((error) => {
+        switch (error.code) {
+          case "file-too-large":
+            return `${file.name}: File too large (max 4MB)`;
+          case "file-invalid-type":
+            return `${file.name}: Invalid file type`;
+          default:
+            return `${file.name}: ${error.message}`;
+        }
+      });
+      return errorMessages.join(", ");
+    });
+
+    setErrors({ images: errors.join("; ") });
+  }, []);
+
+  const handleFileDrop = useCallback(
+    async (acceptedFiles) => {
+      console.log("📁 Files dropped for auto-upload:", acceptedFiles.length);
+
+      // Filter out duplicate files
+      const uniqueFiles = acceptedFiles.filter((file) => {
+        const isDuplicate = isDuplicateFile(file, uploadState.files);
+        if (isDuplicate) {
+          console.log("🚫 Skipping duplicate file:", file.name);
+        }
+        return !isDuplicate;
+      });
+
+      if (uniqueFiles.length === 0) {
+        setErrors({
+          images: "All selected files are duplicates and were skipped.",
+        });
+        return;
+      }
+
+      if (uploadState.files.length + uniqueFiles.length > MAX_IMAGES) {
+        setErrors({
+          images: `Maximum ${MAX_IMAGES} images allowed. ${uniqueFiles.length} new files would exceed the limit.`,
+        });
+        return;
+      }
+
+      const duplicateCount = acceptedFiles.length - uniqueFiles.length;
+      if (duplicateCount > 0) {
+        setErrors({
+          images: `${duplicateCount} duplicate file(s) were skipped.`,
+        });
+        // Clear the error after 3 seconds
+        setTimeout(() => setErrors({}), 3000);
+      }
+
+      setUploadState((prev) => ({ ...prev, processing: true }));
+
+      const processedFiles = [];
+      for (let i = 0; i < uniqueFiles.length; i++) {
+        const file = uniqueFiles[i];
+        console.log(
+          `📋 Processing file ${i + 1}/${uniqueFiles.length}:`,
+          file.name
+        );
+
+        const processedFile = await processImage(file);
+        const fileWithId = {
+          ...processedFile,
+          id: Date.now() + i,
+        };
+        processedFiles.push(fileWithId);
+      }
+
+      // Add files to state first
+      setUploadState((prev) => ({
+        ...prev,
+        files: [...prev.files, ...processedFiles],
+        processing: false,
+      }));
+
+      console.log(
+        "✅ Files processed, starting auto-upload:",
+        processedFiles.length
+      );
+
+      // Auto-upload each file immediately after adding to state
+      setTimeout(async () => {
+        const currentFileCount = uploadState.files.length;
+        for (let i = 0; i < processedFiles.length; i++) {
+          const fileData = processedFiles[i];
+          const fileIndex = currentFileCount + i; // Use current count before adding new files
+
+          try {
+            console.log(
+              `🚀 Starting auto-upload for: ${fileData.file.name} at index ${fileIndex}`
+            );
+            await processAndUploadFile(fileData.file, fileIndex);
+          } catch (error) {
+            console.error(
+              `❌ Auto-upload failed for ${fileData.file.name}:`,
+              error
+            );
+          }
+        }
+      }, 100); // Small delay to ensure state is updated
+    },
+    [uploadState.files.length]
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: ACCEPTED_TYPES,
+    maxFiles: MAX_IMAGES,
+    maxSize: MAX_FILE_SIZE,
+    onDrop: handleFileDrop,
+    onDropRejected: handleDropRejected,
+  });
+
+  const removeFile = async (fileId) => {
+    console.log("🗑️ Removing file with ID:", fileId);
+
+    // Find the file index in the files array (move outside try block)
+    const fileIndex = uploadState.files.findIndex((f) => f.id === fileId);
+    console.log("🔍 File index found:", fileIndex);
+
+    // Add to removing files set
+    setRemovingFiles((prev) => new Set([...prev, fileId]));
+
+    try {
+      // Find the uploaded file using the index
+      const uploadedFile = uploadState.uploadedFiles.find(
+        (f) => f.index === fileIndex
+      );
+      console.log("📁 Uploaded file found:", uploadedFile);
+
+      if (uploadedFile && uploadedFile.objectKey) {
+        try {
+          console.log("🗑️ Deleting from R2:", uploadedFile.objectKey);
+          await deleteFromR2(uploadedFile.objectKey);
+          console.log("✅ File deleted from R2:", uploadedFile.objectKey);
+        } catch (error) {
+          console.error("❌ Failed to delete from R2:", error);
+          setErrors({ images: "Failed to delete file. Please try again." });
+          setTimeout(() => setErrors({}), 3000);
+        }
+      } else {
+        console.warn("⚠️ No uploaded file found for deletion");
+      }
+    } finally {
+      // Remove from removing files set
+      setRemovingFiles((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(fileId);
+        return newSet;
+      });
+    }
+
+    // Update state to remove the file (fileIndex is now accessible)
+    setUploadState((prev) => ({
+      ...prev,
+      files: prev.files.filter((f) => f.id !== fileId),
+      uploadedFiles: prev.uploadedFiles.filter((f) => f.index !== fileIndex),
+      completedCrops: Object.fromEntries(
+        Object.entries(prev.completedCrops).filter(
+          ([key]) => parseInt(key) !== fileIndex
+        )
+      ),
+      uploadProgress: Object.fromEntries(
+        Object.entries(prev.uploadProgress).filter(
+          ([key]) => parseInt(key) !== fileIndex
+        )
+      ),
+    }));
+  };
+
+  const removeAllFiles = async () => {
+    console.log("🗑️ Removing all files and clearing R2 path");
+    setIsRemovingAll(true);
+
+    try {
+      await deleteAllFromR2();
+      console.log("✅ All files deleted from R2");
+
+      setUploadState((prev) => ({
+        ...prev,
+        files: [],
+        uploadedFiles: [],
+        completedCrops: {},
+        uploadProgress: {},
+      }));
+
+      setStudioMessage("All files removed successfully!");
+      setTimeout(() => setStudioMessage(""), 3000);
+    } catch (error) {
+      console.error("❌ Failed to delete all files from R2:", error);
+      setErrors({ images: "Failed to remove all files. Please try again." });
+    } finally {
+      setIsRemovingAll(false);
+      setShowRemoveAllDialog(false);
+    }
+  };
 
   const handleCreateStudio = async () => {
-    // First, validate all previous steps
-    const isFormValid = await validateAllSteps();
-    if (!isFormValid) {
+    console.log("🎬 Creating studio with uploaded files");
+
+    if (uploadState.files.length < MIN_IMAGES) {
+      setErrors({ images: `Please upload at least ${MIN_IMAGES} images` });
+      return;
+    }
+
+    // Check if all files are uploaded
+    const failedUploads = Object.entries(uploadState.uploadProgress).filter(
+      ([_, progress]) => progress.status === "failed"
+    );
+
+    if (failedUploads.length > 0) {
       setErrors({
-        general: "Please complete all required fields in previous steps",
+        images: "Some files failed to upload. Please retry failed uploads.",
       });
       return;
     }
 
-    // Validate current step (images)
-    const isCurrentStepValid = await validateCurrentStep();
-    if (!isCurrentStepValid) {
+    if (uploadState.uploadedFiles.length !== uploadState.files.length) {
+      setErrors({
+        images: "Upload in progress. Please wait for all files to complete.",
+      });
       return;
     }
-
-    const newErrors = {};
-
-    if (!formData.images || formData.images.length < 10) {
-      newErrors.images = "Please upload at least 10 images";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    setLocalSubmitting(true);
-    setIsSubmitting(true);
 
     try {
-      const contextType = selectedContext?.type || "personal";
-      const selectedPlan = formData.plan;
+      setLocalSubmitting(true);
+      setIsSubmitting(true);
+      setStudioMessage("Uploading crop data...");
 
-      // Check if user has credits for the selected plan
-      const hasCredits = hasSufficientCredits(credits, selectedPlan, 1);
+      // Create aggregated crop data JSON
+      const cropDataMap = {};
 
-      // For personal accounts without credits, redirect to payment
-      if (contextType === "personal" && !hasCredits) {
-        await handlePaymentFlow(selectedPlan);
-        return;
+      // Map crop data using file index from uploaded files
+      uploadState.files.forEach((fileData, index) => {
+        const cropData = uploadState.completedCrops[index] ||
+          fileData.initialCrop || {
+            unit: "%",
+            x: 25,
+            y: 25,
+            width: 50,
+            height: 50,
+          };
+        const uploadedFile = uploadState.uploadedFiles.find(
+          (f) => f.index === index
+        );
+
+        if (uploadedFile && cropData) {
+          cropDataMap[uploadedFile.fileName] = cropData;
+          console.log(
+            `📏 Adding crop data for ${uploadedFile.fileName}:`,
+            cropData
+          );
+        }
+      });
+
+      console.log("📏 Final aggregated crop data:", cropDataMap);
+
+      // Ensure we have crop data
+      if (Object.keys(cropDataMap).length === 0) {
+        console.warn("⚠️ No crop data found, using default crops");
+        uploadState.uploadedFiles.forEach((uploadedFile) => {
+          cropDataMap[uploadedFile.fileName] = {
+            unit: "%",
+            x: 25,
+            y: 25,
+            width: 50,
+            height: 50,
+          };
+        });
       }
 
-      // Prepare submission data
-      const submissionData = {
+      // Upload crop data as single JSON file
+      const cropJsonBlob = new Blob([JSON.stringify(cropDataMap, null, 2)], {
+        type: "application/json",
+      });
+
+      await uploadToR2(cropJsonBlob, "crop_data.json");
+      console.log("✅ Crop data JSON uploaded");
+
+      setStudioMessage("Creating your studio...");
+
+      // Extract user_id from uploaded files to create full path
+      let imagesPath = uploadState.currentUUID;
+
+      if (uploadState.uploadedFiles.length > 0) {
+        // Get user_id from the first uploaded file's objectKey
+        // objectKey format: "user_id/uuid/filename.ext"
+        const firstObjectKey = uploadState.uploadedFiles[0].objectKey;
+        const pathParts = firstObjectKey.split("/");
+        if (pathParts.length >= 2) {
+          const userId = pathParts[0];
+          imagesPath = `${userId}/${uploadState.currentUUID}`;
+        }
+      }
+
+      const updatedFormData = {
         ...formData,
-        contextType: selectedContext?.type || "personal",
-        contextId:
-          selectedContext?.type === "organization" ? selectedContext.id : null,
-        useTeamCredits: isOrgWithTeamCredits,
+        images: imagesPath, // Now includes user_id prefix
       };
 
-      const result = await createStudio(submissionData);
+      console.log("📋 Studio data:", updatedFormData);
+      console.log("Images path with user_id:", imagesPath);
+
+      const result = await createStudio(updatedFormData);
 
       if (result.success) {
-        setStudioMessage("Studio created successfully! Redirecting...");
-        resetStore();
+        console.log("✅ Studio created successfully:", result.studioId);
+        setStudioMessage("Studio created successfully!");
         router.push(`/dashboard/studio/${result.studioId}`);
       } else {
         throw new Error(result.error || "Failed to create studio");
       }
     } catch (error) {
+      console.error("❌ Studio creation failed:", error);
       setStudioMessage(`Error: ${error.message}`);
     } finally {
       setLocalSubmitting(false);
@@ -112,209 +839,349 @@ const ImageUploadStep = ({
     }
   };
 
-  // Validate all previous steps
-  const validateAllSteps = async () => {
-    const stepValidations = [
-      // Plan Selection
-      formData.plan && formData.plan.length > 0,
-      // Attributes
-      formData.studioName &&
-        formData.studioName.length > 0 &&
-        formData.gender &&
-        formData.gender.length > 0 &&
-        formData.age &&
-        formData.age.length > 0 &&
-        formData.ethnicity &&
-        formData.ethnicity.length > 0 &&
-        formData.hairLength &&
-        formData.hairLength.length > 0 &&
-        formData.hairColor &&
-        formData.hairColor.length > 0 &&
-        formData.hairType &&
-        formData.hairType.length > 0 &&
-        formData.eyeColor &&
-        formData.eyeColor.length > 0 &&
-        formData.glasses &&
-        formData.glasses.length > 0 &&
-        formData.bodyType &&
-        formData.bodyType.length > 0 &&
-        formData.height &&
-        formData.height.length > 0 &&
-        formData.weight &&
-        formData.weight.length > 0,
-      // Style Pairing
-      formData.style_pairs && formData.style_pairs.length > 0,
-    ];
-
-    const invalidSteps = [];
-    if (!stepValidations[0]) invalidSteps.push("Plan Selection");
-    if (!stepValidations[1]) invalidSteps.push("Personal Attributes");
-    if (!stepValidations[2]) invalidSteps.push("Style Combinations");
-
-    if (invalidSteps.length > 0) {
-      setErrors({
-        general: `Please complete the following steps: ${invalidSteps.join(
-          ", "
-        )}`,
-      });
-      return false;
-    }
-
-    return true;
-  };
-
-  const handlePaymentFlow = async (selectedPlan) => {
-    try {
-      // Get user info for checkout
-      const userEmail = selectedContext?.email || "";
-      const userId = selectedContext?.id || "";
-
-      // Create checkout URL with form data as custom data
-      const checkoutUrl = await createCheckoutUrl(
-        selectedPlan,
-        userId,
-        userEmail,
-        {
-          studioFormData: formData,
-          returnUrl: window.location.href,
-        }
-      );
-
-      if (checkoutUrl) {
-        // Redirect to checkout
-        window.location.href = checkoutUrl;
-      } else {
-        throw new Error("Failed to create checkout URL");
-      }
-    } catch (error) {
-      setStudioMessage(`Payment error: ${error.message}`);
-      setLocalSubmitting(false);
-      setIsSubmitting(false);
-    }
-  };
-
-  // Check if user has credits for the selected plan
-  const hasCreditsForPlan = () => {
-    const contextType = selectedContext?.type || "personal";
-    const selectedPlan = formData.plan;
-
-    if (contextType === "organization" && isOrgWithTeamCredits) {
-      return true; // Organization with team credits
-    }
-
-    return hasSufficientCredits(credits, selectedPlan, 1);
+  const breakpointColumns = {
+    default: 3,
+    1100: 2,
+    700: 1,
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold">
-          Upload Photos & Create Studio
-        </h2>
+        <h2 className="text-2xl font-bold">Upload Your Photos</h2>
         <p className="text-muted-foreground">
-          Upload 10-25 high-quality photos and create your AI headshot studio
+          Upload at least {MIN_IMAGES} high-quality photos. You can crop each
+          image to focus on your face.
         </p>
       </div>
 
-      {/* Image Upload */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ImageIcon className="h-5 w-5" />
-            Upload Photos
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Alert className="mb-4">
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              For best results, upload clear photos with good lighting. Include
-              variety in poses, expressions, and angles.
-            </AlertDescription>
-          </Alert>
+      <div className="flex flex-wrap gap-2 justify-center">
+        <Dialog open={showGuidelines} onOpenChange={setShowGuidelines}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Info className="h-4 w-4 mr-2" />
+              Upload Guidelines
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Photo Upload Guidelines</DialogTitle>
+            </DialogHeader>
+            <ImageUploadingGuideLines />
+          </DialogContent>
+        </Dialog>
+      </div>
 
-          {/* Upload Area */}
-          <div
-            className={`
-              border-2 border-dashed rounded-lg p-8 text-center transition-colors
-              ${
-                dragOver
-                  ? "border-primary bg-primary/5"
-                  : errors.images
-                  ? "border-destructive"
-                  : "border-muted-foreground/25"
-              }
-            `}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setDragOver(false);
-              // Handle file drop logic here
-            }}
+      {uploadState.files.length === 0 ? (
+        <div
+          {...getRootProps()}
+          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+            isDragActive
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-primary/50"
+          }`}
+        >
+          <input {...getInputProps()} />
+          <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-lg font-semibold mb-2">
+            {isDragActive ? "Drop your photos here" : "Upload your photos"}
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            Drag and drop your photos here, or click to browse
+          </p>
+          <div className="text-sm text-muted-foreground space-y-1">
+            <p>• Supported formats: JPG, PNG, HEIC, HEIF</p>
+            <p>• Maximum file size: 4MB per image</p>
+            <p>• Upload at least {MIN_IMAGES} photos for best results</p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+            <div className="space-y-1">
+              <p className="font-medium">
+                {uploadState.files.length} photo
+                {uploadState.files.length !== 1 ? "s" : ""} ready
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {uploadState.uploadedFiles.length} uploaded •{" "}
+                {uploadState.files.length - uploadState.uploadedFiles.length}{" "}
+                pending
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <div
+                {...getRootProps()}
+                className="inline-block"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <input {...getInputProps()} />
+                <Button size="sm">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Add More
+                </Button>
+              </div>
+
+              <Dialog
+                open={showRemoveAllDialog}
+                onOpenChange={setShowRemoveAllDialog}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={
+                      isRemovingAll ||
+                      uploadState.files.length === 0 ||
+                      uploadState.uploading ||
+                      uploadState.processing ||
+                      isSubmitting
+                    }
+                  >
+                    {isRemovingAll ? (
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4 mr-2" />
+                    )}
+                    {isRemovingAll ? "Removing..." : "Remove All"}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Remove All Photos</DialogTitle>
+                    <DialogDescription>
+                      This will remove all uploaded photos from both your
+                      session and cloud storage. This action cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowRemoveAllDialog(false)}
+                      disabled={isRemovingAll}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={removeAllFiles}
+                      disabled={isRemovingAll}
+                    >
+                      {isRemovingAll ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Removing...
+                        </>
+                      ) : (
+                        "Remove All"
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+
+          <Masonry
+            breakpointCols={breakpointColumns}
+            className="flex w-auto -ml-4"
+            columnClassName="pl-4 bg-clip-padding"
           >
-            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">
-              Drop your photos here or click to browse
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Upload 10-25 photos (JPG, PNG up to 10MB each)
+            {uploadState.files.map((fileData, index) => {
+              const progress = uploadState.uploadProgress[index];
+              const isUploaded = progress?.status === "completed";
+              const isFailed = progress?.status === "failed";
+              const isUploading =
+                progress?.status === "uploading" ||
+                progress?.status === "processing";
+              const isRemoving = removingFiles.has(fileData.id);
+
+              return (
+                <Card
+                  key={fileData.id}
+                  className={`mb-4 overflow-hidden ${
+                    isUploading ? "animate-pulse" : ""
+                  }`}
+                >
+                  <CardContent className="p-0">
+                    <div className="relative">
+                      {/* Upload Status Badge */}
+                      {(isUploading || isUploaded || isFailed) && (
+                        <div className="absolute top-2 left-2 z-10">
+                          {isFailed && (
+                            <div className="bg-red-500 text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                              <AlertCircle className="h-3 w-3" />
+                              Failed
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Remove Button */}
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="absolute top-2 right-2 z-10 h-6 w-6 p-0"
+                        onClick={() => removeFile(fileData.id)}
+                        disabled={isRemoving || isUploading || isSubmitting}
+                      >
+                        {isRemoving ? (
+                          <RefreshCw className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <X className="h-3 w-3" />
+                        )}
+                      </Button>
+
+                      {/* ReactCrop - now unobstructed */}
+                      <ReactCrop
+                        crop={
+                          uploadState.completedCrops[index] ||
+                          fileData.initialCrop || {
+                            unit: "%",
+                            x: 25,
+                            y: 25,
+                            width: 50,
+                            height: 50,
+                          }
+                        }
+                        onChange={(c, pc) => handleCropComplete(c, pc, index)}
+                        onComplete={(c, pc) => handleCropComplete(c, pc, index)}
+                        aspect={CROP_ASPECT}
+                        className="max-w-full h-auto"
+                        minWidth={100}
+                        minHeight={100}
+                        keepSelection={true}
+                        ruleOfThirds={true}
+                        disabled={isUploading} // Disable cropping while uploading
+                        locked={false}
+                        aria-label="Crop image"
+                      >
+                        <Image
+                          src={fileData.preview}
+                          alt={`Preview ${index + 1}`}
+                          width={400}
+                          height={400}
+                          className={`w-full h-auto object-cover ${
+                            isUploading ? "opacity-70" : ""
+                          }`}
+                          unoptimized={true}
+                        />
+                      </ReactCrop>
+
+                      {/* Retry Button for Failed Uploads */}
+                      {isFailed && (
+                        <div className="absolute bottom-2 left-2 z-10">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() =>
+                              processAndUploadFile(fileData.file, index)
+                            }
+                            className="text-xs"
+                            disabled={isUploading || isSubmitting}
+                          >
+                            <RefreshCw className="h-3 w-3 mr-1" />
+                            Retry
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-3 space-y-2">
+                      <p
+                        className="text-sm font-medium truncate"
+                        title={fileData.file.name}
+                      >
+                        {fileData.file.name.length > 25
+                          ? `${fileData.file.name.slice(
+                              0,
+                              15
+                            )}...${fileData.file.name.slice(-7)}`
+                          : fileData.file.name}
+                      </p>
+
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>
+                          {(fileData.file.size / 1048576).toFixed(2)} MB
+                        </span>
+                        {fileData.dimensions && (
+                          <span>
+                            {fileData.dimensions.width} ×{" "}
+                            {fileData.dimensions.height}
+                          </span>
+                        )}
+                      </div>
+
+                      {fileData.declineReason && (
+                        <p className="text-xs text-amber-600">
+                          {fileData.declineReason}
+                        </p>
+                      )}
+
+                      {progress?.error && (
+                        <p className="text-xs text-red-600">{progress.error}</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </Masonry>
+
+          <div
+            {...getRootProps()}
+            className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 transition-colors"
+          >
+            <input {...getInputProps()} />
+            <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Add more photos (up to {MAX_IMAGES} total)
             </p>
-            <Button variant="outline">Choose Files</Button>
           </div>
+        </div>
+      )}
 
-          {/* Current Images Count */}
-          <div className="mt-4 flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
-              Images uploaded: {formData.images?.length || 0}/25
-            </span>
-            <span
-              className={`font-medium ${
-                (formData.images?.length || 0) >= 10
-                  ? "text-green-600"
-                  : "text-orange-600"
-              }`}
-            >
-              {(formData.images?.length || 0) >= 10
-                ? "✓ Minimum reached"
-                : "Need at least 10"}
-            </span>
-          </div>
+      {errors.images && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{errors.images}</AlertDescription>
+        </Alert>
+      )}
 
-          {errors.images && (
-            <Alert variant="destructive" className="mt-4">
-              <Info className="h-4 w-4" />
-              <AlertDescription>{errors.images}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+      {uploadState.processing && (
+        <Alert>
+          <RefreshCw className="h-4 w-4 animate-spin" />
+          <AlertDescription>Processing images...</AlertDescription>
+        </Alert>
+      )}
 
-      {/* Navigation */}
+      {studioMessage && (
+        <Alert>
+          <AlertDescription>{studioMessage}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex justify-between">
-        <Button variant="outline" onClick={prevStep} disabled={isSubmitting}>
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          Previous
+        <Button variant="outline" onClick={() => router.back()}>
+          Back
         </Button>
+
         <Button
           onClick={handleCreateStudio}
-          disabled={isSubmitting}
-          className="min-w-[140px]"
+          disabled={
+            uploadState.files.length < MIN_IMAGES ||
+            uploadState.uploading ||
+            uploadState.uploadedFiles.length !== uploadState.files.length ||
+            localSubmitting
+          }
         >
-          {isSubmitting ? (
+          {localSubmitting ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              {hasCreditsForPlan() ? "Creating..." : "Processing Payment..."}
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              Creating Studio...
             </>
           ) : (
-            <>
-              <Rocket className="h-4 w-4 mr-2" />
-              {hasCreditsForPlan() ? "Create Studio" : "Pay and Create"}
-            </>
+            `Create Studio (${uploadState.files.length}/${MIN_IMAGES})`
           )}
         </Button>
       </div>

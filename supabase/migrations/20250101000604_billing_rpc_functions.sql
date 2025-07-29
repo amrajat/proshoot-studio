@@ -26,6 +26,8 @@ RETURNS UUID
 LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = ''
 AS $$
+DECLARE
+    v_purchase_id UUID;
 BEGIN
     -- Create purchase record
     INSERT INTO public.purchases (
@@ -49,14 +51,57 @@ BEGIN
         p_credits_type,
         p_status,
         p_metadata
-    );
+    )
+    RETURNING id INTO v_purchase_id;
     
     -- Add credits if purchase succeeded
     IF p_status = 'SUCCEEDED' AND p_credits_granted > 0 THEN
-        PERFORM public.add_credits(p_user_id, p_credits_type, p_credits_granted);
+        -- Update credits based on type (assuming credits record already exists from trigger)
+        IF p_credits_type = 'STARTER' THEN
+            UPDATE public.credits
+            SET starter = starter + p_credits_granted,
+                updated_at = NOW()
+            WHERE user_id = p_user_id;
+        ELSIF p_credits_type = 'PROFESSIONAL' THEN
+            UPDATE public.credits
+            SET professional = professional + p_credits_granted,
+                updated_at = NOW()
+            WHERE user_id = p_user_id;
+        ELSIF p_credits_type = 'STUDIO' THEN
+            UPDATE public.credits
+            SET studio = studio + p_credits_granted,
+                updated_at = NOW()
+            WHERE user_id = p_user_id;
+        ELSIF p_credits_type = 'TEAM' THEN
+            UPDATE public.credits
+            SET team = team + p_credits_granted,
+                updated_at = NOW()
+            WHERE user_id = p_user_id;
+        ELSE -- BALANCE or any other type
+            UPDATE public.credits
+            SET balance = balance + p_credits_granted,
+                updated_at = NOW()
+            WHERE user_id = p_user_id;
+        END IF;
+        
+        -- Create transaction record for audit trail
+        INSERT INTO public.transactions (
+            user_id,
+            context,
+            credits_used,
+            credit_type,
+            description
+        )
+        VALUES (
+            p_user_id,
+            'PERSONAL',
+            p_credits_granted, -- Positive for credit addition
+            p_credits_type,
+            'Credit purchase: ' || p_credits_type || ' (' || p_credits_granted || ' credits)'
+        );
     END IF;
     
-    RETURN p_user_id; -- Return user_id instead
+    RETURN v_purchase_id;
 END;
 $$;
 

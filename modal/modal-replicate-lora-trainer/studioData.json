@@ -1,0 +1,71 @@
+{
+  "plan": "starter",
+  "user_id": "3d6371cd-c95e-452e-b414-40d1a48c6bac", //creator_user_id
+  "organization_id": "5d6371cd-c45e-452e-b111-21d1a48c6boi", //organization_id
+  "studioName": "studio_name", //name
+  "images": "3d6371cd-c95e-452e-b414-40d1a48c6bac/9ca03e48-a068-4aa3-a344-f72fdf1131bb", // datasets_object_key
+  "style_pairs": [
+    {
+      "clothing": "man-Tech Startup-t-shirt-under-open-button-up",
+      "background": "Office-modern-high-rise-office-with-a-blurred-city-skyline",
+      "id": 1753720371572
+    },
+    {
+      "clothing": "man-Creative Professional-collarless-jacket-with-bold-shirt",
+      "background": "Office-minimalistic-modern-office-interior",
+      "id": 1753720371573
+    },
+    {
+      "clothing": "man-Business Professional-navy-suit-jacket-over-white-shirt",
+      "background": "Studio-lavender-gray",
+      "id": 1753720371574
+    },
+    {
+      "clothing": "man-Tech Startup-hoodie-with-no-logos",
+      "background": "Cityscape-bustling-urban-outdoor-setting,-with-blurred-skyscrapers-and-city-streets",
+      "id": 1753720371575
+    },
+    {
+      "clothing": "man-Creative Professional-minimalist-hoodie-with-blazer",
+      "background": "Studio-cobalt-blue",
+      "id": 1753720371576
+    },
+    {
+      "clothing": "man-Business Casual-textured-blazer-over-light-shirt",
+      "background": "Nature-lush-green-field-surrounded-by-colorful-wildflowers",
+      "id": 1753720371577
+    },
+    {
+      "clothing": "man-Smart Casual-chambray-shirt",
+      "background": "Studio-light-gray",
+      "id": 1753720371578
+    },
+    {
+      "clothing": "man-Academic-academic-gown",
+      "background": "Cityscape-high-rise-reflections",
+      "id": 1753720371579
+    },
+    {
+      "clothing": "man-Business Casual-button-up-shirt-with-rolled-sleeves",
+      "background": "Studio-slate-blue",
+      "id": 1753720371580
+    },
+    {
+      "clothing": "man-Business Professional-charcoal-blazer-with-light-blue-shirt",
+      "background": "Studio-muted-navy",
+      "id": 1753720371581
+    }
+  ], //style_pairs
+  "gender": "man", // user attributes
+  "age": "mid-20s", // user attributes
+  "ethnicity": "east asian", // user attributes
+  "hairLength": "buzz cut", // user attributes
+  "hairColor": "white", // user attributes
+  "hairType": "straight", // user attributes
+  "eyeColor": "brown", // user attributes
+  "glasses": true, // user attributes
+  "bodyType": "athletic", // user attributes
+  "height": "4'8\" – 4'9\"", // user attributes
+  "weight": "100 – 114 lbs", // user attributes
+  "studioID": "9ca03e48-a068-4aa3-a344-f72fdf1131bb" //public.studios.id
+}

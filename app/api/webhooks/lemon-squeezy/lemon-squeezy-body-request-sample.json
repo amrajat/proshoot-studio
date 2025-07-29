@@ -1,0 +1,115 @@
+{
+  "data": {
+    "id": "6038715",
+    "type": "orders",
+    "links": {
+      "self": "https://api.lemonsqueezy.com/v1/orders/6038715"
+    },
+    "attributes": {
+      "tax": 263,
+      "urls": {
+        "receipt": "https://app.lemonsqueezy.com/my-orders/4020d290-e9ff-49cc-9be8-5768efff05b1?expires=1753646996&signature=e4f6994298135481f69770bd4216b570dfdd3a76e6a88f78122f0a1ef8e7fd64"
+      },
+      "total": 3500,
+      "status": "paid",
+      "tax_usd": 263,
+      "currency": "USD",
+      "refunded": false,
+      "store_id": 88664,
+      "subtotal": 3500,
+      "tax_name": "Sales Tax",
+      "tax_rate": 8.13,
+      "setup_fee": 0,
+      "test_mode": false,
+      "total_usd": 3500,
+      "user_name": "Dwain Daniels",
+      "created_at": "2025-07-27T14:09:54.000000Z",
+      "identifier": "4020d290-e9ff-49cc-9be8-5768efff05b1",
+      "updated_at": "2025-07-27T14:09:55.000000Z",
+      "user_email": "dwaind@gmail.com",
+      "customer_id": 6409110,
+      "refunded_at": null,
+      "order_number": 88664689,
+      "subtotal_usd": 3500,
+      "currency_rate": "1.00000000",
+      "setup_fee_usd": 0,
+      "tax_formatted": "$2.63",
+      "tax_inclusive": true,
+      "discount_total": 0,
+      "refunded_amount": 0,
+      "total_formatted": "$35.00",
+      "first_order_item": {
+        "id": 5977081,
+        "price": 3500,
+        "order_id": 6038715,
+        "price_id": 1360085,
+        "quantity": 1,
+        "test_mode": false,
+        "created_at": "2025-07-27T14:09:55.000000Z",
+        "product_id": 274869,
+        "updated_at": "2025-07-27T14:09:55.000000Z",
+        "variant_id": 387793,
+        "product_name": "Headshots Package",
+        "variant_name": "Basic"
+      },
+      "status_formatted": "Paid",
+      "discount_total_usd": 0,
+      "subtotal_formatted": "$35.00",
+      "refunded_amount_usd": 0,
+      "setup_fee_formatted": "$0.00",
+      "discount_total_formatted": "$0.00",
+      "refunded_amount_formatted": "$0.00"
+    },
+    "relationships": {
+      "store": {
+        "links": {
+          "self": "https://api.lemonsqueezy.com/v1/orders/6038715/relationships/store",
+          "related": "https://api.lemonsqueezy.com/v1/orders/6038715/store"
+        }
+      },
+      "customer": {
+        "links": {
+          "self": "https://api.lemonsqueezy.com/v1/orders/6038715/relationships/customer",
+          "related": "https://api.lemonsqueezy.com/v1/orders/6038715/customer"
+        }
+      },
+      "order-items": {
+        "links": {
+          "self": "https://api.lemonsqueezy.com/v1/orders/6038715/relationships/order-items",
+          "related": "https://api.lemonsqueezy.com/v1/orders/6038715/order-items"
+        }
+      },
+      "license-keys": {
+        "links": {
+          "self": "https://api.lemonsqueezy.com/v1/orders/6038715/relationships/license-keys",
+          "related": "https://api.lemonsqueezy.com/v1/orders/6038715/license-keys"
+        }
+      },
+      "subscriptions": {
+        "links": {
+          "self": "https://api.lemonsqueezy.com/v1/orders/6038715/relationships/subscriptions",
+          "related": "https://api.lemonsqueezy.com/v1/orders/6038715/subscriptions"
+        }
+      },
+      "discount-redemptions": {
+        "links": {
+          "self": "https://api.lemonsqueezy.com/v1/orders/6038715/relationships/discount-redemptions",
+          "related": "https://api.lemonsqueezy.com/v1/orders/6038715/discount-redemptions"
+        }
+      }
+    }
+  },
+  "meta": {
+    "test_mode": false,
+    "event_name": "order_created",
+    "webhook_id": "6a52a2a5-48be-40a4-91d8-af21ffdf199c",
+    "custom_data": {
+      "plan": "Basic",
+      "user": "e5afd4e6-5fb5-4ab2-9968-cfd69bec4967",
+      "email_id": "customer_email@gmail.com",
+      "quantity": "1",
+      "first_promoter_t_i_d": "cd848df2-a030-47e7-92b4-382752d5c251",
+      "first_promoter_reference": "anangsha96"
+    }
+  }
+}

@@ -1,60 +1,104 @@
 "use server";
+// this must be service_role only.
 
-import createSupabaseServerClient from "@/lib/supabase/server-client";
-import { revalidatePath } from "next/cache";
+export async function createStudio(studioData) {
+  const { createServerClient } = await import("@supabase/ssr");
+  const { cookies } = await import("next/headers");
 
-export async function updateStudioDownloadedStatusAction(studioId, userId) {
-  if (!studioId || !userId) {
-    return { error: { message: "Studio ID and User ID are required." } };
-  }
+  try {
+    // Create Supabase client with service role for webhook operations
+    const cookieStore = cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        cookies: {
+          get(name) {
+            return cookieStore.get(name)?.value;
+          },
+        },
+      }
+    );
 
-  const supabase = await createSupabaseServerClient();
+    // Map studioData to database schema
+    const {
+      studioID,
+      user_id: creator_user_id,
+      organization_id,
+      studioName: name,
+      images: datasets_object_key,
+      style_pairs,
+      plan,
+      gender,
+      age,
+      ethnicity,
+      hairLength,
+      hairColor,
+      hairType,
+      eyeColor,
+      glasses,
+      bodyType,
+      height,
+      weight,
+      ...metadata
+    } = studioData;
 
-  // First, verify the user is the creator of the studio
-  const { data: studio, error: fetchError } = await supabase
-    .from("studios")
-    .select("creator_user_id")
-    .eq("id", studioId)
-    .single();
-
-  if (fetchError || !studio) {
-    // Consider more specific error logging or messages
-    console.error("Fetch studio error for download status update:", fetchError);
-    return {
-      error: {
-        message: "Studio not found or access denied when fetching for update.",
-      },
+    // Prepare user_attributes object
+    const user_attributes = {
+      gender,
+      age,
+      ethnicity,
+      hairLength,
+      hairColor,
+      hairType,
+      eyeColor,
+      glasses,
+      bodyType,
+      height,
+      weight
     };
+
+    // Insert studio record
+    const { data, error } = await supabase
+      .from("studios")
+      .insert({
+        id: studioID,
+        creator_user_id,
+        organization_id: organization_id || null,
+        name,
+        status: "PROCESSING",
+        provider: "REPLICATE",
+        datasets_object_key,
+        style_pairs,
+        user_attributes,
+        plan: plan.toUpperCase(),
+        started_at: new Date().toISOString(),
+        metadata
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("❌ Error creating studio:", error);
+      throw new Error(`Failed to create studio: ${error.message}`);
+    }
+
+    console.log("✅ Studio created successfully:", data.id);
+
+    // TODO: Call Modal training API
+    // 1. PREPARE THE DATASET
+    // 2. CALL THE REPLICATE API AND START TRAINING
+    // 3. GET TRAINING ID FROM REPLICATE
+    // 4. UPDATE STUDIO WITH PROVIDER_ID
+
+    return data;
+  } catch (error) {
+    console.error("❌ Studio creation failed:", error);
+    throw error;
   }
-
-  if (studio.creator_user_id !== userId) {
-    return {
-      error: { message: "Only the studio creator can perform this action." },
-    };
-  }
-
-  // Update the downloaded status
-  const { error: updateError } = await supabase
-    .from("studios")
-    .update({ downloaded: true, status: "completed" })
-    .eq("id", studioId)
-    .eq("creator_user_id", userId); // Ensure ownership on update
-
-  if (updateError) {
-    console.error("Error updating studio downloaded status:", updateError);
-    return {
-      error: {
-        message: "Failed to update studio status: " + updateError.message,
-      },
-    };
-  }
-
-  revalidatePath(`/dashboard/studio/${studioId}`);
-  // Optional: revalidate other relevant paths, e.g., a general studio list page
-  // revalidatePath(`/dashboard/studios`);
-
-  return {
-    success: true,
-    message: "Studio successfully marked as downloaded.",
-  };
 }
+
+export async function deleteStudio(studioID) {}
+export async function redoStudio(studioID) {}
+export async function refundStudio(studioID) {}
+export async function updateStudioStatus(studioID, status) {}

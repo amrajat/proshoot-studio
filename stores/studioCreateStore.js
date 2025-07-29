@@ -25,7 +25,6 @@ const initialFormData = {
   bodyType: "",
   height: "",
   weight: "",
-  additionalInfo: "",
 };
 
 // Initial UI state

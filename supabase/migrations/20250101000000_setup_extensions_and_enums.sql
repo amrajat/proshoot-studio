@@ -93,6 +93,19 @@ CREATE TYPE public.payment_provider AS ENUM (
     'LEMONSQUEEZY'
 );
 
+-- Plans for purchases
+CREATE TYPE public.plans AS ENUM (
+    'STARTER',
+    'PROFESSIONAL',
+    'STUDIO',
+    'TEAM'
+);
+
+-- Providers for studios
+CREATE TYPE public.providers AS ENUM (
+    'REPLICATE',
+    'HuggingFace'
+);
 
 -- ============================================================================
 -- COMMENTS
@@ -105,6 +118,8 @@ COMMENT ON TYPE public.purchase_status IS 'Status of purchase transactions';
 COMMENT ON TYPE public.credit_transfer_type IS 'Types of credit transfers between plans';
 COMMENT ON TYPE public.account_type IS 'Type of account context.';
 COMMENT ON TYPE public.payment_provider IS 'Payment provider used (e.g., stripe, paypal)';
+COMMENT ON TYPE public.plans IS 'Plans for purchases';
+COMMENT ON TYPE public.providers IS 'Providers for studios';
 
 -- Reset session settings
 RESET ALL;

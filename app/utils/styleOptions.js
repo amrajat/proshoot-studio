@@ -1,132 +1,141 @@
 export const CLOTHING_OPTIONS_MAN = {
   "Business Professional": [
     {
-      name: "Navy Suit Jacket Over White Shirt",
-      image: "/images/clothing/man/navy-suit-white-shirt.jpg",
+      name: "navy suit jacket over white shirt",
+      image:
+        "/images/clothing/business-professional/man/navy-suit-white-shirt.jpg",
     },
     {
-      name: "Charcoal Blazer With Light Blue Shirt",
-      image: "/images/clothing/man/charcoal-blazer-blue-shirt.jpg",
+      name: "charcoal blazer with light blue shirt",
+      image:
+        "/images/clothing/business-professional/man/charcoal-blazer-blue-shirt.jpg",
     },
     {
-      name: "Black Suit With Tie",
-      image: "/images/clothing/man/black-suit-tie.jpg",
+      name: "black suit with tie",
+      image: "/images/clothing/business-professional/man/black-suit-tie.jpg",
     },
     {
-      name: "Dark Gray Blazer With White Shirt",
-      image: "/images/clothing/man/dark-gray-blazer-white-shirt.jpg",
+      name: "dark gray blazer with white shirt",
+      image:
+        "/images/clothing/business-professional/man/dark-gray-blazer-white-shirt.jpg",
     },
     {
-      name: "Three-Piece Suit In Navy",
-      image: "/images/clothing/man/three-piece-navy-suit.jpg",
+      name: "three-piece suit in navy",
+      image:
+        "/images/clothing/business-professional/man/three-piece-navy-suit.jpg",
     },
   ],
   "Business Casual": [
     {
-      name: "Button-Up Shirt With Rolled Sleeves",
-      image: "/images/clothing/man/button-up-rolled-sleeves.jpg",
+      name: "button-up shirt with rolled sleeves",
+      image:
+        "/images/clothing/business-casual/man/button-up-rolled-sleeves.jpg",
     },
     {
-      name: "Polo Shirt With Structured Collar",
-      image: "/images/clothing/man/polo-structured-collar.jpg",
+      name: "polo shirt with structured collar",
+      image: "/images/clothing/business-casual/man/polo-structured-collar.jpg",
     },
     {
-      name: "Crew-Neck Sweater Over Shirt",
-      image: "/images/clothing/man/crewneck-over-shirt.jpg",
+      name: "crew-neck sweater over shirt",
+      image: "/images/clothing/business-casual/man/crewneck-over-shirt.jpg",
     },
     {
-      name: "Textured Blazer Over Light Shirt",
-      image: "/images/clothing/man/textured-blazer-light-shirt.jpg",
+      name: "textured blazer over light shirt",
+      image:
+        "/images/clothing/business-casual/man/textured-blazer-light-shirt.jpg",
     },
     {
-      name: "V-Neck Sweater In Muted Tones",
-      image: "/images/clothing/man/vneck-muted-tones.jpg",
+      name: "v-neck sweater in muted tones",
+      image: "/images/clothing/business-casual/man/vneck-muted-tones.jpg",
     },
   ],
   "Smart Casual": [
     {
-      name: "Knit Pullover",
-      image: "/images/clothing/man/knit-pullover.jpg",
+      name: "knit pullover",
+      image: "/images/clothing/smart-casual/man/knit-pullover.jpg",
     },
     {
-      name: "Henley Shirt With Jacket",
-      image: "/images/clothing/man/henley-with-jacket.jpg",
+      name: "henley shirt with jacket",
+      image: "/images/clothing/smart-casual/man/henley-with-jacket.jpg",
     },
     {
-      name: "Chambray Shirt",
-      image: "/images/clothing/man/chambray-shirt.jpg",
+      name: "chambray shirt",
+      image: "/images/clothing/smart-casual/man/chambray-shirt.jpg",
     },
     {
-      name: "Short-Sleeve Button-Up",
-      image: "/images/clothing/man/short-sleeve-button-up.jpg",
+      name: "short-sleeve button-up",
+      image: "/images/clothing/smart-casual/man/short-sleeve-button-up.jpg",
     },
     {
-      name: "Mock-Neck Top",
-      image: "/images/clothing/man/mock-neck-top.jpg",
+      name: "mock-neck top",
+      image: "/images/clothing/smart-casual/man/mock-neck-top.jpg",
     },
   ],
   "Creative Professional": [
     {
-      name: "Turtleneck Under A Blazer",
-      image: "/images/clothing/man/turtleneck-blazer.jpg",
+      name: "turtleneck under a blazer",
+      image: "/images/clothing/creative-professional/man/turtleneck-blazer.jpg",
     },
     {
-      name: "Patterned Shirt With Cardigan",
-      image: "/images/clothing/man/patterned-shirt-cardigan.jpg",
+      name: "patterned shirt with cardigan",
+      image:
+        "/images/clothing/creative-professional/man/patterned-shirt-cardigan.jpg",
     },
     {
-      name: "Collarless Jacket With Bold Shirt",
-      image: "/images/clothing/man/collarless-jacket-bold-shirt.jpg",
+      name: "collarless jacket with bold shirt",
+      image:
+        "/images/clothing/creative-professional/man/collarless-jacket-bold-shirt.jpg",
     },
     {
-      name: "Minimalist Hoodie With Blazer",
-      image: "/images/clothing/man/minimalist-hoodie-blazer.jpg",
+      name: "minimalist hoodie with blazer",
+      image:
+        "/images/clothing/creative-professional/man/minimalist-hoodie-blazer.jpg",
     },
   ],
   "Tech Startup": [
     {
-      name: "T-Shirt Under Open Button-Up",
-      image: "/images/clothing/man/tshirt-open-button-up.jpg",
+      name: "t-shirt under open button-up",
+      image: "/images/clothing/tech-startup/man/tshirt-open-button-up.jpg",
     },
     {
-      name: "Hoodie With No Logos",
-      image: "/images/clothing/man/clean-hoodie.jpg",
+      name: "hoodie with no logos",
+      image: "/images/clothing/tech-startup/man/clean-hoodie.jpg",
     },
     {
-      name: "Flannel Shirt",
-      image: "/images/clothing/man/flannel-shirt.jpg",
+      name: "flannel shirt",
+      image: "/images/clothing/tech-startup/man/flannel-shirt.jpg",
     },
     {
-      name: "Clean Crew-Neck Sweater",
-      image: "/images/clothing/man/clean-crewneck-sweater.jpg",
+      name: "clean crew-neck sweater",
+      image: "/images/clothing/tech-startup/man/clean-crewneck-sweater.jpg",
     },
   ],
   Medical: [
     {
-      name: "White Coat Over Dress Shirt",
-      image: "/images/clothing/man/white-coat-dress-shirt.jpg",
+      name: "white coat over dress shirt",
+      image: "/images/clothing/medical/man/white-coat-dress-shirt.jpg",
     },
     {
-      name: "Scrub Top",
-      image: "/images/clothing/man/scrub-top.jpg",
+      name: "scrub top",
+      image: "/images/clothing/medical/man/scrub-top.jpg",
     },
     {
-      name: "White Coat With Stethoscope",
-      image: "/images/clothing/man/white-coat-stethoscope.jpg",
+      name: "white coat with stethoscope",
+      image: "/images/clothing/medical/man/white-coat-stethoscope.jpg",
     },
   ],
   Academic: [
     {
-      name: "Collared Shirt With Cardigan",
-      image: "/images/clothing/man/collared-shirt-cardigan.jpg",
+      name: "collared shirt with cardigan",
+      image: "/images/clothing/academic/man/collared-shirt-cardigan.jpg",
     },
     {
-      name: "Sport Coat Over Sweater",
-      image: "/images/clothing/man/sport-coat-sweater.jpg",
+      name: "sport coat over sweater",
+      image: "/images/clothing/academic/man/sport-coat-sweater.jpg",
     },
     {
-      name: "Academic Gown",
-      image: "/images/clothing/man/academic-gown.jpg",
+      name: "academic gown",
+      image: "/images/clothing/academic/man/academic-gown.jpg",
     },
   ],
 };
@@ -134,136 +143,144 @@ export const CLOTHING_OPTIONS_MAN = {
 export const CLOTHING_OPTIONS_WOMAN = {
   "Business Professional": [
     {
-      name: "Black Blazer Over White Blouse",
-      image: "/images/clothing/woman/black-blazer-white-blouse.jpg",
+      name: "black blazer over white blouse",
+      image:
+        "/images/clothing/business-professional/woman/black-blazer-white-blouse.jpg",
     },
     {
-      name: "Navy Blazer With Cream Shirt",
-      image: "/images/clothing/woman/navy-blazer-cream-shirt.jpg",
+      name: "navy blazer with cream shirt",
+      image:
+        "/images/clothing/business-professional/woman/navy-blazer-cream-shirt.jpg",
     },
     {
-      name: "High-Neck Blouse Under Blazer",
-      image: "/images/clothing/woman/high-neck-blouse-blazer.jpg",
+      name: "high-neck blouse under blazer",
+      image:
+        "/images/clothing/business-professional/woman/high-neck-blouse-blazer.jpg",
     },
     {
-      name: "Classic White Button-Up",
-      image: "/images/clothing/woman/classic-white-button-up.jpg",
+      name: "classic white button-up",
+      image:
+        "/images/clothing/business-professional/woman/classic-white-button-up.jpg",
     },
     {
-      name: "Tailored Sheath Dress",
-      image: "/images/clothing/woman/tailored-sheath-dress.jpg",
+      name: "tailored sheath dress",
+      image:
+        "/images/clothing/business-professional/woman/tailored-sheath-dress.jpg",
     },
   ],
   "Business Casual": [
     {
-      name: "Collared Popover Blouse",
-      image: "/images/clothing/woman/collared-popover-blouse.jpg",
+      name: "collared popover blouse",
+      image:
+        "/images/clothing/business-casual/woman/collared-popover-blouse.jpg",
     },
     {
-      name: "Ribbed Turtleneck Sweater",
-      image: "/images/clothing/woman/ribbed-turtleneck-sweater.jpg",
+      name: "ribbed turtleneck sweater",
+      image:
+        "/images/clothing/business-casual/woman/ribbed-turtleneck-sweater.jpg",
     },
     {
-      name: "Muted Satin Blouse",
-      image: "/images/clothing/woman/muted-satin-blouse.jpg",
+      name: "muted satin blouse",
+      image: "/images/clothing/business-casual/woman/muted-satin-blouse.jpg",
     },
     {
-      name: "Lightweight Cardigan Over Shirt",
-      image: "/images/clothing/woman/lightweight-cardigan-shirt.jpg",
+      name: "lightweight cardigan over shirt",
+      image:
+        "/images/clothing/business-casual/woman/lightweight-cardigan-shirt.jpg",
     },
     {
-      name: "Wrap Blouse",
-      image: "/images/clothing/woman/wrap-blouse.jpg",
+      name: "wrap blouse",
+      image: "/images/clothing/business-casual/woman/wrap-blouse.jpg",
     },
   ],
   "Smart Casual": [
     {
-      name: "Fitted Knitwear",
-      image: "/images/clothing/woman/fitted-knitwear.jpg",
+      name: "fitted knitwear",
+      image: "/images/clothing/smart-casual/woman/fitted-knitwear.jpg",
     },
     {
-      name: "Sleeved Flowy Blouse",
-      image: "/images/clothing/woman/sleeved-flowy-blouse.jpg",
+      name: "sleeved flowy blouse",
+      image: "/images/clothing/smart-casual/woman/sleeved-flowy-blouse.jpg",
     },
     {
-      name: "Modern Mock-Neck Top",
-      image: "/images/clothing/woman/modern-mock-neck-top.jpg",
+      name: "modern mock-neck top",
+      image: "/images/clothing/smart-casual/woman/modern-mock-neck-top.jpg",
     },
     {
-      name: "Patterned Button-Up",
-      image: "/images/clothing/woman/patterned-button-up.jpg",
+      name: "patterned button-up",
+      image: "/images/clothing/smart-casual/woman/patterned-button-up.jpg",
     },
     {
-      name: "Sleeveless Turtleneck",
-      image: "/images/clothing/woman/sleeveless-turtleneck.jpg",
+      name: "sleeveless turtleneck",
+      image: "/images/clothing/smart-casual/woman/sleeveless-turtleneck.jpg",
     },
   ],
   Creative: [
     {
-      name: "Boxy Jacket With Texture",
-      image: "/images/clothing/woman/boxy-jacket-texture.jpg",
+      name: "boxy jacket with texture",
+      image: "/images/clothing/creative/woman/boxy-jacket-texture.jpg",
     },
     {
-      name: "Boho Blouse With Soft Prints",
-      image: "/images/clothing/woman/boho-blouse-soft-prints.jpg",
+      name: "boho blouse with soft prints",
+      image: "/images/clothing/creative/woman/boho-blouse-soft-prints.jpg",
     },
     {
-      name: "Belted Shirt Dress",
-      image: "/images/clothing/woman/belted-shirt-dress.jpg",
+      name: "belted shirt dress",
+      image: "/images/clothing/creative/woman/belted-shirt-dress.jpg",
     },
     {
-      name: "Puff Sleeve Blouse",
-      image: "/images/clothing/woman/puff-sleeve-blouse.jpg",
+      name: "puff sleeve blouse",
+      image: "/images/clothing/creative/woman/puff-sleeve-blouse.jpg",
     },
     {
-      name: "Structured Kimono-Style Top",
-      image: "/images/clothing/woman/structured-kimono-top.jpg",
+      name: "structured kimono-style top",
+      image: "/images/clothing/creative/woman/structured-kimono-top.jpg",
     },
   ],
   Startup: [
     {
-      name: "Clean Scoop-Neck Top",
-      image: "/images/clothing/woman/clean-scoop-neck-top.jpg",
+      name: "clean scoop-neck top",
+      image: "/images/clothing/startup/woman/clean-scoop-neck-top.jpg",
     },
     {
-      name: "Cropped Blazer Over T-Shirt",
-      image: "/images/clothing/woman/cropped-blazer-tshirt.jpg",
+      name: "cropped blazer over t-shirt",
+      image: "/images/clothing/startup/woman/cropped-blazer-tshirt.jpg",
     },
     {
-      name: "Plain Tank Under Open Cardigan",
-      image: "/images/clothing/woman/tank-open-cardigan.jpg",
+      name: "plain tank under open cardigan",
+      image: "/images/clothing/startup/woman/tank-open-cardigan.jpg",
     },
     {
-      name: "Striped Button-Up With Soft Fit",
-      image: "/images/clothing/woman/striped-button-up-soft.jpg",
+      name: "striped button-up with soft fit",
+      image: "/images/clothing/startup/woman/striped-button-up-soft.jpg",
     },
   ],
   Medical: [
     {
-      name: "White Coat Over Blouse",
-      image: "/images/clothing/woman/white-coat-blouse.jpg",
+      name: "white coat over blouse",
+      image: "/images/clothing/medical/woman/white-coat-blouse.jpg",
     },
     {
-      name: "Scrub Top",
-      image: "/images/clothing/woman/scrub-top.jpg",
+      name: "scrub top",
+      image: "/images/clothing/medical/woman/scrub-top.jpg",
     },
     {
-      name: "Medical Tunic With High Collar",
-      image: "/images/clothing/woman/medical-tunic-collar.jpg",
+      name: "medical tunic with high collar",
+      image: "/images/clothing/medical/woman/medical-tunic-collar.jpg",
     },
   ],
   Academic: [
     {
-      name: "Blouse With Scarf",
-      image: "/images/clothing/woman/blouse-scarf.jpg",
+      name: "blouse with scarf",
+      image: "/images/clothing/academic/woman/blouse-scarf.jpg",
     },
     {
-      name: "Graduation Gown And Stole",
-      image: "/images/clothing/woman/graduation-gown-stole.jpg",
+      name: "graduation gown and stole",
+      image: "/images/clothing/academic/woman/graduation-gown-stole.jpg",
     },
     {
-      name: "Tweed Jacket Over Collared Shirt",
-      image: "/images/clothing/woman/tweed-jacket-collared-shirt.jpg",
+      name: "tweed jacket over collared shirt",
+      image: "/images/clothing/academic/woman/tweed-jacket-collared-shirt.jpg",
     },
   ],
 };
@@ -273,274 +290,287 @@ export const BACKGROUND_OPTIONS = {
     // Core Neutrals
     {
       name: "light gray",
-      image: "/images/backgrounds/light-gray.jpg",
+      image: "/images/backgrounds/studio/light-gray.jpg",
     },
     {
       name: "medium gray",
-      image: "/images/backgrounds/medium-gray.jpg",
+      image: "/images/backgrounds/studio/medium-gray.jpg",
     },
     {
       name: "charcoal gray",
-      image: "/images/backgrounds/charcoal-gray.jpg",
+      image: "/images/backgrounds/studio/charcoal-gray.jpg",
     },
     {
       name: "cool white",
-      image: "/images/backgrounds/cool-white.jpg",
+      image: "/images/backgrounds/studio/cool-white.jpg",
     },
     {
       name: "warm white",
-      image: "/images/backgrounds/warm-white.jpg",
+      image: "/images/backgrounds/studio/warm-white.jpg",
     },
     {
       name: "soft black",
-      image: "/images/backgrounds/soft-black.jpg",
+      image: "/images/backgrounds/studio/soft-black.jpg",
     },
     {
       name: "muted navy",
-      image: "/images/backgrounds/muted-navy.jpg",
+      image: "/images/backgrounds/studio/muted-navy.jpg",
     },
 
     // Inclusive Tones
     {
       name: "pewter blue",
-      image: "/images/backgrounds/pewter-blue.jpg",
+      image: "/images/backgrounds/studio/pewter-blue.jpg",
     },
     {
       name: "dusty mauve",
-      image: "/images/backgrounds/dusty-mauve.jpg",
+      image: "/images/backgrounds/studio/dusty-mauve.jpg",
     },
     {
       name: "olive gray",
-      image: "/images/backgrounds/olive-gray.jpg",
+      image: "/images/backgrounds/studio/olive-gray.jpg",
     },
     {
       name: "terracotta",
-      image: "/images/backgrounds/terracotta.jpg",
+      image: "/images/backgrounds/studio/terracotta.jpg",
     },
     {
       name: "taupe",
-      image: "/images/backgrounds/taupe.jpg",
+      image: "/images/backgrounds/studio/taupe.jpg",
     },
     {
       name: "camel beige",
-      image: "/images/backgrounds/camel-beige.jpg",
+      image: "/images/backgrounds/studio/camel-beige.jpg",
     },
 
     // Creative & Warm
     {
       name: "peach beige",
-      image: "/images/backgrounds/peach-beige.jpg",
+      image: "/images/backgrounds/studio/peach-beige.jpg",
     },
     {
       name: "soft coral",
-      image: "/images/backgrounds/soft-coral.jpg",
+      image: "/images/backgrounds/studio/soft-coral.jpg",
     },
     {
       name: "lavender gray",
-      image: "/images/backgrounds/lavender-gray.jpg",
+      image: "/images/backgrounds/studio/lavender-gray.jpg",
     },
     {
       name: "muted teal",
-      image: "/images/backgrounds/muted-teal.jpg",
+      image: "/images/backgrounds/studio/muted-teal.jpg",
     },
     {
       name: "slate blue",
-      image: "/images/backgrounds/slate-blue.jpg",
+      image: "/images/backgrounds/studio/slate-blue.jpg",
     },
     {
       name: "sandstone",
-      image: "/images/backgrounds/sandstone.jpg",
+      image: "/images/backgrounds/studio/sandstone.jpg",
     },
 
     // Bold & Modern
     {
       name: "emerald green",
-      image: "/images/backgrounds/emerald-green.jpg",
+      image: "/images/backgrounds/studio/emerald-green.jpg",
     },
     {
       name: "cobalt blue",
-      image: "/images/backgrounds/cobalt-blue.jpg",
+      image: "/images/backgrounds/studio/cobalt-blue.jpg",
     },
     {
       name: "crimson red",
-      image: "/images/backgrounds/crimson-red.jpg",
+      image: "/images/backgrounds/studio/crimson-red.jpg",
     },
     {
       name: "royal purple",
-      image: "/images/backgrounds/royal-purple.jpg",
+      image: "/images/backgrounds/studio/royal-purple.jpg",
     },
     {
       name: "amber yellow",
-      image: "/images/backgrounds/amber-yellow.jpg",
+      image: "/images/backgrounds/studio/amber-yellow.jpg",
     },
     {
       name: "matte clay",
-      image: "/images/backgrounds/matte-clay.jpg",
+      image: "/images/backgrounds/studio/matte-clay.jpg",
     },
   ],
   Office: [
     {
       name: "modern high-rise office with a blurred city skyline",
-      image: "/images/backgrounds/man/modern-high-rise-office-with-a-blurred-city-skyline.jpg",
+      image:
+        "/images/backgrounds/office/modern-high-rise-office-with-a-blurred-city-skyline.jpg",
     },
     {
       name: "corporate office with large windows and a blurred city skyline",
-      image: "/images/backgrounds/woman/corporate-office-with-large-windows-and-a-blurred-city-skyline.jpg",
+      image:
+        "/images/backgrounds/office/corporate-office-with-large-windows-and-a-blurred-city-skyline.jpg",
     },
     {
       name: "modern office featuring glass windows and desks",
-      image: "/images/backgrounds/non-binary/modern-office-featuring-glass-windows-and-desks.jpg",
+      image:
+        "/images/backgrounds/office/modern-office-featuring-glass-windows-and-desks.jpg",
     },
     {
       name: "modern office with floor-to-ceiling windows, a blurred desk, and indoor potted plants",
-      image: "/images/backgrounds/default/modern-office-with-floor-to-ceiling-windows-a-blurred-desk-and-indoor-potted-plants.jpg",
+      image:
+        "/images/backgrounds/office/modern-office-with-floor-to-ceiling-windows-a-blurred-desk-and-indoor-potted-plants.jpg",
     },
     {
       name: "minimalistic modern office interior",
-      image: "/images/backgrounds/default/minimalistic-modern-office-interior.jpg",
+      image:
+        "/images/backgrounds/office/minimalistic-modern-office-interior.jpg",
     },
   ],
   Cityscape: [
     {
       name: "bustling urban outdoor setting, with blurred skyscrapers and city streets",
-      image: "/images/backgrounds/man/bustling-urban-outdoor-setting-with-blurred-skyscrapers-and-city-streets.jpg",
+      image:
+        "/images/backgrounds/cityscape/bustling-urban-outdoor-setting-with-blurred-skyscrapers-and-city-streets.jpg",
     },
     {
       name: "blurred skyline at dusk",
-      image: "/images/backgrounds/woman/blurred-skyline-dusk.jpg",
+      image: "/images/backgrounds/cityscape/blurred-skyline-dusk.jpg",
     },
     {
       name: "modern architecture with depth of field",
-      image: "/images/backgrounds/non-binary/modern-architecture-dof.jpg",
+      image: "/images/backgrounds/cityscape/modern-architecture-dof.jpg",
     },
     {
       name: "urban rooftop with soft light",
-      image: "/images/backgrounds/default/urban-rooftop-soft-light.jpg",
+      image: "/images/backgrounds/cityscape/urban-rooftop-soft-light.jpg",
     },
     {
       name: "brick street with bokeh",
-      image: "/images/backgrounds/default/brick-street-bokeh.jpg",
+      image: "/images/backgrounds/cityscape/brick-street-bokeh.jpg",
     },
     {
       name: "high-rise reflections",
-      image: "/images/backgrounds/default/high-rise-reflections.jpg",
+      image: "/images/backgrounds/cityscape/high-rise-reflections.jpg",
     },
   ],
   Nature: [
     {
       name: "sunlit park with blurred greenery",
-      image: "/images/backgrounds/man/sunlit-park-with-blurred-greenery.jpg",
+      image: "/images/backgrounds/nature/sunlit-park-with-blurred-greenery.jpg",
     },
     {
       name: "tulip field with blurred colorful flowers",
-      image: "/images/backgrounds/woman/tulip-field-with-blurred-colorful-flowers.jpg",
+      image:
+        "/images/backgrounds/nature/tulip-field-with-blurred-colorful-flowers.jpg",
     },
     {
       name: "garden with lush greenery and blooming flowers",
-      image: "/images/backgrounds/non-binary/garden-with-lush-greenery-and-blooming-flowers.jpg",
+      image:
+        "/images/backgrounds/nature/garden-with-lush-greenery-and-blooming-flowers.jpg",
     },
     {
       name: "grass field full of dandelions with trees softly blurred",
-      image: "/images/backgrounds/default/grass-field-full-of-dandelions-with-trees-softly-blurred.jpg",
+      image:
+        "/images/backgrounds/nature/grass-field-full-of-dandelions-with-trees-softly-blurred.jpg",
     },
     {
       name: "wooded area with blurred vibrant green foliage",
-      image: "/images/backgrounds/default/wooded-area-with-blurred-vibrant-green-foliage.jpg",
+      image:
+        "/images/backgrounds/nature/wooded-area-with-blurred-vibrant-green-foliage.jpg",
     },
     {
       name: "natural landscape with blurred trees and gentle sunlight filtering through",
-      image: "/images/backgrounds/default/natural-landscape-with-blurred-trees-and-gentle-sunlight-filtering-through.jpg",
+      image:
+        "/images/backgrounds/nature/natural-landscape-with-blurred-trees-and-gentle-sunlight-filtering-through.jpg",
     },
     {
       name: "lush green field surrounded by colorful wildflowers",
-      image: "/images/backgrounds/default/lush-green-field-surrounded-by-colorful-wildflowers.jpg",
+      image:
+        "/images/backgrounds/nature/lush-green-field-surrounded-by-colorful-wildflowers.jpg",
     },
   ],
   Medical: [
     {
       name: "sterile white exam room",
-      image: "/images/backgrounds/man/sterile-white-exam-room.jpg",
+      image: "/images/backgrounds/medical/sterile-white-exam-room.jpg",
     },
     {
       name: "hospital corridor (blurred)",
-      image: "/images/backgrounds/woman/hospital-corridor-blurred.jpg",
+      image: "/images/backgrounds/medical/hospital-corridor-blurred.jpg",
     },
     {
       name: "dental or therapy office",
-      image: "/images/backgrounds/non-binary/dental-therapy-office.jpg",
+      image: "/images/backgrounds/medical/dental-therapy-office.jpg",
     },
     {
       name: "medical tools subtly in background",
-      image: "/images/backgrounds/default/medical-tools-background.jpg",
+      image: "/images/backgrounds/medical/medical-tools-background.jpg",
     },
   ],
   Academic: [
     {
       name: "bookshelves",
-      image: "/images/backgrounds/man/bookshelves.jpg",
+      image: "/images/backgrounds/academic/bookshelves.jpg",
     },
     {
       name: "library interior",
-      image: "/images/backgrounds/woman/library-interior.jpg",
+      image: "/images/backgrounds/academic/library-interior.jpg",
     },
     {
       name: "blurred classroom chalkboard",
-      image: "/images/backgrounds/non-binary/blurred-classroom-chalkboard.jpg",
+      image: "/images/backgrounds/academic/blurred-classroom-chalkboard.jpg",
     },
     {
       name: "graduation stage backdrop",
-      image: "/images/backgrounds/default/graduation-stage.jpg",
+      image: "/images/backgrounds/academic/graduation-stage.jpg",
     },
   ],
   Creative: [
     {
       name: "art studio with canvas & paint",
-      image: "/images/backgrounds/man/art-studio-canvas-paint.jpg",
+      image: "/images/backgrounds/creative/art-studio-canvas-paint.jpg",
     },
     {
       name: "co-working area with color pops",
-      image: "/images/backgrounds/woman/coworking-color-pops.jpg",
+      image: "/images/backgrounds/creative/coworking-color-pops.jpg",
     },
     {
       name: "creative loft with brick wall",
-      image: "/images/backgrounds/non-binary/creative-loft-brick-wall.jpg",
+      image: "/images/backgrounds/creative/creative-loft-brick-wall.jpg",
     },
     {
       name: "colorful blurred workspace",
-      image: "colorful-blurred-workspace.jpg",
+      image: "/images/backgrounds/creative/colorful-blurred-workspace.jpg",
     },
   ],
   "Home Office": [
     {
       name: "bookshelf & laptop",
-      image: "bookshelf-laptop.jpg",
+      image: "/images/backgrounds/home-office/bookshelf-laptop.jpg",
     },
     {
       name: "modern wfh desk",
-      image: "modern-wfh-desk.jpg",
+      image: "/images/backgrounds/home-office/modern-wfh-desk.jpg",
     },
     {
       name: "plants and framed photos",
-      image: "plants-framed-photos.jpg",
+      image: "/images/backgrounds/home-office/plants-framed-photos.jpg",
     },
     {
       name: "cozy decor with daylight",
-      image: "cozy-decor-daylight.jpg",
+      image: "/images/backgrounds/home-office/cozy-decor-daylight.jpg",
     },
   ],
 };
 
 // Helper to generate a unique ID from the item name
-const generateId = (name) => name.toLowerCase().replace(/\s+/g, "-");
+export const generateId = (name) => name.toLowerCase().replace(/\s+/g, "-");
 
 // Create a flattened, enriched array of all background options with theme and a unique ID
-export const ALL_BACKGROUND_OPTIONS = Object.entries(BACKGROUND_OPTIONS).flatMap(
-  ([theme, items]) =>
-    items.map((item) => ({
-      ...item,
-      theme,
-      id: `${theme}-${generateId(item.name)}`,
-    }))
+export const ALL_BACKGROUND_OPTIONS = Object.entries(
+  BACKGROUND_OPTIONS
+).flatMap(([theme, items]) =>
+  items.map((item) => ({
+    ...item,
+    theme,
+    id: `${theme}-${generateId(item.name)}`,
+  }))
 );
 
 // Create flattened, enriched arrays for clothing options with gender, theme, and a unique ID

@@ -18,6 +18,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Plus,
   X,
   ChevronLeft,
@@ -50,6 +57,8 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
   const [selectedClothing, setSelectedClothing] = useState("");
   const [selectedBackground, setSelectedBackground] = useState("");
   const [showClearDialog, setShowClearDialog] = useState(false);
+  const [clothingThemeFilter, setClothingThemeFilter] = useState("All");
+  const [backgroundThemeFilter, setBackgroundThemeFilter] = useState("All");
 
   // Store previous values in localStorage for persistence across component mounts
   const PREV_VALUES_KEY = "style-pairing-prev-values";
@@ -87,15 +96,44 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
   }, [currentPlan]);
 
   // Filter clothing options by gender using store data
-  const filteredClothingOptions = useMemo(() => {
+  const genderFilteredClothingOptions = useMemo(() => {
     if (!currentGender) return [];
     return GLOBAL_ALL_CLOTHING_OPTIONS.filter(
       (item) => item.gender === currentGender || item.gender === "unisex"
     );
   }, [currentGender]);
 
-  // Use all background options
-  const backgroundOptions = ALL_BACKGROUND_OPTIONS;
+  // Extract unique themes for clothing (based on current gender)
+  const clothingThemes = useMemo(() => {
+    const themes = [
+      ...new Set(genderFilteredClothingOptions.map((item) => item.theme)),
+    ];
+    return ["All", ...themes.sort()];
+  }, [genderFilteredClothingOptions]);
+
+  // Extract unique themes for backgrounds
+  const backgroundThemes = useMemo(() => {
+    const themes = [
+      ...new Set(ALL_BACKGROUND_OPTIONS.map((item) => item.theme)),
+    ];
+    return ["All", ...themes.sort()];
+  }, []);
+
+  // Apply theme filters to clothing options
+  const filteredClothingOptions = useMemo(() => {
+    if (clothingThemeFilter === "All") return genderFilteredClothingOptions;
+    return genderFilteredClothingOptions.filter(
+      (item) => item.theme === clothingThemeFilter
+    );
+  }, [genderFilteredClothingOptions, clothingThemeFilter]);
+
+  // Apply theme filters to background options
+  const filteredBackgroundOptions = useMemo(() => {
+    if (backgroundThemeFilter === "All") return ALL_BACKGROUND_OPTIONS;
+    return ALL_BACKGROUND_OPTIONS.filter(
+      (item) => item.theme === backgroundThemeFilter
+    );
+  }, [backgroundThemeFilter]);
 
   // Clear style pairs when plan or gender changes - USING STORE DATA WITH PERSISTENCE
   useEffect(() => {
@@ -198,14 +236,20 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
   };
 
   const handleAutoPair = () => {
-    const newPairs = [];
-    const clothingCount = filteredClothingOptions.length;
-    const backgroundCount = backgroundOptions.length;
+    const availableClothing = filteredClothingOptions;
+    const availableBackgrounds = filteredBackgroundOptions;
 
-    if (clothingCount === 0 || backgroundCount === 0) {
-      setErrors({ stylePair: "No clothing or background options available" });
+    if (availableClothing.length === 0 || availableBackgrounds.length === 0) {
+      setErrors({
+        style_pairs:
+          "No clothing or background options available for pairing with current theme filters.",
+      });
       return;
     }
+
+    const newPairs = [];
+    const clothingCount = availableClothing.length;
+    const backgroundCount = availableBackgrounds.length;
 
     const maxPairs = Math.min(
       planConfig.stylesLimit,
@@ -232,8 +276,8 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
       const backgroundIndex =
         shuffledBackgroundIndexes[attempts % backgroundCount];
 
-      const clothing = filteredClothingOptions[clothingIndex];
-      const background = backgroundOptions[backgroundIndex];
+      const clothing = availableClothing[clothingIndex];
+      const background = availableBackgrounds[backgroundIndex];
 
       const combinationKey = `${clothing.id}-${background.id}`;
 
@@ -282,11 +326,11 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
     nextStep();
   };
 
-  // Helper function to get item details by ID
+  // Helper function to get item details by ID - search in complete lists, not filtered
   const getClothingById = (id) =>
-    filteredClothingOptions.find((item) => item.id === id);
+    genderFilteredClothingOptions.find((item) => item.id === id);
   const getBackgroundById = (id) =>
-    backgroundOptions.find((item) => item.id === id);
+    ALL_BACKGROUND_OPTIONS.find((item) => item.id === id);
 
   return (
     <div className="space-y-6">
@@ -319,8 +363,7 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
           Auto Pair (
           {Math.min(
             planConfig.stylesLimit,
-            filteredClothingOptions.length,
-            backgroundOptions.length
+            filteredClothingOptions.length * filteredBackgroundOptions.length
           )}
           )
         </Button>
@@ -372,11 +415,28 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
           <div className="grid md:grid-cols-2 gap-6">
             {/* Clothing Column */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Shirt className="h-5 w-5" />
-                <h4 className="font-medium">
-                  Clothing ({filteredClothingOptions.length} options)
-                </h4>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Shirt className="h-5 w-5" />
+                  <h4 className="font-medium">
+                    Clothing ({filteredClothingOptions.length} options)
+                  </h4>
+                </div>
+                <Select
+                  value={clothingThemeFilter}
+                  onValueChange={setClothingThemeFilter}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by theme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clothingThemes.map((theme) => (
+                      <SelectItem key={theme} value={theme}>
+                        {theme}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto p-2">
                 {filteredClothingOptions.map((option) => (
@@ -398,17 +458,9 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
                       />
                     </div>
                     <CardContent className="p-1">
-                      <h5 className="font-medium text-[10px] text-center leading-tight">
+                      <h5 className="font-medium text-xs text-center leading-tight">
                         {option.name}
                       </h5>
-                      {option.theme && (
-                        <Badge
-                          variant="secondary"
-                          className="text-[8px] mt-1 w-full justify-center px-1 py-0"
-                        >
-                          {option.theme}
-                        </Badge>
-                      )}
                     </CardContent>
                   </Card>
                 ))}
@@ -417,14 +469,31 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
 
             {/* Background Column */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <ImageIcon className="h-5 w-5" />
-                <h4 className="font-medium">
-                  Backgrounds ({backgroundOptions.length} options)
-                </h4>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5" />
+                  <h4 className="font-medium">
+                    Backgrounds ({filteredBackgroundOptions.length} options)
+                  </h4>
+                </div>
+                <Select
+                  value={backgroundThemeFilter}
+                  onValueChange={setBackgroundThemeFilter}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by theme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {backgroundThemes.map((theme) => (
+                      <SelectItem key={theme} value={theme}>
+                        {theme}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto p-2">
-                {backgroundOptions.map((option) => (
+                {filteredBackgroundOptions.map((option) => (
                   <Card
                     key={option.id}
                     className={`cursor-pointer transition-all hover:shadow-md ${
@@ -443,17 +512,9 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
                       />
                     </div>
                     <CardContent className="p-1">
-                      <h5 className="font-medium text-[10px] text-center leading-tight">
+                      <h5 className="font-medium text-xs text-center leading-tight">
                         {option.name}
                       </h5>
-                      {option.theme && (
-                        <Badge
-                          variant="secondary"
-                          className="text-[8px] mt-1 w-full justify-center px-1 py-0"
-                        >
-                          {option.theme}
-                        </Badge>
-                      )}
                     </CardContent>
                   </Card>
                 ))}
@@ -518,7 +579,7 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {currentPairs.map((pair, index) => {
                 const clothingItem = getClothingById(pair.clothing);
                 const backgroundItem = getBackgroundById(pair.background);
@@ -526,12 +587,12 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
                 return (
                   <div
                     key={pair.id || index}
-                    className="flex items-center justify-between p-4 border rounded-lg bg-card"
+                    className="flex items-start justify-between p-4 border rounded-lg bg-card"
                   >
-                    <div className="flex items-center gap-4 flex-1">
+                    <div className="flex flex-col gap-3 flex-1">
                       {/* Clothing Preview */}
                       <div className="flex items-center gap-2">
-                        <div className="w-12 h-12 rounded-md overflow-hidden bg-muted">
+                        <div className="w-10 h-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
                           <img
                             src={
                               clothingItem?.image || "/placeholder-clothing.jpg"
@@ -540,8 +601,8 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <div className="text-sm">
-                          <div className="font-medium">
+                        <div className="text-sm min-w-0 flex-1">
+                          <div className="font-medium truncate">
                             {clothingItem?.name || pair.clothing}
                           </div>
                           <div className="text-muted-foreground text-xs">
@@ -550,11 +611,9 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
                         </div>
                       </div>
 
-                      <span className="text-muted-foreground text-lg">+</span>
-
                       {/* Background Preview */}
                       <div className="flex items-center gap-2">
-                        <div className="w-12 h-12 rounded-md overflow-hidden bg-muted">
+                        <div className="w-10 h-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
                           <img
                             src={
                               backgroundItem?.image ||
@@ -564,8 +623,8 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <div className="text-sm">
-                          <div className="font-medium">
+                        <div className="text-sm min-w-0 flex-1">
+                          <div className="font-medium truncate">
                             {backgroundItem?.name || pair.background}
                           </div>
                           <div className="text-muted-foreground text-xs">

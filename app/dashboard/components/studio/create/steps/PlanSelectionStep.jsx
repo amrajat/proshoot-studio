@@ -180,13 +180,13 @@ const PlanSelectionStep = ({ credits, formData, errors, selectedContext }) => {
                     ? "border-border hover:border-primary/50"
                     : "border-border opacity-60"
                 }
-                ${plan.color}
+                ${"plan.color"}
               `}
               onClick={() => handlePlanSelect(plan.id)}
             >
               {/* Popular Badge */}
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 rounded-none shadow-none">
                   <Badge className="bg-primary text-primary-foreground">
                     <Star className="h-3 w-3 mr-1" />
                     Most Popular
@@ -236,17 +236,17 @@ const PlanSelectionStep = ({ credits, formData, errors, selectedContext }) => {
 
               <CardContent className="space-y-4">
                 {/* Features List */}
-                <ul className="space-y-2">
+                {/* <ul className="space-y-2">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-center text-sm">
                       <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                       <span>{feature}</span>
                     </li>
                   ))}
-                </ul>
+                </ul> */}
 
                 {/* Credit Status */}
-                <div className="flex items-center justify-between text-sm">
+                {/* <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">
                       Your {plan.creditType} credits:
@@ -265,7 +265,7 @@ const PlanSelectionStep = ({ credits, formData, errors, selectedContext }) => {
                         </Badge>
                       )}
                   </div>
-                </div>
+                </div> */}
 
                 {/* Select Button */}
                 <Button

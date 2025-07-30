@@ -10,7 +10,7 @@ const config = {
 
   PLANS: {
     starter: {
-      planPrice: 29,
+      planPrice: 35,
       variantID: 387793,
       totalHeadshots: 40,
       stylesLimit: 10,
@@ -19,10 +19,10 @@ const config = {
     },
 
     professional: {
-      planPrice: 39,
+      planPrice: 49,
       variantID: 387811,
       totalHeadshots: 60,
-      stylesLimit: 15,
+      stylesLimit: 20,
       accountContext: "personal",
       mostPopular: true,
       features: ["feature one", "feature two", "feature three"],

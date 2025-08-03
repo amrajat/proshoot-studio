@@ -14,8 +14,9 @@
 CREATE TABLE public.headshots (
     id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     studio_id UUID NOT NULL REFERENCES public.studios(id) ON DELETE CASCADE,
-    preview TEXT,  -- R2 bucket object key for preview image
-    result TEXT,   -- R2 bucket object key for result image
+    preview TEXT,
+    result TEXT,
+    hd TEXT,
     prompt TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     

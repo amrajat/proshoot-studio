@@ -18,11 +18,10 @@ CREATE TABLE public.studios (
     status public.studio_status NOT NULL DEFAULT 'PROCESSING',
     provider_id TEXT,
     provider public.providers NOT NULL DEFAULT 'REPLICATE',
+    weights TEXT,
     datasets_object_key TEXT,
     style_pairs JSONB DEFAULT '[]',
     user_attributes JSONB DEFAULT '{}',
-    started_at TIMESTAMPTZ,
-    completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     plan public.plans NOT NULL,
@@ -55,14 +54,6 @@ ALTER TABLE public.studios
 ADD CONSTRAINT studios_name_not_empty_check 
 CHECK (LENGTH(TRIM(name)) > 0);
 
--- Ensure processing timestamps are logical
-ALTER TABLE public.studios 
-ADD CONSTRAINT studios_processing_timestamps_check 
-CHECK (
-    started_at IS NULL 
-    OR completed_at IS NULL 
-    OR completed_at >= started_at
-);
 
 -- ============================================================================
 -- TABLE OWNERSHIP AND COMMENTS
@@ -78,11 +69,10 @@ COMMENT ON COLUMN public.studios.name IS 'Studio display name';
 COMMENT ON COLUMN public.studios.status IS 'Current processing status';
 COMMENT ON COLUMN public.studios.provider_id IS 'AI model identifier used for generation';
 COMMENT ON COLUMN public.studios.provider IS 'Tune/training identifier';
+COMMENT ON COLUMN public.studios.weights IS 'Trained model weights safetensors file object key';
 COMMENT ON COLUMN public.studios.datasets_object_key IS 'URLs of uploaded training images';
 COMMENT ON COLUMN public.studios.style_pairs IS 'Selected clothing and background combinations';
 COMMENT ON COLUMN public.studios.user_attributes IS 'User physical attributes (hair, glasses, etc.)';
-COMMENT ON COLUMN public.studios.started_at IS 'When processing began';
-COMMENT ON COLUMN public.studios.completed_at IS 'When processing finished';
 COMMENT ON COLUMN public.studios.metadata IS 'Additional studio metadata';
 COMMENT ON COLUMN public.studios.created_at IS 'Studio creation timestamp';
 COMMENT ON COLUMN public.studios.updated_at IS 'Last studio update timestamp';

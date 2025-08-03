@@ -1,0 +1,421 @@
+{
+  "23": {
+    "inputs": {
+      "text": "",
+      "clip": ["162", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "24": {
+    "inputs": {
+      "text": ["25", 0],
+      "clip": ["162", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "25": {
+    "inputs": {
+      "prompt": "prompt goes here"
+    },
+    "class_type": "CR Prompt Text",
+    "_meta": {
+      "title": "⚙️ CR Prompt Text"
+    }
+  },
+  "27": {
+    "inputs": {
+      "guidance": 3.5,
+      "conditioning": ["24", 0]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "FluxGuidance"
+    }
+  },
+  "31": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "32": {
+    "inputs": {
+      "samples": ["62", 0],
+      "vae": ["31", 0]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "33": {
+    "inputs": {
+      "filename_prefix": "standard",
+      "images": ["32", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "34": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "megapixels": 8,
+      "image": ["134", 0]
+    },
+    "class_type": "ImageScaleToTotalPixels",
+    "_meta": {
+      "title": "Scale Image to Total Pixels"
+    }
+  },
+  "36": {
+    "inputs": {
+      "tile_width": ["111", 0],
+      "tile_height": ["111", 1],
+      "image": ["34", 0]
+    },
+    "class_type": "TTP_Image_Tile_Batch",
+    "_meta": {
+      "title": "🪐TTP_Image_Tile_Batch"
+    }
+  },
+  "42": {
+    "inputs": {
+      "text": ["58", 0],
+      "clip": ["162", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "45": {
+    "inputs": {
+      "text_input": "",
+      "task": "detailed_caption",
+      "fill_mask": true,
+      "keep_model_loaded": false,
+      "max_new_tokens": 1024,
+      "num_beams": 3,
+      "do_sample": true,
+      "output_mask_select": "",
+      "seed": 1,
+      "image": ["163", 0],
+      "florence2_model": ["46", 0]
+    },
+    "class_type": "Florence2Run",
+    "_meta": {
+      "title": "Florence2Run"
+    }
+  },
+  "46": {
+    "inputs": {
+      "model": "microsoft/Florence-2-large",
+      "precision": "fp16",
+      "attention": "sdpa",
+      "convert_to_safetensors": false
+    },
+    "class_type": "DownloadAndLoadFlorence2Model",
+    "_meta": {
+      "title": "DownloadAndLoadFlorence2Model"
+    }
+  },
+  "57": {
+    "inputs": {
+      "width": 1536,
+      "height": 1024,
+      "aspect_ratio": "SDXL - 1:1 square 1024x1024",
+      "swap_dimensions": "On",
+      "upscale_factor": 1,
+      "prescale_factor": 1,
+      "batch_size": 1
+    },
+    "class_type": "CR Aspect Ratio",
+    "_meta": {
+      "title": "🔳 CR Aspect Ratio"
+    }
+  },
+  "58": {
+    "inputs": {
+      "text_0": "The image shows a woman wearing glasses and a smiley face on her face, with a toy in the background and a wall behind her.",
+      "text_1": "The image shows a woman wearing glasses and smiling at the camera. She is standing in front of a wall with a door in the background.",
+      "text_2": "The image shows a woman in a pink tank top sitting on top of a bunk bed, with a pillow and a toy beside her.",
+      "text_3": "The image shows a woman wearing a pink tank top and smiling at the camera. She has a cheerful expression on her face, and her hair is pulled back in a neat bun. She is standing in front of a wall, and the sun is shining brightly in the background.",
+      "text_4": "The image shows a woman in a pink dress standing with her arms crossed, surrounded by a table with a calculator, bottles, and other objects.",
+      "text_5": "The image shows a woman in a pink dress with her arms crossed, standing in front of a wall with a wooden object in the background.",
+      "text": ["45", 2]
+    },
+    "class_type": "ShowText|pysssss",
+    "_meta": {
+      "title": "Show Text 🐍"
+    }
+  },
+  "62": {
+    "inputs": {
+      "noise": ["65", 0],
+      "guider": ["66", 0],
+      "sampler": ["63", 0],
+      "sigmas": ["64", 0],
+      "latent_image": ["88", 0]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "63": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "64": {
+    "inputs": {
+      "scheduler": "simple",
+      "steps": 40,
+      "denoise": 1,
+      "model": ["162", 0]
+    },
+    "class_type": "BasicScheduler",
+    "_meta": {
+      "title": "BasicScheduler"
+    }
+  },
+  "65": {
+    "inputs": {
+      "noise_seed": 306016051767
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "66": {
+    "inputs": {
+      "model": ["162", 0],
+      "conditioning": ["27", 0]
+    },
+    "class_type": "BasicGuider",
+    "_meta": {
+      "title": "BasicGuider"
+    }
+  },
+  "67": {
+    "inputs": {
+      "noise": ["70", 0],
+      "guider": ["72", 0],
+      "sampler": ["68", 0],
+      "sigmas": ["69", 0],
+      "latent_image": ["129", 0]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "68": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "69": {
+    "inputs": {
+      "scheduler": "simple",
+      "steps": 10,
+      "denoise": 0.3,
+      "model": ["162", 0]
+    },
+    "class_type": "BasicScheduler",
+    "_meta": {
+      "title": "BasicScheduler"
+    }
+  },
+  "70": {
+    "inputs": {
+      "noise_seed": 316430325547060
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "72": {
+    "inputs": {
+      "model": ["162", 0],
+      "conditioning": ["73", 0]
+    },
+    "class_type": "BasicGuider",
+    "_meta": {
+      "title": "BasicGuider"
+    }
+  },
+  "73": {
+    "inputs": {
+      "guidance": 2.5,
+      "conditioning": ["42", 0]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "FluxGuidance"
+    }
+  },
+  "77": {
+    "inputs": {
+      "unet_name": "flux1-dev.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "78": {
+    "inputs": {
+      "clip_name1": "clip_l.safetensors",
+      "clip_name2": "t5xxl_fp16.safetensors",
+      "type": "flux",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "DualCLIPLoader"
+    }
+  },
+  "88": {
+    "inputs": {
+      "upscale_method": "nearest-exact",
+      "scale_by": 1.5,
+      "samples": ["57", 5]
+    },
+    "class_type": "LatentUpscaleBy",
+    "_meta": {
+      "title": "Upscale Latent By"
+    }
+  },
+  "96": {
+    "inputs": {
+      "tile_size": 1024,
+      "overlap": 64,
+      "temporal_size": 64,
+      "temporal_overlap": 8,
+      "samples": ["67", 0],
+      "vae": ["31", 0]
+    },
+    "class_type": "VAEDecodeTiled",
+    "_meta": {
+      "title": "VAE Decode (Tiled)"
+    }
+  },
+  "111": {
+    "inputs": {
+      "width_factor": 2,
+      "height_factor": 3,
+      "overlap_rate": 0.05,
+      "image": ["34", 0]
+    },
+    "class_type": "TTP_Tile_image_size",
+    "_meta": {
+      "title": "🪐TTP_Tile_image_size"
+    }
+  },
+  "127": {
+    "inputs": {
+      "padding": 128,
+      "tiles": ["164", 0],
+      "positions": ["36", 1],
+      "original_size": ["36", 2],
+      "grid_size": ["36", 3]
+    },
+    "class_type": "TTP_Image_Assy",
+    "_meta": {
+      "title": "🪐TTP_Image_Assy"
+    }
+  },
+  "128": {
+    "inputs": {
+      "filename_prefix": "8m",
+      "images": ["127", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "129": {
+    "inputs": {
+      "pixels": ["163", 0],
+      "vae": ["31", 0]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "133": {
+    "inputs": {
+      "model_name": "4x_NMKD-Siax_200k.pth"
+    },
+    "class_type": "UpscaleModelLoader",
+    "_meta": {
+      "title": "Load Upscale Model"
+    }
+  },
+  "134": {
+    "inputs": {
+      "upscale_model": ["133", 0],
+      "image": ["32", 0]
+    },
+    "class_type": "ImageUpscaleWithModel",
+    "_meta": {
+      "title": "Upscale Image (using Model)"
+    }
+  },
+  "162": {
+    "inputs": {
+      "lora_name": "lora.safetensors",
+      "strength_model": 1.0000000000000002,
+      "strength_clip": 1.0000000000000002,
+      "model": ["77", 0],
+      "clip": ["78", 0]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA"
+    }
+  },
+  "163": {
+    "inputs": {
+      "image": ["36", 0]
+    },
+    "class_type": "easy imageBatchToImageList",
+    "_meta": {
+      "title": "Image Batch To Image List"
+    }
+  },
+  "164": {
+    "inputs": {
+      "images": ["96", 0]
+    },
+    "class_type": "easy imageListToImageBatch",
+    "_meta": {
+      "title": "Image List To Image Batch"
+    }
+  }
+}

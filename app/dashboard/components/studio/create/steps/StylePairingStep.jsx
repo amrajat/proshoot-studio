@@ -208,26 +208,21 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
       return;
     }
 
-    // Check if this combination already exists
-    const exists = currentPairs.some(
-      (pair) =>
-        pair.clothing === selectedClothing &&
-        pair.background === selectedBackground
-    );
-
-    if (exists) {
+    // Check if this combination already exists using optimized check
+    if (combinationExists(selectedClothing, selectedBackground)) {
       setErrors({ stylePair: "This combination already exists" });
       return;
     }
 
-    const newPairs = [
-      ...currentPairs,
-      {
-        clothing: selectedClothing,
-        background: selectedBackground,
-        id: Date.now(), // Simple ID for React keys
-      },
-    ];
+    // Create optimized style pair structure
+    const optimizedPair = createOptimizedStylePair(selectedClothing, selectedBackground);
+    
+    if (!optimizedPair) {
+      setErrors({ stylePair: "Invalid clothing or background selection" });
+      return;
+    }
+
+    const newPairs = [...currentPairs, optimizedPair];
 
     updateFormField("style_pairs", newPairs);
     setSelectedClothing("");
@@ -279,16 +274,16 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
       const clothing = availableClothing[clothingIndex];
       const background = availableBackgrounds[backgroundIndex];
 
-      const combinationKey = `${clothing.id}-${background.id}`;
+      // Create combination key using name and theme for uniqueness
+      const combinationKey = `${clothing.name}-${clothing.theme}-${background.name}-${background.theme}`;
 
       // Only add if this combination hasn't been used
       if (!usedCombinations.has(combinationKey)) {
-        newPairs.push({
-          clothing: clothing.id,
-          background: background.id,
-          id: Date.now() + newPairs.length,
-        });
-        usedCombinations.add(combinationKey);
+        const optimizedPair = createOptimizedStylePair(clothing.id, background.id);
+        if (optimizedPair) {
+          newPairs.push(optimizedPair);
+          usedCombinations.add(combinationKey);
+        }
       }
 
       attempts++;
@@ -326,11 +321,65 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
     nextStep();
   };
 
-  // Helper function to get item details by ID - search in complete lists, not filtered
-  const getClothingById = (id) =>
-    genderFilteredClothingOptions.find((item) => item.id === id);
-  const getBackgroundById = (id) =>
-    ALL_BACKGROUND_OPTIONS.find((item) => item.id === id);
+  // Helper functions to get item details - DRY principle
+  const getClothingById = (id) => {
+    return GLOBAL_ALL_CLOTHING_OPTIONS.find((item) => item.id === id);
+  };
+  
+  const getBackgroundById = (id) => {
+    return ALL_BACKGROUND_OPTIONS.find((item) => item.id === id);
+  };
+  
+  // Helper function to create optimized style pair structure
+  const createOptimizedStylePair = (clothingId, backgroundId) => {
+    const clothingItem = getClothingById(clothingId);
+    const backgroundItem = getBackgroundById(backgroundId);
+    
+    if (!clothingItem || !backgroundItem) {
+      console.error('Invalid clothing or background ID:', { clothingId, backgroundId });
+      return null;
+    }
+    
+    return {
+      clothing: {
+        name: clothingItem.name,
+        theme: clothingItem.theme
+      },
+      background: {
+        name: backgroundItem.name,
+        theme: backgroundItem.theme
+      }
+    };
+  };
+  
+  // Helper function to get full item details for UI display
+  const getFullItemDetails = (stylePair) => {
+    // Find items by matching name and theme (since we removed IDs)
+    const clothingItem = GLOBAL_ALL_CLOTHING_OPTIONS.find(
+      item => item.name === stylePair.clothing.name && item.theme === stylePair.clothing.theme
+    );
+    const backgroundItem = ALL_BACKGROUND_OPTIONS.find(
+      item => item.name === stylePair.background.name && item.theme === stylePair.background.theme
+    );
+    
+    return { clothingItem, backgroundItem };
+  };
+  
+  // Helper function to check if combination exists (using names instead of IDs)
+  const combinationExists = (clothingId, backgroundId) => {
+    const clothingItem = getClothingById(clothingId);
+    const backgroundItem = getBackgroundById(backgroundId);
+    
+    if (!clothingItem || !backgroundItem) return false;
+    
+    return currentPairs.some(
+      (pair) =>
+        pair.clothing.name === clothingItem.name &&
+        pair.clothing.theme === clothingItem.theme &&
+        pair.background.name === backgroundItem.name &&
+        pair.background.theme === backgroundItem.theme
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -581,12 +630,12 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {currentPairs.map((pair, index) => {
-                const clothingItem = getClothingById(pair.clothing);
-                const backgroundItem = getBackgroundById(pair.background);
+                // Get full item details for UI display (includes images)
+                const { clothingItem, backgroundItem } = getFullItemDetails(pair);
 
                 return (
                   <div
-                    key={pair.id || index}
+                    key={`${pair.clothing.name}-${pair.background.name}-${index}`}
                     className="flex items-start justify-between p-4 border rounded-lg bg-card"
                   >
                     <div className="flex flex-col gap-3 flex-1">
@@ -597,16 +646,16 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
                             src={
                               clothingItem?.image || "/placeholder-clothing.jpg"
                             }
-                            alt={clothingItem?.name || pair.clothing}
+                            alt={pair.clothing.name}
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="text-sm min-w-0 flex-1">
                           <div className="font-medium truncate">
-                            {clothingItem?.name || pair.clothing}
+                            {pair.clothing.name}
                           </div>
                           <div className="text-muted-foreground text-xs">
-                            {clothingItem?.theme}
+                            {pair.clothing.theme}
                           </div>
                         </div>
                       </div>
@@ -619,16 +668,16 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
                               backgroundItem?.image ||
                               "/placeholder-background.jpg"
                             }
-                            alt={backgroundItem?.name || pair.background}
+                            alt={pair.background.name}
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="text-sm min-w-0 flex-1">
                           <div className="font-medium truncate">
-                            {backgroundItem?.name || pair.background}
+                            {pair.background.name}
                           </div>
                           <div className="text-muted-foreground text-xs">
-                            {backgroundItem?.theme}
+                            {pair.background.theme}
                           </div>
                         </div>
                       </div>

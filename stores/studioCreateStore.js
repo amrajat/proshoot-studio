@@ -14,6 +14,7 @@ const initialFormData = {
   studioName: "",
   images: "",
   style_pairs: [],
+  context: "personal", // 'personal' | 'organization'
   gender: "",
   age: "",
   ethnicity: "",

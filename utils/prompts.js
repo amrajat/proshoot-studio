@@ -68,8 +68,7 @@ export const PROMPT_TEMPLATES = [
         character.trigger_word
       } ${character.gender}${hairStyle(character)}${glasses(
         character
-      )}, captured in a office with cabinets and windows in the background, wearing ${clothingName}, half body portrait, captured on a sony alpha, with a 50mm zoom lens, professional photo retouching, with natural light, photorealistic quality with RAW format, front view centered composition, confident pose and a bright smile
-`;
+      )}, captured in a office with cabinets and windows in the background, wearing ${clothingName}, half body portrait, captured on a sony alpha, with a 50mm zoom lens, professional photo retouching, with natural light, photorealistic quality with RAW format, front view centered composition, confident pose and a bright smile`;
     },
   },
   {
@@ -374,10 +373,10 @@ export function generatePrompts(userCharacterInputs, stylePairs, stylesLimit) {
   // Calculate balanced distribution
   const basePromptsPerTheme = Math.floor(stylesLimit / numThemes);
   const extraPrompts = stylesLimit % numThemes;
-  
+
   console.log(`Distribution: ${numThemes} themes, ${stylesLimit} prompts`);
   console.log(`Base per theme: ${basePromptsPerTheme}, Extra: ${extraPrompts}`);
-  
+
   const finalPrompts = [];
   const uniquePromptStrings = new Set();
 

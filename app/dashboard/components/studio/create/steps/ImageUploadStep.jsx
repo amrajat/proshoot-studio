@@ -30,7 +30,7 @@ import {
 import { Upload, X, AlertCircle, RefreshCw, Info, Trash2 } from "lucide-react";
 
 import useStudioCreateStore from "@/stores/studioCreateStore";
-import { createStudio } from "@/app/dashboard/components/actions/studio/createStudio";
+import { createStudio } from "@/app/dashboard/actions/studio/studioActions";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
 
 // Constants
@@ -106,7 +106,7 @@ const createImagePromise = (src) => {
   });
 };
 
-const ImageUploadStep = () => {
+const ImageUploadStep = ({ selectedContext }) => {
   const router = useRouter();
   const { formData, setFormData, isSubmitting, setIsSubmitting } =
     useStudioCreateStore();
@@ -813,12 +813,20 @@ const ImageUploadStep = () => {
         }
       }
 
+      // Determine context from selectedContext
+      const context = selectedContext?.type === "organization" ? "organization" : "personal";
+
       const updatedFormData = {
         ...formData,
         images: imagesPath, // Now includes user_id prefix
+        context, // Add context based on selectedContext
       };
 
       console.log("📋 Studio data:", updatedFormData);
+      console.log(
+        "🎨 Style pairs structure:",
+        JSON.stringify(updatedFormData.style_pairs, null, 2)
+      );
       console.log("Images path with user_id:", imagesPath);
 
       const result = await createStudio(updatedFormData);

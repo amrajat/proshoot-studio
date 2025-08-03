@@ -22,8 +22,14 @@ const stylePairingSchema = z.object({
   style_pairs: z
     .array(
       z.object({
-        clothing: z.string().min(1, "Clothing selection is required"),
-        background: z.string().min(1, "Background selection is required"),
+        clothing: z.object({
+          name: z.string().min(1, "Clothing name is required"),
+          theme: z.string().min(1, "Clothing theme is required"),
+        }),
+        background: z.object({
+          name: z.string().min(1, "Background name is required"),
+          theme: z.string().min(1, "Background theme is required"),
+        }),
       })
     )
     .min(1, "At least one style combination is required")

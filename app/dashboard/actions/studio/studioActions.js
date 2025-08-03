@@ -40,11 +40,38 @@ export async function createStudio(studioData) {
       bodyType,
       height,
       weight,
-      ...metadata
+      ...rest
     } = studioData;
+
+    // Deduct credits before creating studio
+    const { data: creditResult, error: creditError } = await supabase.rpc(
+      "deduct_credits",
+      {
+        p_user_id: creator_user_id,
+        p_plan: plan,
+        p_credits_to_deduct: 1,
+        p_context: organization_id ? "ORGANIZATION" : "PERSONAL",
+        p_studio_id: studioID,
+        p_description: `Studio creation - ${plan.toUpperCase()} plan (${name})`,
+      }
+    );
+
+    if (creditError) {
+      console.error("❌ Credit deduction failed:", creditError);
+      throw new Error(`Failed to deduct credits: ${creditError.message}`);
+    }
+
+    // Check if credit deduction was successful
+    if (!creditResult?.success) {
+      console.error("❌ Insufficient credits:", creditResult);
+      throw new Error(
+        creditResult?.error || "Insufficient credits for studio creation"
+      );
+    }
 
     // Prepare user_attributes object
     const user_attributes = {
+      trigger_word: "ohwx",
       gender,
       age,
       ethnicity,
@@ -55,10 +82,43 @@ export async function createStudio(studioData) {
       glasses,
       bodyType,
       height,
-      weight
+      weight,
     };
 
-    // Insert studio record
+    // Call Modal training API first to get provider_id
+    const myHeaders = new Headers();
+    myHeaders.append("Modal-Key", "modal-key");
+    myHeaders.append("Modal-Secret", "modal-secret");
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+      object_key: datasets_object_key,
+      gender: gender,
+      user_id: creator_user_id,
+      plan: plan,
+      studio_id: studioID,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+
+    const ModalResponse = await fetch(
+      "https://ablognet--replicate-lora-trainer-dev.modal.run",
+      requestOptions
+    );
+
+    if (!ModalResponse.ok) {
+      console.error("❌ Modal API call failed");
+      throw new Error("Failed to start training");
+    }
+
+    const modalData = await ModalResponse.json();
+
+    // Create studio record in database
     const { data, error } = await supabase
       .from("studios")
       .insert({
@@ -67,13 +127,13 @@ export async function createStudio(studioData) {
         organization_id: organization_id || null,
         name,
         status: "PROCESSING",
+        provider_id: modalData.id || null,
         provider: "REPLICATE",
         datasets_object_key,
         style_pairs,
         user_attributes,
         plan: plan.toUpperCase(),
-        started_at: new Date().toISOString(),
-        metadata
+        metadata: modalData,
       })
       .select()
       .single();
@@ -83,14 +143,6 @@ export async function createStudio(studioData) {
       throw new Error(`Failed to create studio: ${error.message}`);
     }
 
-    console.log("✅ Studio created successfully:", data.id);
-
-    // TODO: Call Modal training API
-    // 1. PREPARE THE DATASET
-    // 2. CALL THE REPLICATE API AND START TRAINING
-    // 3. GET TRAINING ID FROM REPLICATE
-    // 4. UPDATE STUDIO WITH PROVIDER_ID
-
     return data;
   } catch (error) {
     console.error("❌ Studio creation failed:", error);
@@ -98,7 +150,7 @@ export async function createStudio(studioData) {
   }
 }
 
-export async function deleteStudio(studioID) {}
-export async function redoStudio(studioID) {}
-export async function refundStudio(studioID) {}
-export async function updateStudioStatus(studioID, status) {}
+// export async function deleteStudio(studioID) {}
+// export async function redoStudio(studioID) {}
+// export async function refundStudio(studioID) {}
+// export async function updateStudioStatus(studioID, status) {}

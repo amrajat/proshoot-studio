@@ -14,7 +14,7 @@ export async function POST(request) {
   try {
     const cookieStore = cookies();
 
-    const supabase = createServerClient(
+    const supabase = await createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY,
       {
@@ -180,7 +180,7 @@ export async function POST(request) {
     if (studioData) {
       await handleStudioCreation({ studioData });
     }
-
+    // TODO: WHICH ONE SHOULE BE FIRST IN ORDER FP OR CREATESTUDIO FUNCTION?
     // Handle FirstPromoter tracking if reference exists
     if (first_promoter_reference && first_promoter_t_i_d) {
       await handleFirstPromoterTracking({

@@ -1,0 +1,44 @@
+// This will be called on this below webhook_url
+// webhook_base_url = os.environ.get("REPLICATE_TRAINING_WEBHOOK_BASE_URL")
+// webhook_url = f"{webhook_base_url}?user_id={request.user_id}&user_email={request.user_email}&event=training&plan={request.plan}&studio_id={request.studio_id}&secret={os.environ.get('REPLICATE_TRAINING_WEBHOOK_SECRET')}"
+
+{
+  "completed_at": "2025-08-01T01:03:14.997064Z",
+  "created_at": "2025-08-01T00:29:29.744000Z",
+  "data_removed": false,
+  "error": null,
+  "id": "kzf2j0nd21rmc0crcc4ab79hdr",
+  "input": {
+    "steps": 3000,
+    "lora_rank": 32,
+    "optimizer": "adamw",
+    "batch_size": 1,
+    "resolution": "512,768,1024",
+    "autocaption": false,
+    "input_images": "https://fpczpgjfyejjuezbiqjq.supabase.co/storage/v1/object/sign/training-images/525aff8d-8f71-4904-a93a-dad49208dedf/b0349e53-d470-4699-b4ac-e550464ea3cf/1754008160761-47846d0e-901f-4658-abb1-a80f103fd382.zip?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zMWVkZTlkYS1mYzA4LTQwNDItOWZlMi0xMDcwYjMwMGQ5MWUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ0cmFpbmluZy1pbWFnZXMvNTI1YWZmOGQtOGY3MS00OTA0LWE5M2EtZGFkNDkyMDhkZWRmL2IwMzQ5ZTUzLWQ0NzAtNDY5OS1iNGFjLWU1NTA0NjRlYTNjZi8xNzU0MDA4MTYwNzYxLTQ3ODQ2ZDBlLTkwMWYtNDY1OC1hYmIxLWE4MGYxMDNmZDM4Mi56aXAiLCJpYXQiOjE3NTQwMDgxNjUsImV4cCI6MTc1NDYxMjk2NX0.7lXY1qrHTwc3DUYAQFXd4h558knat_sOG9ZBUxm29OA",
+    "trigger_word": "ohwx",
+    "learning_rate": 0.0001,
+    "wandb_project": "flux_train_replicate",
+    "wandb_save_interval": 100,
+    "caption_dropout_rate": 0.05,
+    "wandb_sample_interval": 100
+  },
+  "logs": null,
+  "metrics": {
+    "predict_time": 2025.242125594,
+    "total_time": 2025.253064
+  },
+  "output": {
+    "version": "prime-ai-co/headshots:3db0369d595c43907e5726b94f059849fed9b0ccb707f2df8904ae967e9a38ae",
+    "weights": "https://replicate.delivery/xezq/M4aiEc82xWbBKlnslE1tApUaVSkyfxluWNxvLFq9zqHpIOjKA/trained_model.tar"
+  },
+  "started_at": "2025-08-01T00:29:29.754938Z",
+  "status": "succeeded",
+  "urls": {
+    "stream": "https://stream.replicate.com/v1/files/bcwr-x6ssiykiie6kxf42rum7tbs5l6j7dpkjrasf7vuo47xs557umchq",
+    "get": "https://api.replicate.com/v1/trainings/kzf2j0nd21rmc0crcc4ab79hdr",
+    "cancel": "https://api.replicate.com/v1/trainings/kzf2j0nd21rmc0crcc4ab79hdr/cancel",
+    "web": "https://replicate.com/p/kzf2j0nd21rmc0crcc4ab79hdr"
+  },
+  "version": "26dce37af90b9d997eeb970d92e47de3064d46c300504ae376c75bef6a9022d2"
+}

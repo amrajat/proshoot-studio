@@ -1,187 +1,223 @@
 "use server";
 
-import createSupabaseServerClient from "@/lib/supabase/server-client"; // Use server client in server actions
+import createSupabaseServerClient from "@/lib/supabase/server-client";
 import { unstable_noStore as noStore } from "next/cache";
 
-// Helper function to get image for a studio (can be co-located or imported)
-async function getStudioDisplayImage(
-  supabase,
-  studio,
-  userIdForFavorites,
-  isOrgAdminViewingOrgStudio
-) {
-  if (!studio.downloaded) {
-    return "/placeholder.svg";
-  }
-
-  let favoriteImageUrl = null;
-
-  // Logic for favorite image
-  const favoriteQuery = supabase
-    .from("favorites")
-    .select("headshots (result)")
-    .eq("studio_id", studio.id);
-
-  if (isOrgAdminViewingOrgStudio) {
-    // Org admin sees any favorite in that studio
-    // No additional user_id filter needed for favorites in this specific admin case for the grid image
-  } else if (userIdForFavorites) {
-    // Personal or org member (not admin) sees their own favorites
-    favoriteQuery.eq("user_id", userIdForFavorites);
-  }
-
-  const { data: favorite, error: favoriteError } = await favoriteQuery
-    .limit(1)
-    .maybeSingle();
-
-  if (favorite && favorite.headshots && favorite.headshots.result) {
-    favoriteImageUrl = favorite.headshots.result;
-  }
-  if (favoriteError && favoriteError.code !== "PGRST116") {
-    console.warn(
-      `SA: Error fetching favorite for studio ${studio.id}:`,
-      favoriteError.message
-    );
-  }
-
-  if (favoriteImageUrl) return favoriteImageUrl;
-
-  // If no favorite, get the first result headshot
-  const { data: resultHeadshot, error: resultHeadshotError } = await supabase
-    .from("headshots")
-    .select("result")
-    .eq("studio_id", studio.id)
-    .not("result", "is", null)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (resultHeadshot && resultHeadshot.result) {
-    return resultHeadshot.result;
-  }
-  if (resultHeadshotError && resultHeadshotError.code !== "PGRST116") {
-    console.warn(
-      `SA: Error fetching result headshot for studio ${studio.id}:`,
-      resultHeadshotError.message
-    );
-  }
-
-  return "/placeholder.svg"; // Fallback
-}
-
+/**
+ * Get Studios Data Server Action
+ * 
+ * Fetches studios based on account context with proper RLS security.
+ * Handles both personal and organization contexts.
+ * 
+ * @param {string} currentUserId - Current authenticated user ID
+ * @param {string} contextType - 'personal' or 'organization'
+ * @param {string|null} contextId - Organization ID if contextType is 'organization'
+ * @returns {Promise<Object>} Studios data with metadata
+ */
 export async function getStudiosData(currentUserId, contextType, contextId) {
   noStore(); // Ensure dynamic data fetching
-  const supabase = await createSupabaseServerClient();
+  
+  try {
+    const supabase = await createSupabaseServerClient();
 
-  if (!currentUserId) {
-    return {
-      error: { message: "User not authenticated." },
-      studios: [],
-      pageTitle: "Error",
-    };
-  }
-
-  let studiosQuery;
-  let pageTitle = "Studios";
-  let isOrgAdminViewingCurrentContext = false;
-  let effectiveContextId = null; // To pass to image fetcher for org admin view
-
-  if (contextType === "personal") {
-    pageTitle = "Personal Studios";
-    studiosQuery = supabase
-      .from("studios")
-      .select("*, organizations (name)")
-      .eq("creator_user_id", currentUserId)
-      .is("organization_id", null);
-  } else if (contextType === "organization" && contextId) {
-    effectiveContextId = contextId;
-    const { data: orgMember, error: orgMemberError } = await supabase
-      .from("members")
-      .select("role, organizations (name, owner_user_id)")
-      .eq("user_id", currentUserId)
-      .eq("organization_id", contextId)
-      .single();
-
-    if (orgMemberError || !orgMember) {
-      console.error(
-        "SA: Error fetching org membership:",
-        orgMemberError?.message
-      );
+    // Validate input parameters
+    if (!currentUserId) {
       return {
-        error: orgMemberError || { message: "Org context error." },
+        success: false,
+        error: { message: "User not authenticated." },
+        studios: [],
+        pageTitle: "Authentication Error",
+      };
+    }
+
+    if (!contextType || !['personal', 'organization'].includes(contextType)) {
+      return {
+        success: false,
+        error: { message: "Invalid context type." },
         studios: [],
         pageTitle: "Error",
       };
     }
 
-    const orgName = orgMember.organizations?.name || "Organization";
-    const isOwner = orgMember.organizations?.owner_user_id === currentUserId;
-    const isAdmin = orgMember.role === "admin" || isOwner;
-    isOrgAdminViewingCurrentContext = isAdmin;
-
-    if (isAdmin) {
-      pageTitle = `${orgName} Studios (Admin View)`;
-      studiosQuery = supabase
-        .from("studios")
-        .select(
-          "*, organizations (name), profiles:creator_user_id (id, full_name, email)"
-        )
-        .eq("organization_id", contextId)
-        .eq("downloaded", true);
-    } else {
-      pageTitle = `Your Studios in ${orgName}`;
-      studiosQuery = supabase
-        .from("studios")
-        .select("*, organizations (name)")
-        .eq("creator_user_id", currentUserId)
-        .eq("organization_id", contextId);
+    if (contextType === 'organization' && !contextId) {
+      return {
+        success: false,
+        error: { message: "Organization ID is required for organization context." },
+        studios: [],
+        pageTitle: "Error",
+      };
     }
-  } else {
+
+    let studiosQuery;
+    let pageTitle = "Studios";
+    let isOwnerViewingTeam = false;
+
+    if (contextType === "personal") {
+      // Fetch personal studios (organization_id IS NULL)
+      pageTitle = "Personal Studios";
+      studiosQuery = supabase
+        .from("studios")
+        .select(`
+          id,
+          creator_user_id,
+          organization_id,
+          name,
+          status,
+          created_at
+        `)
+        .eq("creator_user_id", currentUserId)
+        .is("organization_id", null)
+        .order("created_at", { ascending: false });
+    } else if (contextType === "organization") {
+      // Check if user is the owner of this organization
+      const { data: org, error: orgError } = await supabase
+        .from("organizations")
+        .select("name, owner_user_id")
+        .eq("id", contextId)
+        .single();
+
+      if (orgError) {
+        console.error("Error fetching organization:", orgError);
+        return {
+          success: false,
+          error: { message: "Organization not found." },
+          studios: [],
+          pageTitle: "Error",
+        };
+      }
+
+      isOwnerViewingTeam = org.owner_user_id === currentUserId;
+      pageTitle = isOwnerViewingTeam ? `${org.name} Team Studios` : `${org.name} Studios`;
+
+      if (isOwnerViewingTeam) {
+        // Owner viewing team: get all team member studios (including owner's own org studios)
+        // First, get all team members
+        const { data: members, error: membersError } = await supabase
+          .from("members")
+          .select("user_id")
+          .eq("organization_id", contextId);
+
+        if (membersError) {
+          console.warn("Error fetching team members:", membersError.message);
+        }
+
+        // Create array of user IDs (members + owner)
+        const teamUserIds = [currentUserId]; // Include owner
+        if (members) {
+          members.forEach(member => {
+            if (!teamUserIds.includes(member.user_id)) {
+              teamUserIds.push(member.user_id);
+            }
+          });
+        }
+
+        // Fetch studios created by any team member in this organization
+        studiosQuery = supabase
+          .from("studios")
+          .select(`
+            id,
+            creator_user_id,
+            organization_id,
+            name,
+            status,
+            created_at,
+            organizations!inner(name)
+          `)
+          .eq("organization_id", contextId)
+          .in("creator_user_id", teamUserIds)
+          .order("created_at", { ascending: false });
+      } else {
+        // Regular member: only their own studios in this organization
+        studiosQuery = supabase
+          .from("studios")
+          .select(`
+            id,
+            creator_user_id,
+            organization_id,
+            name,
+            status,
+            created_at,
+            organizations!inner(name)
+          `)
+          .eq("organization_id", contextId)
+          .eq("creator_user_id", currentUserId)
+          .order("created_at", { ascending: false });
+      }
+    } else {
+      return {
+        success: false,
+        error: { message: "Invalid context type. Must be 'personal' or 'organization'." },
+        studios: [],
+        pageTitle: "Error",
+      };
+    }
+
+    const { data: studios, error: studiosError } = await studiosQuery;
+
+    if (studiosError) {
+      console.error("Error fetching studios:", studiosError);
+      return {
+        success: false,
+        error: { message: "Failed to fetch studios. Please try again." },
+        studios: [],
+        pageTitle,
+      };
+    }
+
+    // Fetch favorite images for ACCEPTED studios
+    const studiosWithImages = await Promise.all(
+      (studios || []).map(async (studio) => {
+        let imageUrl = "/images/placeholder.svg"; // Default placeholder
+
+        // Only fetch favorite image if studio status is ACCEPTED
+        if (studio.status === "ACCEPTED") {
+          try {
+            const { data: favorite, error: favoriteError } = await supabase
+              .from("favorites")
+              .select(`
+                headshots!inner(
+                  preview,
+                  result
+                )
+              `)
+              .eq("studio_id", studio.id)
+              .eq("user_id", studio.creator_user_id) // Use creator_user_id instead of currentUserId
+              .limit(1)
+              .maybeSingle();
+
+            if (favorite?.headshots) {
+              // Use result image if available, otherwise preview
+              imageUrl = favorite.headshots.result || favorite.headshots.preview || imageUrl;
+            }
+
+            if (favoriteError && favoriteError.code !== "PGRST116") {
+              console.warn(`Error fetching favorite for studio ${studio.id}:`, favoriteError.message);
+            }
+          } catch (error) {
+            console.warn(`Error processing favorite for studio ${studio.id}:`, error.message);
+          }
+        }
+
+        return {
+          ...studio,
+          imageUrl,
+        };
+      })
+    );
+
     return {
-      error: { message: "Invalid context." },
+      success: true,
+      error: null,
+      studios: studiosWithImages,
+      pageTitle,
+    };
+  } catch (error) {
+    console.error("Unexpected error in getStudiosData:", error);
+    return {
+      success: false,
+      error: { message: "An unexpected error occurred." },
       studios: [],
       pageTitle: "Error",
     };
   }
-
-  const { data: rawStudios, error: studiosError } = await studiosQuery.order(
-    "created_at",
-    { ascending: false }
-  );
-
-  if (studiosError) {
-    console.error("SA: Error fetching studios:", studiosError.message);
-    return { error: studiosError, studios: [], pageTitle };
-  }
-
-  const studiosWithImages = await Promise.all(
-    (rawStudios || []).map(async (studio) => {
-      // For org admin view, pass true to getStudioDisplayImage if it's an org studio they are admin of
-      // For personal, userIdForFavorites is currentUserId, isOrgAdminViewingOrgStudio is false
-      // For org member (not admin), userIdForFavorites is currentUserId, isOrgAdminViewingOrgStudio is false
-      // For org admin, userIdForFavorites can be null (to fetch any favorite), isOrgAdminViewingOrgStudio is true
-      const isCurrentStudioInAdminOrgView =
-        contextType === "organization" &&
-        studio.organization_id === effectiveContextId &&
-        isOrgAdminViewingCurrentContext;
-
-      return {
-        ...studio,
-        imageUrl: await getStudioDisplayImage(
-          supabase,
-          studio,
-          currentUserId,
-          isCurrentStudioInAdminOrgView
-        ),
-      };
-    })
-  );
-
-  return {
-    studios: studiosWithImages,
-    error: null,
-    pageTitle,
-    isOrgAdminViewingCurrentContext,
-    currentOrgId: effectiveContextId,
-  };
 }

@@ -1,677 +1,464 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { useAccountContext } from "@/context/AccountContext";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
-  getStudioDetailsData,
-  toggleFavoriteAction,
-} from "@/app/dashboard/actions/studio/getStudioDetailsData";
-import { updateStudioDownloadedStatusAction } from "@/app/dashboard/actions/studio/studioActions";
-import Image from "next/image";
+  ArrowLeft,
+  Download,
+  AlertCircle,
+  Camera,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  Heart,
-  CheckCircle,
-  AlertTriangle,
-  Info,
-  RefreshCw,
-  Download,
-  Maximize,
-} from "lucide-react";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { ContentLayout } from "@/app/dashboard/components/sidebar/content-layout";
-import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { getStudioDetailData } from "../../actions/studio/getStudioDetailData";
+import { toggleFavorite } from "../../actions/studio/toggleFavorite";
+import HeadshotImage from "./HeadshotImage";
 
-// Lightbox-like modal for viewing image larger
-function ImageModal({ src, alt, onClose }) {
-  if (!src) return null;
-  return (
-    <div
-      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
-      onClick={onClose} // Close on overlay click
-    >
-      <div
-        className="relative max-w-4xl max-h-[90vh] bg-card p-2 rounded-lg shadow-xl"
-        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on image/modal content
-      >
-        <button
-          onClick={onClose}
-          className="absolute -top-3 -right-3 bg-destructive text-destructive-foreground rounded-full p-1.5 z-10 hover:bg-destructive/80"
-          aria-label="Close image view"
-        >
-          &times;
-        </button>
-        <Image
-          src={src}
-          alt={alt}
-          width={1200}
-          height={800}
-          className="object-contain max-h-[85vh] w-auto rounded"
-        />
-      </div>
-    </div>
-  );
-}
+/**
+ * Studio Detail Client Component
+ * Handles studio detail view with headshots and favorites
+ */
+export default function StudioDetailClient({ studioId, currentUserId }) {
+  const router = useRouter();
+  const { toast } = useToast();
 
-export default function StudioDetailClient({ studioId }) {
-  const {
-    userId,
-    selectedContext,
-    isLoading: isContextLoading,
-  } = useAccountContext();
-
-  const [studioDetails, setStudioDetails] = useState(null);
-  const [favorites, setFavorites] = useState([]);
-  const [resultHeadshots, setResultHeadshots] = useState([]);
-  const [previewHeadshots, setPreviewHeadshots] = useState([]);
-  const [canFavorite, setCanFavorite] = useState(false);
-  const [viewMode, setViewMode] = useState("");
+  // State management
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [pageTitle, setPageTitle] = useState("Loading Studio...");
-  const [lightboxImage, setLightboxImage] = useState(null);
-  const [isDownloadAlertOpen, setDownloadAlertOpen] = useState(false);
-  const [isUpdatingDownloadStatus, setIsUpdatingDownloadStatus] =
-    useState(false);
+  const [studio, setStudio] = useState(null);
+  const [headshots, setHeadshots] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [togglingFavorites, setTogglingFavorites] = useState(new Set());
 
-  const fetchStudioDetails = useCallback(async () => {
-    if (isContextLoading || !userId || !selectedContext || !studioId) {
-      if (!isContextLoading && !userId && studioId) {
-        setError({ message: "User session not found. Please log in again." });
-        setPageTitle("Authentication Error");
-        setIsLoading(false);
-      }
-      return;
-    }
+  // Fetch studio data
+  const fetchStudioData = useCallback(async () => {
+    if (!studioId || !currentUserId) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const contextType = selectedContext.type;
-      const contextId =
-        selectedContext.type === "organization" ? selectedContext.id : null;
+      const result = await getStudioDetailData(studioId, currentUserId);
 
-      if (selectedContext.type === "organization" && !contextId) {
-        setError({
-          message: "Organization context is selected but ID is missing.",
-        });
-        setPageTitle("Context Error");
-        setIsLoading(false);
-        return;
-      }
-
-      const result = await getStudioDetailsData(
-        userId,
-        studioId,
-        contextType,
-        contextId
-      );
-
-      if (result.error || !result.studio) {
-        setError(result.error || { message: "Studio not found." });
-        setPageTitle("Studio Not Found");
-        setStudioDetails(null);
-        setFavorites([]);
-        setResultHeadshots([]);
-        setPreviewHeadshots([]);
+      if (result.success) {
+        setStudio(result.studio);
+        setHeadshots(result.headshots);
+        setFavorites(result.favorites);
       } else {
-        setStudioDetails(result.studio);
-        setFavorites(result.favorites || []);
-        setResultHeadshots(result.resultHeadshots || []);
-        setPreviewHeadshots(result.previewHeadshots || []);
-        setCanFavorite(result.canFavorite);
-        setViewMode(result.viewMode);
-        setPageTitle(result.studio.name || "Studio Details");
+        setError(result.error);
       }
-    } catch (e) {
-      console.error("Client fetchStudioDetails error:", e);
-      setError({ message: e.message || "An unexpected error occurred." });
-      setPageTitle("Error");
+    } catch (err) {
+      console.error("Error fetching studio data:", err);
+      setError({ message: "Failed to load studio data. Please try again." });
     }
+
     setIsLoading(false);
-  }, [userId, studioId, selectedContext, isContextLoading]);
+  }, [studioId, currentUserId]);
 
-  useEffect(() => {
-    if (studioId) {
-      fetchStudioDetails();
-    }
-  }, [fetchStudioDetails, studioId]);
+  // Handle favorite toggle
+  const handleToggleFavorite = useCallback(
+    async (headshotId) => {
+      if (!studio || togglingFavorites.has(headshotId)) return;
 
-  useEffect(() => {
-    if (!studioDetails) return;
-    let logSection = "unknown";
-    let favoritesCount = 0;
-    let previewCount = 0;
-    let otherCount = 0;
-    if (!studioDetails.downloaded) {
-      logSection = "preview";
-      previewCount = previewHeadshots.length;
-    } else if (viewMode === "admin_viewing_member_studio") {
-      logSection = "admin_favorites_only";
-      favoritesCount = favorites.length;
-    } else if (
-      studioDetails &&
-      userId &&
-      studioDetails.creator_user_id === userId
-    ) {
-      logSection = "creator_favorites_and_results";
-      favoritesCount = favorites.length;
-      otherCount = resultHeadshots.length;
-    } else {
-      logSection = "all_results";
-      otherCount = resultHeadshots.length;
-    }
-  }, [studioDetails, viewMode, favorites, resultHeadshots, userId, studioId]);
-
-  const handleToggleFavorite = async (headshotId, currentIsFavorite) => {
-    if (!canFavorite || !userId || !studioId) return;
-
-    // Optimistically update UI
-    setFavorites((prevFavorites) =>
-      prevFavorites
-        .map((h) =>
-          h.id === headshotId ? { ...h, isFavorite: !currentIsFavorite } : h
-        )
-        .sort(
-          (a, b) =>
-            b.isFavorite - a.isFavorite ||
-            new Date(a.created_at) - new Date(b.created_at)
-        )
-    );
-
-    try {
-      const result = await toggleFavoriteAction(
-        userId,
-        studioId,
-        headshotId,
-        currentIsFavorite
+      // Determine current favorite status
+      const isFavorite = favorites.some(
+        (fav) => fav.headshot_id === headshotId
       );
-      if (result.error) {
-        toast.error(
-          `Failed to ${currentIsFavorite ? "unfavorite" : "favorite"}: ${
-            result.error.message
-          }`
+
+      // Add to toggling set
+      setTogglingFavorites((prev) => new Set(prev).add(headshotId));
+
+      try {
+        const result = await toggleFavorite(
+          headshotId,
+          studio.id,
+          currentUserId,
+          isFavorite
         );
-        // Revert optimistic update
-        setFavorites((prevFavorites) =>
-          prevFavorites
-            .map((h) =>
-              h.id === headshotId ? { ...h, isFavorite: currentIsFavorite } : h
-            )
-            .sort(
-              (a, b) =>
-                b.isFavorite - a.isFavorite ||
-                new Date(a.created_at) - new Date(b.created_at)
-            )
-        );
-      } else {
-        toast.success(
-          `Image ${result.newFavoriteStatus ? "favorited" : "unfavorited"}!`
-        );
-        // Optional: re-fetch or ensure server state matches if needed, but optimistic should be fine here.
+
+        if (result.success) {
+          if (result.isFavorite) {
+            // Added to favorites - we need to fetch the headshot details
+            const headshot = headshots.find((h) => h.id === headshotId);
+            if (headshot) {
+              setFavorites((prev) => [
+                ...prev,
+                {
+                  id: `temp-${headshotId}`,
+                  headshot_id: headshotId,
+                  headshots: headshot,
+                  created_at: new Date().toISOString(),
+                },
+              ]);
+            }
+          } else {
+            // Removed from favorites
+            setFavorites((prev) =>
+              prev.filter((fav) => fav.headshot_id !== headshotId)
+            );
+          }
+
+          toast({
+            title: result.isFavorite
+              ? "Added to favorites"
+              : "Removed from favorites",
+            description: result.isFavorite
+              ? "Headshot saved to your favorites."
+              : "Headshot removed from favorites.",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description:
+              result.error?.message || "Failed to update favorite status.",
+            variant: "destructive",
+          });
+        }
+      } catch (err) {
+        console.error("Error toggling favorite:", err);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
       }
-    } catch (e) {
-      toast.error("An error occurred while updating favorite status.");
-      // Revert optimistic update
-      setFavorites((prevFavorites) =>
-        prevFavorites
-          .map((h) =>
-            h.id === headshotId ? { ...h, isFavorite: currentIsFavorite } : h
-          )
-          .sort(
-            (a, b) =>
-              b.isFavorite - a.isFavorite ||
-              new Date(a.created_at) - new Date(b.created_at)
-          )
-      );
-    }
-  };
 
-  const handleConfirmDownload = async () => {
-    if (!studioDetails || !userId || studioDetails.creator_user_id !== userId) {
-      toast.error(
-        "You are not authorized to perform this action or studio details are missing."
-      );
-      return;
-    }
-    setIsUpdatingDownloadStatus(true);
-    setDownloadAlertOpen(false);
+      // Remove from toggling set
+      setTogglingFavorites((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(headshotId);
+        return newSet;
+      });
+    },
+    [studio, favorites, headshots, currentUserId, toast]
+  );
 
-    try {
-      const result = await updateStudioDownloadedStatusAction(
-        studioDetails.id,
-        userId
-      );
-      if (result.error) {
-        toast.error(
-          result.error.message || "Failed to mark studio as downloaded."
-        );
-      } else {
-        toast.success(result.message || "Studio marked as downloaded!");
-        fetchStudioDetails();
-      }
-    } catch (e) {
-      toast.error("An unexpected error occurred while downloading the studio.");
-      console.error("Error in handleConfirmDownload:", e);
-    } finally {
-      setIsUpdatingDownloadStatus(false);
-    }
-  };
+  // Create favorite lookup for performance
+  const favoriteHeadshotIds = useMemo(() => {
+    return new Set(favorites.map((fav) => fav.headshot_id));
+  }, [favorites]);
 
-  if (isContextLoading) {
+  // Load data on mount
+  useEffect(() => {
+    fetchStudioData();
+  }, [fetchStudioData]);
+
+  // Loading state
+  if (isLoading) {
     return (
-      <ContentLayout title="Loading Studio...">
-        <div className="flex justify-center items-center py-20">
-          <RefreshCw className="h-10 w-10 text-muted-foreground animate-spin" />
-          <p className="ml-3 text-muted-foreground text-lg">
-            Initializing account...
-          </p>
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-10 w-10" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
         </div>
-      </ContentLayout>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <Skeleton key={i} className="aspect-square" />
+          ))}
+        </div>
+      </div>
     );
   }
 
-  if (!userId && !isContextLoading) {
-    return (
-      <ContentLayout title="Authentication Error">
-        <div className="my-10 p-6 bg-destructive/10 text-destructive border border-destructive/30 rounded-md flex flex-col items-center text-center">
-          <AlertTriangle className="h-12 w-12 mb-3" />
-          <h2 className="text-xl font-semibold mb-2">User Not Authenticated</h2>
-          <p>Please log in to view studio details.</p>
-        </div>
-      </ContentLayout>
-    );
-  }
-
-  if (userId && !selectedContext && !error && !isContextLoading) {
-    return (
-      <ContentLayout title="Loading Studio...">
-        <div className="flex justify-center items-center py-20">
-          <RefreshCw className="h-10 w-10 text-muted-foreground animate-spin" />
-          <p className="ml-3 text-muted-foreground text-lg">
-            Finalizing account context...
-          </p>
-        </div>
-      </ContentLayout>
-    );
-  }
-
-  if (isLoading && !error) {
-    return (
-      <ContentLayout
-        title={pageTitle === "Error" ? "Loading Studio..." : pageTitle}
-      >
-        <div className="flex justify-center items-center py-20">
-          <RefreshCw className="h-10 w-10 text-muted-foreground animate-spin" />
-          <p className="ml-3 text-muted-foreground text-lg">
-            Loading studio details...
-          </p>
-        </div>
-      </ContentLayout>
-    );
-  }
-
+  // Error state
   if (error) {
     return (
-      <ContentLayout title={pageTitle}>
-        <div className="my-10 p-6 bg-destructive/10 text-destructive border border-destructive/30 rounded-md flex flex-col items-center text-center">
-          <AlertTriangle className="h-12 w-12 mb-3" />
-          <h2 className="text-xl font-semibold mb-2">Could not load studio</h2>
-          <p>{error.message}</p>
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
         </div>
-      </ContentLayout>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error.message}</AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
-  if (!studioDetails) {
+  // No studio found
+  if (!studio) {
     return (
-      <ContentLayout
-        title={pageTitle === "Error" ? "Studio Not Found" : pageTitle}
-      >
-        <p className="text-center py-10 text-muted-foreground">
-          The requested studio could not be found or you do not have access.
-        </p>
-      </ContentLayout>
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        </div>
+        <div className="text-center py-12">
+          <Camera className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Studio Not Found</h3>
+          <p className="text-muted-foreground">
+            The requested studio could not be found.
+          </p>
+        </div>
+      </div>
     );
   }
 
-  const isCurrentUserCreator =
-    studioDetails && userId && studioDetails.creator_user_id === userId;
+  const isCompleted = studio.status === "COMPLETED";
+  const isAccepted = studio.status === "ACCEPTED";
 
-  let noHeadshotsMessage = "No images available for this studio.";
+  // For ACCEPTED status, separate images by type
+  const resultImages = isAccepted ? headshots.filter((h) => h.result) : [];
+  const hdImages = isAccepted ? headshots.filter((h) => h.hd) : [];
+  const hasAnyHdImages = hdImages.length > 0;
+
+  console.log("🖼️ [DEBUG] Frontend Image Breakdown:", {
+    isAccepted,
+    favoritesCount: favorites.length,
+    resultImagesCount: resultImages.length,
+    hdImagesCount: hdImages.length,
+    hasAnyHdImages,
+  });
 
   return (
-    <ContentLayout title={pageTitle}>
-      <div className="mb-6 p-4 border rounded-lg bg-card shadow">
-        <div className="flex flex-col sm:flex-row justify-between items-start mb-2">
-          <h1 className="text-2xl font-bold text-primary mb-2 sm:mb-0">
-            {studioDetails.name}
-          </h1>
-          <Badge
-            variant={
-              studioDetails.status === "completed" ? "default" : "outline"
-            }
-            className={`text-sm px-3 py-1 ${
-              studioDetails.status === "completed"
-                ? "bg-green-100 text-green-700 border-green-300"
-                : ""
-            }`}
-          >
-            Status: {studioDetails.status}
-          </Badge>
-        </div>
-        <p className="text-sm text-muted-foreground mb-1">
-          Created: {new Date(studioDetails.created_at).toLocaleDateString()}
-        </p>
-        {studioDetails.organizations && (
-          <p className="text-sm text-muted-foreground mb-1">
-            Organization: {studioDetails.organizations.name}
-          </p>
-        )}
-        <div
-          className={`mt-2 flex items-center justify-between ${
-            studioDetails.downloaded ? "text-green-600" : "text-amber-600"
-          }`}
-        >
-          <div className="flex items-center">
-            {studioDetails.downloaded ? (
-              <CheckCircle className="h-5 w-5 mr-2" />
-            ) : (
-              <Info className="h-5 w-5 mr-2" />
-            )}
-            <p className="font-medium">
-              {studioDetails.downloaded
-                ? "Studio images are ready and downloaded."
-                : "Studio images are in preview. Download to get full access."}
-            </p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-semibold">{studio.name}</h1>
+              <Badge
+                variant={
+                  studio.status === "COMPLETED" ? "default" : "secondary"
+                }
+              >
+                {studio.status}
+              </Badge>
+            </div>
           </div>
-          {isCurrentUserCreator && !studioDetails.downloaded && (
-            <AlertDialog
-              open={isDownloadAlertOpen}
-              onOpenChange={setDownloadAlertOpen}
-            >
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="ml-4"
-                  onClick={() => setDownloadAlertOpen(true)}
-                  disabled={isUpdatingDownloadStatus}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  {isUpdatingDownloadStatus
-                    ? "Downloading..."
-                    : "Download Studio"}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Confirm Studio Download</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will mark the studio as downloaded and process the
-                    final images. This action cannot be undone. Are you sure you
-                    want to proceed?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isUpdatingDownloadStatus}>
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleConfirmDownload}
-                    disabled={isUpdatingDownloadStatus}
-                  >
-                    {isUpdatingDownloadStatus
-                      ? "Processing..."
-                      : "Yes, Download"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+        </div>
+
+        {/* Remove Watermarks Button (COMPLETED status only) */}
+        {isCompleted && (
+          <Button variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
+            Remove Watermarks
+          </Button>
+        )}
+      </div>
+
+      {/* Content - Different layouts for COMPLETED vs ACCEPTED */}
+      {isCompleted ? (
+        // COMPLETED Status: Single section with preview images
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Camera className="h-5 w-5" />
+              Generated Headshots
+            </CardTitle>
+            <CardDescription>
+              {headshots.length} preview images available
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {headshots.length === 0 ? (
+              <div className="text-center py-12">
+                <Camera className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">
+                  No Images Available
+                </h3>
+                <p className="text-muted-foreground">
+                  No preview images have been generated yet.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {headshots.map((headshot, index) => (
+                  <HeadshotImage
+                    key={headshot.id}
+                    index={index}
+                    headshot={headshot}
+                    showFavoriteToggle={false}
+                    preferredImageType="preview"
+                  />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        // ACCEPTED Status: Three separate sections
+        <div className="space-y-8">
+          {/* Section 1: Your Favorite Images */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                Your Favorite Images
+              </CardTitle>
+              <CardDescription>
+                {favorites.reduce((total, fav) => {
+                  let count = 0;
+                  if (fav.headshots.result) count++;
+                  if (fav.headshots.hd) count++;
+                  return total + count;
+                }, 0)}{" "}
+                favorite images (both SD and 4K versions)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {favorites.length === 0 ? (
+                <div className="text-center py-12">
+                  <Sparkles className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Favorites Yet
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Start adding headshots to your favorites from the sections
+                    below.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {favorites
+                    .map((favorite) => {
+                      const favoriteImages = [];
+
+                      // Add result image if it exists
+                      if (favorite.headshots.result) {
+                        favoriteImages.push({
+                          ...favorite.headshots,
+                          key: `${favorite.id}-result`,
+                          preferredType: "result",
+                        });
+                      }
+
+                      // Add HD image if it exists
+                      if (favorite.headshots.hd) {
+                        favoriteImages.push({
+                          ...favorite.headshots,
+                          key: `${favorite.id}-hd`,
+                          preferredType: "hd",
+                        });
+                      }
+
+                      return favoriteImages.map((imageData, index) => (
+                        <HeadshotImage
+                          key={imageData.key}
+                          index={index}
+                          headshot={imageData}
+                          showFavoriteToggle={true}
+                          isFavorite={true}
+                          onToggleFavorite={handleToggleFavorite}
+                          isTogglingFavorite={togglingFavorites.has(
+                            favorite.headshots.id
+                          )}
+                          preferredImageType={imageData.preferredType}
+                        />
+                      ));
+                    })
+                    .flat()}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Section 2: Your Headshots (Result Images) */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Camera className="h-5 w-5" />
+                Your Headshots
+              </CardTitle>
+              <CardDescription>
+                {resultImages.length} high-quality headshot images
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {resultImages.length === 0 ? (
+                <div className="text-center py-12">
+                  <Camera className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Result Images
+                  </h3>
+                  <p className="text-muted-foreground">
+                    No result images available for this studio.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {resultImages.map((headshot, index) => {
+                    const isFavorite = favoriteHeadshotIds.has(headshot.id);
+                    const isToggling = togglingFavorites.has(headshot.id);
+                    return (
+                      <HeadshotImage
+                        key={headshot.id}
+                        index={index}
+                        headshot={headshot}
+                        showFavoriteToggle={true}
+                        isFavorite={isFavorite}
+                        onToggleFavorite={handleToggleFavorite}
+                        isTogglingFavorite={isToggling}
+                        preferredImageType="result"
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Section 3: Your 4K Print Ready Headshots (HD Images) - Only show if any HD images exist */}
+          {hasAnyHdImages && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  Your 4K Print Ready Headshots
+                </CardTitle>
+                <CardDescription>
+                  {hdImages.length} ultra high-resolution images perfect for
+                  printing
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {hdImages.map((headshot, index) => {
+                    const isFavorite = favoriteHeadshotIds.has(headshot.id);
+                    const isToggling = togglingFavorites.has(headshot.id);
+                    return (
+                      <HeadshotImage
+                        key={headshot.id}
+                        index={index}
+                        headshot={headshot}
+                        showFavoriteToggle={true}
+                        isFavorite={isFavorite}
+                        onToggleFavorite={handleToggleFavorite}
+                        isTogglingFavorite={isToggling}
+                        preferredImageType="hd"
+                      />
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
-        {viewMode === "admin_favorites_only" && (
-          <p className="text-sm text-blue-600 mt-1 italic">
-            Viewing all favorited images for this studio (Admin View).
-          </p>
-        )}
-      </div>
-
-      {/* Headshot Display Section */}
-      <div className="mt-8">
-        {/* Preview mode: only preview headshots */}
-        {viewMode === "preview" && previewHeadshots.length > 0 && (
-          <>
-            <h2 className="text-xl font-semibold mb-4">Preview Images</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {previewHeadshots.map((headshot) => (
-                <div
-                  key={headshot.id}
-                  className="relative group bg-card border rounded-lg shadow-sm overflow-hidden"
-                >
-                  <Image
-                    src={headshot.image_url}
-                    alt={`Preview ${headshot.id}`}
-                    width={300}
-                    height={400}
-                    className="aspect-[3/4] w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    priority={true}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-3 flex flex-col justify-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="absolute bottom-2 right-2 h-8 backdrop-blur-sm bg-black/30 hover:bg-black/50 border-gray-400/50 hover:border-gray-300/70 text-xs text-white"
-                      onClick={() =>
-                        setLightboxImage({
-                          src: headshot.image_url,
-                          alt: `Preview ${headshot.id}`,
-                        })
-                      }
-                    >
-                      <Maximize className="mr-1.5 h-3.5 w-3.5" /> View
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Downloaded: Creator or admin/creator view: show favorites and result headshots */}
-        {viewMode === "creator" && (
-          <>
-            {favorites.length > 0 && (
-              <>
-                <h2 className="text-xl font-semibold mb-4 mt-6">Favorites</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {favorites.map((headshot) => (
-                    <div
-                      key={headshot.id}
-                      className="relative group bg-card border rounded-lg shadow-sm overflow-hidden"
-                    >
-                      <Image
-                        src={headshot.image_url}
-                        alt={`Favorite ${headshot.id}`}
-                        width={300}
-                        height={400}
-                        className="aspect-[3/4] w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        priority={true}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-3 flex flex-col justify-end">
-                        {canFavorite && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2 h-9 w-9 rounded-full transition-all duration-200 bg-red-500/80 text-white hover:bg-red-600/90 hover:scale-110 active:scale-95"
-                            onClick={() =>
-                              handleToggleFavorite(headshot.id, true)
-                            }
-                            aria-label="Unfavorite"
-                          >
-                            <Heart className="h-5 w-5 fill-current" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="absolute bottom-2 right-2 h-8 backdrop-blur-sm bg-black/30 hover:bg-black/50 border-gray-400/50 hover:border-gray-300/70 text-xs text-white"
-                          onClick={() =>
-                            setLightboxImage({
-                              src: headshot.image_url,
-                              alt: `Favorite ${headshot.id}`,
-                            })
-                          }
-                        >
-                          <Maximize className="mr-1.5 h-3.5 w-3.5" /> View
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-            {resultHeadshots.length > 0 && (
-              <>
-                <h2 className="text-xl font-semibold mb-4 mt-6">
-                  Result Headshots
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {resultHeadshots.map((headshot) => (
-                    <div
-                      key={headshot.id}
-                      className="relative group bg-card border rounded-lg shadow-sm overflow-hidden"
-                    >
-                      <Image
-                        src={headshot.image_url}
-                        alt={`Result ${headshot.id}`}
-                        width={300}
-                        height={400}
-                        className="aspect-[3/4] w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        priority={true}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-3 flex flex-col justify-end">
-                        {canFavorite && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2 h-9 w-9 rounded-full transition-all duration-200 bg-gray-500/50 text-white hover:bg-gray-600/70 hover:scale-110 active:scale-95"
-                            onClick={() =>
-                              handleToggleFavorite(headshot.id, false)
-                            }
-                            aria-label="Favorite"
-                          >
-                            <Heart className="h-5 w-5" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="absolute bottom-2 right-2 h-8 backdrop-blur-sm bg-black/30 hover:bg-black/50 border-gray-400/50 hover:border-gray-300/70 text-xs text-white"
-                          onClick={() =>
-                            setLightboxImage({
-                              src: headshot.image_url,
-                              alt: `Result ${headshot.id}`,
-                            })
-                          }
-                        >
-                          <Maximize className="mr-1.5 h-3.5 w-3.5" /> View
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </>
-        )}
-
-        {/* Downloaded: Admin viewing member's studio: only show favorites */}
-        {viewMode === "admin_viewing_member_studio" && favorites.length > 0 && (
-          <>
-            <h2 className="text-xl font-semibold mb-4 mt-6">
-              Favorited Headshots (Admin View)
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {favorites.map((headshot) => (
-                <div
-                  key={headshot.id}
-                  className="relative group bg-card border rounded-lg shadow-sm overflow-hidden"
-                >
-                  <Image
-                    src={headshot.image_url}
-                    alt={`Favorited (Admin View) ${headshot.id}`}
-                    width={300}
-                    height={400}
-                    className="aspect-[3/4] w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    priority={true}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-3 flex flex-col justify-end">
-                    <Heart
-                      className="absolute top-2 right-2 h-5 w-5 text-red-500 fill-current"
-                      title="Favorited by studio creator"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="absolute bottom-2 right-2 h-8 backdrop-blur-sm bg-black/30 hover:bg-black/50 border-gray-400/50 hover:border-gray-300/70 text-xs text-white"
-                      onClick={() =>
-                        setLightboxImage({
-                          src: headshot.image_url,
-                          alt: `Favorited (Admin View) ${headshot.id}`,
-                        })
-                      }
-                    >
-                      <Maximize className="mr-1.5 h-3.5 w-3.5" /> View
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* No images message */}
-        {viewMode === "preview" && previewHeadshots.length === 0 && (
-          <p className="text-center py-10 text-muted-foreground">
-            No preview images available for this studio yet.
-          </p>
-        )}
-        {viewMode === "creator" &&
-          favorites.length === 0 &&
-          resultHeadshots.length === 0 && (
-            <p className="text-center py-10 text-muted-foreground">
-              No images available for this studio.
-            </p>
-          )}
-        {viewMode === "admin_viewing_member_studio" &&
-          favorites.length === 0 && (
-            <p className="text-center py-10 text-muted-foreground">
-              The studio creator has not favorited any headshots in this studio
-              yet.
-            </p>
-          )}
-      </div>
-
-      {lightboxImage && (
-        <ImageModal
-          src={lightboxImage.src}
-          alt={lightboxImage.alt}
-          onClose={() => setLightboxImage(null)}
-        />
       )}
-    </ContentLayout>
+    </div>
   );
 }

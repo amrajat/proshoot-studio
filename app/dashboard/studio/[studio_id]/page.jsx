@@ -1,19 +1,39 @@
 import { unstable_noStore as noStore } from "next/cache";
+import { redirect } from "next/navigation";
+import createSupabaseServerClient from "@/lib/supabase/server-client";
+import { ContentLayout } from "@/app/dashboard/components/sidebar/content-layout.tsx";
 import StudioDetailClient from "../../components/studio/StudioDetailClient";
 
-export default function StudioDetailPage({ params }) {
+/**
+ * Studio Detail Page
+ *
+ * Server component that handles authentication and renders the studio detail view
+ * Supports both COMPLETED (preview images) and ACCEPTED (favorites) status
+ */
+export default async function StudioDetailPage({ params }) {
   noStore();
+
   const { studio_id: studioId } = params;
 
+  // Validate studio ID parameter
   if (!studioId) {
-    // This case should ideally be caught by Next.js routing if the folder structure is [studio_id]
-    // but as a fallback:
-    return (
-      <div>
-        <p>Studio ID is missing.</p>
-      </div>
-    );
+    redirect("/dashboard/studio");
   }
 
-  return <StudioDetailClient studioId={studioId} />;
+  // Get authenticated user
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    redirect("/auth");
+  }
+
+  return (
+    <ContentLayout title="Studio Details">
+      <StudioDetailClient studioId={studioId} currentUserId={user.id} />
+    </ContentLayout>
+  );
 }

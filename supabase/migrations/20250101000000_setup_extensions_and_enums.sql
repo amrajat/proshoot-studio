@@ -58,7 +58,7 @@ CREATE TYPE public.studio_status AS ENUM (
     'FAILED',
     'PROCESSING',
     'COMPLETED',
-    'DONE',
+    'ACCEPTED',
     'REFUNDED',
     'DELETED'
 );

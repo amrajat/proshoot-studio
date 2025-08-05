@@ -3,41 +3,52 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useAccountContext } from "@/context/AccountContext";
-import { getStudiosData } from "../actions/studio/getStudiosData"; // Action import
-import StudioGridItem from "../components/studio/StudioGridItem";
+import { getStudiosData } from "../actions/studio/getStudiosData";
+import StudioCard from "../components/studio/StudioCard";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Info, RefreshCw } from "lucide-react";
-import { ContentLayout } from "../components/sidebar/content-layout"; // If title is dynamic from here
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PlusCircle, AlertCircle, Camera, RefreshCw } from "lucide-react";
+import { ContentLayout } from "../components/sidebar/content-layout";
 
-export default function StudioListClient() {
+/**
+ * Studio List Page
+ *
+ * Displays user's studios based on account context (personal or organization).
+ * Follows existing UI patterns from backgrounds/clothing/billing pages.
+ */
+export default function StudioListPage() {
   const {
     userId,
     selectedContext,
     isLoading: isContextLoading,
   } = useAccountContext();
+
   const [studiosData, setStudiosData] = useState({
     studios: [],
-    pageTitle: "Loading Studios...",
-    isOrgAdminViewingCurrentContext: false,
-    currentOrgId: null,
+    pageTitle: "Studios",
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchStudios = useCallback(async () => {
+    // Wait for context to be ready
     if (isContextLoading || !userId || !selectedContext) {
-      // Wait for context to be ready
-      // If selectedContext is null (e.g. no personal and no orgs), handle appropriately
       if (!isContextLoading && !selectedContext && userId) {
         setStudiosData({
           studios: [],
-          pageTitle: "No active context",
-          isOrgAdminViewingCurrentContext: false,
-          currentOrgId: null,
+          pageTitle: "No Context Selected",
         });
         setIsLoading(false);
         setError({
-          message: "Please select an account context or create one.",
+          message: "Please select an account context to view studios.",
         });
       }
       return;
@@ -51,34 +62,26 @@ export default function StudioListClient() {
       const contextId =
         selectedContext.type === "organization" ? selectedContext.id : null;
 
-      // console.log(`Fetching studios for user: ${userId}, contextType: ${contextType}, contextId: ${contextId}`);
       const result = await getStudiosData(userId, contextType, contextId);
 
-      if (result.error) {
+      if (!result.success) {
         setError(result.error);
         setStudiosData({
           studios: [],
-          pageTitle: "Error Loading Studios",
-          isOrgAdminViewingCurrentContext: false,
-          currentOrgId: null,
+          pageTitle: result.pageTitle || "Error",
         });
       } else {
         setStudiosData({
           studios: result.studios || [],
           pageTitle: result.pageTitle || "Studios",
-          isOrgAdminViewingCurrentContext:
-            result.isOrgAdminViewingCurrentContext || false,
-          currentOrgId: result.currentOrgId,
         });
       }
     } catch (e) {
-      console.error("Client fetchStudios error:", e);
+      console.error("Error fetching studios:", e);
       setError({ message: e.message || "An unexpected error occurred." });
       setStudiosData({
         studios: [],
         pageTitle: "Error",
-        isOrgAdminViewingCurrentContext: false,
-        currentOrgId: null,
       });
     }
     setIsLoading(false);
@@ -88,65 +91,98 @@ export default function StudioListClient() {
     fetchStudios();
   }, [fetchStudios]);
 
-  // The ContentLayout might be better placed in the parent server component (page.jsx)
-  // if the title is static or passed from server. If title is dynamic from client, then here.
-  // For this example, assuming dynamic title based on fetched data.
   return (
-    <ContentLayout
-      title={isLoading ? "Loading Studios..." : studiosData.pageTitle}
-    >
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">
-          {/* Title is now in ContentLayout prop */}
-        </h1>
-        <Button asChild>
-          <Link href="/dashboard/studio/create">
-            <PlusCircle className="mr-2 h-4 w-4" /> Create New Studio
-          </Link>
-        </Button>
+    <ContentLayout title={studiosData.pageTitle}>
+      <div className="space-y-8">
+        {/* Studio Management Section */}
+        <section>
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  Studio Management
+                </h2>
+                <p className="text-muted-foreground">
+                  {selectedContext?.type === "personal"
+                    ? "Manage your personal AI headshot studios."
+                    : "Manage studios in your organization."}
+                </p>
+              </div>
+              <Button asChild>
+                <Link href="/dashboard/studio/create">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Create New Studio
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Studios</CardTitle>
+              <CardDescription>
+                {selectedContext?.type === "personal"
+                  ? "All your personal headshot studios"
+                  : `Studios created in ${
+                      selectedContext?.name || "this organization"
+                    }`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Loading State */}
+              {isLoading && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="space-y-3">
+                      <Skeleton className="aspect-square w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Error State */}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error.message}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* Studios Grid */}
+              {!isLoading && !error && studiosData.studios.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {studiosData.studios.map((studio) => (
+                    <StudioCard key={studio.id} studio={studio} />
+                  ))}
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!isLoading && !error && studiosData.studios.length === 0 && (
+                <div className="text-center py-12">
+                  <Camera className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Studios Found
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    {selectedContext?.type === "personal"
+                      ? "You haven't created any personal studios yet. Start by creating your first AI headshot studio."
+                      : "No studios found in this organization. Create a studio to get started."}
+                  </p>
+                  <Button asChild>
+                    <Link href="/dashboard/studio/create">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Create Your First Studio
+                    </Link>
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
       </div>
-
-      {isLoading && (
-        <div className="flex justify-center items-center py-10">
-          <RefreshCw className="h-8 w-8 text-muted-foreground animate-spin" />
-          <p className="ml-2 text-muted-foreground">Loading studios...</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-4 p-4 bg-destructive/10 text-destructive border border-destructive/30 rounded-md flex items-center">
-          <Info className="h-5 w-5 mr-2" />
-          <p>Could not load studios: {error.message}</p>
-        </div>
-      )}
-
-      {!isLoading &&
-      !error &&
-      studiosData.studios &&
-      studiosData.studios.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {studiosData.studios.map((studio) => (
-            <StudioGridItem
-              key={studio.id}
-              studio={studio}
-              studioImageUrl={studio.imageUrl}
-              // Pass necessary props for StudioGridItem. Context type might not be needed if links are simple.
-              // isOrgAdminView is specific to the context the list is being viewed in.
-              isOrgAdminView={
-                studiosData.isOrgAdminViewingCurrentContext &&
-                studio.organization_id === studiosData.currentOrgId
-              }
-            />
-          ))}
-        </div>
-      ) : (
-        !isLoading &&
-        !error && (
-          <p className="text-center text-muted-foreground py-8">
-            No studios found for the current context. Try creating one!
-          </p>
-        )
-      )}
     </ContentLayout>
   );
 }

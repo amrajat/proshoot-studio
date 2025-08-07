@@ -44,19 +44,55 @@ export async function toggleFavorite(
   try {
     const supabase = await createSupabaseServerClient();
 
-    // Verify user owns the studio
+    // Verify user can access the studio (creator or organization owner)
     const { data: studio, error: studioError } = await supabase
       .from("studios")
-      .select("creator_user_id")
+      .select("creator_user_id, organization_id")
       .eq("id", studioId)
       .single();
 
-    if (studioError || studio?.creator_user_id !== currentUserId) {
+    if (studioError) {
+      return {
+        success: false,
+        error: {
+          message: "Studio not found.",
+        },
+        isFavorite: false,
+      };
+    }
+
+    const isStudioCreator = studio.creator_user_id === currentUserId;
+    
+    let isOrganizationOwner = false;
+    if (!isStudioCreator && studio.organization_id) {
+      // Check if current user is the owner of the studio's organization
+      const { data: orgData } = await supabase
+        .from("organizations")
+        .select("owner_user_id")
+        .eq("id", studio.organization_id)
+        .single();
+      
+      isOrganizationOwner = orgData?.owner_user_id === currentUserId;
+    }
+
+    if (!isStudioCreator && !isOrganizationOwner) {
       return {
         success: false,
         error: {
           message:
-            "Access denied. You can only modify your own studio favorites.",
+            "Access denied. You can only modify favorites for your own studios or studios from your organization.",
+        },
+        isFavorite: false,
+      };
+    }
+
+    // Organization owners can view but cannot toggle favorites (privacy restriction)
+    if (isOrganizationOwner && !isStudioCreator) {
+      return {
+        success: false,
+        error: {
+          message:
+            "Organization owners can view favorites but cannot modify them for privacy reasons.",
         },
         isFavorite: false,
       };

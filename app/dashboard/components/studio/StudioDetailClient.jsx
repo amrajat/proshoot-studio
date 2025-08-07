@@ -8,6 +8,7 @@ import {
   AlertCircle,
   Camera,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +23,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { getStudioDetailData } from "../../actions/studio/getStudioDetailData";
+// import { getStudioDetailDataSecure } from "../../actions/studio/getStudioDetailDataSecure";
 import { toggleFavorite } from "../../actions/studio/toggleFavorite";
+import { updateStudioStatus } from "../../actions/studio/updateStudioStatus";
 import HeadshotImage from "./HeadshotImage";
 
 /**
@@ -40,6 +43,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
   const [headshots, setHeadshots] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [togglingFavorites, setTogglingFavorites] = useState(new Set());
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   // Fetch studio data
   const fetchStudioData = useCallback(async () => {
@@ -141,7 +145,52 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
         return newSet;
       });
     },
-    [studio, favorites, headshots, currentUserId, toast]
+    [studio, favorites, headshots, currentUserId, toast, togglingFavorites]
+  );
+
+  // Handle studio status update
+  const handleStatusUpdate = useCallback(
+    async (newStatus) => {
+      if (!studio || isUpdatingStatus) return;
+
+      setIsUpdatingStatus(true);
+
+      try {
+        const result = await updateStudioStatus(studio.id, newStatus);
+
+        if (result.success) {
+          toast({
+            title: "Studio Updated",
+            description: result.message,
+          });
+
+          // Update local studio state
+          setStudio((prev) => ({
+            ...prev,
+            status: newStatus,
+          }));
+
+          // Refresh data to ensure consistency
+          await fetchStudioData();
+        } else {
+          toast({
+            title: "Error",
+            description: result.error?.message || "Failed to update studio status.",
+            variant: "destructive",
+          });
+        }
+      } catch (err) {
+        console.error("Error updating studio status:", err);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
+
+      setIsUpdatingStatus(false);
+    },
+    [studio, isUpdatingStatus, toast, fetchStudioData]
   );
 
   // Create favorite lookup for performance
@@ -216,6 +265,11 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
   const isCompleted = studio.status === "COMPLETED";
   const isAccepted = studio.status === "ACCEPTED";
 
+  // Determine user role for this studio
+  const isStudioCreator = studio.creator_user_id === currentUserId;
+  const isOrganizationOwner = !isStudioCreator; // If not creator but has access, must be org owner
+  const canToggleFavorites = isStudioCreator; // Only studio creators can toggle favorites
+
   // For ACCEPTED status, separate images by type
   const resultImages = isAccepted ? headshots.filter((h) => h.result) : [];
   const hdImages = isAccepted ? headshots.filter((h) => h.hd) : [];
@@ -252,11 +306,36 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
           </div>
         </div>
 
-        {/* Remove Watermarks Button (COMPLETED status only) */}
-        {isCompleted && (
-          <Button variant="outline" className="gap-2">
-            <Download className="h-4 w-4" />
-            Remove Watermarks
+        {/* Status Action Buttons - Only for Studio Creators */}
+        {isStudioCreator && isCompleted && (
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={() => handleStatusUpdate("ACCEPTED")}
+            disabled={isUpdatingStatus}
+          >
+            {isUpdatingStatus ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            {isUpdatingStatus ? "Updating..." : "Remove Watermarks"}
+          </Button>
+        )}
+        
+        {isStudioCreator && isAccepted && (
+          <Button 
+            variant="destructive" 
+            className="gap-2"
+            onClick={() => handleStatusUpdate("DELETED")}
+            disabled={isUpdatingStatus}
+          >
+            {isUpdatingStatus ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <AlertCircle className="h-4 w-4" />
+            )}
+            {isUpdatingStatus ? "Deleting..." : "Delete Studio"}
           </Button>
         )}
       </div>
@@ -308,13 +387,14 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />
-                Your Favorite Images
+                Favorite Headshots
               </CardTitle>
               <CardDescription>
                 {favorites.reduce((total, fav) => {
                   let count = 0;
-                  if (fav.headshots.result) count++;
-                  if (fav.headshots.hd) count++;
+                  const headshot = fav.headshots_secure || fav.headshots;
+                  if (headshot?.result) count++;
+                  if (headshot?.hd) count++;
                   return total + count;
                 }, 0)}{" "}
                 favorite images (both SD and 4K versions)
@@ -337,20 +417,21 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
                   {favorites
                     .map((favorite) => {
                       const favoriteImages = [];
+                      const headshot = favorite.headshots_secure || favorite.headshots;
 
                       // Add result image if it exists
-                      if (favorite.headshots.result) {
+                      if (headshot?.result) {
                         favoriteImages.push({
-                          ...favorite.headshots,
+                          ...headshot,
                           key: `${favorite.id}-result`,
                           preferredType: "result",
                         });
                       }
 
                       // Add HD image if it exists
-                      if (favorite.headshots.hd) {
+                      if (headshot?.hd) {
                         favoriteImages.push({
-                          ...favorite.headshots,
+                          ...headshot,
                           key: `${favorite.id}-hd`,
                           preferredType: "hd",
                         });
@@ -361,11 +442,11 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
                           key={imageData.key}
                           index={index}
                           headshot={imageData}
-                          showFavoriteToggle={true}
+                          showFavoriteToggle={canToggleFavorites}
                           isFavorite={true}
                           onToggleFavorite={handleToggleFavorite}
                           isTogglingFavorite={togglingFavorites.has(
-                            favorite.headshots.id
+                            headshot.id
                           )}
                           preferredImageType={imageData.preferredType}
                         />
@@ -378,49 +459,51 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
           </Card>
 
           {/* Section 2: Your Headshots (Result Images) */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Camera className="h-5 w-5" />
-                Your Headshots
-              </CardTitle>
-              <CardDescription>
-                {resultImages.length} high-quality headshot images
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {resultImages.length === 0 ? (
-                <div className="text-center py-12">
-                  <Camera className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
-                    No Result Images
-                  </h3>
-                  <p className="text-muted-foreground">
-                    No result images available for this studio.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {resultImages.map((headshot, index) => {
-                    const isFavorite = favoriteHeadshotIds.has(headshot.id);
-                    const isToggling = togglingFavorites.has(headshot.id);
-                    return (
-                      <HeadshotImage
-                        key={headshot.id}
-                        index={index}
-                        headshot={headshot}
-                        showFavoriteToggle={true}
-                        isFavorite={isFavorite}
-                        onToggleFavorite={handleToggleFavorite}
-                        isTogglingFavorite={isToggling}
-                        preferredImageType="result"
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {resultImages.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Camera className="h-5 w-5" />
+                  Headshots
+                </CardTitle>
+                <CardDescription>
+                  {resultImages.length} high-quality headshot images
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {resultImages.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Camera className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">
+                      No Result Images
+                    </h3>
+                    <p className="text-muted-foreground">
+                      No result images available for this studio.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {resultImages.map((headshot, index) => {
+                      const isFavorite = favoriteHeadshotIds.has(headshot.id);
+                      const isToggling = togglingFavorites.has(headshot.id);
+                      return (
+                        <HeadshotImage
+                          key={headshot.id}
+                          index={index}
+                          headshot={headshot}
+                          showFavoriteToggle={canToggleFavorites}
+                          isFavorite={isFavorite}
+                          onToggleFavorite={handleToggleFavorite}
+                          isTogglingFavorite={isToggling}
+                          preferredImageType="result"
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Section 3: Your 4K Print Ready Headshots (HD Images) - Only show if any HD images exist */}
           {hasAnyHdImages && (
@@ -428,7 +511,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5" />
-                  Your 4K Print Ready Headshots
+                  4K Print Ready Headshots
                 </CardTitle>
                 <CardDescription>
                   {hdImages.length} ultra high-resolution images perfect for
@@ -445,7 +528,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
                         key={headshot.id}
                         index={index}
                         headshot={headshot}
-                        showFavoriteToggle={true}
+                        showFavoriteToggle={canToggleFavorites}
                         isFavorite={isFavorite}
                         onToggleFavorite={handleToggleFavorite}
                         isTogglingFavorite={isToggling}

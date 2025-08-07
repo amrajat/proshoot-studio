@@ -7,10 +7,10 @@ import { Eye, Building, User, Clock } from "lucide-react";
 
 /**
  * Studio Card Component
- * 
+ *
  * Displays a studio in a card format with consistent styling.
  * Follows the existing UI patterns from backgrounds/clothing/billing pages.
- * 
+ *
  * @param {Object} studio - Studio data object
  * @param {string} studio.id - Studio ID
  * @param {string} studio.name - Studio name
@@ -35,6 +35,12 @@ export default function StudioCard({ studio }) {
         return "secondary";
       case "failed":
         return "destructive";
+      case "accepted":
+        return "success";
+      case "refunded":
+        return "destructive";
+      case "deleted":
+        return "destructive";
       default:
         return "outline";
     }
@@ -53,10 +59,10 @@ export default function StudioCard({ studio }) {
             priority={false}
           />
         </div>
-        
+
         {/* Status Badge */}
         <div className="absolute top-3 right-3">
-          <Badge variant={getStatusVariant(studio.status)} className="shadow-sm">
+          <Badge variant={getStatusVariant(studio.status)}>
             {studio.status}
           </Badge>
         </div>
@@ -64,8 +70,11 @@ export default function StudioCard({ studio }) {
 
       <CardContent className="p-4">
         {/* Studio Name */}
-        <h3 className="font-semibold text-lg leading-tight mb-2 truncate" title={studio.name}>
-          <Link 
+        <h3
+          className="font-semibold text-lg leading-tight mb-2 truncate"
+          title={studio.name}
+        >
+          <Link
             href={`/dashboard/studio/${studio.id}`}
             className="hover:underline"
           >

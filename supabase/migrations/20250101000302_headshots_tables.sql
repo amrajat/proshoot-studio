@@ -225,3 +225,72 @@ DROP POLICY IF EXISTS "favorites_select_org_admins" ON public.favorites;
 DROP TABLE IF EXISTS public.favorites;
 DROP TABLE IF EXISTS public.headshots;
 */
+
+-- ============================================================================
+-- COLUMN-LEVEL SECURITY: Secure View for Headshots
+-- DESCRIPTION: Restrict result/hd columns based on studio status
+-- ADDED: Column-level security implementation
+-- ============================================================================
+
+-- Create secure view that filters result/hd columns based on studio status
+CREATE OR REPLACE VIEW public.headshots_secure AS
+SELECT 
+    h.id,
+    h.studio_id,
+    h.preview, -- Always accessible (for COMPLETED status)
+    
+    -- Only show result column if studio status is 'ACCEPTED'
+    CASE 
+        WHEN s.status = 'ACCEPTED' THEN h.result 
+        ELSE NULL 
+    END AS result,
+    
+    -- Only show hd column if studio status is 'ACCEPTED'
+    CASE 
+        WHEN s.status = 'ACCEPTED' THEN h.hd 
+        ELSE NULL 
+    END AS hd,
+    
+    h.prompt,
+    h.created_at,
+    s.status AS studio_status -- Include status for debugging
+FROM public.headshots h
+INNER JOIN public.studios s ON h.studio_id = s.id;
+
+-- Set ownership
+ALTER VIEW public.headshots_secure OWNER TO postgres;
+
+-- Add comments
+COMMENT ON VIEW public.headshots_secure IS 
+    'Secure view of headshots with column-level access control based on studio status. Result and HD columns are NULL unless studio status is ACCEPTED.';
+
+
+
+-- ============================================================================
+-- SECURITY NOTES
+-- ============================================================================
+/*
+Column-Level Security Implementation:
+
+1. SECURE VIEW (headshots_secure):
+   - Automatically filters result/hd columns based on studio status
+   - Uses CASE statements to return NULL for non-ACCEPTED studios
+   - Inherits RLS from underlying headshots table
+   - Use in queries: SELECT * FROM headshots_secure WHERE ...
+
+2. RLS INHERITANCE:
+   - Views inherit RLS from underlying tables
+   - No need for separate RLS policies on views
+   - Existing headshots RLS policies still apply
+
+3. SERVICE ROLE BYPASS:
+   - service_role_key can bypass RLS and access underlying tables directly
+   - Views provide application-level security, not database-level enforcement
+   - For true database-level security, use RLS policies on base tables
+   - Views are best for consistent application logic and developer convenience
+
+Usage:
+- Use headshots_secure VIEW for all application queries
+- Provides consistent column-level filtering
+- Simplifies application code by centralizing security logic
+*/

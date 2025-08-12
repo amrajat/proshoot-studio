@@ -1,66 +1,3 @@
-"""
-Optimized LoRA Training Endpoint - ComfyUI-Style Model Caching
-============================================================
-
-High-performance endpoint using ComfyUI's model caching pattern:
-- Pre-downloads FLUX model to persistent volume during image build
-- Uses symlinks to avoid 23GB model loading on each request
-- Detailed timing measurements for performance analysis
-- Asynchronous training with webhook callbacks
-- 1:1 aspect ratio image processing at 1024x1024 resolution
-- Sentry error monitoring and structured logging
-
-PERFORMANCE OPTIMIZATION RECOMMENDATIONS:
-==========================================
-
-1. GPU SELECTION:
-   - H200: Best for training (192GB HBM3e, faster than H100)
-   - H100: Good alternative if H200 unavailable (80GB HBM3)
-   - A100-80GB: Budget option but slower training
-   - Consider multi-GPU (H200:2) for very large datasets
-
-2. MODEL CACHING OPTIMIZATIONS:
-   - Pre-cache models in persistent volume (already implemented)
-   - Use memory snapshots for faster cold starts
-   - Consider model quantization (fp16/bf16) for speed vs quality trade-off
-
-3. TRAINING SPEED OPTIMIZATIONS:
-   - Gradient checkpointing: DISABLED (3x speed improvement)
-   - Mixed precision: bf16 enabled for H100/H200 compatibility
-   - Batch size: Keep at 1 for LoRA to avoid OOM
-   - Learning rate: 1e-4 optimized for FLUX LoRA
-   - EMA: Enabled for stability without significant speed impact
-
-4. DATA PIPELINE OPTIMIZATIONS:
-   - Multi-resolution training: [512, 768, 1024] for better generalization
-   - Disable disk caching: Keep latents in memory for speed
-   - Caption dropout: 5% for better generalization
-   - Image preprocessing: High-quality LANCZOS resampling for 1024x1024
-
-5. INFRASTRUCTURE OPTIMIZATIONS:
-   - Persistent volumes for model caching
-   - Asynchronous training to avoid timeout issues
-   - Webhook callbacks for real-time status updates
-   - Sentry monitoring for production error tracking
-
-6. COST OPTIMIZATION:
-   - Use H200 for fastest training (higher $/hour but lower total cost)
-   - Pre-warm containers during peak hours
-   - Monitor GPU utilization and adjust batch sizes
-   - Consider spot instances for non-urgent training
-
-7. QUALITY OPTIMIZATIONS:
-   - 1:1 aspect ratio ensures consistent face proportions
-   - 1024x1024 resolution for high-quality results
-   - Trigger word optimization for better prompt adherence
-   - Multi-resolution training for better generalization
-
-ESTIMATED PERFORMANCE:
-- H200: ~1000 steps in 8-12 minutes (~1.5 steps/second)
-- H100: ~1000 steps in 12-18 minutes (~1.0 steps/second)
-- A100-80GB: ~1000 steps in 20-30 minutes (~0.6 steps/second)
-"""
-
 import os
 os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
 os.environ['DISABLE_TELEMETRY'] = 'YES'
@@ -69,7 +6,6 @@ import sys
 import modal
 import json
 import uuid
-import subprocess
 import yaml
 import boto3
 import io
@@ -129,7 +65,8 @@ image = (
 # Initialize Sentry for error monitoring
 def init_sentry():
     """Initialize Sentry SDK for error monitoring."""
-    sentry_dsn = os.environ.get('SENTRY_DSN')
+    # sentry_dsn = os.environ.get('SENTRY_DSN')
+    sentry_dsn = os.environ.get('SENTRY_DSNNNN') # for development only
     if sentry_dsn:
         sentry_logging = LoggingIntegration(
             level=logging.INFO,
@@ -150,53 +87,6 @@ def init_sentry():
 # Create the Modal app with model cache
 app = modal.App(name="lora-trainer", image=image)
 
-# Model download function (defined after app creation)
-@app.function(
-    volumes={"/cache": model_cache_volume},
-    secrets=[modal.Secret.from_name("huggingface-token")],
-    timeout=3600,
-)
-def download_flux_models():
-    """Download and cache FLUX models to persistent volume, including all model files."""
-    print("Downloading FLUX models to cache (including safetensors for full precision)...")
-    
-    # Set up HuggingFace cache environment
-    os.environ["HF_HOME"] = "/cache"
-    os.environ["TRANSFORMERS_CACHE"] = "/cache"
-    os.environ["HF_HUB_CACHE"] = "/cache"
-    
-    try:
-        from diffusers import FluxPipeline
-        
-        print("Loading FLUX.1-dev model (full precision, excluding flux1-dev.safetensors only)...")
-        
-        # Download model with full precision, exclude only the main flux1-dev.safetensors
-        pipeline = FluxPipeline.from_pretrained(
-            "black-forest-labs/FLUX.1-dev",
-            torch_dtype=torch.float32,  # Use full precision instead of bfloat16
-            cache_dir="/cache",
-            ignore_patterns=["flux1-dev.safetensors"],  # Only exclude the main model file
-            local_files_only=False
-        )
-        
-        # Force model components to cache
-        print("Caching model components...")
-        _ = pipeline.transformer
-        _ = pipeline.text_encoder
-        _ = pipeline.text_encoder_2
-        _ = pipeline.vae
-        _ = pipeline.scheduler
-        
-        # Commit to persistent volume
-        model_cache_volume.commit()
-        
-        cache_size = get_cache_size("/cache")
-        print(f"FLUX models cached successfully! Total size: {cache_size:.1f}GB (full precision, flux1-dev.safetensors excluded)")
-        
-    except Exception as e:
-        print(f"Failed to cache models: {e}")
-        raise
-
 @app.function(
     volumes={"/cache": model_cache_volume},
     secrets=[modal.Secret.from_name("huggingface-token")],
@@ -204,12 +94,17 @@ def download_flux_models():
 )
 def warmup_cache():
     """Pre-warm the model cache for faster training startup."""
-    print("Warming up model cache...")
+    # Set up environment for training
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["PYTHONPATH"] = "/root/ai-toolkit"
     
-    # Set up HuggingFace cache environment
+    # Set up HuggingFace cache environment and force offline mode
     os.environ["HF_HOME"] = "/cache"
-    os.environ["TRANSFORMERS_CACHE"] = "/cache" 
+    os.environ["TRANSFORMERS_CACHE"] = "/cache"
     os.environ["HF_HUB_CACHE"] = "/cache"
+    os.environ["HF_HUB_OFFLINE"] = "1"  # Force offline mode
+    os.environ["TRANSFORMERS_OFFLINE"] = "1"  # Force transformers offline
+    os.environ["HF_DATASETS_OFFLINE"] = "1"  # Force datasets offline
     
     try:
         # Check cache status
@@ -296,7 +191,12 @@ def process_dataset(s3_client, training_request: TrainingRequest, dataset_path: 
             
             # Process image
             with Image.open(io.BytesIO(image_response['Body'].read())) as img:
-                if img.mode != 'RGB':
+                # Preserve original format and quality
+                original_format = img.format or 'JPEG'
+                file_ext = '.png' if original_format.upper() == 'PNG' else '.jpg'
+                
+                # Only convert to RGB if necessary for JPEG
+                if original_format.upper() != 'PNG' and img.mode != 'RGB':
                     img = img.convert('RGB')
                 
                 # Crop image using crop_data.json coordinates
@@ -318,10 +218,16 @@ def process_dataset(s3_client, training_request: TrainingRequest, dataset_path: 
                 # Resize to exactly 1024x1024 using high-quality resampling
                 final_img = square_img.resize((1024, 1024), Image.Resampling.LANCZOS)
                 
-                # Save processed image locally
-                processed_filename = f"image_{processed_count + 1:03d}.jpg"
+                # Save processed image with original format (no compression for PNG)
+                processed_filename = f"image_{processed_count + 1:03d}{file_ext}"
                 image_path = os.path.join(dataset_path, processed_filename)
-                final_img.save(image_path, format='JPEG', quality=100)
+                
+                if original_format.upper() == 'PNG':
+                    # PNG: Lossless compression
+                    final_img.save(image_path, format='PNG', optimize=False)
+                else:
+                    # JPEG: Maximum quality, no optimization
+                    final_img.save(image_path, format='JPEG', quality=100, optimize=False, subsampling=0)
                 
                 # Upload processed image to R2 for testing
                 try:
@@ -331,7 +237,7 @@ def process_dataset(s3_client, training_request: TrainingRequest, dataset_path: 
                             Bucket=datasets_bucket,
                             Key=upload_key,
                             Body=img_file.read(),
-                            ContentType='image/jpeg'
+                            ContentType=f'image/{"png" if file_ext == ".png" else "jpeg"}'
                         )
                     logger.info(f"Uploaded processed image to R2: {upload_key}")
                 except Exception as upload_error:
@@ -422,9 +328,11 @@ def create_optimized_config(training_request: TrainingRequest, dataset_path: str
                     "dtype": "bf16",
                 },
                 "model": {
-                    "name_or_path": "black-forest-labs/FLUX.1-dev",
+                    "name_or_path": "black-forest-labs/FLUX.1-dev",  # Use HF model ID - will use cached version
                     "is_flux": True,
                     "quantize": False,
+                    "cache_dir": "/cache",  # Use cached model from FluxPipeline download
+                    "local_files_only": True,  # Force local files only after download
                 }
             }],
         }
@@ -496,7 +404,9 @@ async def send_webhook_callback(webhook_url: str, payload: dict, logger: logging
         modal.Secret.from_name("webhook-credentials"),
     ],
     cpu=10.0,
-    memory=32768
+    memory=32768,
+    enable_memory_snapshot=True,
+    experimental_options={"enable_gpu_snapshot": True},
 )
 async def run_training_background(training_request_dict: dict):
     """Background training function that runs asynchronously."""
@@ -512,15 +422,17 @@ async def run_training_background(training_request_dict: dict):
     try:
         logger.info(f"Background training started - User: {training_request.user_id}, Studio: {training_request.studio_id}")
         
-        # Set up HuggingFace cache environment
+        # Set up HuggingFace cache environment (NO offline mode yet)
         logger.info("Setting up HuggingFace cache...")
         model_check_start = time.time()
         
         os.environ["HF_HOME"] = "/cache"
         os.environ["TRANSFORMERS_CACHE"] = "/cache"
         os.environ["HF_HUB_CACHE"] = "/cache"
+        os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"  # Enable fast downloads
+        # DO NOT set offline mode yet - need to download model first
         
-        # Check cache
+        # Check cache and download model if needed
         cache_exists = os.path.exists("/cache") and os.listdir("/cache")
         if cache_exists:
             cache_size = get_cache_size("/cache")
@@ -529,6 +441,16 @@ async def run_training_background(training_request_dict: dict):
         else:
             logger.warning("No cached models found - will download during training")
             print("No cached models found - will download during training")
+        
+        # Skip pre-download - ai-toolkit will handle model loading directly
+        logger.info("Skipping FluxPipeline pre-download - ai-toolkit handles model loading")
+        print("ai-toolkit will load FLUX model directly during training")
+        
+        # Set offline mode for training to use any cached models
+        os.environ["HF_HUB_OFFLINE"] = "1"
+        os.environ["TRANSFORMERS_OFFLINE"] = "1" 
+        os.environ["HF_DATASETS_OFFLINE"] = "1"
+        logger.info("Set offline mode - training will use cached models when available")
         
         model_check_time = time.time() - model_check_start
         
@@ -644,7 +566,12 @@ async def run_training_background(training_request_dict: dict):
         await send_webhook_callback(training_request.webhook_url, error_payload, logger)
 
         
-@app.function(cpu=1, timeout=600, secrets=[modal.Secret.from_name("sentry-credentials")])
+@app.function(
+    cpu=1,
+    timeout=600,
+    secrets=[modal.Secret.from_name("sentry-credentials")]
+)
+
 @modal.fastapi_endpoint(method="POST", label="lora-trainer", requires_proxy_auth=True)
 async def train_lora_optimized(request: Request):
     """Asynchronous LoRA training endpoint - starts training and returns immediately."""

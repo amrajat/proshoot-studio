@@ -1,8 +1,3 @@
-/**
- * Enhanced Image Upload Step Component with ReactCrop
- * Features: Auto-upload, 1:1 crop ratio, compression, R2 deletion, single JSON crop file
- */
-
 "use client";
 
 import React, { useState, useCallback } from "react";
@@ -34,14 +29,16 @@ import { createStudio } from "@/app/dashboard/actions/studio/studioActions";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
 
 // Constants
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+const MB = 1024 * 1024;
+const MAX_FILE_SIZE = 25 * MB;
 const MAX_IMAGES = 20;
 const MIN_IMAGES = 1;
 const CROP_DIMENSION = 1024;
-const CROP_ASPECT = 1; // 1:1 aspect ratio
+const CROP_ASPECT = 1;
 const MIN_IMAGE_DIMENSION = 256;
 const SMART_CROP_TIMEOUT = 600000; // TIME TO LOAD SMARTCROP
-const COMPRESSION_THRESHOLD = 4 * 1024 * 1024; // 4MB - compress above this size
+const COMPRESSION_THRESHOLD = 4 * MB;
 const ACCEPTED_TYPES = {
   "image/jpeg": [".jpg", ".jpeg"],
   "image/png": [".png"],
@@ -95,11 +92,9 @@ const createImagePromise = (src) => {
   return new Promise((resolve, reject) => {
     const img = document.createElement("img");
     img.onload = () => {
-      console.log("🖼️ Image loaded:", { width: img.width, height: img.height });
       resolve(img);
     };
     img.onerror = () => {
-      console.error("❌ Failed to load image:", src);
       reject(new Error("Failed to load image"));
     };
     img.src = src;
@@ -130,18 +125,9 @@ const ImageUploadStep = ({ selectedContext }) => {
   const [isRemovingAll, setIsRemovingAll] = useState(false);
   const [removingFiles, setRemovingFiles] = useState(new Set()); // Track which files are being removed
 
-  console.log("🖼️ ImageUploadStep render:", {
-    filesCount: uploadState.files.length,
-    uploading: uploadState.uploading,
-    currentUUID: uploadState.currentUUID,
-    completedCrops: Object.keys(uploadState.completedCrops).length,
-  });
-
   // File processing functions
   const convertHeicToJpeg = async (file) => {
     try {
-      console.log("🔄 Converting HEIC/HEIF to JPEG:", file.name);
-
       // Dynamic import to avoid SSR issues
       const heic2any = (await import("heic2any")).default;
 
@@ -157,10 +143,8 @@ const ImageUploadStep = ({ selectedContext }) => {
         { type: "image/jpeg" }
       );
 
-      console.log("✅ HEIC conversion successful:", convertedFile.name);
       return convertedFile;
     } catch (error) {
-      console.error("❌ HEIC conversion failed:", error);
       throw new Error(`HEIC conversion failed: ${error.message}`);
     }
   };
@@ -168,21 +152,11 @@ const ImageUploadStep = ({ selectedContext }) => {
   const compressImage = async (file) => {
     try {
       const fileSizeMB = file.size / 1024 / 1024;
-      console.log(
-        "📏 Checking compression for:",
-        file.name,
-        "Size:",
-        fileSizeMB.toFixed(2),
-        "MB"
-      );
 
       // Only compress if file is above 4MB threshold
       if (file.size <= COMPRESSION_THRESHOLD) {
-        console.log("✅ File under 4MB, skipping compression");
         return file;
       }
-
-      console.log("🗜️ Compressing image above 4MB threshold...");
 
       // Dynamic import to avoid SSR issues
       const imageCompression = (await import("browser-image-compression"))
@@ -206,7 +180,6 @@ const ImageUploadStep = ({ selectedContext }) => {
 
       // If still too large, try with slightly lower quality but maintain resolution
       if (compressedFile.size > COMPRESSION_THRESHOLD) {
-        console.log("🔄 File still large, applying secondary compression...");
         const secondaryOptions = {
           ...options,
           maxSizeMB: 3.5,
@@ -219,15 +192,8 @@ const ImageUploadStep = ({ selectedContext }) => {
       const compressedSizeMB = compressedFile.size / 1024 / 1024;
       const savings = ((file.size - compressedFile.size) / file.size) * 100;
 
-      console.log("✅ Compression successful:", {
-        original: fileSizeMB.toFixed(2) + "MB",
-        compressed: compressedSizeMB.toFixed(2) + "MB",
-        savings: savings.toFixed(1) + "%",
-      });
-
       return compressedFile;
     } catch (error) {
-      console.error("❌ Compression failed:", error);
       return file; // Return original if compression fails
     }
   };
@@ -271,7 +237,6 @@ const ImageUploadStep = ({ selectedContext }) => {
         URL.revokeObjectURL(objectUrl);
         resolve(crop);
       } catch (error) {
-        console.error("❌ Smart crop failed:", error);
         resolve({ unit: "%", x: 25, y: 25, width: 50, height: 50 }); // Fallback
       }
     });
@@ -279,8 +244,6 @@ const ImageUploadStep = ({ selectedContext }) => {
 
   const deleteFromR2 = async (objectKey) => {
     try {
-      console.log("🗑️ Deleting from R2:", objectKey);
-
       const response = await fetch("/api/r2/delete", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -295,10 +258,8 @@ const ImageUploadStep = ({ selectedContext }) => {
       }
 
       const result = await response.json();
-      console.log("✅ Deleted from R2:", result);
       return result;
     } catch (error) {
-      console.error("❌ R2 deletion failed:", error);
       throw error;
     }
   };
@@ -319,8 +280,6 @@ const ImageUploadStep = ({ selectedContext }) => {
         }
       }
 
-      console.log("🗑️ Deleting all files from path:", deletePath);
-
       const response = await fetch("/api/r2/delete", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -335,49 +294,33 @@ const ImageUploadStep = ({ selectedContext }) => {
       }
 
       const result = await response.json();
-      console.log("✅ Deleted all files from R2:", result);
       return result;
     } catch (error) {
-      console.error("❌ R2 bulk deletion failed:", error);
       throw error;
     }
   };
 
   const uploadToR2 = async (file, fileName) => {
     try {
-      console.log("☁️ Uploading to R2:", fileName);
+      // Create FormData for server-side upload
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("fileName", `${uploadState.currentUUID}/${fileName}`);
 
-      const response = await fetch("/api/r2/upload-url", {
+      const response = await fetch("/api/r2/upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: `${uploadState.currentUUID}/${fileName}`,
-          contentType: file.type,
-          bucketName: "datasets",
-        }),
+        body: formData, // Send file directly to server
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get upload URL");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to upload file");
       }
 
-      const { uploadUrl, objectKey } = await response.json();
-      console.log("📝 Got pre-signed URL for:", objectKey);
+      const { objectKey, fileName: returnedFileName } = await response.json();
 
-      const uploadResponse = await fetch(uploadUrl, {
-        method: "PUT",
-        body: file,
-        headers: { "Content-Type": file.type },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error("Failed to upload file");
-      }
-
-      console.log("✅ Upload successful:", objectKey);
-      return { objectKey, fileName };
+      return { objectKey, fileName: returnedFileName };
     } catch (error) {
-      console.error("❌ Upload failed:", error);
       throw new Error(`Upload failed: ${error.message}`);
     }
   };
@@ -385,8 +328,6 @@ const ImageUploadStep = ({ selectedContext }) => {
   // Auto-upload function for individual files
   const processAndUploadFile = async (file, index) => {
     try {
-      console.log("🚀 Auto-uploading file:", file.name, "Index:", index);
-
       setUploadState((prev) => ({
         ...prev,
         uploadProgress: {
@@ -430,13 +371,15 @@ const ImageUploadStep = ({ selectedContext }) => {
         },
         uploadedFiles: [
           ...prev.uploadedFiles,
-          { objectKey, fileName: processedFile.name, index },
+          {
+            objectKey,
+            fileName: processedFile.name,
+            index,
+            fileId: prev.files[index]?.id,
+          },
         ],
       }));
-
-      console.log("✅ Auto-upload complete:", processedFile.name);
     } catch (error) {
-      console.error("❌ Auto-upload failed:", error);
       setUploadState((prev) => ({
         ...prev,
         uploadProgress: {
@@ -475,7 +418,6 @@ const ImageUploadStep = ({ selectedContext }) => {
           dimensions: { width: img.width, height: img.height },
         });
       } catch (error) {
-        console.error("❌ Image processing failed:", error);
         const objectUrl = URL.createObjectURL(file); // Create new URL as previous might be revoked on error
         resolve({
           file,
@@ -514,13 +456,13 @@ const ImageUploadStep = ({ selectedContext }) => {
 
   // Drop zone handlers
   const handleDropRejected = useCallback((rejectedFiles) => {
-    console.log("❌ Files rejected:", rejectedFiles);
-
     const errors = rejectedFiles.map(({ file, errors }) => {
       const errorMessages = errors.map((error) => {
         switch (error.code) {
           case "file-too-large":
-            return `${file.name}: File too large (max 4MB)`;
+            return `${file.name}: File too large, Max(${(
+              MAX_FILE_SIZE / MB
+            ).toFixed(0)} MB)`;
           case "file-invalid-type":
             return `${file.name}: Invalid file type`;
           default:
@@ -535,13 +477,10 @@ const ImageUploadStep = ({ selectedContext }) => {
 
   const handleFileDrop = useCallback(
     async (acceptedFiles) => {
-      console.log("📁 Files dropped for auto-upload:", acceptedFiles.length);
-
       // Filter out duplicate files
       const uniqueFiles = acceptedFiles.filter((file) => {
         const isDuplicate = isDuplicateFile(file, uploadState.files);
         if (isDuplicate) {
-          console.log("🚫 Skipping duplicate file:", file.name);
         }
         return !isDuplicate;
       });
@@ -574,10 +513,6 @@ const ImageUploadStep = ({ selectedContext }) => {
       const processedFiles = [];
       for (let i = 0; i < uniqueFiles.length; i++) {
         const file = uniqueFiles[i];
-        console.log(
-          `📋 Processing file ${i + 1}/${uniqueFiles.length}:`,
-          file.name
-        );
 
         const processedFile = await processImage(file);
         const fileWithId = {
@@ -594,11 +529,6 @@ const ImageUploadStep = ({ selectedContext }) => {
         processing: false,
       }));
 
-      console.log(
-        "✅ Files processed, starting auto-upload:",
-        processedFiles.length
-      );
-
       // Auto-upload each file immediately after adding to state
       setTimeout(async () => {
         const currentFileCount = uploadState.files.length;
@@ -607,16 +537,8 @@ const ImageUploadStep = ({ selectedContext }) => {
           const fileIndex = currentFileCount + i; // Use current count before adding new files
 
           try {
-            console.log(
-              `🚀 Starting auto-upload for: ${fileData.file.name} at index ${fileIndex}`
-            );
             await processAndUploadFile(fileData.file, fileIndex);
-          } catch (error) {
-            console.error(
-              `❌ Auto-upload failed for ${fileData.file.name}:`,
-              error
-            );
-          }
+          } catch (error) {}
         }
       }, 100); // Small delay to ensure state is updated
     },
@@ -632,34 +554,26 @@ const ImageUploadStep = ({ selectedContext }) => {
   });
 
   const removeFile = async (fileId) => {
-    console.log("🗑️ Removing file with ID:", fileId);
-
     // Find the file index in the files array (move outside try block)
     const fileIndex = uploadState.files.findIndex((f) => f.id === fileId);
-    console.log("🔍 File index found:", fileIndex);
 
     // Add to removing files set
     setRemovingFiles((prev) => new Set([...prev, fileId]));
 
     try {
-      // Find the uploaded file using the index
+      // Find the uploaded file using the fileId instead of index
       const uploadedFile = uploadState.uploadedFiles.find(
-        (f) => f.index === fileIndex
+        (f) => f.fileId === fileId
       );
-      console.log("📁 Uploaded file found:", uploadedFile);
 
       if (uploadedFile && uploadedFile.objectKey) {
         try {
-          console.log("🗑️ Deleting from R2:", uploadedFile.objectKey);
           await deleteFromR2(uploadedFile.objectKey);
-          console.log("✅ File deleted from R2:", uploadedFile.objectKey);
         } catch (error) {
-          console.error("❌ Failed to delete from R2:", error);
           setErrors({ images: "Failed to delete file. Please try again." });
           setTimeout(() => setErrors({}), 3000);
         }
       } else {
-        console.warn("⚠️ No uploaded file found for deletion");
       }
     } finally {
       // Remove from removing files set
@@ -674,7 +588,7 @@ const ImageUploadStep = ({ selectedContext }) => {
     setUploadState((prev) => ({
       ...prev,
       files: prev.files.filter((f) => f.id !== fileId),
-      uploadedFiles: prev.uploadedFiles.filter((f) => f.index !== fileIndex),
+      uploadedFiles: prev.uploadedFiles.filter((f) => f.fileId !== fileId),
       completedCrops: Object.fromEntries(
         Object.entries(prev.completedCrops).filter(
           ([key]) => parseInt(key) !== fileIndex
@@ -689,12 +603,10 @@ const ImageUploadStep = ({ selectedContext }) => {
   };
 
   const removeAllFiles = async () => {
-    console.log("🗑️ Removing all files and clearing R2 path");
     setIsRemovingAll(true);
 
     try {
       await deleteAllFromR2();
-      console.log("✅ All files deleted from R2");
 
       setUploadState((prev) => ({
         ...prev,
@@ -707,7 +619,6 @@ const ImageUploadStep = ({ selectedContext }) => {
       setStudioMessage("All files removed successfully!");
       setTimeout(() => setStudioMessage(""), 3000);
     } catch (error) {
-      console.error("❌ Failed to delete all files from R2:", error);
       setErrors({ images: "Failed to remove all files. Please try again." });
     } finally {
       setIsRemovingAll(false);
@@ -716,8 +627,6 @@ const ImageUploadStep = ({ selectedContext }) => {
   };
 
   const handleCreateStudio = async () => {
-    console.log("🎬 Creating studio with uploaded files");
-
     if (uploadState.files.length < MIN_IMAGES) {
       setErrors({ images: `Please upload at least ${MIN_IMAGES} images` });
       return;
@@ -766,18 +675,11 @@ const ImageUploadStep = ({ selectedContext }) => {
 
         if (uploadedFile && cropData) {
           cropDataMap[uploadedFile.fileName] = cropData;
-          console.log(
-            `📏 Adding crop data for ${uploadedFile.fileName}:`,
-            cropData
-          );
         }
       });
 
-      console.log("📏 Final aggregated crop data:", cropDataMap);
-
       // Ensure we have crop data
       if (Object.keys(cropDataMap).length === 0) {
-        console.warn("⚠️ No crop data found, using default crops");
         uploadState.uploadedFiles.forEach((uploadedFile) => {
           cropDataMap[uploadedFile.fileName] = {
             unit: "%",
@@ -795,7 +697,6 @@ const ImageUploadStep = ({ selectedContext }) => {
       });
 
       await uploadToR2(cropJsonBlob, "crop_data.json");
-      console.log("✅ Crop data JSON uploaded");
 
       setStudioMessage("Creating your studio...");
 
@@ -814,7 +715,8 @@ const ImageUploadStep = ({ selectedContext }) => {
       }
 
       // Determine context from selectedContext
-      const context = selectedContext?.type === "organization" ? "organization" : "personal";
+      const context =
+        selectedContext?.type === "organization" ? "organization" : "personal";
 
       const updatedFormData = {
         ...formData,
@@ -822,24 +724,15 @@ const ImageUploadStep = ({ selectedContext }) => {
         context, // Add context based on selectedContext
       };
 
-      console.log("📋 Studio data:", updatedFormData);
-      console.log(
-        "🎨 Style pairs structure:",
-        JSON.stringify(updatedFormData.style_pairs, null, 2)
-      );
-      console.log("Images path with user_id:", imagesPath);
-
       const result = await createStudio(updatedFormData);
 
       if (result.success) {
-        console.log("✅ Studio created successfully:", result.studioId);
         setStudioMessage("Studio created successfully!");
         router.push(`/dashboard/studio/${result.studioId}`);
       } else {
         throw new Error(result.error || "Failed to create studio");
       }
     } catch (error) {
-      console.error("❌ Studio creation failed:", error);
       setStudioMessage(`Error: ${error.message}`);
     } finally {
       setLocalSubmitting(false);
@@ -918,18 +811,6 @@ const ImageUploadStep = ({ selectedContext }) => {
               </p>
             </div>
             <div className="flex gap-2">
-              <div
-                {...getRootProps()}
-                className="inline-block"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <input {...getInputProps()} />
-                <Button size="sm">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Add More
-                </Button>
-              </div>
-
               <Dialog
                 open={showRemoveAllDialog}
                 onOpenChange={setShowRemoveAllDialog}
@@ -1180,7 +1061,9 @@ const ImageUploadStep = ({ selectedContext }) => {
             uploadState.files.length < MIN_IMAGES ||
             uploadState.uploading ||
             uploadState.uploadedFiles.length !== uploadState.files.length ||
-            localSubmitting
+            localSubmitting ||
+            isRemovingAll ||
+            removingFiles.size > 0
           }
         >
           {localSubmitting ? (
@@ -1189,7 +1072,7 @@ const ImageUploadStep = ({ selectedContext }) => {
               Creating Studio...
             </>
           ) : (
-            `Create Studio (${uploadState.files.length}/${MIN_IMAGES})`
+            `Create Studio`
           )}
         </Button>
       </div>

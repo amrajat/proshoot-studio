@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { S3Client, DeleteObjectCommand, ListObjectsV2Command, DeleteObjectsCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  DeleteObjectCommand,
+  ListObjectsV2Command,
+  DeleteObjectsCommand,
+} from "@aws-sdk/client-s3";
+import createSupabaseServerClient from "@/lib/supabase/server-client";
 
 const s3Client = new S3Client({
   region: "auto",
@@ -10,11 +16,48 @@ const s3Client = new S3Client({
   },
 });
 
+// Helper function to extract user ID from object path
+const extractUserIdFromPath = (path) => {
+  if (!path) return null;
+  const parts = path.split("/");
+  return parts[0]; // First part should be the user ID
+};
+
 export async function DELETE(request) {
   try {
     const { objectKey, bucketName, deletePath } = await request.json();
 
-    console.log("🗑️ R2 Delete request:", { objectKey, bucketName, deletePath });
+    // --- Authentication ---
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // --- Authorization - Extract and validate user ID from path ---
+    const pathToCheck = objectKey || deletePath;
+    const pathUserId = extractUserIdFromPath(pathToCheck);
+
+    if (!pathUserId) {
+      return NextResponse.json(
+        { error: "Invalid path format - user ID not found" },
+        { status: 400 }
+      );
+    }
+
+    if (pathUserId !== user.id) {
+      return NextResponse.json(
+        { error: "Access denied: You can only delete your own files" },
+        { status: 403 }
+      );
+    }
 
     if (deletePath) {
       // Delete all objects with the specified path prefix
@@ -24,10 +67,12 @@ export async function DELETE(request) {
       });
 
       const listResponse = await s3Client.send(listCommand);
-      
+
       if (listResponse.Contents && listResponse.Contents.length > 0) {
-        const deleteObjects = listResponse.Contents.map(obj => ({ Key: obj.Key }));
-        
+        const deleteObjects = listResponse.Contents.map((obj) => ({
+          Key: obj.Key,
+        }));
+
         const deleteCommand = new DeleteObjectsCommand({
           Bucket: bucketName,
           Delete: {
@@ -36,15 +81,13 @@ export async function DELETE(request) {
         });
 
         await s3Client.send(deleteCommand);
-        console.log("✅ Deleted", deleteObjects.length, "objects from path:", deletePath);
-        
-        return NextResponse.json({ 
-          success: true, 
+
+        return NextResponse.json({
+          success: true,
           deletedCount: deleteObjects.length,
-          deletedObjects: deleteObjects.map(obj => obj.Key)
+          deletedObjects: deleteObjects.map((obj) => obj.Key),
         });
       } else {
-        console.log("ℹ️ No objects found at path:", deletePath);
         return NextResponse.json({ success: true, deletedCount: 0 });
       }
     } else if (objectKey) {
@@ -55,8 +98,7 @@ export async function DELETE(request) {
       });
 
       await s3Client.send(deleteCommand);
-      console.log("✅ Deleted single object:", objectKey);
-      
+
       return NextResponse.json({ success: true, deletedObject: objectKey });
     } else {
       return NextResponse.json(
@@ -65,7 +107,6 @@ export async function DELETE(request) {
       );
     }
   } catch (error) {
-    console.error("❌ R2 delete error:", error);
     return NextResponse.json(
       { error: "Failed to delete from R2: " + error.message },
       { status: 500 }

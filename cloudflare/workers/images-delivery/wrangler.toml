@@ -1,0 +1,15 @@
+name = "images-delivery"
+main = "src/index.js"
+compatibility_date = "2023-10-30"
+
+# This tells Cloudflare to route traffic from your custom domain to this worker.
+routes = ["delivery.proshoot.co/*"]
+
+# This is how you connect your R2 buckets to the worker.
+# The `binding` name is what you use in your code (e.g., env.IMAGES).
+# It MUST be in all caps.
+# The `bucket_name` is the actual name of your bucket in Cloudflare.
+
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "images" # Make sure this matches your R2 bucket name

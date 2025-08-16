@@ -19,6 +19,7 @@ export default {
     // --- 1. Verify the JWT ---
     // This is the security gate. It checks if the token was signed by your
     // Next.js backend, is not expired, and is intended for this worker.
+    // Tokens are valid for 1 hour and can be reused multiple times.
     let payload;
     try {
       // The JWT_SECRET must be set in your worker's environment secrets.
@@ -37,20 +38,19 @@ export default {
       return new Response("Invalid or expired access token.", { status: 403 });
     }
 
-    // The validated token contains the bucket and file key.
-    const { bucket, key } = payload;
+    // The validated token contains the file key for the images bucket.
+    const { key } = payload;
 
-    if (!bucket || !key) {
-      return new Response("Invalid token payload.", { status: 400 });
+    if (!key) {
+      return new Response("Invalid token payload: missing file key.", { status: 400 });
     }
 
-    // --- 2. Select the correct R2 Bucket Binding ---
-    // It dynamically selects the bucket based on the token's content.
-    // e.g., if bucket is "datasets", it looks for env.DATASETS.
-    const bucketBinding = env[bucket.toUpperCase()];
+    // --- 2. Use the IMAGES R2 Bucket Binding ---
+    // This worker only serves files from the images bucket.
+    const bucketBinding = env.IMAGES;
     if (!bucketBinding) {
-      console.error(`R2 bucket binding not found for bucket: ${bucket}`);
-      return new Response("Server configuration error: Bucket not found.", {
+      console.error("R2 bucket binding not found for IMAGES bucket");
+      return new Response("Server configuration error: Images bucket not found.", {
         status: 500,
       });
     }
@@ -61,21 +61,24 @@ export default {
       const object = await bucketBinding.get(key);
 
       if (object === null) {
-        return new Response("Object Not Found", { status: 404 });
+        return new Response("Image not found", { status: 404 });
       }
 
       // Set the appropriate headers for the response, like content-type.
       const headers = new Headers();
       object.writeHttpMetadata(headers);
       headers.set("etag", object.httpEtag);
+      
+      // Add cache headers for better performance (1 hour cache)
+      headers.set("Cache-Control", "public, max-age=3600");
 
       // Stream the file's body directly back to the client.
       return new Response(object.body, {
         headers,
       });
     } catch (err) {
-      console.error(`Error fetching from R2 bucket '${bucket}':`, err);
-      return new Response("Error fetching file.", { status: 500 });
+      console.error("Error fetching from R2 images bucket:", err);
+      return new Response("Error fetching image.", { status: 500 });
     }
   },
 };

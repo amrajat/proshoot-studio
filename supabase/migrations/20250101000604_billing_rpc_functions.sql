@@ -166,11 +166,14 @@ AS $$
 DECLARE
     v_current_credits INTEGER;
     v_plan_lower TEXT;
+    v_plan_upper TEXT;
     v_credits_record RECORD;
     v_description TEXT;
 BEGIN
     -- Normalize plan name to lowercase
     v_plan_lower := LOWER(p_plan);
+    -- Convert to uppercase for enum casting
+    v_plan_upper := UPPER(p_plan);
     
     -- Validate plan type
     IF v_plan_lower NOT IN ('starter', 'professional', 'studio', 'team', 'balance') THEN
@@ -268,7 +271,7 @@ BEGIN
         p_user_id,
         p_context,
         -p_credits_to_deduct, -- Negative for credit deduction
-        (v_plan_lower)::public.credit_transfer_type,
+        (v_plan_upper)::public.credit_transfer_type,
         p_studio_id,
         v_description
     );

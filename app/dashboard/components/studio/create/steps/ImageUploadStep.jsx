@@ -25,7 +25,6 @@ import {
 import { Upload, X, AlertCircle, RefreshCw, Info, Trash2 } from "lucide-react";
 
 import useStudioCreateStore from "@/stores/studioCreateStore";
-import { createStudio } from "@/app/dashboard/actions/studio/studioActions";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
 
 // Constants
@@ -720,17 +719,56 @@ const ImageUploadStep = ({ selectedContext }) => {
 
       const updatedFormData = {
         ...formData,
+        studioID: uploadState.currentUUID, // Add the studio ID
         images: imagesPath, // Now includes user_id prefix
         context, // Add context based on selectedContext
       };
 
-      const result = await createStudio(updatedFormData);
+      // Get authenticated user ID from Supabase
+      const createSupabaseBrowserClient = (
+        await import("@/lib/supabase/browser-client")
+      ).default;
+      const supabase = createSupabaseBrowserClient();
 
-      if (result.success) {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error("User not authenticated");
+      }
+
+      // Call studio creation API directly
+      const response = await fetch("/api/studio/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          studioData: updatedFormData,
+          user_id: user.id,
+        }),
+      });
+
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        console.error("Failed to parse response:", parseError);
+        throw new Error("Invalid response from server");
+      }
+
+      console.log("API Response:", { status: response.status, result });
+
+      if (!response.ok) {
+        throw new Error(result?.error || `Server error: ${response.status}`);
+      }
+
+      if (result?.success) {
         setStudioMessage("Studio created successfully!");
         router.push(`/dashboard/studio/${result.studioId}`);
       } else {
-        throw new Error(result.error || "Failed to create studio");
+        throw new Error(result?.error || "Failed to create studio");
       }
     } catch (error) {
       setStudioMessage(`Error: ${error.message}`);

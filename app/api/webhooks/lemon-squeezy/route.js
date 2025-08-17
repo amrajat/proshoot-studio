@@ -2,7 +2,6 @@ import crypto from "node:crypto";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createStudio } from "@/app/dashboard/actions/studio/studioActions";
 
 export const dynamic = "force-dynamic";
 
@@ -36,26 +35,26 @@ export async function POST(request) {
     const rawBody = await request.text();
 
     // Verify webhook signature
-    // const secret = process.env.LS_WB_SECRET;
-    // if (!secret) {
-    //   console.error("❌ LS_WB_SECRET environment variable not set");
-    //   return NextResponse.json(
-    //     { error: "Server configuration error" },
-    //     { status: 500 }
-    //   );
-    // }
+    const secret = process.env.LS_WB_SECRET;
+    if (!secret) {
+      console.error("❌ LS_WB_SECRET environment variable not set");
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
 
-    // const hmac = crypto.createHmac("sha256", secret);
-    // const digest = Buffer.from(hmac.update(rawBody).digest("hex"), "utf8");
-    // const signature = Buffer.from(
-    //   request.headers.get("X-Signature") || "",
-    //   "utf8"
-    // );
+    const hmac = crypto.createHmac("sha256", secret);
+    const digest = Buffer.from(hmac.update(rawBody).digest("hex"), "utf8");
+    const signature = Buffer.from(
+      request.headers.get("X-Signature") || "",
+      "utf8"
+    );
 
-    // if (!crypto.timingSafeEqual(digest, signature)) {
-    //   console.error("❌ Invalid webhook signature");
-    //   return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    // }
+    if (!crypto.timingSafeEqual(digest, signature)) {
+      console.error("❌ Invalid webhook signature");
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    }
 
     // Parse webhook body
     const bodyObject = JSON.parse(rawBody);
@@ -86,16 +85,16 @@ export async function POST(request) {
     } = meta.custom_data || {};
 
     // Additional webhook secret check (if provided in custom_data)
-    // if (
-    //   webhook_secret &&
-    //   webhook_secret !== process.env.CUSTOM_WEBHOOK_SECRET
-    // ) {
-    //   console.error("❌ Invalid custom webhook secret");
-    //   return NextResponse.json(
-    //     { error: "Invalid custom webhook secret" },
-    //     { status: 401 }
-    //   );
-    // }
+    if (
+      webhook_secret &&
+      webhook_secret !== process.env.CUSTOM_WEBHOOK_SECRET
+    ) {
+      console.error("❌ Invalid custom webhook secret");
+      return NextResponse.json(
+        { error: "Invalid custom webhook secret" },
+        { status: 401 }
+      );
+    }
 
     // Validate required fields
     if (!user || !plan || !quantity) {
@@ -178,9 +177,9 @@ export async function POST(request) {
 
     // Handle Studio creation if studioData exists
     if (studioData) {
-      await handleStudioCreation({ studioData });
+      await handleStudioCreation({ studioData, user_id: user });
     }
-    // TODO: WHICH ONE SHOULE BE FIRST IN ORDER FP OR CREATESTUDIO FUNCTION?
+
     // Handle FirstPromoter tracking if reference exists
     if (first_promoter_reference && first_promoter_t_i_d) {
       await handleFirstPromoterTracking({
@@ -262,12 +261,37 @@ async function handleFirstPromoterTracking({
 }
 
 /**
- * Handle Studio If webhook has studioData in custom_data
+ * Handle Studio creation using the same API as ImageUploadStep
  */
-async function handleStudioCreation({ studioData }) {
+async function handleStudioCreation({ studioData, user_id }) {
   try {
-    await createStudio(studioData);
+    const response = await fetch(`${process.env.URL}/api/studio/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        studioData,
+        user_id,
+      }),
+      // Add timeout to prevent webhook hanging
+      signal: AbortSignal.timeout(45000), // 45 second timeout
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error ||
+          `Studio creation failed with status: ${response.status}`
+      );
+    }
+
+    const data = await response.json();
+    console.log(`✅ Studio created via webhook: ${data.studioId}`);
+    return data;
   } catch (error) {
-    console.error("❌ Studio data handling failed:", error);
+    console.error("❌ Studio creation via webhook failed:", error);
+    // Don't throw - we don't want studio creation failures to break the webhook
+    // The payment has already been processed successfully
   }
 }

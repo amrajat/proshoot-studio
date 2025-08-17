@@ -722,6 +722,7 @@ const ImageUploadStep = ({ selectedContext }) => {
         studioID: uploadState.currentUUID, // Add the studio ID
         images: imagesPath, // Now includes user_id prefix
         context, // Add context based on selectedContext
+        organization_id: selectedContext?.type === "organization" ? selectedContext.id : null, // Add organization_id when context is organization
       };
 
       // Get authenticated user ID from Supabase
@@ -737,7 +738,6 @@ const ImageUploadStep = ({ selectedContext }) => {
       if (userError || !user) {
         throw new Error("User not authenticated");
       }
-
       // Call studio creation API directly
       const response = await fetch("/api/studio/create", {
         method: "POST",

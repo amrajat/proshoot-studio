@@ -127,7 +127,7 @@ export async function POST(request) {
       name,
       status: "PROCESSING",
       provider_id: null,
-      provider: "MODAL",
+      provider: "REPLICATE",
       datasets_object_key,
       style_pairs,
       user_attributes,
@@ -207,8 +207,8 @@ async function triggerModalTraining({
   supabase,
 }) {
   const myHeaders = new Headers();
-  myHeaders.append("Modal-Key", "modal-key");
-  myHeaders.append("Modal-Secret", "modal-secret");
+  myHeaders.append("Modal-Key", process.env.MODAL_KEY);
+  myHeaders.append("Modal-Secret", process.env.MODAL_SECRET);
   myHeaders.append("Content-Type", "application/json");
 
   const raw = JSON.stringify({
@@ -225,11 +225,11 @@ async function triggerModalTraining({
     body: raw,
     redirect: "follow",
     // Add timeout to prevent hanging
-    signal: AbortSignal.timeout(30000), // 30 second timeout
+    signal: AbortSignal.timeout(45000), // 45 second timeout
   };
 
   const ModalResponse = await fetch(
-    "https://ablognet--replicate-lora-trainer-dev.modal.run",
+    process.env.MODAL_TRAINING_ENDPOINT,
     requestOptions
   );
 

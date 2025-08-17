@@ -5,16 +5,67 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Vercel free plan limit
 
+// Helper functions
+const createErrorResponse = (error, status = 400) => {
+  return NextResponse.json({ success: false, error }, { status });
+};
+
+const createSuccessResponse = (data) => {
+  return NextResponse.json({ success: true, ...data });
+};
+
+const getUserAttributes = (formData) => {
+  const {
+    gender,
+    age,
+    ethnicity,
+    hairLength,
+    hairColor,
+    hairType,
+    eyeColor,
+    glasses,
+    bodyType,
+    height,
+    weight,
+  } = formData;
+  return {
+    trigger_word: "ohwx",
+    gender,
+    age,
+    ethnicity,
+    hairLength,
+    hairColor,
+    hairType,
+    eyeColor,
+    glasses,
+    bodyType,
+    height,
+    weight,
+  };
+};
+
+const validateCredits = (creditsRecord, plan) => {
+  const planLower = plan.toLowerCase();
+  const availableCredits = creditsRecord[planLower] || 0;
+
+  if (availableCredits < 1) {
+    throw new Error(
+      `Insufficient ${plan.toUpperCase()} credits. You have ${availableCredits} credits, but need at least 1 to create a studio.`
+    );
+  }
+};
+
+const cleanupFailedStudio = async (supabase, studioID) => {
+  await supabase.from("studios").delete().eq("id", studioID);
+};
+
 export async function POST(request) {
   try {
     const body = await request.json();
     const { studioData: studioFormData, user_id } = body;
 
     if (!user_id) {
-      return NextResponse.json(
-        { success: false, error: "User ID is required" },
-        { status: 400 }
-      );
+      return createErrorResponse("User ID is required");
     }
 
     // Initialize Supabase client
@@ -31,7 +82,7 @@ export async function POST(request) {
       }
     );
 
-    // Map studioFormData to database schema
+    // Extract required fields from studioFormData
     const {
       studioID,
       organization_id,
@@ -39,59 +90,55 @@ export async function POST(request) {
       images: datasets_object_key,
       style_pairs,
       plan,
-      gender,
-      age,
-      ethnicity,
-      hairLength,
-      hairColor,
-      hairType,
-      eyeColor,
-      glasses,
-      bodyType,
-      height,
-      weight,
     } = studioFormData;
 
-    // Create studio record FIRST (before deducting credits to avoid FK constraint)
-    const { data: studioRecord, error: studioError } = await supabase
-      .from("studios")
-      .insert({
-        id: studioID,
-        creator_user_id: user_id,
-        organization_id: organization_id || null,
-        name,
-        status: "PROCESSING",
-        provider_id: null,
-        provider: "REPLICATE",
-        datasets_object_key,
-        style_pairs,
-        user_attributes: {
-          trigger_word: "ohwx",
-          gender,
-          age,
-          ethnicity,
-          hairLength,
-          hairColor,
-          hairType,
-          eyeColor,
-          glasses,
-          bodyType,
-          height,
-          weight,
-        },
-        plan: plan.toUpperCase(),
-        metadata: {},
-      })
-      .select()
+    // Validate credits before creating studio
+    const { data: creditsRecord, error: creditsError } = await supabase
+      .from("credits")
+      .select("starter, professional, studio, team, balance")
+      .eq("user_id", user_id)
       .single();
 
+    if (creditsError) {
+      return createErrorResponse(
+        "Unable to fetch credit balance. Please try again."
+      );
+    }
+
+    if (!creditsRecord) {
+      return createErrorResponse(
+        "No credit record found. Please contact support."
+      );
+    }
+
+    try {
+      validateCredits(creditsRecord, plan);
+    } catch (error) {
+      return createErrorResponse(error.message);
+    }
+
+    // Create studio record after credit validation
+    const user_attributes = getUserAttributes(studioFormData);
+
+    const { error: studioError } = await supabase.from("studios").insert({
+      id: studioID,
+      creator_user_id: user_id,
+      organization_id: organization_id || null,
+      name,
+      status: "PROCESSING",
+      provider_id: null,
+      provider: "MODAL",
+      datasets_object_key,
+      style_pairs,
+      user_attributes,
+      plan: plan.toUpperCase(),
+      metadata: {},
+    });
+
     if (studioError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Failed to create studio: ${studioError.message}`,
-        },
-        { status: 500 }
+      return createErrorResponse(
+        `Failed to create studio: ${studioError.message}`,
+        500
       );
     }
 
@@ -109,35 +156,23 @@ export async function POST(request) {
     );
 
     if (creditError) {
-      // If credit deduction fails, delete the created studio
-      await supabase.from("studios").delete().eq("id", studioID);
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Failed to deduct credits: ${creditError.message}`,
-        },
-        { status: 400 }
+      await cleanupFailedStudio(supabase, studioID);
+      return createErrorResponse(
+        `Failed to deduct credits: ${creditError.message}`
       );
     }
 
-    // Check if credit deduction was successful
     if (!creditResult?.success) {
-      // If credit deduction fails, delete the created studio
-      await supabase.from("studios").delete().eq("id", studioID);
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            creditResult?.error || "Insufficient credits for studio creation",
-        },
-        { status: 400 }
+      await cleanupFailedStudio(supabase, studioID);
+      return createErrorResponse(
+        creditResult?.error || "Insufficient credits for studio creation"
       );
     }
 
     // Fire-and-forget Modal API call (don't await)
     triggerModalTraining({
       datasets_object_key,
-      gender,
+      gender: studioFormData.gender,
       user_id,
       plan,
       studioID,
@@ -152,18 +187,13 @@ export async function POST(request) {
         .then(() => console.log(`Studio ${studioID} marked as FAILED`));
     });
 
-    // Return immediately with studio_id for redirect
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       studioId: studioID,
       message: "Studio created successfully. Training started in background.",
     });
   } catch (error) {
     console.error("❌ Studio creation error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return createErrorResponse("Internal server error", 500);
   }
 }
 
@@ -183,9 +213,9 @@ async function triggerModalTraining({
 
   const raw = JSON.stringify({
     object_key: datasets_object_key,
-    gender: gender,
-    user_id: user_id,
-    plan: plan,
+    gender,
+    user_id,
+    plan,
     studio_id: studioID,
   });
 

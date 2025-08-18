@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60; // Vercel free plan limit
+export const maxDuration = 60;
 
 // Helper functions
 const createErrorResponse = (error, status = 400) => {
@@ -169,35 +169,39 @@ export async function POST(request) {
       );
     }
 
-    // Fire-and-forget Modal API call (don't await)
-    triggerModalTraining({
-      datasets_object_key,
-      gender: studioFormData.gender,
-      user_id,
-      plan,
-      studioID,
-      supabase,
-    }).catch((error) => {
-      console.error("❌ Modal training trigger failed:", error);
-      // Update studio status to failed in background
-      supabase
+    // Trigger Modal API call and handle errors
+    try {
+      await triggerModalTraining({
+        datasets_object_key,
+        gender: studioFormData.gender,
+        user_id,
+        plan,
+        studioID,
+        supabase,
+      });
+    } catch (error) {
+      // Update studio status to failed if Modal training fails
+      await supabase
         .from("studios")
         .update({ status: "FAILED", metadata: { error: error.message } })
-        .eq("id", studioID)
-        .then(() => console.log(`Studio ${studioID} marked as FAILED`));
-    });
+        .eq("id", studioID);
+
+      return createErrorResponse(
+        `Failed to start training: ${error.message}`,
+        500
+      );
+    }
 
     return createSuccessResponse({
       studioId: studioID,
       message: "Studio created successfully. Training started in background.",
     });
   } catch (error) {
-    console.error("❌ Studio creation error:", error);
     return createErrorResponse("Internal server error", 500);
   }
 }
 
-// Fire-and-forget function for Modal API call
+// Modal API call function
 async function triggerModalTraining({
   datasets_object_key,
   gender,
@@ -236,6 +240,4 @@ async function triggerModalTraining({
   if (!ModalResponse.ok) {
     throw new Error(`Modal API failed with status: ${ModalResponse.status}`);
   }
-
-  console.log(`✅ Modal training started for studio ${studioID}`);
 }

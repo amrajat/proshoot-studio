@@ -30,8 +30,9 @@ sys.path.insert(0, "/root/ai-toolkit")
 # =============================================================================
 
 # Create persistent volume for HuggingFace model cache
-model_cache_volume = modal.Volume.from_name("lora-trainer", create_if_missing=True)
+model_cache_volume = modal.Volume.from_name("lora-trainer-2", create_if_missing=True)
 
+# TODO: CURENT METHOD DON'T USE CACHE
 def get_cache_size(cache_dir):
     """Get cache directory size in GB."""
     import os
@@ -85,41 +86,13 @@ def init_sentry():
         logging.warning("SENTRY_DSN not found, skipping Sentry initialization")
 
 # Create the Modal app with model cache
-app = modal.App(name="lora-trainer", image=image)
+app = modal.App(name="lora-trainer-2", image=image)
 
 @app.function(
     volumes={"/cache": model_cache_volume},
     secrets=[modal.Secret.from_name("huggingface-token")],
     timeout=600,
 )
-def warmup_cache():
-    """Pre-warm the model cache for faster training startup."""
-    # Set up environment for training
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-    os.environ["PYTHONPATH"] = "/root/ai-toolkit"
-    
-    # Set up HuggingFace cache environment and force offline mode
-    os.environ["HF_HOME"] = "/cache"
-    os.environ["TRANSFORMERS_CACHE"] = "/cache"
-    os.environ["HF_HUB_CACHE"] = "/cache"
-    os.environ["HF_HUB_OFFLINE"] = "1"  # Force offline mode
-    os.environ["TRANSFORMERS_OFFLINE"] = "1"  # Force transformers offline
-    os.environ["HF_DATASETS_OFFLINE"] = "1"  # Force datasets offline
-    
-    try:
-        # Check cache status
-        cache_exists = os.path.exists("/cache") and os.listdir("/cache")
-        if cache_exists:
-            cache_size = get_cache_size("/cache")
-            print(f"Cache warmed up! Available models: {cache_size:.1f}GB")
-            return {"status": "success", "cache_size_gb": cache_size}
-        else:
-            print("No cache found - run download_flux_models first")
-            return {"status": "no_cache", "message": "Run download_flux_models first"}
-            
-    except Exception as e:
-        print(f"Cache warmup failed: {e}")
-        return {"status": "error", "error": str(e)}
 
 # Request/Response models
 class TrainingRequest(BaseModel):
@@ -127,7 +100,7 @@ class TrainingRequest(BaseModel):
     gender: str = Field(..., description="Gender for caption generation (man/woman)")
     user_id: str = Field(..., description="User identifier")
     studio_id: str = Field(..., description="Studio identifier")
-    steps: int = Field(default=1000, description="Number of training steps")
+    steps: int = Field(default=3000, description="Number of training steps")
     trigger_word: str = Field(default="ohwx", description="Trigger word for training")
     webhook_url: str = Field(..., description="Webhook URL to call when training completes")
 
@@ -160,6 +133,7 @@ def calculate_crop_box(crop_info: Dict[str, Any], image_size: tuple) -> tuple:
     
     return (left, top, right, bottom)
 
+# TODO: IF GENDER IS NOT MAN/WOMAN THEN USE 'PERSON' IN THE CAPTION
 def process_dataset(s3_client, training_request: TrainingRequest, dataset_path: str) -> int:
     """Download and process dataset from R2."""
     logger = logging.getLogger(__name__)
@@ -349,16 +323,13 @@ def create_optimized_config(training_request: TrainingRequest, dataset_path: str
 def upload_weights(s3_client, lora_file_path: str, training_id: str) -> str:
     """Upload trained weights to R2."""
     weights_bucket = 'weights'
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    weights_filename = f"lora_{training_id}_{timestamp}.safetensors"
+    weights_filename = f"{training_id}.safetensors"
     
     s3_client.upload_file(lora_file_path, weights_bucket, weights_filename)
     
-    account_id = os.environ.get('R2_ACCOUNT_ID')
-    weights_url = f"https://{weights_bucket}.{account_id}.r2.cloudflarestorage.com/{weights_filename}"
-    
-    return weights_url
+    return f"{training_id}/{weights_filename}"
 
+#  TODO: USE OUR CURRENT WEBHOOK TECHNIQUE
 async def send_webhook_callback(webhook_url: str, payload: dict, logger: logging.Logger):
     """Send webhook callback with training results and HMAC signature."""
     try:
@@ -452,7 +423,7 @@ async def run_training_background(training_request_dict: dict):
         os.environ["HF_DATASETS_OFFLINE"] = "1"
         logger.info("Set offline mode - training will use cached models when available")
         
-        model_check_time = time.time() - model_check_start
+        
         
         # Set up paths
         dataset_path = f"/tmp/dataset_{training_id}"
@@ -464,32 +435,26 @@ async def run_training_background(training_request_dict: dict):
         
         # Process dataset
         logger.info("Processing dataset...")
-        dataset_start = time.time()
         processed_count = process_dataset(s3_client, training_request, dataset_path)
-        dataset_time = time.time() - dataset_start
         
         # Create config
         logger.info("Creating training config...")
-        config_start = time.time()
         config_path = create_optimized_config(training_request, dataset_path, output_path)
-        config_time = time.time() - config_start
         
         # Run training
         logger.info(f"Starting training with {processed_count} images for {training_request.steps} steps")
-        training_start = time.time()
         
         from toolkit.job import get_job
         job = get_job(config_path)
         job.run()
         job.cleanup()
         
-        training_time = time.time() - training_start
         
         # Find and upload weights
         logger.info("Uploading weights...")
-        upload_start = time.time()
         
-        # Find any .safetensors file (not just ones with 'lora' in name)
+        # Find ONLYE TRAINING_ID.SAFETENSORS FILE, NOT ALL KIND OF SAFETENSORS FILE 
+
         lora_file = None
         for root, dirs, files in os.walk(output_path):
             for file in files:
@@ -510,7 +475,6 @@ async def run_training_background(training_request_dict: dict):
             raise Exception("No LoRA weights (.safetensors file) found after training")
         
         weights_url = upload_weights(s3_client, lora_file, training_id)
-        upload_time = time.time() - upload_start
         
         # Clean up local safetensors file after successful upload
         try:
@@ -519,7 +483,6 @@ async def run_training_background(training_request_dict: dict):
         except Exception as cleanup_error:
             logger.warning(f"Failed to cleanup local file {lora_file}: {cleanup_error}")
         
-        total_time = time.time() - overall_start
         
         # Prepare success payload
         success_payload = {
@@ -528,28 +491,16 @@ async def run_training_background(training_request_dict: dict):
             "weights_url": weights_url,
             "user_id": training_request.user_id,
             "studio_id": training_request.studio_id,
-            "message": f"Training completed with {processed_count} images in {total_time:.1f}s",
-            "training_time": total_time,
-            "performance_metrics": {
-                "model_verification_time": model_check_time,
-                "dataset_processing_time": dataset_time,
-                "config_creation_time": config_time,
-                "training_time": training_time,
-                "upload_time": upload_time,
-                "total_time": total_time,
-                "steps_per_second": training_request.steps / training_time,
-                "estimated_cost_usd": (total_time / 3600) * 3.95
-            }
+           
         }
         
-        logger.info(f"Training completed successfully in {total_time:.1f}s")
+        logger.info("Training completed successfully")
         
         # Send success webhook
         await send_webhook_callback(training_request.webhook_url, success_payload, logger)
         
     except Exception as e:
-        total_time = time.time() - overall_start
-        logger.error(f"Training failed after {total_time:.1f}s: {str(e)}")
+        logger.error(f"Training failed: {str(e)}")
         sentry_sdk.capture_exception(e)
         
         # Prepare error payload
@@ -559,7 +510,7 @@ async def run_training_background(training_request_dict: dict):
             "user_id": training_request.user_id,
             "studio_id": training_request.studio_id,
             "error": str(e),
-            "training_time": total_time
+           
         }
         
         # Send error webhook
@@ -572,7 +523,7 @@ async def run_training_background(training_request_dict: dict):
     secrets=[modal.Secret.from_name("sentry-credentials")]
 )
 
-@modal.fastapi_endpoint(method="POST", label="lora-trainer", requires_proxy_auth=True)
+@modal.fastapi_endpoint(method="POST", label="lora-trainer-2", requires_proxy_auth=True)
 async def train_lora_optimized(request: Request):
     """Asynchronous LoRA training endpoint - starts training and returns immediately."""
     # Initialize Sentry and logging

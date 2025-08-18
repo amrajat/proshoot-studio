@@ -17,7 +17,7 @@ CREATE TABLE public.studios (
     name TEXT NOT NULL,
     status public.studio_status NOT NULL DEFAULT 'PROCESSING',
     provider_id TEXT,
-    provider public.providers NOT NULL DEFAULT 'REPLICATE',
+    provider public.providers NOT NULL DEFAULT 'MODAL',
     weights TEXT,
     datasets_object_key TEXT,
     style_pairs JSONB DEFAULT '[]',

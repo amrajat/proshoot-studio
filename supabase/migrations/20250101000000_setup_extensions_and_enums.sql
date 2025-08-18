@@ -103,8 +103,7 @@ CREATE TYPE public.plans AS ENUM (
 
 -- Providers for studios
 CREATE TYPE public.providers AS ENUM (
-    'REPLICATE',
-    'HuggingFace'
+    'MODAL',
 );
 
 -- ============================================================================

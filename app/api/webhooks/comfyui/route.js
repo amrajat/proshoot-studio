@@ -9,7 +9,7 @@ const bodyWebhook = {
     name: "Greg",
     status: "COMPLETED",
     provider_id: "pa3mqhrbtdrma0crbbva0nrka0",
-    provider: "REPLICATE",
+    provider: "MODAL",
     datasets_object_key: "greg/demo-headshots",
     style_pairs: [
       {

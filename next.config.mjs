@@ -11,14 +11,6 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "replicate.com",
-      },
-      {
-        protocol: "https",
-        hostname: "placehold.co",
-      },
-      {
-        protocol: "https",
         hostname: "*.r2.cloudflarestorage.com",
       },
       {
@@ -74,7 +66,7 @@ const nextConfig = {
   //           value: "SAMEORIGIN",
   //         },
   //         {
-  //           //FIXME: This is temporary, we need to add the CSP back in
+  //           //FIXME: This is temporary, we need to add the CSP back in, also remove the repliate related thing coz we do't need it
   //           key: "Content-Security-Policy",
   //           value: [
   //             // Default fallback - only allow from same origin

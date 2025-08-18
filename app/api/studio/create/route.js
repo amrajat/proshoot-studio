@@ -127,7 +127,7 @@ export async function POST(request) {
       name,
       status: "PROCESSING",
       provider_id: null,
-      provider: "REPLICATE",
+      provider: "MODAL",
       datasets_object_key,
       style_pairs,
       user_attributes,

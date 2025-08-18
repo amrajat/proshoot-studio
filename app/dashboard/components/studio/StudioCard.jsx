@@ -9,6 +9,7 @@ import { Eye, Building, User, Clock } from "lucide-react";
  * Studio Card Component
  *
  * Displays a studio in a card format with consistent styling.
+ * Shows real images for ACCEPTED status, placeholder for others.
  * Follows the existing UI patterns from backgrounds/clothing/billing pages.
  *
  * @param {Object} studio - Studio data object
@@ -16,6 +17,7 @@ import { Eye, Building, User, Clock } from "lucide-react";
  * @param {string} studio.name - Studio name
  * @param {string} studio.status - Studio status
  * @param {string} studio.created_at - Studio creation date
+ * @param {string} [studio.imageUrl] - Secure image URL for ACCEPTED studios
  * @param {Object} [studio.organizations] - Organization data (if applicable)
  */
 export default function StudioCard({ studio }) {
@@ -25,6 +27,15 @@ export default function StudioCard({ studio }) {
       month: "short",
       day: "numeric",
     });
+  };
+
+  const getStudioImageUrl = (studio) => {
+    // Show real image only for ACCEPTED status with secure URL
+    if (studio.status === "ACCEPTED" && studio.imageUrl) {
+      return studio.imageUrl;
+    }
+    // Use placeholder for all other cases
+    return "/images/placeholder.svg";
   };
 
   const getStatusVariant = (status) => {
@@ -52,11 +63,12 @@ export default function StudioCard({ studio }) {
         {/* Studio Image - 1:1 Square Ratio */}
         <div className="relative aspect-square w-full overflow-hidden bg-muted">
           <Image
-            src={studio.imageUrl || "/images/placeholder.svg"}
+            src={getStudioImageUrl(studio)}
             alt={`${studio.name} preview`}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             priority={false}
+            unoptimized={true}
           />
         </div>
 

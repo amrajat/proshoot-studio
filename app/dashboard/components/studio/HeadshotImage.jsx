@@ -68,21 +68,6 @@ const HeadshotImage = memo(function HeadshotImage({
     badgeVariant = "success"; // Green for preview
   }
 
-  console.log("🖼️ [DEBUG] HeadshotImage URL Selection:", {
-    headshotId: headshot.id,
-    preferredImageType,
-    availableImages: {
-      hasHD: !!headshot.hd,
-      hasResult: !!headshot.result,
-      hasPreview: !!headshot.preview,
-    },
-    selectedUrls: {
-      imageUrl: imageUrl?.substring(0, 50) + "...",
-      thumbnailUrl: thumbnailUrl?.substring(0, 50) + "...",
-    },
-    badge: { badgeText, badgeVariant },
-  });
-
   if (!imageUrl) {
     return null;
   }

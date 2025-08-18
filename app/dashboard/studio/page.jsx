@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useAccountContext } from "@/context/AccountContext";
-import { getStudiosData } from "../actions/studio/getStudiosData";
+import { fetchAllStudios } from "../actions/studio/fetchAllStudios";
 import StudioCard from "../components/studio/StudioCard";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,7 +62,7 @@ export default function StudioListPage() {
       const contextId =
         selectedContext.type === "organization" ? selectedContext.id : null;
 
-      const result = await getStudiosData(userId, contextType, contextId);
+      const result = await fetchAllStudios(userId, contextType, contextId);
 
       if (!result.success) {
         setError(result.error);

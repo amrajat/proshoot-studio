@@ -22,8 +22,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { getStudioDetailData } from "../../actions/studio/getStudioDetailData";
-// import { getStudioDetailDataSecure } from "../../actions/studio/getStudioDetailDataSecure";
+import { fetchStudio } from "../../actions/studio/fetchStudio";
 import { toggleFavorite } from "../../actions/studio/toggleFavorite";
 import { updateStudioStatus } from "../../actions/studio/updateStudioStatus";
 import HeadshotImage from "./HeadshotImage";
@@ -53,7 +52,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
     setError(null);
 
     try {
-      const result = await getStudioDetailData(studioId, currentUserId);
+      const result = await fetchStudio(studioId, currentUserId);
 
       if (result.success) {
         setStudio(result.studio);
@@ -63,7 +62,6 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
         setError(result.error);
       }
     } catch (err) {
-      console.error("Error fetching studio data:", err);
       setError({ message: "Failed to load studio data. Please try again." });
     }
 
@@ -130,7 +128,6 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
           });
         }
       } catch (err) {
-        console.error("Error toggling favorite:", err);
         toast({
           title: "Error",
           description: "An unexpected error occurred. Please try again.",
@@ -175,12 +172,12 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
         } else {
           toast({
             title: "Error",
-            description: result.error?.message || "Failed to update studio status.",
+            description:
+              result.error?.message || "Failed to update studio status.",
             variant: "destructive",
           });
         }
       } catch (err) {
-        console.error("Error updating studio status:", err);
         toast({
           title: "Error",
           description: "An unexpected error occurred. Please try again.",
@@ -275,14 +272,6 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
   const hdImages = isAccepted ? headshots.filter((h) => h.hd) : [];
   const hasAnyHdImages = hdImages.length > 0;
 
-  console.log("🖼️ [DEBUG] Frontend Image Breakdown:", {
-    isAccepted,
-    favoritesCount: favorites.length,
-    resultImagesCount: resultImages.length,
-    hdImagesCount: hdImages.length,
-    hasAnyHdImages,
-  });
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -308,8 +297,8 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
 
         {/* Status Action Buttons - Only for Studio Creators */}
         {isStudioCreator && isCompleted && (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="gap-2"
             onClick={() => handleStatusUpdate("ACCEPTED")}
             disabled={isUpdatingStatus}
@@ -322,10 +311,10 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
             {isUpdatingStatus ? "Updating..." : "Remove Watermarks"}
           </Button>
         )}
-        
+
         {isStudioCreator && isAccepted && (
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             className="gap-2"
             onClick={() => handleStatusUpdate("DELETED")}
             disabled={isUpdatingStatus}
@@ -417,7 +406,8 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
                   {favorites
                     .map((favorite) => {
                       const favoriteImages = [];
-                      const headshot = favorite.headshots_secure || favorite.headshots;
+                      const headshot =
+                        favorite.headshots_secure || favorite.headshots;
 
                       // Add result image if it exists
                       if (headshot?.result) {

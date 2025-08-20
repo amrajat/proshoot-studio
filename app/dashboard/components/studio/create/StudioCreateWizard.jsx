@@ -292,20 +292,21 @@ const StudioCreateWizard = () => {
     );
   }
 
-  // No credits warning
-  if (credits && getTotalCredits(credits) === 0 && !isOrgWithTeamCredits) {
-    return (
-      <div className="max-w-2xl mx-auto p-6">
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            You don't have any credits available. Please purchase credits to
-            create a studio.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
+  // No credits warning: Disabled becuase we want to render the studio creation form.
+  // If user has not credits then they will be forced to pay and create the headshots
+  // if (credits && getTotalCredits(credits) === 0 && !isOrgWithTeamCredits) {
+  //   return (
+  //     <div className="max-w-2xl mx-auto p-6">
+  //       <Alert>
+  //         <AlertCircle className="h-4 w-4" />
+  //         <AlertDescription>
+  //           You don't have any credits available. Please purchase credits to
+  //           create a studio.
+  //         </AlertDescription>
+  //       </Alert>
+  //     </div>
+  //   );
+  // }
 
   return (
     <ErrorBoundary>

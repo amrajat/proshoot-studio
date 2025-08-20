@@ -25,6 +25,8 @@ import {
 import { Upload, X, AlertCircle, RefreshCw, Info, Trash2 } from "lucide-react";
 
 import useStudioCreateStore from "@/stores/studioCreateStore";
+import { createCheckoutUrl } from "@/app/dashboard/actions/checkout";
+import { hasSufficientCredits } from "@/services/creditService";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
 
 // Constants
@@ -100,7 +102,11 @@ const createImagePromise = (src) => {
   });
 };
 
-const ImageUploadStep = ({ selectedContext }) => {
+const ImageUploadStep = ({
+  selectedContext,
+  credits,
+  isOrgWithTeamCredits,
+}) => {
   const router = useRouter();
   const { formData, setFormData, isSubmitting, setIsSubmitting } =
     useStudioCreateStore();
@@ -626,39 +632,53 @@ const ImageUploadStep = ({ selectedContext }) => {
   };
 
   const handleCreateStudio = async () => {
+    if (localSubmitting || isSubmitting) return;
+
+    // Validate that we have uploaded files
     if (uploadState.files.length < MIN_IMAGES) {
       setErrors({ images: `Please upload at least ${MIN_IMAGES} images` });
       return;
     }
 
-    // Check if all files are uploaded
-    const failedUploads = Object.entries(uploadState.uploadProgress).filter(
-      ([_, progress]) => progress.status === "failed"
-    );
-
-    if (failedUploads.length > 0) {
-      setErrors({
-        images: "Some files failed to upload. Please retry failed uploads.",
-      });
-      return;
-    }
-
-    if (uploadState.uploadedFiles.length !== uploadState.files.length) {
-      setErrors({
-        images: "Upload in progress. Please wait for all files to complete.",
-      });
-      return;
-    }
+    setLocalSubmitting(true);
+    setIsSubmitting(true);
 
     try {
-      setLocalSubmitting(true);
-      setIsSubmitting(true);
+      const contextType = selectedContext?.type || "personal";
+      const selectedPlan = formData.plan;
+
+      // Check if user has credits for the selected plan
+      const hasCredits = hasSufficientCredits(credits, selectedPlan, 1);
+
+      // For personal accounts without credits, redirect to payment
+      if (contextType === "personal" && !hasCredits) {
+        await handlePaymentFlow(selectedPlan);
+        return;
+      }
+
+      // Check if all files are uploaded
+      const failedUploads = Object.entries(uploadState.uploadProgress).filter(
+        ([_, progress]) => progress.status === "failed"
+      );
+
+      if (failedUploads.length > 0) {
+        setErrors({
+          images: "Some files failed to upload. Please retry failed uploads.",
+        });
+        return;
+      }
+
+      if (uploadState.uploadedFiles.length !== uploadState.files.length) {
+        setErrors({
+          images: "Upload in progress. Please wait for all files to complete.",
+        });
+        return;
+      }
+
       setStudioMessage("Uploading crop data...");
 
-      // Create aggregated crop data JSON
+      // Create crop data map
       const cropDataMap = {};
-
-      // Map crop data using file index from uploaded files
       uploadState.files.forEach((fileData, index) => {
         const cropData = uploadState.completedCrops[index] ||
           fileData.initialCrop || {
@@ -722,7 +742,8 @@ const ImageUploadStep = ({ selectedContext }) => {
         studioID: uploadState.currentUUID, // Add the studio ID
         images: imagesPath, // Now includes user_id prefix
         context, // Add context based on selectedContext
-        organization_id: selectedContext?.type === "organization" ? selectedContext.id : null, // Add organization_id when context is organization
+        organization_id:
+          selectedContext?.type === "organization" ? selectedContext.id : null, // Add organization_id when context is organization
       };
 
       // Get authenticated user ID from Supabase
@@ -776,6 +797,48 @@ const ImageUploadStep = ({ selectedContext }) => {
       setLocalSubmitting(false);
       setIsSubmitting(false);
     }
+  };
+
+  const handlePaymentFlow = async (selectedPlan) => {
+    try {
+      // Get user info for checkout
+      const userEmail = selectedContext?.email || "";
+      const userId = selectedContext?.id || "";
+
+      // Create checkout URL with form data as custom data
+      const checkoutUrl = await createCheckoutUrl(
+        selectedPlan,
+        userId,
+        userEmail,
+        {
+          studioFormData: formData,
+          returnUrl: window.location.href,
+        }
+      );
+
+      if (checkoutUrl) {
+        // Redirect to checkout
+        window.location.href = checkoutUrl;
+      } else {
+        throw new Error("Failed to create checkout URL");
+      }
+    } catch (error) {
+      setStudioMessage(`Payment error: ${error.message}`);
+      setLocalSubmitting(false);
+      setIsSubmitting(false);
+    }
+  };
+
+  // Check if user has credits for the selected plan
+  const hasCreditsForPlan = () => {
+    const contextType = selectedContext?.type || "personal";
+    const selectedPlan = formData.plan;
+
+    if (contextType === "organization" && isOrgWithTeamCredits) {
+      return true; // Organization with team credits
+    }
+
+    return hasSufficientCredits(credits, selectedPlan, 1);
   };
 
   const breakpointColumns = {
@@ -1107,10 +1170,10 @@ const ImageUploadStep = ({ selectedContext }) => {
           {localSubmitting ? (
             <>
               <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              Creating Studio...
+              {hasCreditsForPlan() ? "Creating..." : "Processing Payment..."}
             </>
           ) : (
-            `Create Studio`
+            <>{hasCreditsForPlan() ? "Create Studio" : "Pay and Create"}</>
           )}
         </Button>
       </div>

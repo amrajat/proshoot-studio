@@ -203,7 +203,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
   // Loading state
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center gap-4">
           <Skeleton className="h-10 w-10" />
           <div className="space-y-2">
@@ -211,7 +211,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
             <Skeleton className="h-4 w-32" />
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {Array.from({ length: 20 }).map((_, i) => (
             <Skeleton key={i} className="aspect-square" />
           ))}
@@ -223,7 +223,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
   // Error state
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -241,7 +241,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
   // No studio found
   if (!studio) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -273,9 +273,9 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
   const hasAnyHdImages = hdImages.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -283,7 +283,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
           </Button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold">{studio.name}</h1>
+              <h1 className="text-2xl font-bold tracking-tight">{studio.name}</h1>
               <Badge
                 variant={
                   studio.status === "COMPLETED" ? "default" : "secondary"
@@ -354,7 +354,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                 {headshots.map((headshot, index) => (
                   <HeadshotImage
                     key={headshot.id}
@@ -402,7 +402,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {favorites
                     .map((favorite) => {
                       const favoriteImages = [];
@@ -472,7 +472,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                     {resultImages.map((headshot, index) => {
                       const isFavorite = favoriteHeadshotIds.has(headshot.id);
                       const isToggling = togglingFavorites.has(headshot.id);
@@ -509,7 +509,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {hdImages.map((headshot, index) => {
                     const isFavorite = favoriteHeadshotIds.has(headshot.id);
                     const isToggling = togglingFavorites.has(headshot.id);

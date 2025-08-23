@@ -310,7 +310,7 @@ const StudioCreateWizard = () => {
 
   return (
     <ErrorBoundary>
-      <div className="mx-auto p-6 space-y-6">
+      <div className="space-y-8">
         {/* Step Progress */}
         <div className="flex justify-between items-center">
           <div className="flex-1">

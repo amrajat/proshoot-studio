@@ -97,9 +97,9 @@ export default function StudioListPage() {
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight">
+                <h1 className="text-2xl font-bold tracking-tight">
                   Studio Management
-                </h2>
+                </h1>
                 <p className="text-muted-foreground">
                   {selectedContext?.type === "personal"
                     ? "Manage your personal AI headshot studios."

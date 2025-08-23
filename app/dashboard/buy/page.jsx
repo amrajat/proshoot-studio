@@ -522,9 +522,9 @@ export default function BuyCreditsPage() {
 
   // ===== MAIN RENDER =====
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="space-y-8">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h1 className="text-3xl font-bold mb-2">Choose Your Plan</h1>
           <p className="text-muted-foreground">
             Professional AI headshots for individuals and teams
@@ -594,7 +594,7 @@ export default function BuyCreditsPage() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                           {config.PLANS[selectedPlan].features.map(
                             (feature, index) => (
                               <div

@@ -113,7 +113,7 @@ export default function ManageClothingPage() {
 
   if (selectedContext?.type === "personal") {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
           {/* Header */}
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
@@ -145,7 +145,7 @@ export default function ManageClothingPage() {
             </TabsList>
 
             <TabsContent value={activeTab} className="mt-6">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                 {itemsToDisplay.map((item) => (
                   <Card
                     key={item.id}
@@ -190,7 +190,7 @@ export default function ManageClothingPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -273,7 +273,7 @@ export default function ManageClothingPage() {
                 <Skeleton key={i} className="h-10 w-20" />
               ))}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
               {Array.from({ length: 12 }).map((_, i) => (
                 <div key={i} className="space-y-2">
                   <Skeleton className="aspect-square w-full" />
@@ -298,7 +298,7 @@ export default function ManageClothingPage() {
             </TabsList>
 
             <TabsContent value={activeTab} className="mt-6">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                 {itemsToDisplay.map((item) => {
                   const isApproved = approvedClothing.includes(item.id);
                   const isInteractive =

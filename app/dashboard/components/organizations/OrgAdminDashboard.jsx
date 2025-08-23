@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -101,6 +102,8 @@ export default function OrgAdminDashboard({ orgContext }) {
   const [transferLoading, setTransferLoading] = useState(false);
   const [insufficientCreditsDialog, setInsufficientCreditsDialog] =
     useState(false);
+
+  const router = useRouter();
 
   // ===== CREDITS FETCHING =====
   const fetchCredits = useCallback(async () => {

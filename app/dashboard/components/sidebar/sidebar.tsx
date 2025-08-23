@@ -1,10 +1,8 @@
 "use client";
 import { Menu } from "./menu";
 import { SidebarToggle } from "./sidebar-toggle";
-import { Button } from "@/components/ui/button";
 import { useSidebarContext } from "@/context/SidebarContext";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AccountSwitcher } from "./account-switcher";
 
@@ -26,18 +24,9 @@ export function Sidebar() {
           onMouseLeave={() => setIsHover(false)}
           className="relative h-full flex flex-col px-3 py-4 overflow-y-auto shadow-md dark:shadow-zinc-800"
         >
-          <Button
-            className={cn(
-              "transition-transform ease-in-out duration-300 mb-1",
-              !getOpenState() ? "translate-x-1" : "translate-x-0"
-            )}
-            variant="link"
-            asChild
-          >
-            <div className="flex items-center gap-2">
-              <AccountSwitcher />
-            </div>
-          </Button>
+          <div className="px-2 mb-1">
+            <AccountSwitcher />
+          </div>
           <Menu isOpen={getOpenState()} />
         </div>
       </aside>

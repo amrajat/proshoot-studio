@@ -1,14 +1,12 @@
 import {
-  Users,
-  Settings,
-  Bookmark,
-  SquarePen,
   LayoutGrid,
   LucideIcon,
-  GalleryHorizontalEnd,
-  Paintbrush,
-  User,
-  Sparkle,
+  Shirt,
+  Coins,
+  ReceiptText,
+  Image,
+  ImagePlus,
+  Images,
 } from "lucide-react";
 
 type Submenu = {
@@ -33,7 +31,7 @@ type Group = {
 export function getMenuList(pathname: string): Group[] {
   return [
     {
-      groupLabel: "",
+      groupLabel: "Home",
       menus: [
         {
           href: "/dashboard",
@@ -41,67 +39,58 @@ export function getMenuList(pathname: string): Group[] {
           icon: LayoutGrid,
           submenus: [],
         },
+      ],
+    },
+    {
+      groupLabel: "Styles",
+      menus: [
         {
           href: "/dashboard/clothing",
-          label: "Clothing",
-          icon: Paintbrush,
+          label: "Outfits",
+          icon: Shirt,
           submenus: [],
         },
         {
           href: "/dashboard/backgrounds",
           label: "Backgrounds",
-          icon: GalleryHorizontalEnd,
+          icon: Images,
           submenus: [],
         },
       ],
     },
     {
-      groupLabel: "Helpful",
+      groupLabel: "Headshots",
       menus: [
         {
-          href: "/dashboard",
-          label: "Documentation",
-          icon: SquarePen,
+          href: "/dashboard/studio",
+          label: "All Headshots",
+          icon: Image,
+        },
+        {
+          href: "/dashboard/studio/create",
+          label: "Create Headshots",
+          icon: ImagePlus,
+        },
+      ],
+    },
+    {
+      groupLabel: "Billing",
+      menus: [
+        {
+          href: "/dashboard/buy",
+          label: "Buy Credits",
+          icon: Coins,
           submenus: [
-            {
-              href: "/dashboard/support",
-              label: "Support",
-            },
-            {
-              href: "/dashboard/faqs",
-              label: "FAQs",
-            },
+            // {
+            //   href: "/dashboard/support",
+            //   label: "Support",
+            // }
           ],
         },
         {
           href: "/dashboard/billing",
           label: "Billing",
-          icon: Bookmark,
-        },
-      ],
-    },
-    {
-      groupLabel: "Settings",
-      menus: [
-        // {
-        //   href: "/dashboard/teams",
-        //   label: "Teams",
-        //   icon: Users,
-        // },
-        // {
-        //   href: "/dashboard/account",
-        //   label: "Account Settings",
-        //   icon: Settings,
-        // },
-        {
-          href: "/dashboard/studio",
-          label: "Studio",
-          icon: User,
-        },
-        {
-          href: "/dashboard/studio/create",
-          label: "Create Headshots",
-          icon: Sparkle,
+          icon: ReceiptText,
         },
       ],
     },

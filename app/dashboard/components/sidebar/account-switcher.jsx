@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Building, ChevronsUpDown, User as LucideUser } from "lucide-react";
+import {
+  Building2,
+  ChevronsUpDown,
+  CircleUserRound as LucideUser,
+  LogOut,
+  Loader2,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,34 +27,29 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 import { useAccountContext } from "@/context/AccountContext";
 import { useRouter } from "next/navigation";
-
-// Type definition for backward compatibility
-type AvailableContext =
-  | ({ type: "personal" } & { id: "personal"; name: string })
-  | ({ type: "organization" } & {
-      id: string;
-      name: string;
-      owner_user_id: string;
-      team_size?: number | null;
-      invite_token?: string | null;
-    });
+import { cn } from "@/lib/utils";
+import { useSidebarContext } from "@/context/SidebarContext";
+import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
 
 export function AccountSwitcher() {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { availableContexts, selectedContext, setSelectedContext, isLoading } =
     useAccountContext();
+  const { getOpenState } = useSidebarContext();
+  const isOpen = getOpenState();
 
   const [isEditOrgDialogOpen, setEditOrgDialogOpen] = React.useState(false);
+  const [isSigningOut, setIsSigningOut] = React.useState(false);
 
   const handleContextSwitch = React.useCallback(
-    async (context: AvailableContext) => {
+    async (context) => {
       if (
         typeof window !== "undefined" &&
         selectedContext &&
@@ -70,21 +71,46 @@ export function AccountSwitcher() {
 
   const handleOpenEditDialog = () => setEditOrgDialogOpen(true);
 
+  const handleSignOut = React.useCallback(async () => {
+    if (isSigningOut) return;
+
+    setIsSigningOut(true);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        throw error;
+      }
+      router.push("/auth");
+    } catch (error) {
+      setIsSigningOut(false);
+    }
+  }, [isSigningOut, router]);
+
   if (isLoading) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton
-            size="lg"
-            className="opacity-50 cursor-not-allowed"
+          <Button
+            variant="ghost"
+            className="opacity-50 cursor-not-allowed w-full justify-start h-10 mb-1"
           >
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-muted text-muted-foreground animate-pulse">
-              <ChevronsUpDown className="size-4" />
-            </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className={cn(isOpen === false ? "" : "mr-4")}>
+              <ChevronsUpDown size={18} className="animate-pulse" />
+            </span>
+            <div
+              className={cn(
+                "grid text-left text-sm leading-tight min-w-0",
+                isOpen === false
+                  ? "-translate-x-96 opacity-0"
+                  : "translate-x-0 opacity-100"
+              )}
+            >
               <span className="truncate font-semibold">Loading...</span>
             </div>
-          </SidebarMenuButton>
+          </Button>
         </SidebarMenuItem>
       </SidebarMenu>
     );
@@ -94,24 +120,31 @@ export function AccountSwitcher() {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton
-            size="lg"
-            className="opacity-50 cursor-not-allowed"
+          <Button
+            variant="ghost"
+            className="opacity-50 cursor-not-allowed w-full justify-start h-10 mb-1"
           >
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-              <LucideUser className="size-4" />
-            </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className={cn(isOpen === false ? "" : "mr-4")}>
+              <LucideUser size={18} />
+            </span>
+            <div
+              className={cn(
+                "grid text-left text-sm leading-tight min-w-0",
+                isOpen === false
+                  ? "-translate-x-96 opacity-0"
+                  : "translate-x-0 opacity-100"
+              )}
+            >
               <span className="truncate font-semibold">No Account</span>
             </div>
-          </SidebarMenuButton>
+          </Button>
         </SidebarMenuItem>
       </SidebarMenu>
     );
   }
 
   const ActiveIcon =
-    selectedContext.type === "personal" ? LucideUser : Building;
+    selectedContext.type === "personal" ? LucideUser : Building2;
 
   return (
     <>
@@ -119,15 +152,22 @@ export function AccountSwitcher() {
         <SidebarMenuItem>
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuButton
-                size="lg"
-                className="data-[state=open]:bg-primary/10 data-[state=open]:text-primary hover:bg-primary/5 transition-colors min-h-[60px] p-3"
+              <Button
+                variant="ghost"
+                className="data-[state=open]:bg-primary/10 data-[state=open]:text-primary hover:bg-primary/5 transition-colors w-full justify-start h-12 mb-2"
               >
-                <div className="flex aspect-square size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-                  <ActiveIcon className="size-5" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
-                  <span className="truncate font-semibold text-foreground text-base">
+                <span className={cn(isOpen === false ? "" : "mr-4")}>
+                  <ActiveIcon size={18} />
+                </span>
+                <div
+                  className={cn(
+                    "grid text-left text-sm leading-tight min-w-0",
+                    isOpen === false
+                      ? "-translate-x-96 opacity-0"
+                      : "translate-x-0 opacity-100"
+                  )}
+                >
+                  <span className="truncate text-foreground">
                     {selectedContext.name}
                   </span>
                   <span className="truncate text-xs text-muted-foreground">
@@ -136,8 +176,13 @@ export function AccountSwitcher() {
                       : "Organization"}
                   </span>
                 </div>
-                <ChevronsUpDown className="ml-auto size-4 text-muted-foreground flex-shrink-0" />
-              </SidebarMenuButton>
+                <ChevronsUpDown
+                  className={cn(
+                    "ml-auto size-4 text-muted-foreground flex-shrink-0",
+                    isOpen === false ? "opacity-0 hidden" : "opacity-100"
+                  )}
+                />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-lg shadow-lg border"
@@ -150,7 +195,7 @@ export function AccountSwitcher() {
               </DropdownMenuLabel>
               {availableContexts.map((context, index) => {
                 const Icon =
-                  context.type === "personal" ? LucideUser : Building;
+                  context.type === "personal" ? LucideUser : Building2;
                 return (
                   <DropdownMenuItem
                     key={context.id}
@@ -178,12 +223,33 @@ export function AccountSwitcher() {
                 onClick={handleOpenEditDialog}
               >
                 <div className="flex size-8 items-center justify-center rounded-lg border bg-primary/10">
-                  <Building className="size-4 text-primary" />
+                  <Building2 className="size-4 text-primary" />
                 </div>
                 <div className="flex flex-col">
                   <span className="font-medium">Edit Organization</span>
                   <span className="text-xs text-muted-foreground">
                     Update settings
+                  </span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="gap-3 p-3 cursor-pointer text-destructive focus:text-destructive"
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+              >
+                <div className="flex size-8 items-center justify-center rounded-lg border bg-destructive/10">
+                  {isSigningOut ? (
+                    <Loader2 className="size-4 text-destructive animate-spin" />
+                  ) : (
+                    <LogOut className="size-4 text-destructive" />
+                  )}
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-medium">
+                    {isSigningOut ? "Signing out..." : "Sign out"}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    End your session
                   </span>
                 </div>
               </DropdownMenuItem>

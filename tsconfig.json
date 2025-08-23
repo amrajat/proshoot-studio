@@ -31,7 +31,8 @@
     "lib/utils.ts",
     "app/dashboard/flux/page.jsx",
     "components/auth/AuthForm.jsx",
-    "components/layout/Header.jsx"
+    "components/layout/Header.jsx",
+    "app/dashboard/components/sidebar/account-switcher.jsx"
   ],
   "exclude": ["node_modules"]
 }

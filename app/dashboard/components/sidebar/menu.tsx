@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Ellipsis, LogOut } from "lucide-react";
+import { Ellipsis, MapPin, MessageSquare, HelpCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
@@ -26,7 +26,7 @@ export function Menu({ isOpen }: MenuProps) {
 
   return (
     <ScrollArea className="[&>div>div[style]]:!block">
-      <nav className="mt-8 h-full w-full">
+      <nav className="h-full w-full">
         <ul className="flex flex-col min-h-[calc(100vh-48px-36px-16px-32px)] lg:min-h-[calc(100vh-32px-40px-32px)] items-start space-y-1 px-2">
           {menuList.map(({ groupLabel, menus }, index) => (
             <li className={cn("w-full", groupLabel ? "pt-5" : "")} key={index}>
@@ -64,7 +64,12 @@ export function Menu({ isOpen }: MenuProps) {
                                   ? "secondary"
                                   : "ghost"
                               }
-                              className="w-full justify-start h-10 mb-1"
+                              className={cn(
+                                "w-full justify-start h-10 mb-1",
+                                (label === "Create Headshots" ||
+                                  label === "Buy Credits") &&
+                                  "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white hover:from-purple-600 hover:via-pink-600 hover:to-red-600 hover:text-white"
+                              )}
                               asChild
                             >
                               <Link href={href}>
@@ -110,30 +115,108 @@ export function Menu({ isOpen }: MenuProps) {
               )}
             </li>
           ))}
-          <li className="w-full grow flex items-end">
+          <li className="w-full grow flex flex-col items-end justify-end space-y-2">
+            {/* Product Tour Button */}
             <TooltipProvider disableHoverableContent>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={() => {}}
+                    onClick={() => {
+                      // Add product tour logic here
+                      console.log("Starting product tour...");
+                    }}
                     variant="outline"
-                    className="w-full justify-center h-10 mt-5"
+                    className="w-full h-10 flex items-center px-4"
                   >
-                    <span className={cn(isOpen === false ? "" : "mr-4")}>
-                      <LogOut size={18} />
-                    </span>
-                    <p
+                    <div className="flex items-center justify-center w-5 flex-shrink-0">
+                      <MapPin size={18} className="text-primary" />
+                    </div>
+                    <span
                       className={cn(
-                        "whitespace-nowrap",
-                        isOpen === false ? "opacity-0 hidden" : "opacity-100"
+                        "whitespace-nowrap ml-4 flex-1 text-left text-primary",
+                        isOpen === false
+                          ? "opacity-0 hidden w-0 ml-0"
+                          : "opacity-100"
                       )}
                     >
-                      Sign out
-                    </p>
+                      Product Tour
+                    </span>
                   </Button>
                 </TooltipTrigger>
                 {isOpen === false && (
-                  <TooltipContent side="right">Sign out</TooltipContent>
+                  <TooltipContent side="right">Product Tour</TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+
+            {/* Feedback Button */}
+            <TooltipProvider disableHoverableContent>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => {
+                      // Add feedback logic here
+                      window.open(
+                        "mailto:feedback@proshoot.co?subject=Feedback",
+                        "_blank"
+                      );
+                    }}
+                    variant="outline"
+                    className="w-full h-10 flex items-center px-4"
+                  >
+                    <div className="flex items-center justify-center w-5 flex-shrink-0">
+                      <MessageSquare size={18} className="text-orange-400" />
+                    </div>
+                    <span
+                      className={cn(
+                        "whitespace-nowrap ml-4 flex-1 text-left text-orange-400",
+                        isOpen === false
+                          ? "opacity-0 hidden w-0 ml-0"
+                          : "opacity-100"
+                      )}
+                    >
+                      Feedback
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                {isOpen === false && (
+                  <TooltipContent side="right">Feedback</TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+
+            {/* Support Button */}
+            <TooltipProvider disableHoverableContent>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => {
+                      // Add support logic here
+                      window.open(
+                        "mailto:support@proshoot.co?subject=Support Request",
+                        "_blank"
+                      );
+                    }}
+                    variant="outline"
+                    className="w-full h-10 flex items-center px-4"
+                  >
+                    <div className="flex items-center justify-center w-5 flex-shrink-0">
+                      <HelpCircle size={18} className="text-success" />
+                    </div>
+                    <span
+                      className={cn(
+                        "whitespace-nowrap ml-4 flex-1 text-left text-success",
+                        isOpen === false
+                          ? "opacity-0 hidden w-0 ml-0"
+                          : "opacity-100"
+                      )}
+                    >
+                      Support
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                {isOpen === false && (
+                  <TooltipContent side="right">Support</TooltipContent>
                 )}
               </Tooltip>
             </TooltipProvider>

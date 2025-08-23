@@ -56,6 +56,7 @@ CREATE TYPE public.organization_role AS ENUM (
 -- Studio processing status
 CREATE TYPE public.studio_status AS ENUM (
     'FAILED',
+    'PAYMENT_PENDING',
     'PROCESSING',
     'COMPLETED',
     'ACCEPTED',
@@ -103,7 +104,7 @@ CREATE TYPE public.plans AS ENUM (
 
 -- Providers for studios
 CREATE TYPE public.providers AS ENUM (
-    'MODAL',
+    'MODAL'
 );
 
 -- ============================================================================

@@ -5,14 +5,60 @@ import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Secure Lemon Squeezy Webhook Handler
- * Processes payment webhooks and updates database records
- */
+// Constants
+const STUDIO_PROCESSING_TIMEOUT = 45000;
+const FIRSTPROMOTER_TIMEOUT = 10000;
+
+// Response helpers
+const createErrorResponse = (error, status = 400) => {
+  return NextResponse.json({ error }, { status });
+};
+
+const createSuccessResponse = (data) => {
+  return NextResponse.json({ success: true, ...data });
+};
+
+// Security helpers
+const verifyWebhookSignature = (rawBody, signature) => {
+  if (!signature || !process.env.LEMONSQUEEZY_WEBHOOK_SECRET) {
+    console.error("Missing signature or webhook secret");
+    return false;
+  }
+
+  try {
+    const hmac = crypto.createHmac(
+      "sha256",
+      process.env.LEMONSQUEEZY_WEBHOOK_SECRET
+    );
+    hmac.update(rawBody, "utf8");
+    const expectedSignature = hmac.digest("hex");
+
+    // Remove 'sha256=' prefix if present
+    const cleanSignature = signature.replace(/^sha256=/, "");
+
+    return crypto.timingSafeEqual(
+      Buffer.from(expectedSignature, "hex"),
+      Buffer.from(cleanSignature, "hex")
+    );
+  } catch (error) {
+    console.error("Signature verification error:", error);
+    return false;
+  }
+};
+
+// Main handler
 export async function POST(request) {
   try {
-    const cookieStore = cookies();
+    const rawBody = await request.text();
+    const webhookSignature = request.headers.get("x-signature");
 
+    // Verify webhook signature
+    if (!verifyWebhookSignature(rawBody, webhookSignature)) {
+      return createErrorResponse("Unauthorized", 401);
+    }
+
+    // Initialize Supabase client
+    const cookieStore = cookies();
     const supabase = await createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -21,55 +67,34 @@ export async function POST(request) {
           get(name) {
             return cookieStore.get(name)?.value;
           },
-          set(name, value, options) {
-            cookieStore.set({ name, value, ...options });
-          },
-          remove(name, options) {
-            cookieStore.set({ name, value: "", ...options });
-          },
         },
       }
     );
 
-    // Get raw body for signature verification
-    const rawBody = await request.text();
-
-    // Verify webhook signature
-    const secret = process.env.LS_WB_SECRET;
-    if (!secret) {
-      console.error("❌ LS_WB_SECRET environment variable not set");
-      return NextResponse.json(
-        { error: "Server configuration error" },
-        { status: 500 }
-      );
-    }
-
-    const hmac = crypto.createHmac("sha256", secret);
-    const digest = Buffer.from(hmac.update(rawBody).digest("hex"), "utf8");
-    const signature = Buffer.from(
-      request.headers.get("X-Signature") || "",
-      "utf8"
-    );
-
-    if (!crypto.timingSafeEqual(digest, signature)) {
-      console.error("❌ Invalid webhook signature");
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
-
     // Parse webhook body
-    const bodyObject = JSON.parse(rawBody);
+    let bodyObject;
+    try {
+      bodyObject = JSON.parse(rawBody);
+    } catch (parseError) {
+      // Handle empty body (duplicate Next.js call)
+      if (rawBody.length === 0 || rawBody.trim() === "") {
+        return createSuccessResponse({ message: "Empty body ignored" });
+      }
+
+      console.error("Webhook JSON parse error:", parseError.message);
+      return createErrorResponse("Invalid JSON payload");
+    }
+
     const { data: orderData, meta } = bodyObject;
 
     // Validate webhook event type
     if (meta.event_name !== "order_created") {
-      console.log(`ℹ️ Ignoring webhook event: ${meta.event_name}`);
-      return NextResponse.json({ message: "Event ignored" });
+      return createSuccessResponse({ message: "Event ignored" });
     }
 
     // Validate order status
     if (orderData.attributes.status !== "paid") {
-      console.log(`ℹ️ Ignoring unpaid order: ${orderData.attributes.status}`);
-      return NextResponse.json({ message: "Order not paid" });
+      return createSuccessResponse({ message: "Order not paid" });
     }
 
     // Extract custom data
@@ -80,54 +105,38 @@ export async function POST(request) {
       email_id,
       first_promoter_reference,
       first_promoter_t_i_d,
-      studioData,
       webhook_secret,
     } = meta.custom_data || {};
 
-    // Additional webhook secret check (if provided in custom_data)
+    // Validate custom webhook secret if provided
     if (
       webhook_secret &&
       webhook_secret !== process.env.CUSTOM_WEBHOOK_SECRET
     ) {
-      console.error("❌ Invalid custom webhook secret");
-      return NextResponse.json(
-        { error: "Invalid custom webhook secret" },
-        { status: 401 }
-      );
+      return createErrorResponse("Invalid custom webhook secret", 401);
     }
 
     // Validate required fields
     if (!user || !plan || !quantity) {
-      console.error("❌ Missing required custom data fields", {
-        user: !!user,
-        plan: !!plan,
-        quantity: !!quantity,
-      });
-      return NextResponse.json(
-        { error: "Missing required custom data" },
-        { status: 400 }
-      );
+      return createErrorResponse("Missing required custom data");
     }
 
     const orderId = orderData.id;
-    const orderAmount = orderData.attributes.total; // Amount in cents
+    const orderAmount = orderData.attributes.total;
     const currency = orderData.attributes.currency;
     const creditsQuantity = parseInt(quantity, 10);
 
-    console.log(`💰 Processing order ${orderId} for user ${user}`);
-
-    // Note: Duplicate prevention is handled by UNIQUE constraint on provider_payment_id
-    // The RPC function will fail gracefully if duplicate is attempted
+    console.log(`Processing order ${orderId} for user ${user}`);
 
     // Map plan to credit type
     const creditTypeMap = {
-      Basic: "STARTER",
-      Professional: "PROFESSIONAL",
-      Studio: "STUDIO",
-      Team: "TEAM",
+      starter: "STARTER",
+      professional: "PROFESSIONAL",
+      studio: "STUDIO",
+      team: "TEAM",
     };
 
-    const creditType = creditTypeMap[plan] || "BALANCE";
+    const creditType = creditTypeMap[plan.toLowerCase()] || "BALANCE";
 
     // Create purchase record using RPC function (automatically handles credits)
     const { data: purchaseUserId, error: purchaseError } = await supabase.rpc(
@@ -152,32 +161,34 @@ export async function POST(request) {
     );
 
     if (purchaseError) {
-      // Check if it's a duplicate order error (UNIQUE constraint violation)
+      // Handle duplicate order (UNIQUE constraint violation)
       if (
         purchaseError.code === "23505" &&
         purchaseError.message.includes("provider_payment_id")
       ) {
-        console.log(`⚠️ Duplicate order detected: ${orderId}`);
-        return NextResponse.json(
-          { message: "Duplicate order processed successfully" },
-          { status: 200 }
-        );
+        console.log(`Duplicate order detected: ${orderId}`);
+        return createSuccessResponse({ message: "Duplicate order processed" });
       }
 
-      console.error("❌ Failed to create purchase record:", purchaseError);
-      return NextResponse.json(
-        { error: "Failed to create purchase record" },
-        { status: 500 }
-      );
+      console.error("Failed to create purchase record:", purchaseError);
+      return createErrorResponse("Failed to create purchase record", 500);
     }
 
-    console.log(
-      `✅ Purchase record created, credits added, and transaction logged for purchase ${purchaseUserId}`
-    );
+    console.log(`Purchase record created for ${purchaseUserId}`);
 
-    // Handle Studio creation if studioData exists
-    if (studioData) {
-      await handleStudioCreation({ studioData, user_id: user });
+    // Handle Studio creation if studio_id exists
+    if (
+      meta.custom_data?.studio_id &&
+      meta.custom_data?.source === "studio_create"
+    ) {
+      console.log(
+        `Starting studio processing for ${meta.custom_data.studio_id}`
+      );
+      await handleStudioCreation({
+        studioId: meta.custom_data.studio_id,
+        user_id: user,
+        signature: webhookSignature,
+      });
     }
 
     // Handle FirstPromoter tracking if reference exists
@@ -191,14 +202,14 @@ export async function POST(request) {
       });
     }
 
-    console.log(`🎉 Webhook processed successfully for order ${orderId}`);
-    return NextResponse.json({ message: "Webhook processed successfully" });
+    console.log(`Webhook processed successfully for order ${orderId}`);
+    return createSuccessResponse({
+      message: "Webhook processed successfully",
+      orderId: orderId,
+    });
   } catch (error) {
-    console.error("❌ Webhook processing error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("Webhook processing error:", error);
+    return createErrorResponse("Internal server error", 500);
   }
 }
 
@@ -213,14 +224,13 @@ async function handleFirstPromoterTracking({
   tid,
 }) {
   try {
-    console.log(`🔗 Tracking FirstPromoter sale for ref: ${refId}`);
-
-    const params = new URLSearchParams();
-    params.append("uid", user);
-    params.append("amount", amount.toString());
-    params.append("event_id", eventId);
-    params.append("ref_id", refId);
-    params.append("tid", tid);
+    const params = new URLSearchParams({
+      uid: user,
+      amount: amount.toString(),
+      event_id: eventId,
+      ref_id: refId,
+      tid: tid,
+    });
 
     const response = await fetch(
       "https://firstpromoter.com/api/v1/track/sale",
@@ -231,67 +241,48 @@ async function handleFirstPromoterTracking({
           "x-api-key": process.env.FIRSTPROMOTER_API_KEY,
         },
         body: params.toString(),
-        // Add timeout to prevent hanging
-        signal: AbortSignal.timeout(10000), // 10 second timeout
+        signal: AbortSignal.timeout(FIRSTPROMOTER_TIMEOUT),
       }
     );
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      throw new Error(`FirstPromoter API error: ${response.status}`);
     }
 
-    const text = await response.text();
-    if (text) {
-      try {
-        const data = JSON.parse(text);
-        console.log("✅ FirstPromoter tracking successful:", data);
-      } catch (parseError) {
-        console.log(
-          "✅ FirstPromoter tracking successful (non-JSON response):",
-          text
-        );
-      }
-    } else {
-      console.log("✅ FirstPromoter tracking successful (empty response)");
-    }
+    console.log("FirstPromoter tracking successful");
   } catch (error) {
-    console.error("❌ FirstPromoter tracking failed:", error);
-    // Don't throw - we don't want affiliate tracking failures to break the webhook
+    console.error("FirstPromoter tracking failed:", error);
+    // Don't throw - affiliate tracking failures shouldn't break the webhook
   }
 }
 
 /**
- * Handle Studio creation using the same API as ImageUploadStep
+ * Handle Studio creation processing
  */
-async function handleStudioCreation({ studioData, user_id }) {
+async function handleStudioCreation({ studioId, user_id, signature }) {
   try {
-    const response = await fetch(`${process.env.URL}/api/studio/create`, {
+    const response = await fetch(`${process.env.URL}/api/studio/process`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-signature": signature,
       },
-      body: JSON.stringify({
-        studioData,
-        user_id,
-      }),
-      // Add timeout to prevent webhook hanging
-      signal: AbortSignal.timeout(45000), // 45 second timeout
+      body: JSON.stringify({ studioId, user_id }),
+      signal: AbortSignal.timeout(STUDIO_PROCESSING_TIMEOUT),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(
-        errorData.error ||
-          `Studio creation failed with status: ${response.status}`
+        errorData.error || `Studio processing failed: ${response.status}`
       );
     }
 
-    const data = await response.json();
-    console.log(`✅ Studio created via webhook: ${data.studioId}`);
-    return data;
+    const result = await response.json();
+    console.log("Studio processing completed:", result);
+    return result;
   } catch (error) {
-    console.error("❌ Studio creation via webhook failed:", error);
-    // Don't throw - we don't want studio creation failures to break the webhook
-    // The payment has already been processed successfully
+    console.error("Studio processing failed:", error);
+    throw error;
   }
 }

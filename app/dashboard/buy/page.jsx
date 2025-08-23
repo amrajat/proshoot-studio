@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useAccountContext } from "@/context/AccountContext";
 import { ContentLayout } from "../components/sidebar/content-layout";
 import { useRouter } from "next/navigation";
-import { createCheckout } from "@lemonsqueezy/lemonsqueezy.js";
+import { createCheckoutUrl } from "@/app/dashboard/actions/checkout";
 import config from "@/config";
 
 import { Button } from "@/components/ui/button";
@@ -16,30 +16,39 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Users,
+  User,
+  Crown,
+  Minus,
+  Plus,
+} from "lucide-react";
+import Link from "next/link";
 
-// ===== PRICING CONFIGURATION =====
-const BULK_DISCOUNT_TIERS = [
-  { minCredits: 5, discount: 0.1 }, // 10% off for 5+ credits
-  { minCredits: 10, discount: 0.2 }, // 20% off for 10+ credits
-  { minCredits: 25, discount: 0.3 }, // 30% off for 25+ credits
-  { minCredits: 50, discount: 0.4 }, // 40% off for 50+ credits
-  { minCredits: 100, discount: 0.5 }, // 50% off for 100+ credits
+// ===== TEAM PLAN VOLUME DISCOUNTS =====
+const TEAM_VOLUME_DISCOUNTS = [
+  { minQuantity: 2, discount: 0 },
+  { minQuantity: 5, discount: 0.1 },
+  { minQuantity: 25, discount: 0.2 },
+  { minQuantity: 100, discount: 0.3 },
 ];
 
-const BASE_PRICE_PER_CREDIT = 9.99;
-
 /**
- * Buy Credits Page Component
+ * High-Converting Buy Credits Page
  *
- * Allows organization owners to purchase team credits with:
- * - Bulk discount pricing tiers
- * - Real-time price calculation
- * - Secure LemonSqueezy checkout integration
- * - Organization context validation
+ * Features:
+ * - Personal/Organization context switching
+ * - Dynamic plan rendering from config.js
+ * - Quantity selection with volume discounts
+ * - Order summary and conversion optimization
+ * - Team plan minimum quantity enforcement
  */
 export default function BuyCreditsPage() {
   // ===== HOOKS =====
@@ -47,264 +56,579 @@ export default function BuyCreditsPage() {
   const { selectedContext, userId } = useAccountContext();
 
   // ===== STATE MANAGEMENT =====
-  const [creditAmount, setCreditAmount] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [isValidContext, setIsValidContext] = useState(false);
-  const [isContextChecked, setIsContextChecked] = useState(false);
+  const [error, setError] = useState("");
+  const [quantities, setQuantities] = useState({});
+  const [selectedPlan, setSelectedPlan] = useState("");
+  const [activeTab, setActiveTab] = useState("personal");
 
-  // ===== CONTEXT VALIDATION =====
+  // ===== INITIALIZATION =====
   useEffect(() => {
-    const checkContext = async () => {
-      if (!selectedContext) {
-        setIsContextChecked(true);
-        return;
+    // Set default tab based on context
+    if (selectedContext?.type === "organization") {
+      setActiveTab("organization");
+      setSelectedPlan("team"); // Default to team plan for organization
+    } else {
+      setActiveTab("personal");
+      setSelectedPlan("professional"); // Default to professional plan for personal
+    }
+
+    // Initialize quantities for all plans
+    const initialQuantities = {};
+    Object.keys(config.PLANS).forEach((planKey) => {
+      if (planKey !== "balance") {
+        initialQuantities[planKey] = planKey === "team" ? 2 : 1;
       }
+    });
+    setQuantities(initialQuantities);
+  }, [selectedContext]);
 
-      if (selectedContext.type !== "organization") {
-        setIsValidContext(false);
-        router.push("/dashboard");
-      } else {
-        setIsValidContext(true);
+  // ===== HELPER FUNCTIONS =====
+  const getAvailablePlans = (context) => {
+    const plans = {};
+    Object.entries(config.PLANS).forEach(([key, plan]) => {
+      if (key === "balance") return;
+
+      if (context === "personal" && plan.accountContext === "personal") {
+        plans[key] = plan;
+      } else if (context === "organization" && key === "team") {
+        plans[key] = plan;
       }
-      setIsContextChecked(true);
-    };
+    });
+    return plans;
+  };
 
-    checkContext();
-  }, [selectedContext, router]);
+  const calculatePlanTotal = (planKey, quantity) => {
+    const plan = config.PLANS[planKey];
+    if (!plan) return { total: 0, discount: 0, savings: 0 };
 
-  // ===== PRICE CALCULATION =====
-  const calculatePrice = (credits) => {
-    // Find the highest applicable discount tier
-    const applicableTier = [...BULK_DISCOUNT_TIERS]
-      .reverse()
-      .find((tier) => credits >= tier.minCredits);
+    const baseTotal = plan.planPrice * quantity;
+    let discount = 0;
 
-    const discount = applicableTier?.discount || 0;
-    const basePrice = credits * BASE_PRICE_PER_CREDIT;
-    const discountedPrice = basePrice * (1 - discount);
+    // Apply volume discount for team plans
+    if (planKey === "team" && quantity >= 2) {
+      const applicableDiscount = [...TEAM_VOLUME_DISCOUNTS]
+        .reverse()
+        .find((tier) => quantity >= tier.minQuantity);
+      discount = applicableDiscount?.discount || 0;
+    }
+
+    const savings = baseTotal * discount;
+    const total = baseTotal - savings;
 
     return {
-      originalPrice: basePrice.toFixed(2),
-      discountedPrice: discountedPrice.toFixed(2),
+      baseTotal: baseTotal.toFixed(2),
+      total: total.toFixed(2),
       discount: (discount * 100).toFixed(0),
-      savings: (basePrice - discountedPrice).toFixed(2),
+      savings: savings.toFixed(2),
     };
   };
 
-  // ===== EVENT HANDLERS =====
-  const handleCreditChange = (e) => {
-    const value = parseInt(e.target.value);
-    if (!isNaN(value) && value >= 1 && value <= 500) {
-      setCreditAmount(value);
+  const updateQuantity = (planKey, change) => {
+    setQuantities((prev) => {
+      const currentQty = prev[planKey] || 1;
+      const newQty = Math.max(planKey === "team" ? 2 : 1, currentQty + change);
+      return { ...prev, [planKey]: Math.min(newQty, 100) };
+    });
+  };
+
+  const handlePlanSelect = (planKey) => {
+    setSelectedPlan(planKey);
+    setError(null);
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    // Set default plan based on tab
+    if (tab === "organization") {
+      setSelectedPlan("team");
+    } else {
+      setSelectedPlan("professional");
     }
   };
 
-  const handleBuyCredits = async () => {
-    if (!isValidContext || !selectedContext || !userId) {
-      setError("Invalid context or user");
-      return;
-    }
+  const handleCheckout = async (planKey) => {
+    if (isLoading) return;
 
     setIsLoading(true);
-    setError(null);
+    setSelectedPlan(planKey);
+    setError("");
 
     try {
-      const { discountedPrice } = calculatePrice(creditAmount);
+      const quantity = quantities[planKey] || 1;
 
-      // Create LemonSqueezy checkout session
-      const checkout = await createCheckout(
-        process.env.NEXT_PUBLIC_LEMONSQUEEZY_STORE_ID || "000",
-        config.PLANS.Team.variantId,
+      // Create checkout URL with proper custom data (user auth handled server-side)
+      const checkoutUrl = await createCheckoutUrl(
+        planKey,
+        quantity,
         {
-          checkoutData: {
-            custom: {
-              user_id: userId,
-              organization_id: selectedContext.id,
-              credit_amount: creditAmount.toString(),
-              credit_type: "team",
-            },
-          },
-          productOptions: {
-            name: `${creditAmount} Team Credits`,
-            description: `Purchase ${creditAmount} team credits for your organization`,
-            redirectUrl: `${window.location.origin}/dashboard/organization?org_id=${selectedContext.id}&payment_status=success`,
-          },
-        }
+          source: "buy_page",
+          plan_price: config.PLANS[planKey].planPrice,
+          total_amount: calculatePlanTotal(planKey, quantity).total,
+        },
+        `${window.location.origin}/dashboard/studio/create?payment=success&plan=${planKey}&quantity=${quantity}`
       );
 
-      if (checkout.data?.data?.attributes?.url) {
-        // Redirect to checkout
-        window.location.href = checkout.data.data.attributes.url;
+      if (checkoutUrl) {
+        // Direct redirect to LemonSqueezy checkout for maximum conversion
+        window.location.href = checkoutUrl;
       } else {
-        throw new Error("Failed to create checkout session");
+        throw new Error("Failed to create checkout URL");
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      setError("Failed to create checkout session. Please try again.");
-    } finally {
+      setError(`Checkout failed: ${error.message}`);
       setIsLoading(false);
+      setSelectedPlan("");
     }
   };
 
-  // ===== LOADING STATE =====
-  if (!isContextChecked) {
+  // ===== RENDER PLAN CARD =====
+  const renderPlanCard = (planKey, plan) => {
+    const quantity = quantities[planKey] || 1;
+    const pricing = calculatePlanTotal(planKey, quantity);
+    const isSelected = selectedPlan === planKey;
+
     return (
-      <ContentLayout navbar={false} title="Buy Team Credits">
-        <div className="max-w-2xl mx-auto mt-8">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <span className="ml-2">Loading...</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </ContentLayout>
-    );
-  }
+      <Card
+        key={planKey}
+        className={`relative cursor-pointer transition-all duration-200 ${
+          isSelected
+            ? "ring-2 ring-primary shadow-lg"
+            : "hover:shadow-md hover:border-primary/50"
+        }`}
+        onClick={() => handlePlanSelect(planKey)}
+      >
+        {plan.mostPopular && (
+          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+            <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
+              <Crown className="w-3 h-3 mr-1" />
+              Most Popular
+            </Badge>
+          </div>
+        )}
 
-  // ===== INVALID CONTEXT STATE =====
-  if (!isValidContext) {
-    return (
-      <ContentLayout navbar={false} title="Buy Team Credits">
-        <div className="max-w-2xl mx-auto mt-8">
-          <Card>
-            <CardContent className="pt-6">
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Invalid Context</AlertTitle>
-                <AlertDescription>
-                  You must be in an organization context to purchase team
-                  credits.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
-        </div>
-      </ContentLayout>
-    );
-  }
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="capitalize text-xl">{planKey}</CardTitle>
+          <div className="space-y-1">
+            <div className="text-3xl font-bold">${plan.planPrice}</div>
+            <p className="text-sm text-muted-foreground">per credit</p>
+          </div>
+        </CardHeader>
 
-  // ===== CALCULATE CURRENT PRICE =====
-  const priceDetails = calculatePrice(creditAmount);
-
-  // ===== MAIN RENDER =====
-  return (
-    <ContentLayout navbar={false} title="Buy Team Credits">
-      <div className="max-w-2xl mx-auto mt-8 space-y-6">
-        {/* Main Purchase Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Buy Credits for Your Organization</CardTitle>
-            <CardDescription>
-              Purchase credits to create professional headshots for your entire
-              team. The more credits you buy, the more you save!
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            {/* Error Alert */}
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+        <CardContent className="space-y-4">
+          {/* Quantity Selector */}
+          <div className="space-y-2 text-center">
+            <Label className="text-xs font-medium">Quantity</Label>
+            <div className="flex items-center justify-center space-x-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateQuantity(planKey, -1);
+                }}
+                disabled={quantity <= (planKey === "team" ? 2 : 1)}
+              >
+                <Minus className="w-4 h-4" />
+              </Button>
+              <span className="w-12 text-center font-medium">{quantity}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateQuantity(planKey, 1);
+                }}
+                disabled={quantity >= 100}
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+            {planKey === "team" && (
+              <p className="text-xs text-muted-foreground text-center">
+                Minimum 2 credits required
+              </p>
             )}
+          </div>
 
-            {/* Credit Amount Input */}
-            <div className="space-y-4">
+          {/* Volume Discounts for Team Plan */}
+          {planKey === "team" && (
+            <div className="space-y-3">
+              <Separator />
               <div className="space-y-2">
-                <Label htmlFor="credits">Number of Credits</Label>
-                <Input
-                  id="credits"
-                  type="number"
-                  min="1"
-                  max="500"
-                  value={creditAmount}
-                  onChange={handleCreditChange}
-                  className="w-full"
-                />
-                <p className="text-sm text-muted-foreground">
-                  Enter between 1 and 500 credits
-                </p>
+                <div className="flex items-center gap-2 justify-center">
+                  <Users className="w-4 h-4 text-muted-foreground" />
+                  <Label className="text-xs font-medium">
+                    Volume Discounts
+                  </Label>
+                </div>
+                <div className="space-y-1">
+                  {TEAM_VOLUME_DISCOUNTS.filter(
+                    (tier) => tier.discount > 0
+                  ).map((tier) => (
+                    <div
+                      key={tier.minQuantity}
+                      className={`flex justify-between items-center text-xs px-2 py-1 rounded ${
+                        quantity >= tier.minQuantity
+                          ? "bg-green-50 text-green-800 border border-green-200"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      <span>{tier.minQuantity}+ credits:</span>
+                      <Badge
+                        variant={
+                          quantity >= tier.minQuantity ? "default" : "secondary"
+                        }
+                        className={`text-xs ${
+                          quantity >= tier.minQuantity
+                            ? "bg-green-600 text-white"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {(tier.discount * 100).toFixed(0)}% OFF
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
               </div>
+            </div>
+          )}
 
-              {/* Discount Alert */}
-              {priceDetails.discount !== "0" && (
-                <Alert>
-                  <CheckCircle2 className="h-4 w-4" />
-                  <AlertTitle>Bulk Discount Applied!</AlertTitle>
-                  <AlertDescription>
-                    You're saving {priceDetails.discount}% on your purchase!
+          {/* Current Discount Alert */}
+          {planKey === "team" && quantity >= 5 && (
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle2 className="w-4 h-4 text-green-600" />
+              <AlertDescription className="text-green-800 text-sm">
+                🎉 You're saving ${pricing.savings} with {pricing.discount}%
+                volume discount!
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+        <CardFooter className="pt-4">
+          <Button
+            onClick={() => handleCheckout(planKey)}
+            disabled={isLoading}
+            className="w-full"
+            size="lg"
+            variant={isSelected ? "default" : "outline"}
+          >
+            {isLoading && selectedPlan === planKey
+              ? "Processing..."
+              : `Buy ${planKey[0].toUpperCase() + planKey.slice(1)} Plan - $${
+                  pricing.total
+                }`}
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  };
+
+  // ===== RENDER FULL-WIDTH TEAM PLAN CARD =====
+  const renderFullWidthTeamCard = (planKey, plan) => {
+    const quantity = quantities[planKey] || 1;
+    const pricing = calculatePlanTotal(planKey, quantity);
+    const isSelected = selectedPlan === planKey;
+
+    return (
+      <Card
+        key={planKey}
+        className="relative w-full max-w-7xl mx-auto"
+        onClick={() => setSelectedPlan(planKey)}
+      >
+        {plan.mostPopular && (
+          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+            <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
+              <Crown className="w-3 h-3 mr-1" />
+              Most Popular
+            </Badge>
+          </div>
+        )}
+
+        <CardContent className="p-6">
+          {/* Header Section */}
+          <div className="text-center mb-6">
+            <CardTitle className="capitalize text-2xl font-bold mb-2">
+              {planKey} Plan
+            </CardTitle>
+            <div className="text-3xl font-bold mb-1">${plan.planPrice}</div>
+            <div className="text-primary mb-3">per credit</div>
+            <p className="text-muted-foreground text-sm">
+              Perfect for teams and organizations looking for professional AI
+              headshots at scale
+            </p>
+          </div>
+
+          {/* Three Column Layout: What's Included | Quantity | Volume Discounts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            {/* What's Included Section */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-center">
+                What's Included
+              </h3>
+              <div className="grid grid-cols-1 gap-2">
+                {plan.features.map((feature, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    </div>
+                    <span className="text-muted-foreground text-sm leading-relaxed">
+                      {feature}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quantity Section - Centered */}
+            <div className="text-center md:col-span-2 lg:col-span-1 md:order-2 lg:order-2">
+              <h3 className="text-lg font-semibold mb-3">Quantity</h3>
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateQuantity(planKey, -1);
+                  }}
+                  disabled={quantity <= 2}
+                  className="h-8 w-8"
+                >
+                  <Minus className="h-3 w-3" />
+                </Button>
+                <input
+                  type="number"
+                  min="2"
+                  max="100"
+                  value={quantity}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    const newQuantity = parseInt(e.target.value) || 2;
+                    if (newQuantity >= 2 && newQuantity <= 100) {
+                      setQuantities((prev) => ({
+                        ...prev,
+                        [planKey]: newQuantity,
+                      }));
+                    }
+                  }}
+                  className="text-xl font-semibold w-16 text-center border rounded px-2 py-1 bg-background"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateQuantity(planKey, 1);
+                  }}
+                  disabled={quantity >= 100}
+                  className="h-8 w-8"
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
+              <p className="text-xs text-primary mb-4">
+                Minimum 2 credits required
+              </p>
+
+              {/* Current Discount Alert */}
+              {quantity >= 5 && (
+                <Alert className="border-green-200 bg-green-50 mb-4">
+                  <CheckCircle2 className="w-3 h-3 text-green-600" />
+                  <AlertDescription className="text-green-800 text-xs">
+                    🎉 You're saving ${pricing.savings} with {pricing.discount}%
+                    volume discount!
                   </AlertDescription>
                 </Alert>
               )}
 
-              {/* Price Breakdown */}
-              <div className="space-y-2 p-4 bg-muted rounded-lg">
-                <div className="flex justify-between">
-                  <span>Original Price:</span>
-                  <span>${priceDetails.originalPrice}</span>
+              {/* Total and Purchase - Under Quantity */}
+              <div className="space-y-3">
+                <div className="text-xl font-bold">
+                  Total: ${pricing.total}
+                  {pricing.savings > 0 && (
+                    <div className="text-sm font-normal text-muted-foreground">
+                      (Save ${pricing.savings})
+                    </div>
+                  )}
                 </div>
+                <Button
+                  onClick={() => handleCheckout(planKey)}
+                  disabled={isLoading}
+                  className="w-full"
+                  size="lg"
+                >
+                  {isLoading && selectedPlan === planKey
+                    ? "Processing..."
+                    : `Buy ${planKey[0].toUpperCase() + planKey.slice(1)} Plan`}
+                </Button>
+              </div>
+            </div>
 
-                {priceDetails.discount !== "0" && (
-                  <>
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount ({priceDetails.discount}%):</span>
-                      <span>-${priceDetails.savings}</span>
+            {/* Volume Discounts Section */}
+            <div className="md:order-1 lg:order-3">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold">Volume Discounts</h3>
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                {TEAM_VOLUME_DISCOUNTS.filter((tier) => tier.discount > 0).map(
+                  (tier) => (
+                    <div
+                      key={tier.minQuantity}
+                      className={`text-center p-2 rounded ${
+                        quantity >= tier.minQuantity
+                          ? "bg-green-50 border border-green-200"
+                          : "bg-muted"
+                      }`}
+                    >
+                      <div className="text-xs font-medium text-muted-foreground">
+                        {tier.minQuantity}+ credits:
+                      </div>
+                      <div
+                        className={`text-sm font-bold ${
+                          quantity >= tier.minQuantity
+                            ? "text-green-600"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {(tier.discount * 100).toFixed(0)}% OFF
+                      </div>
                     </div>
-                    <div className="flex justify-between font-bold">
-                      <span>Final Price:</span>
-                      <span>${priceDetails.discountedPrice}</span>
-                    </div>
-                  </>
-                )}
-
-                {priceDetails.discount === "0" && (
-                  <div className="flex justify-between font-bold">
-                    <span>Total Price:</span>
-                    <span>${priceDetails.discountedPrice}</span>
-                  </div>
+                  )
                 )}
               </div>
             </div>
-          </CardContent>
+          </div>
 
-          <CardFooter>
-            <Button
-              onClick={handleBuyCredits}
-              disabled={isLoading}
-              className="w-full"
-            >
-              {isLoading ? "Processing..." : "Proceed to Checkout"}
-            </Button>
-          </CardFooter>
-        </Card>
-
-        {/* Discount Tiers Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Bulk Discount Tiers</CardTitle>
-            <CardDescription>
-              Save more when you buy more credits
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {BULK_DISCOUNT_TIERS.map((tier) => (
-                <div key={tier.minCredits} className="flex justify-between">
-                  <span>{tier.minCredits}+ Credits:</span>
-                  <span className="text-green-600 font-medium">
-                    {tier.discount * 100}% OFF
-                  </span>
-                </div>
-              ))}
+          {/* Enterprise Section - Centered */}
+          <div className="border-t pt-4">
+            <div className="text-center">
+              <div className="text-sm text-muted-foreground">
+                Need custom enterprise solutions?
+                <Link
+                  href="mailto:support@proshoot.co"
+                  variant="link"
+                  className="p-0 h-auto text-sm underline ml-1"
+                >
+                  Contact Us
+                </Link>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  // ===== MAIN RENDER =====
+  return (
+    <ContentLayout title="Buy Credits">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-2">Choose Your Plan</h1>
+          <p className="text-muted-foreground">
+            Professional AI headshots for individuals and teams
+          </p>
+        </div>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="max-w-2xl mx-auto mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Main Layout */}
+        <div className="space-y-8">
+          {/* Plans Section */}
+          <Tabs
+            value={activeTab}
+            onValueChange={handleTabChange}
+            className="w-full"
+          >
+            {/* Centered Tab Selector */}
+            <div className="flex justify-center mb-8">
+              <TabsList className="grid grid-cols-2 w-80">
+                <TabsTrigger
+                  value="personal"
+                  className="flex items-center gap-2"
+                >
+                  <User className="w-4 h-4" />
+                  Personal
+                </TabsTrigger>
+                <TabsTrigger
+                  value="organization"
+                  className="flex items-center gap-2"
+                >
+                  <Users className="w-4 h-4" />
+                  Organization
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            {/* Personal Plans */}
+            <TabsContent value="personal" className="mt-0">
+              <div className="space-y-8">
+                {/* Plans Grid */}
+                <div
+                  className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
+                  id="personal-plans-grid"
+                >
+                  {Object.entries(getAvailablePlans("personal")).map(
+                    ([planKey, plan]) => renderPlanCard(planKey, plan)
+                  )}
+                </div>
+
+                {/* Selected Plan Features - Full Width Below Plans */}
+                {selectedPlan && activeTab === "personal" && (
+                  <div className="w-full">
+                    <Card>
+                      <CardHeader className="pb-4">
+                        <CardTitle className="text-lg capitalize text-center">
+                          {selectedPlan} Features
+                        </CardTitle>
+                        <CardDescription className="text-sm text-center">
+                          What's included in your plan
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                          {config.PLANS[selectedPlan].features.map(
+                            (feature, index) => (
+                              <div
+                                key={index}
+                                className="flex items-start text-sm"
+                              >
+                                <CheckCircle2 className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                                <span>{feature}</span>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* Organization Plans */}
+            <TabsContent value="organization" className="mt-0">
+              <div className="space-y-8">
+                {/* Team Plan - Full Width */}
+                <div className="w-full">
+                  {Object.entries(getAvailablePlans("organization")).map(
+                    ([planKey, plan]) => renderFullWidthTeamCard(planKey, plan)
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </ContentLayout>
   );

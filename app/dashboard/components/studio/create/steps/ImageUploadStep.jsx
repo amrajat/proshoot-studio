@@ -767,7 +767,6 @@ const ImageUploadStep = ({
         },
         body: JSON.stringify({
           studioData: updatedFormData,
-          user_id: user.id,
         }),
       });
 
@@ -801,19 +800,78 @@ const ImageUploadStep = ({
 
   const handlePaymentFlow = async (selectedPlan) => {
     try {
-      // Get user info for checkout
-      const userEmail = selectedContext?.email || "";
-      const userId = selectedContext?.id || "";
+      // Get authenticated user ID from Supabase
+      const createSupabaseBrowserClient = (
+        await import("@/lib/supabase/browser-client")
+      ).default;
+      const supabase = createSupabaseBrowserClient();
 
-      // Create checkout URL with form data as custom data
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        throw new Error("User not authenticated");
+      }
+
+      setStudioMessage("Creating studio record...");
+
+      // Use authenticated user ID to create full path
+      const userId = user.id;
+      const imagesPath = `${userId}/${uploadState.currentUUID}`;
+
+      // Determine context from selectedContext
+      const context =
+        selectedContext?.type === "organization" ? "organization" : "personal";
+
+      const updatedFormData = {
+        ...formData,
+        studioID: uploadState.currentUUID, // Add the studio ID
+        images: imagesPath, // Now includes user_id prefix
+        context, // Add context based on selectedContext
+        organization_id:
+          selectedContext?.type === "organization" ? selectedContext.id : null, // Add organization_id when context is organization
+      };
+
+      // Create PAYMENT_PENDING studio record
+      const response = await fetch("/api/studio/create-pending", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          studioData: updatedFormData,
+        }),
+      });
+
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        console.error("Failed to parse response:", parseError);
+        throw new Error("Invalid response from server");
+      }
+
+      if (!response.ok) {
+        throw new Error(result?.error || `Server error: ${response.status}`);
+      }
+
+      if (!result?.success) {
+        throw new Error(result?.error || "Failed to create studio record");
+      }
+
+      setStudioMessage("Redirecting to payment...");
+
+      // Create checkout URL with only studio ID as custom data (user auth handled server-side)
       const checkoutUrl = await createCheckoutUrl(
         selectedPlan,
-        userId,
-        userEmail,
+        1, // quantity
         {
-          studioFormData: formData,
-          returnUrl: window.location.href,
-        }
+          studio_id: uploadState.currentUUID,
+          source: "studio_create",
+        },
+        `${window.location.origin}/dashboard/studio/${uploadState.currentUUID}?payment=success`
       );
 
       if (checkoutUrl) {

@@ -20,7 +20,9 @@ export function SheetMenu() {
       >
         <SidebarProvider>
           <div className="flex-shrink-0 py-6">
-            <AccountSwitcher />
+            <div className="[&_.grid]:!translate-x-0 [&_.grid]:!opacity-100">
+              <AccountSwitcher />
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto py-4">
             <Menu isOpen />

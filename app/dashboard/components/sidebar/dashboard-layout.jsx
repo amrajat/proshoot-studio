@@ -1,21 +1,21 @@
 "use client";
 
 import { Sidebar } from "./sidebar";
+import { SheetMenu } from "./sheet-menu";
 import { useSidebarContext } from "@/context/SidebarContext";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { AccountProvider } from "@/context/AccountContext";
 import { Toaster } from "@/components/ui/sonner";
 
 /**
  * Dashboard Layout Component
- * 
+ *
  * Provides the main layout structure for dashboard pages including:
  * - Sidebar navigation with responsive behavior
  * - Main content area with proper spacing
  * - Footer with support contact information
  * - Account context provider for user/organization management
- * 
+ *
  * @param {React.ReactNode} children - Page content to render
  * @param {Object|null} initialProfile - Initial user profile data
  * @param {Array} initialOrganizations - Initial organizations data
@@ -44,6 +44,11 @@ export default function DashboardLayout({
       {/* Sidebar Navigation */}
       <Sidebar />
 
+      {/* Mobile Menu */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <SheetMenu />
+      </div>
+
       {/* Main Content Area */}
       <main
         className={cn(
@@ -51,11 +56,13 @@ export default function DashboardLayout({
           getMainMargin()
         )}
       >
-        {children}
+        <div className="mx-auto container pt-20 pb-20 px-4 sm:px-6 md:pb-8 lg:px-8 lg:py-16">
+          {children}
+        </div>
       </main>
 
       {/* Footer */}
-      <footer
+      {/* <footer
         className={cn(
           "transition-[margin-left] ease-in-out duration-300",
           getMainMargin()
@@ -75,17 +82,17 @@ export default function DashboardLayout({
             </p>
           </div>
         </div>
-      </footer>
-      
+      </footer> */}
+
       {/* Sonner Toast Notifications */}
-      <Toaster 
-        richColors 
-        position="top-right" 
+      <Toaster
+        richColors
+        position="top-right"
         toastOptions={{
           style: {
-            background: 'hsl(var(--background))',
-            color: 'hsl(var(--foreground))',
-            border: '1px solid hsl(var(--border))',
+            background: "hsl(var(--background))",
+            color: "hsl(var(--foreground))",
+            border: "1px solid hsl(var(--border))",
           },
         }}
       />

@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useAccountContext } from "@/context/AccountContext";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
-import { ContentLayout } from "../components/sidebar/content-layout";
 import { GLOBAL_ALL_CLOTHING_OPTIONS } from "@/app/utils/styleOptions";
 
 import { Button } from "@/components/ui/button";
@@ -114,8 +113,7 @@ export default function ManageClothingPage() {
 
   if (selectedContext?.type === "personal") {
     return (
-      <ContentLayout title="Browse Clothing Options">
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
@@ -171,15 +169,13 @@ export default function ManageClothingPage() {
               </div>
             </TabsContent>
           </Tabs>
-        </div>
-      </ContentLayout>
+      </div>
     );
   }
 
   if (selectedContext?.type !== "organization") {
     return (
-      <ContentLayout title="Manage Clothing Options">
-        <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-3">
             <div className="flex items-center justify-center w-16 h-16 rounded-full bg-muted mx-auto">
               <Shirt className="w-8 h-8 text-muted-foreground" />
@@ -189,14 +185,12 @@ export default function ManageClothingPage() {
               Please select an organization context to manage clothing options.
             </p>
           </div>
-        </div>
-      </ContentLayout>
+      </div>
     );
   }
 
   return (
-    <ContentLayout title="Manage Organization Clothing Options">
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -374,7 +368,6 @@ export default function ManageClothingPage() {
             </TabsContent>
           </Tabs>
         )}
-      </div>
-    </ContentLayout>
+    </div>
   );
 }

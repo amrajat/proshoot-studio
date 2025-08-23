@@ -1,7 +1,6 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
 import createSupabaseServerClient from "@/lib/supabase/server-client";
-import { ContentLayout } from "@/app/dashboard/components/sidebar/content-layout.tsx";
 import StudioDetailClient from "../../components/studio/StudioDetailClient";
 
 /**
@@ -32,8 +31,6 @@ export default async function StudioDetailPage({ params }) {
   }
 
   return (
-    <ContentLayout title="Studio Details">
-      <StudioDetailClient studioId={studioId} currentUserId={user.id} />
-    </ContentLayout>
+    <StudioDetailClient studioId={studioId} currentUserId={user.id} />
   );
 }

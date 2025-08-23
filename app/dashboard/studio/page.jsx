@@ -16,7 +16,6 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PlusCircle, AlertCircle, Camera, RefreshCw } from "lucide-react";
-import { ContentLayout } from "../components/sidebar/content-layout";
 
 /**
  * Studio List Page
@@ -92,8 +91,7 @@ export default function StudioListPage() {
   }, [fetchStudios]);
 
   return (
-    <ContentLayout title={studiosData.pageTitle}>
-      <div className="space-y-8">
+    <div className="space-y-8">
         {/* Studio Management Section */}
         <section>
           <div className="mb-6">
@@ -182,7 +180,6 @@ export default function StudioListPage() {
             </CardContent>
           </Card>
         </section>
-      </div>
-    </ContentLayout>
+    </div>
   );
 }

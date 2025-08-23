@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useAccountContext } from "@/context/AccountContext";
-import { ContentLayout } from "../components/sidebar/content-layout";
 import { useRouter } from "next/navigation";
 import { createCheckoutUrl } from "@/app/dashboard/actions/checkout";
 import config from "@/config";
@@ -523,8 +522,7 @@ export default function BuyCreditsPage() {
 
   // ===== MAIN RENDER =====
   return (
-    <ContentLayout title="Buy Credits">
-      <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Choose Your Plan</h1>
@@ -629,7 +627,6 @@ export default function BuyCreditsPage() {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
-    </ContentLayout>
+    </div>
   );
 }

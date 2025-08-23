@@ -6,7 +6,6 @@
 "use client";
 
 import React from "react";
-import { ContentLayout } from "../../components/sidebar/content-layout";
 import ErrorBoundary from "../../components/ui/ErrorBoundary";
 import StudioCreateWizard from "../../components/studio/create/StudioCreateWizard";
 import StudioFormProvider from "../../components/studio/create/forms/StudioFormProvider";
@@ -17,12 +16,10 @@ import StudioFormProvider from "../../components/studio/create/forms/StudioFormP
  */
 export default function StudioCreatePage() {
   return (
-    <ContentLayout title="Create AI Studio">
-      <ErrorBoundary>
+    <ErrorBoundary>
         <StudioFormProvider>
           <StudioCreateWizard />
         </StudioFormProvider>
-      </ErrorBoundary>
-    </ContentLayout>
+    </ErrorBoundary>
   );
 }

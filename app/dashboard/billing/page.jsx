@@ -1,6 +1,5 @@
 import createSupabaseServerClient from "@/lib/supabase/server-client";
 import { redirect } from "next/navigation";
-import { ContentLayout } from "../components/sidebar/content-layout";
 import {
   Card,
   CardContent,
@@ -104,8 +103,7 @@ export default async function BillingPage() {
   }
 
   return (
-    <ContentLayout title="Billing & Usage">
-      <div className="space-y-8">
+    <div className="space-y-8">
         {/* Credits Overview Section */}
         <section>
           <div className="mb-6">
@@ -370,7 +368,6 @@ export default async function BillingPage() {
             </CardContent>
           </Card>
         </section>
-      </div>
-    </ContentLayout>
+    </div>
   );
 }

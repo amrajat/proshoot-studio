@@ -167,7 +167,7 @@ export function AccountSwitcher() {
                       : "translate-x-0 opacity-100"
                   )}
                 >
-                  <span className="truncate text-foreground">
+                  <span className="truncate text-foreground font-bold text-base">
                     {selectedContext.name}
                   </span>
                   <span className="truncate text-xs text-muted-foreground">

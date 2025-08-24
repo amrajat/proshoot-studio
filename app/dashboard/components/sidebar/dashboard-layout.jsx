@@ -1,7 +1,7 @@
 "use client";
 
 import { Sidebar } from "./sidebar";
-import { SheetMenu } from "./sheet-menu";
+import { MobileMenu } from "./mobile-menu";
 import { useSidebarContext } from "@/context/SidebarContext";
 import { cn } from "@/lib/utils";
 import { AccountProvider } from "@/context/AccountContext";
@@ -45,8 +45,8 @@ export default function DashboardLayout({
       <Sidebar />
 
       {/* Mobile Menu */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <SheetMenu />
+      <div className="fixed top-4 left-4 z-10 lg:hidden">
+        <MobileMenu />
       </div>
 
       {/* Main Content Area */}

@@ -18,9 +18,10 @@ import {
 
 interface MenuProps {
   isOpen: boolean | undefined;
+  onItemClick?: () => void;
 }
 
-export function Menu({ isOpen }: MenuProps) {
+export function Menu({ isOpen, onItemClick }: MenuProps) {
   const pathname = usePathname();
   const menuList = getMenuList(pathname);
 
@@ -72,7 +73,7 @@ export function Menu({ isOpen }: MenuProps) {
                               )}
                               asChild
                             >
-                              <Link href={href}>
+                              <Link href={href} onClick={onItemClick}>
                                 <span
                                   className={cn(isOpen === false ? "" : "mr-4")}
                                 >
@@ -124,6 +125,7 @@ export function Menu({ isOpen }: MenuProps) {
                     onClick={() => {
                       // Add product tour logic here
                       console.log("Starting product tour...");
+                      onItemClick?.();
                     }}
                     variant="outline"
                     className="w-full h-10 flex items-center px-4"
@@ -160,6 +162,7 @@ export function Menu({ isOpen }: MenuProps) {
                         "mailto:feedback@proshoot.co?subject=Feedback",
                         "_blank"
                       );
+                      onItemClick?.();
                     }}
                     variant="outline"
                     className="w-full h-10 flex items-center px-4"
@@ -196,6 +199,7 @@ export function Menu({ isOpen }: MenuProps) {
                         "mailto:support@proshoot.co?subject=Support Request",
                         "_blank"
                       );
+                      onItemClick?.();
                     }}
                     variant="outline"
                     className="w-full h-10 flex items-center px-4"

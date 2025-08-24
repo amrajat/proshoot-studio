@@ -69,7 +69,7 @@ export function Menu({ isOpen, onItemClick }: MenuProps) {
                                 "w-full justify-start h-10 mb-1",
                                 (label === "Create Headshots" ||
                                   label === "Buy Credits") &&
-                                  "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white hover:from-purple-600 hover:via-pink-600 hover:to-red-600 hover:text-white"
+                                  "bg-gradient-to-r from-blue-600 to-purple-400 text-white hover:from-blue-500 hover:to-purple-500 hover:text-white"
                               )}
                               asChild
                             >

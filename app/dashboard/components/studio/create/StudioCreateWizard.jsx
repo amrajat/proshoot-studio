@@ -322,8 +322,7 @@ const StudioCreateWizard = () => {
               isStepValid={isStepValid}
             />
           </div>
-          {/* // TODO: MOVE THIS RESET BUTTON SOMEWHERE ELSE */}
-          {/* <Button
+          <Button
             variant="outline"
             size="sm"
             onClick={() => {
@@ -339,7 +338,7 @@ const StudioCreateWizard = () => {
             className="ml-4"
           >
             Start Over
-          </Button> */}
+          </Button>
         </div>
 
         {/* Main Content */}

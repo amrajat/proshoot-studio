@@ -42,16 +42,11 @@ const attributesSchema = z.object({
     .min(1, "Studio name is required")
     .max(50, "Studio name must be less than 50 characters"),
   gender: z.string().min(1, "Gender is required"),
-  age: z.string().min(1, "Age is required"),
   ethnicity: z.string().min(1, "Ethnicity is required"),
   hairLength: z.string().min(1, "Hair length is required"),
   hairColor: z.string().min(1, "Hair color is required"),
   hairType: z.string().min(1, "Hair type is required"),
-  eyeColor: z.string().min(1, "Eye color is required"),
   glasses: z.string().min(1, "Glasses preference is required"),
-  bodyType: z.string().min(1, "Body type is required"),
-  height: z.string().min(1, "Height is required"),
-  weight: z.string().min(1, "Weight is required"),
 });
 
 // Combined schema for final validation

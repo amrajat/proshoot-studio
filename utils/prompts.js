@@ -323,9 +323,9 @@ export const PROMPT_TEMPLATES = [
     promptFunction: (character, clothingName, backgroundName) => {
       return `generic prompt, ${character.trigger_word} ${
         character.ethnicity
-      } ${character.gender} in ${character.age}, with ${
-        character.eyeColor
-      } eyes${hairStyle(character)}${glasses(
+      } ${character.gender} in ${character.age}, with ${hairStyle(
+        character
+      )}${glasses(
         character
       )}. Subject is wearing ${clothingName}. Background is ${backgroundName}. Photorealistic, high quality, well-lit.`;
     },

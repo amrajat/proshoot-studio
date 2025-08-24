@@ -3,7 +3,7 @@
  * Collects user physical attributes for better AI generation
  */
 
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,52 +16,37 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { User, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  WandSparkles,
+  SmilePlus,
+} from "lucide-react";
 import useStudioCreateStore from "@/stores/studioCreateStore";
+import { useAccountContext } from "@/context/AccountContext";
 
 // New attribute options - all values in lowercase
 const GENDERS = ["man", "woman", "non-binary"];
 
-const AGES = [
-  "early-20s",
-  "mid-20s",
-  "late-20s",
-  "early-30s",
-  "mid-30s",
-  "late-30s",
-  "early-40s",
-  "mid-40s",
-  "late-40s",
-  "early-50s",
-  "mid-50s",
-  "late-50s",
-  "early-60s",
-  "mid-60s",
-  "late-60s",
-  "early-70s",
-  "mid-70s",
-  "late-70s",
-  "early-80s",
-  "mid-80s",
-  "late-80s",
-  "early-90s",
-  "mid-90s",
-  "late-90s",
-];
-
 const ETHNICITIES = [
-  "black or of african descent",
-  "east asian",
-  "european / white",
-  "hispanic or latino",
-  "indigenous peoples",
-  "middle eastern or north african (mena)",
-  "south asian",
-  "southeast asian",
-  "multiracial or mixed",
+  "African",
+  "Caucasian",
+  "European",
+  "East Asian",
+  "Hispanic Latino",
+  "Indigenous",
+  "Jewish",
+  "Middle Eastern",
+  "Multiracial",
+  "Native American",
+  "North African",
+  "Pacific Islander",
+  "Romani",
+  "South Asian",
+  "Southeast Asian",
+  "Other",
 ];
-
-const EYE_COLORS = ["brown", "hazel", "blue", "amber", "gray", "green"];
 
 // Hair Attributes by Gender
 const HAIR_LENGTH = {
@@ -69,37 +54,40 @@ const HAIR_LENGTH = {
     "bald",
     "buzz cut",
     "short cropped",
-    "fade / taper",
+    "fade",
+    "taper",
     "undercut",
-    "medium length / bro flow",
+    "medium length",
+    "bro flow",
     "long",
-    "man bun / top knot",
+    "man bun",
+    "top knot",
   ],
   woman: [
     "pixie cut",
     "bald",
     "bob cut",
-    "lob / long bob",
+    "lob",
+    "long bob",
     "medium length",
     "long",
     "layered cut",
-    "updo / bun",
+    "updo",
+    "bun",
     "hisab",
   ],
   "non-binary": [
     "bald",
     "buzz cut",
     "short cropped",
-    "fade / taper",
+    "fade",
+    "taper",
     "undercut",
-    "medium length / bro flow",
+    "medium length",
+    "bro flow",
     "long",
-    "man bun / top knot",
-    "pixie cut",
-    "bob cut",
-    "lob / long bob",
-    "layered cut",
-    "updo / bun",
+    "man bun",
+    "top knot",
   ],
 };
 
@@ -113,16 +101,19 @@ const HAIR_COLOR = {
     "golden blonde",
     "ash blonde",
     "platinum blonde",
-    "ginger / red",
+    "ginger",
+    "red",
     "auburn",
     "salt & pepper",
-    "silver / gray",
+    "silver",
+    "gray",
     "white",
   ],
   woman: [
     "jet black",
     "natural black",
-    "dark brown / espresso",
+    "dark brown",
+    "espresso",
     "chestnut brown",
     "medium brown",
     "light brown",
@@ -132,9 +123,11 @@ const HAIR_COLOR = {
     "strawberry blonde",
     "ginger",
     "auburn",
-    "deep red / burgundy",
+    "deep red",
+    "burgundy",
     "salt & pepper",
-    "silver / gray",
+    "silver",
+    "gray",
     "white",
     "highlights",
     "balayage",
@@ -149,15 +142,19 @@ const HAIR_COLOR = {
     "golden blonde",
     "ash blonde",
     "platinum blonde",
-    "ginger / red",
+    "ginger",
+    "red",
     "auburn",
     "salt & pepper",
-    "silver / gray",
+    "silver",
+    "gray",
     "white",
-    "dark brown / espresso",
+    "dark brown",
+    "espresso",
     "chestnut brown",
     "strawberry blonde",
-    "deep red / burgundy",
+    "deep red",
+    "burgundy",
     "highlights",
     "balayage",
     "ombré",
@@ -165,12 +162,13 @@ const HAIR_COLOR = {
 };
 
 const HAIR_TYPE = {
-  man: ["straight", "wavy", "curly", "coily / afro-textured", "dreadlocks"],
+  man: ["straight", "wavy", "curly", "coily", "afro-textured", "dreadlocks"],
   woman: [
     "straight",
     "wavy",
     "curly",
-    "coily / afro-textured",
+    "coily",
+    "afro-textured",
     "dreadlocks",
     "braids",
   ],
@@ -178,82 +176,17 @@ const HAIR_TYPE = {
     "straight",
     "wavy",
     "curly",
-    "coily / afro-textured",
+    "coily",
+    "afro-textured",
     "dreadlocks",
     "braids",
-  ],
-};
-
-const HEIGHT_RANGES = [
-  "4'8\" – 4'9\"",
-  "4'10\" – 4'11\"",
-  "5'0\" – 5'1\"",
-  "5'2\" – 5'3\"",
-  "5'4\" – 5'5\"",
-  "5'6\" – 5'7\"",
-  "5'8\" – 5'9\"",
-  "5'10\" – 5'11\"",
-  "6'0\" – 6'1\"",
-  "6'2\" – 6'3\"",
-  "6'4\" – 6'5\"",
-  "6'6\" – 6'7\"",
-  "6'8\" – 6'9\"",
-  "6'10\" – 6'11\"",
-  "7'0\"+",
-];
-
-const WEIGHT_RANGES = [
-  "under 100 lbs",
-  "100 – 114 lbs",
-  "115 – 129 lbs",
-  "130 – 144 lbs",
-  "145 – 159 lbs",
-  "160 – 174 lbs",
-  "175 – 189 lbs",
-  "190 – 204 lbs",
-  "205 – 219 lbs",
-  "220 – 234 lbs",
-  "235 – 249 lbs",
-  "250 – 264 lbs",
-  "265 – 279 lbs",
-  "280 – 299 lbs",
-  "300 – 324 lbs",
-  "325 – 349 lbs",
-  "350 – 374 lbs",
-  "375 – 399 lbs",
-  "400+ lbs",
-];
-
-const BODY_TYPES = {
-  man: [
-    "slim",
-    "average",
-    "athletic",
-    "broad / muscular",
-    "heavyset / stocky",
-    "large / plus size",
-  ],
-  woman: [
-    "slim",
-    "average",
-    "athletic / toned",
-    "curvy",
-    "full figured",
-    "plus size",
-  ],
-  "non-binary": [
-    "slim",
-    "average",
-    "athletic",
-    "broad / muscular",
-    "heavyset / stocky",
-    "large / plus size",
   ],
 };
 
 const AttributesStep = ({ formData, errors }) => {
   const { updateFormField, nextStep, prevStep, setErrors } =
     useStudioCreateStore();
+  const { selectedContext } = useAccountContext();
 
   // Get current gender for conditional rendering
   const currentGender = formData.gender || "man";
@@ -269,7 +202,9 @@ const AttributesStep = ({ formData, errors }) => {
   }, [formData.hairLength]);
 
   const handleFieldChange = (field, value) => {
-    updateFormField(field, value);
+    // Trim studioName input
+    const processedValue = field === "studioName" ? value.trim() : value;
+    updateFormField(field, processedValue);
 
     // Clear hair color and type if hair length is bald or hisab
     if (field === "hairLength" && (value === "bald" || value === "hisab")) {
@@ -284,6 +219,14 @@ const AttributesStep = ({ formData, errors }) => {
     updateFormField("glasses", booleanValue);
   };
 
+  // Prepopulate studio name with selectedContext name
+  useEffect(() => {
+    if (selectedContext?.name && !formData.studioName) {
+      const defaultStudioName = `${selectedContext.name}'s Headshots`;
+      updateFormField("studioName", defaultStudioName);
+    }
+  }, [selectedContext, formData.studioName, updateFormField]);
+
   const handleNext = () => {
     const newErrors = {};
 
@@ -293,6 +236,9 @@ const AttributesStep = ({ formData, errors }) => {
     }
     if (!formData.gender) {
       newErrors.gender = "Gender is required";
+    }
+    if (!formData.ethnicity) {
+      newErrors.ethnicity = "Ethnicity is required";
     }
     if (
       formData.glasses === undefined ||
@@ -373,7 +319,7 @@ const AttributesStep = ({ formData, errors }) => {
   const GlassesField = () => (
     <div className="space-y-2">
       <Label htmlFor="glasses">
-        Glasses
+        Do you want Glasses?
         <span className="text-red-500 ml-1">*</span>
       </Label>
       <Select
@@ -390,8 +336,8 @@ const AttributesStep = ({ formData, errors }) => {
           <SelectValue placeholder="Select glasses option" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="true">True</SelectItem>
-          <SelectItem value="false">False</SelectItem>
+          <SelectItem value="true">Yes</SelectItem>
+          <SelectItem value="false">No</SelectItem>
         </SelectContent>
       </Select>
       {errors.glasses && (
@@ -406,28 +352,20 @@ const AttributesStep = ({ formData, errors }) => {
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-semibold">Your Attributes</h2>
         <p className="text-muted-foreground">
-          Help us create more accurate headshots by telling us about yourself
+          Inputs are used solely to improve AI accuracy and is kept private.
         </p>
       </div>
 
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertDescription>
-          This information is used solely to improve AI generation accuracy and
-          is kept private.
-        </AlertDescription>
-      </Alert>
-
-      {/* Basic Information */}
+      {/* Basics Information */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Basic Information
+            <SmilePlus className="h-5 w-5" />
+            Basics
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="studioName">
                 Studio Name
@@ -454,25 +392,23 @@ const AttributesStep = ({ formData, errors }) => {
               required={true}
             />
             <SelectField
-              field="age"
-              label="Age Range"
-              options={AGES}
-              placeholder="Select age range"
-            />
-            <SelectField
               field="ethnicity"
               label="Ethnicity"
               options={ETHNICITIES}
               placeholder="Select ethnicity"
+              required={true}
             />
           </div>
         </CardContent>
       </Card>
 
-      {/* Hair Attributes */}
+      {/* Appearances */}
       <Card>
         <CardHeader>
-          <CardTitle>Hair Attributes</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <WandSparkles className="h-5 w-5" />
+            Appearances
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {isHairDisabled && (
@@ -484,7 +420,7 @@ const AttributesStep = ({ formData, errors }) => {
               </AlertDescription>
             </Alert>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <SelectField
               field="hairLength"
               label="Hair Length"
@@ -497,7 +433,7 @@ const AttributesStep = ({ formData, errors }) => {
               label="Hair Color"
               options={HAIR_COLOR[genderForAttributes] || HAIR_COLOR.man}
               placeholder="Select color"
-              required={!isHairDisabled}
+              required={false}
               disabled={isHairDisabled}
             />
             <SelectField
@@ -505,56 +441,10 @@ const AttributesStep = ({ formData, errors }) => {
               label="Hair Type"
               options={HAIR_TYPE[genderForAttributes] || HAIR_TYPE.man}
               placeholder="Select type"
-              required={!isHairDisabled}
+              required={false}
               disabled={isHairDisabled}
             />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Facial Features */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Facial Features</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SelectField
-              field="eyeColor"
-              label="Eye Color"
-              options={EYE_COLORS}
-              placeholder="Select eye color"
-            />
             <GlassesField />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Physical Attributes */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Physical Attributes</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <SelectField
-              field="bodyType"
-              label="Body Type"
-              options={BODY_TYPES[genderForAttributes] || BODY_TYPES.man}
-              placeholder="Select body type"
-            />
-            <SelectField
-              field="height"
-              label="Height"
-              options={HEIGHT_RANGES}
-              placeholder="Select height"
-            />
-            <SelectField
-              field="weight"
-              label="Weight Range"
-              options={WEIGHT_RANGES}
-              placeholder="Select weight"
-            />
           </div>
         </CardContent>
       </Card>

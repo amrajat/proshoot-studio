@@ -16,16 +16,11 @@ const initialFormData = {
   style_pairs: [],
   context: "personal", // 'personal' | 'organization'
   gender: "",
-  age: "",
   ethnicity: "",
   hairLength: "",
   hairColor: "",
   hairType: "",
-  eyeColor: "",
   glasses: "",
-  bodyType: "",
-  height: "",
-  weight: "",
 };
 
 // Initial UI state

@@ -1,8 +1,5 @@
-import { LoaderCircle } from "lucide-react";
+import { PageLoader } from "@/components/shared/universal-loader";
+
 export default function Loading() {
-  return (
-    <div className="flex items-center justify-center h-screen">
-      <LoaderCircle className="animate-spin size-12 text-primary" />
-    </div>
-  );
+  return <PageLoader />;
 }

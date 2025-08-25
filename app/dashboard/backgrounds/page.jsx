@@ -11,8 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle2, AlertCircle, Settings, Image } from "lucide-react";
+import { CenteredLoader } from "@/components/shared/universal-loader";
 
 export default function ManageBackgroundsPage() {
   const { selectedContext, isCurrentUserOrgAdmin } = useAccountContext();
@@ -266,21 +266,7 @@ export default function ManageBackgroundsPage() {
 
       {/* Loading State */}
       {isLoading ? (
-        <div className="space-y-4">
-          <div className="flex space-x-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-20" />
-            ))}
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="aspect-square w-full" />
-                <Skeleton className="h-4 w-3/4 mx-auto" />
-              </div>
-            ))}
-          </div>
-        </div>
+        <CenteredLoader text="Loading background options" />
       ) : (
         /* Tabs and Grid */
         <Tabs value={activeTab} onValueChange={setActiveTab}>

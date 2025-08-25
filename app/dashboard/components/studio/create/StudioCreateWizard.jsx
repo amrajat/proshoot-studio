@@ -12,7 +12,7 @@ import useStudioCreateStore from "@/stores/studioCreateStore";
 
 // Components
 import ErrorBoundary from "../../ui/ErrorBoundary";
-import { PageLoading } from "../../ui/LoadingStates";
+import { PageLoader } from "@/components/shared/universal-loader";
 import HeaderStepNavigation from "./HeaderStepNavigation";
 import { useStudioForm } from "./forms/StudioFormProvider";
 
@@ -266,7 +266,7 @@ const StudioCreateWizard = () => {
 
   // Loading state
   if (creditsLoading || isOrgSettingsLoading) {
-    return <PageLoading message="Initializing studio creation..." />;
+    return <PageLoader text="Initializing studio creation" />;
   }
 
   // Error states

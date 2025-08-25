@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { InlineLoader } from "@/components/shared/universal-loader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -316,7 +317,14 @@ export function LoginForm({ className, ...props }) {
               }
               aria-live="polite"
             >
-              {loading ? "Sending OTP..." : "Send OTP"}
+              {loading ? (
+                <>
+                  <InlineLoader size="sm" showText={false} className="mr-2" />
+                  Sending OTP...
+                </>
+              ) : (
+                "Send OTP"
+              )}
             </Button>
             {TURNSTILE_SITE_KEY &&
               TURNSTILE_SITE_KEY !== "1x00000000000000000000AA" && (
@@ -376,7 +384,14 @@ export function LoginForm({ className, ...props }) {
             disabled={loading || otp.length < 6}
             aria-live="polite"
           >
-            {loading ? "Verifying..." : "Verify OTP & Login"}
+            {loading ? (
+              <>
+                <InlineLoader size="sm" showText={false} className="mr-2" />
+                Verifying...
+              </>
+            ) : (
+              "Verify OTP & Login"
+            )}
           </Button>
           <Button
             variant="link"

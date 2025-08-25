@@ -22,7 +22,11 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { X, AlertCircle, RefreshCw, Info, Trash2 } from "lucide-react";
+import { Upload, X, RefreshCw, Eye } from "lucide-react";
+import {
+  InlineLoader,
+  ButtonLoader,
+} from "@/components/shared/universal-loader";
 
 import useStudioCreateStore from "@/stores/studioCreateStore";
 import { createCheckoutUrl } from "@/app/dashboard/actions/checkout";
@@ -999,7 +1003,7 @@ const ImageUploadStep = ({
                     }
                   >
                     {isRemovingAll ? (
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      <RefreshCw className="h-4 w-4 animate-spin" />
                     ) : (
                       <Trash2 className="h-4 w-4 mr-2" />
                     )}
@@ -1029,7 +1033,7 @@ const ImageUploadStep = ({
                     >
                       {isRemovingAll ? (
                         <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          <RefreshCw className="h-4 w-4 animate-spin" />
                           Removing...
                         </>
                       ) : (
@@ -1070,8 +1074,20 @@ const ImageUploadStep = ({
                         <div className="absolute top-2 left-2 z-10">
                           {isFailed && (
                             <div className="bg-destructive text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
-                              <AlertCircle className="h-3 w-3" />
+                              <X className="h-3 w-3" />
                               Failed
+                            </div>
+                          )}
+                          {isUploaded && (
+                            <div className="bg-success text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Uploaded
+                            </div>
+                          )}
+                          {isUploading && (
+                            <div className="bg-primary text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                              <InlineLoader size="sm" showText={false} />
+                              Uploading
                             </div>
                           )}
                         </div>
@@ -1086,7 +1102,7 @@ const ImageUploadStep = ({
                         disabled={isRemoving || isUploading || isSubmitting}
                       >
                         {isRemoving ? (
-                          <RefreshCw className="h-3 w-3 animate-spin" />
+                          <InlineLoader size="sm" showText={false} />
                         ) : (
                           <X className="h-3 w-3" />
                         )}

@@ -8,9 +8,12 @@ import {
   AlertCircle,
   Camera,
   Sparkles,
-  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  CenteredLoader,
+  ButtonLoader,
+} from "@/components/shared/universal-loader";
 import {
   Card,
   CardContent,
@@ -20,7 +23,6 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { fetchStudio } from "../../actions/studio/fetchStudio";
 import { toggleFavorite } from "../../actions/studio/toggleFavorite";
@@ -202,22 +204,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
 
   // Loading state
   if (isLoading) {
-    return (
-      <div className="space-y-8">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-10" />
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-4 w-32" />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <Skeleton key={i} className="aspect-square" />
-          ))}
-        </div>
-      </div>
-    );
+    return <CenteredLoader text="Loading studio details" />;
   }
 
   // Error state
@@ -283,7 +270,9 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
           </Button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight">{studio.name}</h1>
+              <h1 className="text-2xl font-bold tracking-tight">
+                {studio.name}
+              </h1>
               <Badge
                 variant={
                   studio.status === "COMPLETED" ? "default" : "secondary"
@@ -304,7 +293,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
             disabled={isUpdatingStatus}
           >
             {isUpdatingStatus ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <ButtonLoader />
             ) : (
               <Download className="h-4 w-4" />
             )}
@@ -320,7 +309,7 @@ export default function StudioDetailClient({ studioId, currentUserId }) {
             disabled={isUpdatingStatus}
           >
             {isUpdatingStatus ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <ButtonLoader />
             ) : (
               <AlertCircle className="h-4 w-4" />
             )}

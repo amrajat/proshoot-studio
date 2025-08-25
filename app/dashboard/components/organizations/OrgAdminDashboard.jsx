@@ -45,7 +45,6 @@ import { useAccountContext } from "@/context/AccountContext";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
 import {
   ShoppingCart,
-  Loader2,
   Plus,
   AlertCircle,
   X,
@@ -59,6 +58,10 @@ import {
   Wallet,
 } from "lucide-react";
 import { InviteMembersDialog } from "./InviteMembersDialog";
+import {
+  InlineLoader,
+  ButtonLoader,
+} from "@/components/shared/universal-loader";
 import {
   transferTeamCreditsAction,
   getOrganizationMembersWithCreditsAction,
@@ -420,7 +423,7 @@ export default function OrgAdminDashboard({ orgContext }) {
             <CardContent>
               <div className="text-2xl font-bold">
                 {creditsLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <InlineLoader showText={false} />
                 ) : (
                   creditStats.balance
                 )}
@@ -436,7 +439,7 @@ export default function OrgAdminDashboard({ orgContext }) {
             <CardContent>
               <div className="text-2xl font-bold">
                 {creditsLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <InlineLoader showText={false} />
                 ) : (
                   creditStats.team
                 )}
@@ -452,7 +455,7 @@ export default function OrgAdminDashboard({ orgContext }) {
             <CardContent>
               <div className="text-2xl font-bold">
                 {membersLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <InlineLoader showText={false} />
                 ) : (
                   members.length
                 )}
@@ -470,7 +473,7 @@ export default function OrgAdminDashboard({ orgContext }) {
             <CardContent>
               <div className="text-2xl font-bold">
                 {invitationsLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <InlineLoader showText={false} />
                 ) : (
                   pendingInvitations.length
                 )}
@@ -537,7 +540,7 @@ export default function OrgAdminDashboard({ orgContext }) {
                     title="Generate Link"
                   >
                     {shareableLinkLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <InlineLoader showText={false} />
                     ) : (
                       <RefreshCw className="h-4 w-4" />
                     )}
@@ -551,7 +554,7 @@ export default function OrgAdminDashboard({ orgContext }) {
                     title="Revoke Link"
                   >
                     {shareableLinkLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <InlineLoader showText={false} />
                     ) : (
                       <Ban className="h-4 w-4" />
                     )}
@@ -608,10 +611,7 @@ export default function OrgAdminDashboard({ orgContext }) {
                   {membersLoading ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8">
-                        <div className="flex items-center justify-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Loading team members...</span>
-                        </div>
+                        <InlineLoader text="Loading team members" />
                       </TableCell>
                     </TableRow>
                   ) : members.length === 0 ? (
@@ -706,10 +706,7 @@ export default function OrgAdminDashboard({ orgContext }) {
                   {invitationsLoading ? (
                     <TableRow>
                       <TableCell colSpan={4} className="text-center py-8">
-                        <div className="flex items-center justify-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Loading invitations...</span>
-                        </div>
+                        <InlineLoader text="Loading invitations" />
                       </TableCell>
                     </TableRow>
                   ) : invitations.length === 0 ? (
@@ -849,9 +846,7 @@ export default function OrgAdminDashboard({ orgContext }) {
               }
               disabled={transferLoading || !transferAmount}
             >
-              {transferLoading && (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              )}
+              {transferLoading && <ButtonLoader />}
               Transfer Credits
             </Button>
           </DialogFooter>

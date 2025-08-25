@@ -1,7 +1,8 @@
 "use client";
 
 import { useAccountContext } from "@/context/AccountContext";
-import { LoadingSkeleton, ErrorMessage } from "@/components/ui/loading";
+import { PageLoader } from "@/components/shared/universal-loader";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import StudioCreate from "@/app/dashboard/studio/create/page";
 import OrgAdminDashboard from "@/app/dashboard/components/organizations/OrgAdminDashboard.jsx";
 
@@ -19,13 +20,19 @@ export default function DashboardView({ userId }) {
 
   // Show loading state while context is being fetched
   if (contextLoading) {
-    return <LoadingSkeleton />;
+    return <PageLoader text="Loading dashboard" />;
   }
 
   // Handle case where no context is available
   if (!selectedContext) {
     return (
-      <ErrorMessage message="Error loading account context or no contexts available." />
+      <div className="max-w-2xl mx-auto p-6">
+        <Alert variant="destructive">
+          <AlertDescription>
+            Error loading account context or no contexts available.
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
@@ -33,15 +40,23 @@ export default function DashboardView({ userId }) {
   switch (selectedContext.type) {
     case "personal":
       return <StudioCreate />;
-      
+
     case "organization":
       return isCurrentUserOrgAdmin ? (
         <OrgAdminDashboard orgContext={selectedContext} />
       ) : (
         <StudioCreate />
       );
-      
+
     default:
-      return <ErrorMessage message="Invalid account context selected." />;
+      return (
+        <div className="max-w-2xl mx-auto p-6">
+          <Alert variant="destructive">
+            <AlertDescription>
+              Invalid account context selected.
+            </AlertDescription>
+          </Alert>
+        </div>
+      );
   }
 }

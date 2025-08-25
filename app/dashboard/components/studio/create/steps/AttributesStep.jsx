@@ -5,7 +5,6 @@
 
 import React, { useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,15 +15,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Info,
-  WandSparkles,
-  SmilePlus,
-} from "lucide-react";
-import useStudioCreateStore from "@/stores/studioCreateStore";
+import { Info, WandSparkles, SmilePlus } from "lucide-react";
 import { useAccountContext } from "@/context/AccountContext";
+import StepNavigation from "../components/StepNavigation";
+import useStudioCreateStore from "@/stores/studioCreateStore";
 
 // New attribute options - all values in lowercase
 const GENDERS = ["man", "woman", "non-binary"];
@@ -184,8 +178,14 @@ const HAIR_TYPE = {
 };
 
 const AttributesStep = ({ formData, errors }) => {
-  const { updateFormField, nextStep, prevStep, setErrors } =
-    useStudioCreateStore();
+  const {
+    updateFormField,
+    nextStep,
+    prevStep,
+    setErrors,
+    resetFormCompletely,
+    isSubmitting,
+  } = useStudioCreateStore();
   const { selectedContext } = useAccountContext();
 
   // Get current gender for conditional rendering
@@ -350,7 +350,7 @@ const AttributesStep = ({ formData, errors }) => {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold">Your Attributes</h2>
+        <h2 className="text-2xl font-semibold">Your attributes</h2>
         <p className="text-muted-foreground">
           Inputs are used solely to improve AI accuracy and is kept private.
         </p>
@@ -450,16 +450,11 @@ const AttributesStep = ({ formData, errors }) => {
       </Card>
 
       {/* Navigation */}
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={prevStep}>
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          Previous
-        </Button>
-        <Button onClick={handleNext}>
-          Next Step
-          <ChevronRight className="h-4 w-4 ml-2" />
-        </Button>
-      </div>
+      <StepNavigation
+        onNext={handleNext}
+        onPrevious={prevStep}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 };

@@ -87,47 +87,34 @@ const avoidGuidelines = [
 
 export default function ImageUploadingGuideLines() {
   return (
-    <div className="w-full space-y-6 py-2">
-      <div className="space-y-4">
-        <p className="text-muted-foreground">
-          To get the best possible results, it's essential to follow these
-          guidelines closely. While some tips are flexible, the{" "}
-          <span className="font-medium underline text-foreground">
-            5 key recommendations below must be followed—otherwise, you’ll miss
-            out on the best outcomes.
-          </span>{" "}
-          The closer you stick to these guidelines, the better your results will
-          be!
+    <div className="w-full space-y-6 py-2 px-4 sm:px-6">
+      <div
+        className="space-y-4 rounded-xl bg-muted/30 ring-1 ring-muted-foreground/15 p-4 sm:p-5"
+        role="note"
+        aria-label="Photo upload recommendations"
+      >
+        <p className="text-muted-foreground text-sm sm:text-base">
+          To get the best possible results, it's essential to follow these guidelines closely. While some tips are flexible, the
+          <span className="font-medium underline text-foreground"> 5 key recommendations below must be followed</span>—otherwise, you’ll miss out on the best outcomes.
+          The closer you stick to these guidelines, the better your results will be.
         </p>
-        <p className="text-destructive font-bold">
-          Highly Recommended, Follow these 5 points at least.
-        </p>
-        <ol className="list-decimal ps-4 space-y-3 text-sm md:text-base">
-          <li>
-            Variation is key—avoid similar or identical images or same day
-            photos.
-          </li>
-          <li>
-            Upload 8-20 high-quality close-ups, upper-body shots with different
-            outfits, expressions, and backgrounds.
-          </li>
+        <div className="inline-flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 text-destructive px-2.5 py-1 text-xs font-medium">
+          Highly recommended: follow these 5 points at least
+        </div>
+        <ol className="list-decimal ps-4 space-y-2.5 text-sm md:text-base">
+          <li>Variation is key—avoid similar or identical images or same day photos.</li>
+          <li>Upload 8-20 high-quality close-ups and upper-body shots with different outfits, expressions, and backgrounds.</li>
           <li>Ensure your photos are clear, sharp, and well-lit.</li>
-          <li>
-            Avoid full-body shots, group photos, blurry or out-of-focus images,
-            and small faces.
-          </li>
-          <li>
-            Upload some half-body images, or the AI might make you look skinnier
-            than you actually are.
-          </li>
+          <li>Avoid full-body shots, group photos, blurry or out-of-focus images, and small faces.</li>
+          <li>Include some half-body images to capture proportions accurately.</li>
         </ol>
       </div>
 
       <div className="space-y-6">
-        <Card className="rounded shadow-sm">
+        <Card className="rounded-xl bg-background ring-1 ring-muted-foreground/15 shadow-sm">
           <CardContent className="p-4 sm:p-6">
-            <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center">
-              <Check className="mr-2 text-success h-5 w-5 sm:h-6 sm:w-6" />
+            <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+              <Check className="text-success h-5 w-5 sm:h-6 sm:w-6" />
               Follow
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -138,10 +125,10 @@ export default function ImageUploadingGuideLines() {
           </CardContent>
         </Card>
 
-        <Card className="rounded shadow-sm">
+        <Card className="rounded-xl bg-background ring-1 ring-muted-foreground/15 shadow-sm">
           <CardContent className="p-4 sm:p-6">
-            <h3 className="text-lg sm:text-xl font-semibold mb-4 flex items-center">
-              <X className="mr-2 text-red-600 h-5 w-5 sm:h-6 sm:w-6" />
+            <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+              <X className="text-red-600 h-5 w-5 sm:h-6 sm:w-6" />
               Avoid
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -170,7 +157,7 @@ function GuidelineItem({ item, isCorrect }) {
       <div
         className={`relative aspect-square rounded-lg overflow-hidden group border-2 ${
           isCorrect ? "border-success" : "border-red-600"
-        }`}
+        } ring-1 ring-muted-foreground/10 shadow-xs transition-shadow duration-200 hover:shadow-sm bg-muted/20`}
       >
         <Image
           src={item.image}

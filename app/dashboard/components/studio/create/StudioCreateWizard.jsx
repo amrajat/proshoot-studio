@@ -9,15 +9,11 @@ import React, { useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAccountContext } from "@/context/AccountContext";
 import useStudioCreateStore from "@/stores/studioCreateStore";
-import {
-  hasSufficientCredits,
-  getTotalCredits,
-} from "@/services/creditService";
 
 // Components
 import ErrorBoundary from "../../ui/ErrorBoundary";
 import { PageLoading } from "../../ui/LoadingStates";
-import StepNavigation from "./StepNavigation";
+import HeaderStepNavigation from "./HeaderStepNavigation";
 import { useStudioForm } from "./forms/StudioFormProvider";
 
 // Step Components
@@ -28,7 +24,6 @@ import AttributesStep from "./steps/AttributesStep";
 
 // UI Components
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
@@ -112,29 +107,25 @@ const StudioCreateWizard = () => {
       {
         id: "plan-selection",
         component: "PlanSelectionStep",
-        title: "Choose Your Plan",
-        description: "Select the plan that fits your needs",
+        title: "Plan",
         showInOrg: false, // Hidden for orgs with team credits
       },
       {
         id: "attributes",
         component: "AttributesStep",
-        title: "Personal Details",
-        description: "Tell us about your physical attributes",
+        title: "Attributes",
         showInOrg: true,
       },
       {
         id: "style-pairing",
         component: "StylePairingStep",
-        title: "Choose Styles",
-        description: "Select clothing and background combinations",
+        title: "Styles",
         showInOrg: true,
       },
       {
         id: "image-upload",
         component: "ImageUploadStep",
-        title: "Upload & Create",
-        description: "Upload photos and create your studio",
+        title: "Create",
         showInOrg: true,
       },
     ];
@@ -291,30 +282,13 @@ const StudioCreateWizard = () => {
       </div>
     );
   }
-
-  // No credits warning: Disabled becuase we want to render the studio creation form.
-  // If user has not credits then they will be forced to pay and create the headshots
-  // if (credits && getTotalCredits(credits) === 0 && !isOrgWithTeamCredits) {
-  //   return (
-  //     <div className="max-w-2xl mx-auto p-6">
-  //       <Alert>
-  //         <AlertCircle className="h-4 w-4" />
-  //         <AlertDescription>
-  //           You don't have any credits available. Please purchase credits to
-  //           create a studio.
-  //         </AlertDescription>
-  //       </Alert>
-  //     </div>
-  //   );
-  // }
-
   return (
     <ErrorBoundary>
       <div className="space-y-8">
         {/* Step Progress */}
         <div className="flex justify-between items-center">
           <div className="flex-1">
-            <StepNavigation
+            <HeaderStepNavigation
               steps={steps}
               currentStep={currentStep}
               onStepClick={setCurrentStep}
@@ -322,23 +296,6 @@ const StudioCreateWizard = () => {
               isStepValid={isStepValid}
             />
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              if (
-                confirm(
-                  "Are you sure you want to start over? This will clear all your progress."
-                )
-              ) {
-                resetFormCompletely();
-              }
-            }}
-            disabled={isSubmitting}
-            className="ml-4"
-          >
-            Start Over
-          </Button>
         </div>
 
         {/* Main Content */}

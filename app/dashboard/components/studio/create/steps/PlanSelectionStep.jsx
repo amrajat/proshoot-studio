@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Check, ChevronRight, Info, TrendingUp } from "lucide-react";
 import useStudioCreateStore from "@/stores/studioCreateStore";
 import { hasSufficientCredits } from "@/services/creditService";
+import StepNavigation from "../components/StepNavigation";
 import config from "@/config";
 
 const planIcons = {
@@ -109,7 +110,8 @@ const planIcons = {
 };
 
 const PlanSelectionStep = ({ credits, formData, errors, selectedContext }) => {
-  const { updateFormField, nextStep, setErrors } = useStudioCreateStore();
+  const { updateFormField, nextStep, setErrors, resetFormCompletely } =
+    useStudioCreateStore();
   const [selectedPlan, setSelectedPlan] = useState(formData.plan || "");
 
   // Plan definitions from config
@@ -178,9 +180,9 @@ const PlanSelectionStep = ({ credits, formData, errors, selectedContext }) => {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold">Choose Your Plan</h2>
+        <h2 className="text-2xl font-semibold">Choose your plan</h2>
         <p className="text-muted-foreground">
-          Select the plan that best fits your needs. You can upgrade anytime.
+          Select the plan that best fits your needs.
         </p>
       </div>
 
@@ -302,16 +304,12 @@ const PlanSelectionStep = ({ credits, formData, errors, selectedContext }) => {
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-end">
-        <Button
-          onClick={handleNext}
-          disabled={!selectedPlan}
-          className="min-w-[120px]"
-        >
-          Next Step
-          <ChevronRight className="h-4 w-4 ml-2" />
-        </Button>
-      </div>
+      <StepNavigation
+        onNext={handleNext}
+        nextDisabled={!selectedPlan}
+        showPrevious={false}
+        showReset={false}
+      />
     </div>
   );
 };

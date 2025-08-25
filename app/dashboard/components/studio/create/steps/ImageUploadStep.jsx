@@ -22,12 +22,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Upload, X, AlertCircle, RefreshCw, Info, Trash2 } from "lucide-react";
+import { X, AlertCircle, RefreshCw, Info, Trash2 } from "lucide-react";
 
 import useStudioCreateStore from "@/stores/studioCreateStore";
 import { createCheckoutUrl } from "@/app/dashboard/actions/checkout";
 import { hasSufficientCredits } from "@/services/creditService";
 import ImageUploadingGuideLines from "../ImageUploadingGuideLines";
+import StepNavigation from "../components/StepNavigation";
+import { Separator } from "@/components/ui/separator";
 
 // Constants
 
@@ -108,8 +110,14 @@ const ImageUploadStep = ({
   isOrgWithTeamCredits,
 }) => {
   const router = useRouter();
-  const { formData, setFormData, isSubmitting, setIsSubmitting } =
-    useStudioCreateStore();
+  const {
+    formData,
+    setFormData,
+    isSubmitting,
+    setIsSubmitting,
+    resetFormCompletely,
+    prevStep,
+  } = useStudioCreateStore();
 
   // Component state
   const [uploadState, setUploadState] = useState({
@@ -908,7 +916,7 @@ const ImageUploadStep = ({
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">Upload Your Photos</h2>
+        <h2 className="text-2xl font-bold">Upload photos</h2>
         <p className="text-muted-foreground">
           Upload at least {MIN_IMAGES} high-quality photos. You can crop each
           image to focus on your face.
@@ -918,15 +926,12 @@ const ImageUploadStep = ({
       <div className="flex flex-wrap gap-2 justify-center">
         <Dialog open={showGuidelines} onOpenChange={setShowGuidelines}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="rounded-lg">
               <Info className="h-4 w-4 mr-2" />
               Upload Guidelines
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Photo Upload Guidelines</DialogTitle>
-            </DialogHeader>
+          <DialogContent className="sm:max-w-3xl md:max-w-5xl w-[min(100vw-2rem,80rem)] max-h-[85vh] overflow-y-auto rounded-xl p-0">
             <ImageUploadingGuideLines />
           </DialogContent>
         </Dialog>
@@ -935,14 +940,20 @@ const ImageUploadStep = ({
       {uploadState.files.length === 0 ? (
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+          className={`rounded-xl border border-dashed border-muted-foreground/25 p-8 text-center cursor-pointer transition-colors shadow-sm bg-primary/10 ${
             isDragActive
-              ? "border-primary bg-primary/5"
-              : "border-muted-foreground/25 hover:border-primary/50"
+              ? "border-primary/50 bg-primary/20 ring-1 ring-primary/20"
+              : "hover:border-primary/50 hover:bg-primary/20"
           }`}
         >
           <input {...getInputProps()} />
-          <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <Image
+            src="/images/add_files.svg"
+            alt="Add files"
+            width={96}
+            height={96}
+            className="h-24 w-24 mx-auto mb-4 opacity-80"
+          />
           <h3 className="text-lg font-semibold mb-2">
             {isDragActive ? "Drop your photos here" : "Upload your photos"}
           </h3>
@@ -957,7 +968,7 @@ const ImageUploadStep = ({
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          {/* <div className="flex items-center justify-between rounded-xl p-3 sm:p-4 bg-muted/30 ring-1 ring-muted-foreground/15 shadow-sm">
             <div className="space-y-1">
               <p className="font-medium">
                 {uploadState.files.length} photo
@@ -976,8 +987,9 @@ const ImageUploadStep = ({
               >
                 <DialogTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="destructive"
                     size="sm"
+                    className="rounded-lg"
                     disabled={
                       isRemovingAll ||
                       uploadState.files.length === 0 ||
@@ -1028,8 +1040,8 @@ const ImageUploadStep = ({
                 </DialogContent>
               </Dialog>
             </div>
-          </div>
-
+          </div> */}
+          <Separator className="my-4" />
           <Masonry
             breakpointCols={breakpointColumns}
             className="flex w-auto -ml-4"
@@ -1047,7 +1059,7 @@ const ImageUploadStep = ({
               return (
                 <Card
                   key={fileData.id}
-                  className={`mb-4 overflow-hidden ${
+                  className={`mb-4 rounded-xl ring-1 ring-muted-foreground/15 ${
                     isUploading ? "animate-pulse" : ""
                   }`}
                 >
@@ -1057,7 +1069,7 @@ const ImageUploadStep = ({
                       {(isUploading || isUploaded || isFailed) && (
                         <div className="absolute top-2 left-2 z-10">
                           {isFailed && (
-                            <div className="bg-red-500 text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                            <div className="bg-destructive text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
                               <AlertCircle className="h-3 w-3" />
                               Failed
                             </div>
@@ -1069,7 +1081,7 @@ const ImageUploadStep = ({
                       <Button
                         size="sm"
                         variant="destructive"
-                        className="absolute top-2 right-2 z-10 h-6 w-6 p-0"
+                        className="absolute rounded-full top-0 right-0 translate-x-1/2 -translate-y-1/2 z-10 h-6 w-6 p-0"
                         onClick={() => removeFile(fileData.id)}
                         disabled={isRemoving || isUploading || isSubmitting}
                       >
@@ -1118,10 +1130,10 @@ const ImageUploadStep = ({
 
                       {/* Retry Button for Failed Uploads */}
                       {isFailed && (
-                        <div className="absolute bottom-2 left-2 z-10">
+                        <div className="absolute bottom-1/2 left-1/2 z-10 -translate-x-1/2 translate-y-1/2">
                           <Button
                             size="sm"
-                            variant="secondary"
+                            variant="default"
                             onClick={() =>
                               processAndUploadFile(fileData.file, index)
                             }
@@ -1178,11 +1190,17 @@ const ImageUploadStep = ({
 
           <div
             {...getRootProps()}
-            className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 transition-colors"
+            className="rounded-xl border border-dashed border-muted-foreground/25 p-4 text-center cursor-pointer hover:border-primary/40 transition-colors bg-primary/10"
           >
             <input {...getInputProps()} />
-            <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
+            <Image
+              src="/images/add_files.svg"
+              alt="Add files"
+              width={48}
+              height={48}
+              className="h-12 w-12 mx-auto mb-2 opacity-80"
+            />
+            <p className="text-sm">
               Add more photos (up to {MAX_IMAGES} total)
             </p>
           </div>
@@ -1209,14 +1227,12 @@ const ImageUploadStep = ({
         </Alert>
       )}
 
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={() => router.back()}>
-          Back
-        </Button>
-
-        <Button
-          onClick={handleCreateStudio}
-          disabled={
+      {/* Navigation */}
+      <div className="flex flex-col items-center space-y-3">
+        <StepNavigation
+          onNext={handleCreateStudio}
+          onPrevious={prevStep}
+          nextDisabled={
             uploadState.files.length < MIN_IMAGES ||
             uploadState.uploading ||
             uploadState.uploadedFiles.length !== uploadState.files.length ||
@@ -1224,16 +1240,17 @@ const ImageUploadStep = ({
             isRemovingAll ||
             removingFiles.size > 0
           }
-        >
-          {localSubmitting ? (
-            <>
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              {hasCreditsForPlan() ? "Creating..." : "Processing Payment..."}
-            </>
-          ) : (
-            <>{hasCreditsForPlan() ? "Create Studio" : "Pay and Create"}</>
-          )}
-        </Button>
+          nextText={
+            localSubmitting
+              ? hasCreditsForPlan()
+                ? "Creating..."
+                : "Processing Payment..."
+              : hasCreditsForPlan()
+              ? "Create Headshots"
+              : "Pay and Create"
+          }
+          isSubmitting={localSubmitting}
+        />
       </div>
     </div>
   );

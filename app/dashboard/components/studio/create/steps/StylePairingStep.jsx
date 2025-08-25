@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import Masonry from "react-masonry-css";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,13 +28,12 @@ import {
 import {
   Plus,
   X,
-  ChevronLeft,
-  ChevronRight,
-  Shirt,
-  Image as ImageIcon,
-  Info,
   Shuffle,
-  RotateCcw,
+  Shirt,
+  Images as ImagesIcon,
+  Info,
+  RotateCw,
+  Check,
 } from "lucide-react";
 import useStudioCreateStore from "@/stores/studioCreateStore";
 import {
@@ -41,6 +41,7 @@ import {
   ALL_BACKGROUND_OPTIONS,
 } from "@/app/utils/styleOptions";
 import { useStudioForm } from "../forms/StudioFormProvider";
+import StepNavigation from "../components/StepNavigation";
 import config from "@/config";
 
 const StylePairingStep = ({ formData, errors, accountContext }) => {
@@ -51,6 +52,8 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
     prevStep,
     setErrors,
     formData: storeFormData,
+    resetFormCompletely,
+    isSubmitting,
   } = useStudioCreateStore();
 
   const { validateCurrentStep } = useStudioForm();
@@ -215,8 +218,11 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
     }
 
     // Create optimized style pair structure
-    const optimizedPair = createOptimizedStylePair(selectedClothing, selectedBackground);
-    
+    const optimizedPair = createOptimizedStylePair(
+      selectedClothing,
+      selectedBackground
+    );
+
     if (!optimizedPair) {
       setErrors({ stylePair: "Invalid clothing or background selection" });
       return;
@@ -279,7 +285,10 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
 
       // Only add if this combination hasn't been used
       if (!usedCombinations.has(combinationKey)) {
-        const optimizedPair = createOptimizedStylePair(clothing.id, background.id);
+        const optimizedPair = createOptimizedStylePair(
+          clothing.id,
+          background.id
+        );
         if (optimizedPair) {
           newPairs.push(optimizedPair);
           usedCombinations.add(combinationKey);
@@ -325,53 +334,60 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
   const getClothingById = (id) => {
     return GLOBAL_ALL_CLOTHING_OPTIONS.find((item) => item.id === id);
   };
-  
+
   const getBackgroundById = (id) => {
     return ALL_BACKGROUND_OPTIONS.find((item) => item.id === id);
   };
-  
+
   // Helper function to create optimized style pair structure
   const createOptimizedStylePair = (clothingId, backgroundId) => {
     const clothingItem = getClothingById(clothingId);
     const backgroundItem = getBackgroundById(backgroundId);
-    
+
     if (!clothingItem || !backgroundItem) {
-      console.error('Invalid clothing or background ID:', { clothingId, backgroundId });
+      console.error("Invalid clothing or background ID:", {
+        clothingId,
+        backgroundId,
+      });
       return null;
     }
-    
+
     return {
       clothing: {
         name: clothingItem.name,
-        theme: clothingItem.theme
+        theme: clothingItem.theme,
       },
       background: {
         name: backgroundItem.name,
-        theme: backgroundItem.theme
-      }
+        theme: backgroundItem.theme,
+      },
     };
   };
-  
+
   // Helper function to get full item details for UI display
   const getFullItemDetails = (stylePair) => {
     // Find items by matching name and theme (since we removed IDs)
     const clothingItem = GLOBAL_ALL_CLOTHING_OPTIONS.find(
-      item => item.name === stylePair.clothing.name && item.theme === stylePair.clothing.theme
+      (item) =>
+        item.name === stylePair.clothing.name &&
+        item.theme === stylePair.clothing.theme
     );
     const backgroundItem = ALL_BACKGROUND_OPTIONS.find(
-      item => item.name === stylePair.background.name && item.theme === stylePair.background.theme
+      (item) =>
+        item.name === stylePair.background.name &&
+        item.theme === stylePair.background.theme
     );
-    
+
     return { clothingItem, backgroundItem };
   };
-  
+
   // Helper function to check if combination exists (using names instead of IDs)
   const combinationExists = (clothingId, backgroundId) => {
     const clothingItem = getClothingById(clothingId);
     const backgroundItem = getBackgroundById(backgroundId);
-    
+
     if (!clothingItem || !backgroundItem) return false;
-    
+
     return currentPairs.some(
       (pair) =>
         pair.clothing.name === clothingItem.name &&
@@ -382,34 +398,33 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold">Style Combinations</h2>
-        <p className="text-muted-foreground">
-          Create combinations of clothing and backgrounds for your headshots
+      <div className="text-center space-y-3">
+        <h2 className="text-2xl font-semibold">Create style combinations</h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          Create combinations of clothing and backgrounds for your headshots.
         </p>
-        <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-          <Badge variant="outline">
+        <div className="flex items-center justify-center gap-2">
+          <Badge
+            variant="secondary"
+            className="bg-primary/10 text-primary border-primary/20"
+          >
             {currentPairs.length} / {planConfig.stylesLimit} combinations
           </Badge>
-          <span>•</span>
-          <span>Gender: {currentGender}</span>
-          <span>•</span>
-          <span>Plan: {currentPlan}</span>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-center gap-3">
+      {/* Quick Actions */}
+      <div className="flex flex-col sm:flex-row justify-center gap-3">
         <Button
           variant="outline"
           onClick={handleAutoPair}
           disabled={currentPairs.length >= planConfig.stylesLimit}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:from-blue-100 hover:to-indigo-100 text-blue-700"
         >
           <Shuffle className="h-4 w-4" />
-          Auto Pair (
+          Auto pair (
           {Math.min(
             planConfig.stylesLimit,
             filteredClothingOptions.length * filteredBackgroundOptions.length
@@ -422,29 +437,36 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
             <Button
               variant="outline"
               disabled={currentPairs.length === 0}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-700"
             >
-              <RotateCcw className="h-4 w-4" />
-              Clear All
+              <RotateCw className="h-4 w-4" />
+              Clear all
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Clear All Style Combinations</DialogTitle>
+              <DialogTitle>Clear all combinations?</DialogTitle>
               <DialogDescription>
-                Are you sure you want to clear all {currentPairs.length} style
-                combinations? This action cannot be undone.
+                This will remove all {currentPairs.length} style combinations.
+                This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter>
+            <DialogFooter className="gap-2 sm:gap-0">
               <Button
                 variant="outline"
                 onClick={() => setShowClearDialog(false)}
               >
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={handleClearAll}>
-                Clear All
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  updateFormField("style_pairs", []);
+                  setShowClearDialog(false);
+                  setErrors({});
+                }}
+              >
+                Clear all
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -452,31 +474,30 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
       </div>
 
       {/* Style Pair Creator */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
-            Create New Combination
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Card className="border-0 shadow-sm bg-gradient-to-br from-background to-muted/20">
+        <CardContent className="space-y-6">
           {/* Two Column Layout */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid lg:grid-cols-2 gap-8">
             {/* Clothing Column */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Shirt className="h-5 w-5" />
-                  <h4 className="font-medium">
-                    Clothing ({filteredClothingOptions.length} options)
-                  </h4>
+                  <div className="p-1.5 rounded-lg bg-blue-100 text-blue-600">
+                    <Shirt className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">Clothing</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {filteredClothingOptions.length} options
+                    </p>
+                  </div>
                 </div>
                 <Select
                   value={clothingThemeFilter}
                   onValueChange={setClothingThemeFilter}
                 >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by theme" />
+                  <SelectTrigger className="w-full sm:w-[160px] h-9">
+                    <SelectValue placeholder="All themes" />
                   </SelectTrigger>
                   <SelectContent>
                     {clothingThemes.map((theme) => (
@@ -487,50 +508,66 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto p-2">
-                {filteredClothingOptions.map((option) => (
-                  <Card
-                    key={option.id}
-                    className={`cursor-pointer transition-all hover:shadow-md ${
-                      selectedClothing === option.id
-                        ? "ring-2 ring-primary bg-primary/5"
-                        : "hover:bg-muted/50"
-                    }`}
-                    onClick={() => setSelectedClothing(option.id)}
-                  >
-                    <div className="aspect-square relative overflow-hidden bg-muted rounded-t-lg">
-                      <img
-                        src={option.image}
-                        alt={option.name}
-                        className="w-full h-full object-cover transition-transform duration-200 hover:scale-105 p-1"
-                        loading="lazy"
-                      />
-                    </div>
-                    <CardContent className="p-1">
-                      <h5 className="font-medium text-xs text-center leading-tight">
+              <div className="border rounded-xl p-3 bg-background/50">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-[32rem] overflow-y-auto overflow-x-hidden">
+                  {filteredClothingOptions.map((option) => (
+                    <div
+                      key={option.id}
+                      className="group cursor-pointer transition-all duration-200 focus:outline-none"
+                      onClick={() => setSelectedClothing(option.id)}
+                    >
+                      <div
+                        className={`relative rounded-xl overflow-hidden border transition-all ${
+                          selectedClothing === option.id
+                            ? "border-primary/40 ring-primary/50"
+                            : "border-border/50 hover:border-primary/30"
+                        }`}
+                      >
+                        <div className="aspect-square bg-muted/40">
+                          <img
+                            src={option.image}
+                            alt={option.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                        {selectedClothing === option.id && (
+                          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                              <Plus className="h-3 w-3" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs font-medium text-center mt-2 leading-tight">
                         {option.name}
-                      </h5>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Background Column */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <ImageIcon className="h-5 w-5" />
-                  <h4 className="font-medium">
-                    Backgrounds ({filteredBackgroundOptions.length} options)
-                  </h4>
+                  <div className="p-1.5 rounded-lg bg-destructive/10 text-destructive">
+                    <ImagesIcon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">Backgrounds</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {filteredBackgroundOptions.length} options
+                    </p>
+                  </div>
                 </div>
                 <Select
                   value={backgroundThemeFilter}
                   onValueChange={setBackgroundThemeFilter}
                 >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by theme" />
+                  <SelectTrigger className="w-full sm:w-[160px] h-9">
+                    <SelectValue placeholder="All themes" />
                   </SelectTrigger>
                   <SelectContent>
                     {backgroundThemes.map((theme) => (
@@ -541,77 +578,144 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto p-2">
-                {filteredBackgroundOptions.map((option) => (
-                  <Card
-                    key={option.id}
-                    className={`cursor-pointer transition-all hover:shadow-md ${
-                      selectedBackground === option.id
-                        ? "ring-2 ring-primary bg-primary/5"
-                        : "hover:bg-muted/50"
-                    }`}
-                    onClick={() => setSelectedBackground(option.id)}
-                  >
-                    <div className="aspect-square relative overflow-hidden bg-muted rounded-t-lg">
-                      <img
-                        src={option.image}
-                        alt={option.name}
-                        className="w-full h-full object-cover transition-transform duration-200 hover:scale-105 p-1"
-                        loading="lazy"
-                      />
-                    </div>
-                    <CardContent className="p-1">
-                      <h5 className="font-medium text-xs text-center leading-tight">
+              <div className="border rounded-xl p-3 bg-background/50">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-[32rem] overflow-y-auto overflow-x-hidden">
+                  {filteredBackgroundOptions.map((option) => (
+                    <div
+                      key={option.id}
+                      className="group cursor-pointer transition-all duration-200 focus:outline-none"
+                      onClick={() => setSelectedBackground(option.id)}
+                    >
+                      <div
+                        className={`relative rounded-xl overflow-hidden border transition-all ${
+                          selectedBackground === option.id
+                            ? "border-primary/40 ring-primary/50"
+                            : "border-border/50 hover:border-primary/30"
+                        }`}
+                      >
+                        <div className="aspect-square bg-muted/40">
+                          <img
+                            src={option.image}
+                            alt={option.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                        {selectedBackground === option.id && (
+                          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                              <Plus className="h-3 w-3" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs font-medium text-center mt-2 leading-tight">
                         {option.name}
-                      </h5>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Selected Combination Preview */}
+          {/* Selected Combination Preview & Add Button (matches card style) */}
           {(selectedClothing || selectedBackground) && (
-            <div className="mt-4 p-3 bg-muted rounded-lg">
-              <h5 className="font-medium mb-2">Current Selection:</h5>
-              <div className="flex items-center gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Clothing:</span>{" "}
-                  <span className="font-medium">
-                    {getClothingById(selectedClothing)?.name || "Not selected"}
-                  </span>
+            <div className="max-w-3xl mx-auto">
+              <div
+                onClick={addStylePair}
+                disabled={
+                  !selectedClothing ||
+                  !selectedBackground ||
+                  currentPairs.length >= planConfig.stylesLimit
+                }
+                className="group relative bg-background border border-border/50 rounded-xl p-4 transition-all duration-200 cursor-crosshair"
+              >
+                <div className="flex w-full flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  {/* Clothing (left) */}
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                      <img
+                        src={
+                          getClothingById(selectedClothing)?.image ||
+                          "/placeholder-clothing.jpg"
+                        }
+                        alt={
+                          getClothingById(selectedClothing)?.name || "Clothing"
+                        }
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm truncate">
+                        {getClothingById(selectedClothing)?.name ||
+                          "Not selected"}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {getClothingById(selectedClothing)?.theme || "—"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Plus Icon (center) */}
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mx-auto sm:mx-0">
+                    {/* <Plus className="h-3 w-3 text-primary" /> */}
+                    <Button
+                      onClick={addStylePair}
+                      disabled={
+                        !selectedClothing ||
+                        !selectedBackground ||
+                        currentPairs.length >= planConfig.stylesLimit
+                      }
+                      className="h-7 w-7 rounded-full bg-destructive hover:bg-destructive/90 shadow text-primary-foreground cursor-crosshair"
+                      aria-label="Add selected combination"
+                      title={`Add (${currentPairs.length}/${planConfig.stylesLimit})`}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
+
+                  {/* Background (right) */}
+                  <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm truncate text-right">
+                        {getBackgroundById(selectedBackground)?.name ||
+                          "Not selected"}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate text-right">
+                        {getBackgroundById(selectedBackground)?.theme || "—"}
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                      <img
+                        src={
+                          getBackgroundById(selectedBackground)?.image ||
+                          "/placeholder-background.jpg"
+                        }
+                        alt={
+                          getBackgroundById(selectedBackground)?.name ||
+                          "Background"
+                        }
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-muted-foreground">Background:</span>{" "}
-                  <span className="font-medium">
-                    {getBackgroundById(selectedBackground)?.name ||
-                      "Not selected"}
-                  </span>
-                </div>
+                <Badge
+                  variant="secondary"
+                  className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 bg-primary/10 text-primary text-xs font-semibold"
+                >
+                  New Style
+                </Badge>
               </div>
             </div>
           )}
 
-          {/* Add Button */}
-          <div className="mt-6">
-            <Button
-              onClick={addStylePair}
-              disabled={
-                !selectedClothing ||
-                !selectedBackground ||
-                currentPairs.length >= planConfig.stylesLimit
-              }
-              className="w-full"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Combination ({currentPairs.length}/{planConfig.stylesLimit})
-            </Button>
-          </div>
-
           {/* Error Display */}
           {errors.stylePair && (
-            <Alert variant="destructive" className="mt-4">
+            <Alert variant="destructive" className="border-red-200 bg-red-50">
               <Info className="h-4 w-4" />
               <AlertDescription>{errors.stylePair}</AlertDescription>
             </Alert>
@@ -621,80 +725,110 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
 
       {/* Created Style Pairs */}
       {currentPairs.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Your Style Combinations ({currentPairs.length})
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-background to-muted/20">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center justify-center gap-2 text-lg mb-4">
+              <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                <Check className="h-4 w-4" />
+              </div>
+              Your combinations ({currentPairs.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Masonry
+              breakpointCols={{
+                default: 2,
+                1024: 2,
+                768: 1,
+                640: 1,
+              }}
+              className="flex w-auto -ml-4"
+              columnClassName="pl-4 bg-clip-padding"
+            >
               {currentPairs.map((pair, index) => {
                 // Get full item details for UI display (includes images)
-                const { clothingItem, backgroundItem } = getFullItemDetails(pair);
+                const { clothingItem, backgroundItem } =
+                  getFullItemDetails(pair);
 
                 return (
                   <div
                     key={`${pair.clothing.name}-${pair.background.name}-${index}`}
-                    className="flex items-start justify-between p-4 border rounded-lg bg-card"
+                    className="group relative bg-background border border-border/50 rounded-xl p-4 mb-4 transition-all duration-200 hover:border-primary/30 break-inside-avoid"
                   >
-                    <div className="flex flex-col gap-3 flex-1">
-                      {/* Clothing Preview */}
-                      <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                          <img
-                            src={
-                              clothingItem?.image || "/placeholder-clothing.jpg"
-                            }
-                            alt={pair.clothing.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="text-sm min-w-0 flex-1">
-                          <div className="font-medium truncate">
-                            {pair.clothing.name}
+                    <div className="flex w-full flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      {/* Combination Preview */}
+                      <div className="flex w-full flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-1 min-w-0">
+                        {/* Clothing */}
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                            <img
+                              src={
+                                clothingItem?.image ||
+                                "/placeholder-clothing.jpg"
+                              }
+                              alt={pair.clothing.name}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
-                          <div className="text-muted-foreground text-xs">
-                            {pair.clothing.theme}
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-sm truncate">
+                              {pair.clothing.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {pair.clothing.theme}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Plus Icon */}
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mx-auto sm:mx-0">
+                          <Plus className="h-3 w-3 text-primary" />
+                        </div>
+
+                        {/* Background */}
+                        <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+                          <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                            <img
+                              src={
+                                backgroundItem?.image ||
+                                "/placeholder-background.jpg"
+                              }
+                              alt={pair.background.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-sm truncate">
+                              {pair.background.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {pair.background.theme}
+                            </p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Background Preview */}
-                      <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                          <img
-                            src={
-                              backgroundItem?.image ||
-                              "/placeholder-background.jpg"
-                            }
-                            alt={pair.background.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="text-sm min-w-0 flex-1">
-                          <div className="font-medium truncate">
-                            {pair.background.name}
-                          </div>
-                          <div className="text-muted-foreground text-xs">
-                            {pair.background.theme}
-                          </div>
-                        </div>
-                      </div>
+                      {/* Remove Button */}
+                      <span
+                        className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-destructive hover:bg-destructive/80 p-1 rounded-full cursor-pointer focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 transition-opacity"
+                        onClick={() => removeStylePair(index)}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Remove combination ${pair.clothing.name} with ${pair.background.name}`}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            removeStylePair(index);
+                          }
+                        }}
+                      >
+                        <X className="size-3 text-white" />
+                      </span>
                     </div>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeStylePair(index)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
                   </div>
                 );
               })}
-            </div>
+            </Masonry>
           </CardContent>
         </Card>
       )}
@@ -710,16 +844,12 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
       )}
 
       {/* Navigation */}
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={prevStep}>
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          Previous
-        </Button>
-        <Button onClick={handleNext} disabled={stylePairs.length === 0}>
-          Next Step
-          <ChevronRight className="h-4 w-4 ml-2" />
-        </Button>
-      </div>
+      <StepNavigation
+        onNext={handleNext}
+        onPrevious={prevStep}
+        nextDisabled={stylePairs.length === 0}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 };

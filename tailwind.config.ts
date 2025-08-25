@@ -89,6 +89,9 @@ const config: Config = {
         "spin-slow": "spin 12s linear infinite",
       },
     },
+    cursor: {
+      crosshair: "crosshair",
+    },
   },
   plugins: [require("tailwindcss-animate")],
 };

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { fetchStudio } from "../../actions/studio/fetchStudio";
 import { toggleFavorite } from "../../actions/studio/toggleFavorite";
 import { updateStudioStatus } from "../../actions/studio/updateStudioStatus";
@@ -35,7 +35,6 @@ import HeadshotImage from "./HeadshotImage";
  */
 export default function StudioDetailClient({ studioId, currentUserId }) {
   const router = useRouter();
-  const { toast } = useToast();
 
   // State management
   const [isLoading, setIsLoading] = useState(true);

@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { PlusCircle, AlertCircle, Camera, RefreshCw } from "lucide-react";
+import { PlusCircle, AlertCircle, Camera } from "lucide-react";
 import { CenteredLoader } from "@/components/shared/universal-loader";
 
 /**

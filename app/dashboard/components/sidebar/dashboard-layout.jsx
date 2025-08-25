@@ -52,7 +52,7 @@ export default function DashboardLayout({
       {/* Main Content Area */}
       <main
         className={cn(
-          "min-h-[calc(100vh_-_56px)] bg-zinc-50 dark:bg-zinc-900 transition-[margin-left] ease-in-out duration-300",
+          "min-h-[calc(100vh_-_56px)] bg-zinc-50 transition-[margin-left] ease-in-out duration-300",
           getMainMargin()
         )}
       >
@@ -86,13 +86,22 @@ export default function DashboardLayout({
 
       {/* Sonner Toast Notifications */}
       <Toaster
+        closeButton
+        position="bottom-right"
         richColors
-        position="top-right"
         toastOptions={{
           style: {
-            background: "hsl(var(--background))",
-            color: "hsl(var(--foreground))",
-            border: "1px solid hsl(var(--border))",
+            boxShadow: "none",
+          },
+          classNames: {
+            toast: "bg-background text-foreground border border-border",
+            success: "!bg-success !text-success-foreground !border-success",
+            error:
+              "!bg-destructive !text-destructive-foreground !border-destructive",
+            warning: "!bg-accent !text-accent-foreground !border-accent",
+            info: "!bg-primary !text-primary-foreground !border-primary",
+            closeButton:
+              "!bg-destructive !text-destructive-foreground !border-destructive",
           },
         }}
       />

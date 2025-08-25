@@ -33,7 +33,8 @@
     "components/auth/AuthForm.jsx",
     "components/layout/Header.jsx",
     "app/dashboard/components/sidebar/account-switcher.jsx",
-    "lib/email.js"
+    "lib/email.js",
+    "app/accept-invite/page.jsx"
   ],
   "exclude": ["node_modules"]
 }

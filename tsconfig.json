@@ -32,7 +32,8 @@
     "app/dashboard/flux/page.jsx",
     "components/auth/AuthForm.jsx",
     "components/layout/Header.jsx",
-    "app/dashboard/components/sidebar/account-switcher.jsx"
+    "app/dashboard/components/sidebar/account-switcher.jsx",
+    "lib/email.js"
   ],
   "exclude": ["node_modules"]
 }

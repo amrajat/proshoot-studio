@@ -19,6 +19,8 @@ CREATE TABLE public.invitations (
     token TEXT,
     invited_by_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     expires_at TIMESTAMPTZ,
+    resend_count INTEGER DEFAULT 0,
+    last_resent_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
@@ -39,6 +41,7 @@ CREATE INDEX idx_invitations_expires_at ON public.invitations(expires_at) WHERE 
 -- Composite indexes
 CREATE INDEX idx_invitations_org_status ON public.invitations(organization_id, status);
 CREATE INDEX idx_invitations_email_status ON public.invitations(invited_email, status) WHERE invited_email IS NOT NULL;
+CREATE INDEX idx_invitations_resend_tracking ON public.invitations(id, last_resent_at, resend_count) WHERE status = 'PENDING';
 
 -- ============================================================================
 -- CONSTRAINTS
@@ -74,6 +77,8 @@ COMMENT ON COLUMN public.invitations.status IS 'Current invitation status';
 COMMENT ON COLUMN public.invitations.token IS 'Unique token for invitation acceptance';
 COMMENT ON COLUMN public.invitations.invited_by_user_id IS 'User who sent the invitation';
 COMMENT ON COLUMN public.invitations.expires_at IS 'When invitation expires (NULL for no expiration)';
+COMMENT ON COLUMN public.invitations.resend_count IS 'Number of times invitation has been resent';
+COMMENT ON COLUMN public.invitations.last_resent_at IS 'Timestamp of last resend attempt';
 COMMENT ON COLUMN public.invitations.created_at IS 'Invitation creation timestamp';
 COMMENT ON COLUMN public.invitations.updated_at IS 'Last invitation update timestamp';
 

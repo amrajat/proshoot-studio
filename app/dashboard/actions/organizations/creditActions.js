@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import createSupabaseServerClient from "@/lib/supabase/server-client";
 import { revalidatePath } from "next/cache";
+import { sendOrganizationInviteEmail } from "@/lib/email";
+import { getBaseUrl } from "@/lib/utils";
 
 /**
  * Transfer team credits from organization owner to a member
@@ -223,11 +225,12 @@ export async function getMemberCreditHistoryAction(memberUserId, limit = 50) {
 export async function resendInvitationAction(formData) {
   try {
     const invitationId = formData.get("invitationId");
+    const organizationId = formData.get("organizationId");
 
-    if (!invitationId) {
+    if (!invitationId || !organizationId) {
       return {
         success: false,
-        error: "Invitation ID is required",
+        error: "Invitation ID and Organization ID are required",
       };
     }
 
@@ -235,7 +238,10 @@ export async function resendInvitationAction(formData) {
 
     const { data, error } = await supabase.rpc(
       "resend_organization_invitation",
-      { p_invitation_id: invitationId }
+      {
+        p_organization_id: organizationId,
+        p_invitation_id: invitationId,
+      }
     );
 
     if (error) {
@@ -251,6 +257,42 @@ export async function resendInvitationAction(formData) {
         success: false,
         error: data.error,
       };
+    }
+
+    // Send the actual email
+    if (data.email) {
+      try {
+        // Get organization and inviter details for email
+        const { data: orgData } = await supabase
+          .from("organizations")
+          .select("name")
+          .eq("id", organizationId)
+          .single();
+
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        // Get invitation token for the email link
+        const { data: inviteData } = await supabase
+          .from("invitations")
+          .select("token")
+          .eq("id", invitationId)
+          .single();
+
+        if (orgData && user && inviteData?.token) {
+          const host = getBaseUrl();
+          await sendOrganizationInviteEmail({
+            to: data.email,
+            inviterName: user.email,
+            organizationName: orgData.name,
+            inviteUrl: `${host}/accept-invite?token=${inviteData.token}`,
+          });
+        }
+      } catch (emailError) {
+        console.error("Failed to send resend email:", emailError);
+        // Don't fail the whole operation if email fails
+      }
     }
 
     // Revalidate the page
@@ -275,11 +317,12 @@ export async function resendInvitationAction(formData) {
 export async function removeInvitationAction(formData) {
   try {
     const invitationId = formData.get("invitationId");
+    const organizationId = formData.get("organizationId");
 
-    if (!invitationId) {
+    if (!invitationId || !organizationId) {
       return {
         success: false,
-        error: "Invitation ID is required",
+        error: "Invitation ID and Organization ID are required",
       };
     }
 
@@ -287,7 +330,10 @@ export async function removeInvitationAction(formData) {
 
     const { data, error } = await supabase.rpc(
       "remove_organization_invitation",
-      { p_invitation_id: invitationId }
+      {
+        p_organization_id: organizationId,
+        p_invitation_id: invitationId,
+      }
     );
 
     if (error) {

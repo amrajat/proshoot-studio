@@ -308,6 +308,7 @@ export default function OrgAdminDashboard({ orgContext }) {
     try {
       const formData = new FormData();
       formData.append("invitationId", invitationId);
+      formData.append("organizationId", orgContext.id);
 
       const result = await resendInvitationAction(formData);
 
@@ -327,6 +328,7 @@ export default function OrgAdminDashboard({ orgContext }) {
     try {
       const formData = new FormData();
       formData.append("invitationId", invitationId);
+      formData.append("organizationId", orgContext.id);
 
       const result = await removeInvitationAction(formData);
 

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { InlineLoader } from "@/components/shared/universal-loader";
+import { InlineLoader, ButtonLoader } from "@/components/shared/universal-loader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,9 +13,8 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, XCircle } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
 
 // Multicolored Google Icon
@@ -64,6 +63,25 @@ export function LoginForm({ className, ...props }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+
+  // Show toast notifications when error or success state changes
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (successMessage) {
+      if (showOtpInput) {
+        // OTP sent successfully
+        toast.success("OTP sent! Check your inbox/spam folder.");
+      } else {
+        // Other success messages
+        toast.success(successMessage);
+      }
+    }
+  }, [successMessage, showOtpInput]);
   const [captchaToken, setCaptchaToken] = useState(null);
   const [lastLoginMethod, setLastLoginMethod] = useState(null);
 
@@ -178,7 +196,7 @@ export function LoginForm({ className, ...props }) {
     if (otpError) {
       setError(otpError.message);
     } else {
-      setSuccessMessage(`Please check your inbox/spam folder.`);
+      setSuccessMessage(`OTP sent successfully`);
       setShowOtpInput(true);
       localStorage.setItem("lastLoginMethod", "OTP");
     }
@@ -201,7 +219,7 @@ export function LoginForm({ className, ...props }) {
     if (verifyError) {
       setError(verifyError.message);
     } else if (data.session) {
-      setSuccessMessage("Successfully logged in with OTP!");
+      toast.success("Successfully logged in!");
       localStorage.setItem("lastLoginMethod", "OTP (Verified)");
       router.refresh();
       const redirectPath = getRedirectPath();
@@ -232,25 +250,6 @@ export function LoginForm({ className, ...props }) {
         )}
       </div>
 
-      {error && (
-        <Alert variant="destructive" role="alert">
-          <XCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {successMessage && !showOtpInput && (
-        <Alert
-          variant="default"
-          className="border-green-500 bg-green-50 text-green-700"
-          role="status"
-        >
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertTitle>Success</AlertTitle>
-          <AlertDescription>{successMessage}</AlertDescription>
-        </Alert>
-      )}
-
       {!showOtpInput ? (
         <>
           <div className="grid gap-3">
@@ -261,7 +260,16 @@ export function LoginForm({ className, ...props }) {
               disabled={loading}
               aria-label="Continue with Google"
             >
-              <GoogleIcon /> Continue with Google
+              {loading ? (
+                <>
+                  <ButtonLoader className="mr-2" />
+                  Signing in with Google...
+                </>
+              ) : (
+                <>
+                  <GoogleIcon /> Continue with Google
+                </>
+              )}
             </Button>
             <Button
               variant="outline"
@@ -270,7 +278,16 @@ export function LoginForm({ className, ...props }) {
               disabled={loading}
               aria-label="Continue with LinkedIn"
             >
-              <LinkedInIcon /> Continue with LinkedIn
+              {loading ? (
+                <>
+                  <ButtonLoader className="mr-2" />
+                  Signing in with LinkedIn...
+                </>
+              ) : (
+                <>
+                  <LinkedInIcon /> Continue with LinkedIn
+                </>
+              )}
             </Button>
           </div>
 
@@ -319,7 +336,7 @@ export function LoginForm({ className, ...props }) {
             >
               {loading ? (
                 <>
-                  <InlineLoader size="sm" showText={false} className="mr-2" />
+                  <ButtonLoader className="mr-2" />
                   Sending OTP...
                 </>
               ) : (
@@ -341,17 +358,6 @@ export function LoginForm({ className, ...props }) {
         </>
       ) : (
         <div className="grid gap-4">
-          {successMessage && (
-            <Alert
-              variant="default"
-              className="border-green-500 bg-green-50 text-green-700"
-              role="status"
-            >
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <AlertTitle>OTP Sent!</AlertTitle>
-              <AlertDescription>{successMessage}</AlertDescription>
-            </Alert>
-          )}
           <Label
             htmlFor="otp-input"
             className="text-center text-lg font-medium"
@@ -386,8 +392,8 @@ export function LoginForm({ className, ...props }) {
           >
             {loading ? (
               <>
-                <InlineLoader size="sm" showText={false} className="mr-2" />
-                Verifying...
+                <ButtonLoader className="mr-2" />
+                Verifying & signing in...
               </>
             ) : (
               "Verify OTP & Login"

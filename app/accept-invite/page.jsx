@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
 import { Loader2, CheckCircle, XCircle, ArrowRight, Home } from "lucide-react";
 
@@ -48,11 +47,7 @@ function AcceptInvitePageContent() {
               isRedirecting: false,
             });
 
-            toast({
-              title: "Already a Member",
-              description: "You are already a member of this organization!",
-              variant: "default",
-            });
+            toast.success("You are already a member of this organization!");
 
             // Auto-redirect after 2 seconds for already member case
             setTimeout(() => {
@@ -66,11 +61,7 @@ function AcceptInvitePageContent() {
               isRedirecting: false,
             });
 
-            toast({
-              title: "Invitation Failed",
-              description: result.error,
-              variant: "destructive",
-            });
+            toast.error(result.error);
           }
         } else if (result.data?.success) {
           const successMessage =
@@ -82,11 +73,7 @@ function AcceptInvitePageContent() {
             isRedirecting: false,
           });
 
-          toast({
-            title: "Welcome!",
-            description: successMessage,
-            variant: "default",
-          });
+          toast.success(successMessage);
 
           // Auto-redirect after 3 seconds
           setTimeout(() => {
@@ -171,16 +158,18 @@ function AcceptInvitePageContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Alert className="border-green-200 bg-green-50">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-700">
-                  You have been successfully added to the organization and
-                  received 1 team credit.
-                  {state.isRedirecting
-                    ? " Redirecting..."
-                    : " Redirecting in a few seconds..."}
-                </AlertDescription>
-              </Alert>
+              <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600 mt-0.5" />
+                  <p className="text-sm text-green-700">
+                    You have been successfully added to the organization and
+                    received 1 team credit.
+                    {state.isRedirecting
+                      ? " Redirecting..."
+                      : " Redirecting in a few seconds..."}
+                  </p>
+                </div>
+              </div>
               <div className="flex flex-col gap-2">
                 <Button
                   onClick={handleRedirectToDashboard}
@@ -219,10 +208,12 @@ function AcceptInvitePageContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Alert variant="destructive">
-                <XCircle className="h-4 w-4" />
-                <AlertDescription>{state.message}</AlertDescription>
-              </Alert>
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="flex items-start gap-2">
+                  <XCircle className="h-4 w-4 text-red-600 mt-0.5" />
+                  <p className="text-sm text-red-700">{state.message}</p>
+                </div>
+              </div>
               <div className="flex flex-col gap-2">
                 <Button
                   onClick={() => window.location.reload()}
@@ -257,12 +248,12 @@ function AcceptInvitePageContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Alert className="border-amber-200 bg-amber-50">
-                <XCircle className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-amber-700">
-                  {state.message}
-                </AlertDescription>
-              </Alert>
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                <div className="flex items-start gap-2">
+                  <XCircle className="h-4 w-4 text-amber-600 mt-0.5" />
+                  <p className="text-sm text-amber-700">{state.message}</p>
+                </div>
+              </div>
               <Link href="/dashboard" className="w-full">
                 <Button className="w-full">
                   <Home className="mr-2 h-4 w-4" />

@@ -22,7 +22,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Upload, X, RefreshCw, Eye } from "lucide-react";
+import { X, RefreshCw, Info, CheckCircle2 } from "lucide-react";
 import {
   InlineLoader,
   ButtonLoader,

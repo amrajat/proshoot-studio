@@ -5,7 +5,6 @@ import { MobileMenu } from "./mobile-menu";
 import { useSidebarContext } from "@/context/SidebarContext";
 import { cn } from "@/lib/utils";
 import { AccountProvider } from "@/context/AccountContext";
-import { Toaster } from "@/components/ui/sonner";
 
 /**
  * Dashboard Layout Component
@@ -83,28 +82,6 @@ export default function DashboardLayout({
           </div>
         </div>
       </footer> */}
-
-      {/* Sonner Toast Notifications */}
-      <Toaster
-        closeButton
-        position="bottom-right"
-        richColors
-        toastOptions={{
-          style: {
-            boxShadow: "none",
-          },
-          classNames: {
-            toast: "bg-background text-foreground border border-border",
-            success: "!bg-success !text-success-foreground !border-success",
-            error:
-              "!bg-destructive !text-destructive-foreground !border-destructive",
-            warning: "!bg-accent !text-accent-foreground !border-accent",
-            info: "!bg-primary !text-primary-foreground !border-primary",
-            closeButton:
-              "!bg-destructive !text-destructive-foreground !border-destructive",
-          },
-        }}
-      />
     </AccountProvider>
   );
 }

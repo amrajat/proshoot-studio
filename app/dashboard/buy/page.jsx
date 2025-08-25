@@ -7,8 +7,8 @@ import { createCheckoutUrl } from "@/app/dashboard/actions/checkout";
 import config from "@/config";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -267,8 +267,15 @@ export default function BuyCreditsPage() {
     setQuantities((prev) => {
       const currentQty = prev[planKey] || 1;
       const newQty = Math.max(planKey === "team" ? 2 : 1, currentQty + change);
-      return { ...prev, [planKey]: Math.min(newQty, 100) };
+      return { ...prev, [planKey]: newQty };
     });
+  };
+
+  const setDirectQuantity = (planKey, value) => {
+    const numValue = parseInt(value) || 0;
+    const minQty = planKey === "team" ? 2 : 1;
+    const validQty = Math.max(minQty, numValue);
+    setQuantities((prev) => ({ ...prev, [planKey]: validQty }));
   };
 
   const handlePlanSelect = (planKey) => {
@@ -398,7 +405,14 @@ export default function BuyCreditsPage() {
               >
                 <Minus className="w-4 h-4" />
               </Button>
-              <span className="w-12 text-center font-medium">{quantity}</span>
+              <Input
+                type="number"
+                value={quantity}
+                onChange={(e) => setDirectQuantity(planKey, e.target.value)}
+                className="w-16 text-center font-medium"
+                min={planKey === "team" ? 2 : 1}
+                onClick={(e) => e.stopPropagation()}
+              />
               <Button
                 variant="outline"
                 size="sm"
@@ -406,7 +420,6 @@ export default function BuyCreditsPage() {
                   e.stopPropagation();
                   updateQuantity(planKey, 1);
                 }}
-                disabled={quantity >= 100}
               >
                 <Plus className="w-4 h-4" />
               </Button>
@@ -597,7 +610,14 @@ export default function BuyCreditsPage() {
                 >
                   <Minus className="w-4 h-4" />
                 </Button>
-                <span className="w-12 text-center font-medium">{quantity}</span>
+                <Input
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => setDirectQuantity(planKey, e.target.value)}
+                  className="w-16 text-center font-medium"
+                  min={2}
+                  onClick={(e) => e.stopPropagation()}
+                />
                 <Button
                   variant="outline"
                   size="sm"
@@ -605,7 +625,6 @@ export default function BuyCreditsPage() {
                     e.stopPropagation();
                     updateQuantity(planKey, 1);
                   }}
-                  disabled={quantity >= 100}
                 >
                   <Plus className="w-4 h-4" />
                 </Button>

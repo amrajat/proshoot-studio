@@ -213,6 +213,25 @@ const AttributesStep = ({ formData, errors }) => {
     }
   };
 
+  const handleGenderChange = (value) => {
+    updateFormField("gender", value);
+    
+    // Get the new gender for attributes
+    const newGenderForAttributes = value === "non-binary" ? "man" : value;
+    const currentHairLength = formData.hairLength;
+    
+    // Check if current hair length is valid for new gender
+    if (currentHairLength) {
+      const validHairLengths = HAIR_LENGTH[newGenderForAttributes] || HAIR_LENGTH.man;
+      if (!validHairLengths.includes(currentHairLength)) {
+        // Clear invalid hair attributes when gender changes
+        updateFormField("hairLength", "");
+        updateFormField("hairColor", "");
+        updateFormField("hairType", "");
+      }
+    }
+  };
+
   const handleGlassesChange = (value) => {
     // Use boolean values directly
     const booleanValue = value === "true";
@@ -248,19 +267,38 @@ const AttributesStep = ({ formData, errors }) => {
       newErrors.glasses = "Glasses selection is required";
     }
 
-    // Hair attributes are required unless hair length is bald or hisab
-    if (!isHairDisabled) {
-      if (!formData.hairLength) {
-        newErrors.hairLength = "Hair length is required";
+    // Hair length is always required
+    if (!formData.hairLength) {
+      newErrors.hairLength = "Hair length is required";
+    } else {
+      // Validate hair length is valid for current gender
+      const validHairLengths = HAIR_LENGTH[genderForAttributes] || HAIR_LENGTH.man;
+      if (!validHairLengths.includes(formData.hairLength)) {
+        newErrors.hairLength = "Please select a valid hair length for the selected gender";
       }
+    }
+
+    // Hair color and type are required unless hair length is bald or hisab
+    if (!isHairDisabled) {
       if (!formData.hairColor) {
         newErrors.hairColor = "Hair color is required";
+      } else {
+        // Validate hair color is valid for current gender
+        const validHairColors = HAIR_COLOR[genderForAttributes] || HAIR_COLOR.man;
+        if (!validHairColors.includes(formData.hairColor)) {
+          newErrors.hairColor = "Please select a valid hair color for the selected gender";
+        }
       }
+      
       if (!formData.hairType) {
         newErrors.hairType = "Hair type is required";
+      } else {
+        // Validate hair type is valid for current gender
+        const validHairTypes = HAIR_TYPE[genderForAttributes] || HAIR_TYPE.man;
+        if (!validHairTypes.includes(formData.hairType)) {
+          newErrors.hairType = "Please select a valid hair type for the selected gender";
+        }
       }
-    } else if (!formData.hairLength) {
-      newErrors.hairLength = "Hair length is required";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -384,13 +422,32 @@ const AttributesStep = ({ formData, errors }) => {
                 <p className="text-sm text-destructive">{errors.studioName}</p>
               )}
             </div>
-            <SelectField
-              field="gender"
-              label="Gender"
-              options={GENDERS}
-              placeholder="Select gender"
-              required={true}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="gender">
+                Gender
+                <span className="text-red-500 ml-1">*</span>
+              </Label>
+              <Select
+                value={formData.gender || ""}
+                onValueChange={handleGenderChange}
+              >
+                <SelectTrigger
+                  className={errors.gender ? "border-destructive" : ""}
+                >
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  {GENDERS.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option.charAt(0).toUpperCase() + option.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.gender && (
+                <p className="text-sm text-destructive">{errors.gender}</p>
+              )}
+            </div>
             <SelectField
               field="ethnicity"
               label="Ethnicity"
@@ -433,7 +490,7 @@ const AttributesStep = ({ formData, errors }) => {
               label="Hair Color"
               options={HAIR_COLOR[genderForAttributes] || HAIR_COLOR.man}
               placeholder="Select color"
-              required={false}
+              required={!isHairDisabled}
               disabled={isHairDisabled}
             />
             <SelectField
@@ -441,7 +498,7 @@ const AttributesStep = ({ formData, errors }) => {
               label="Hair Type"
               options={HAIR_TYPE[genderForAttributes] || HAIR_TYPE.man}
               placeholder="Select type"
-              required={false}
+              required={!isHairDisabled}
               disabled={isHairDisabled}
             />
             <GlassesField />

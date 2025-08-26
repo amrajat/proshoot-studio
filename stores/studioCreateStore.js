@@ -46,6 +46,8 @@ const initialCreditsState = {
 const initialOrgState = {
   orgApprovedClothing: null,
   orgApprovedBackgrounds: null,
+  orgRestrictClothing: false,
+  orgRestrictBackgrounds: false,
   isOrgSettingsLoading: false,
   orgSettingsError: null,
 };
@@ -193,6 +195,14 @@ const useStudioCreateStore = create(
           set({ orgApprovedBackgrounds: backgrounds });
         },
 
+        setOrgRestrictClothing: (restrict) => {
+          set({ orgRestrictClothing: restrict });
+        },
+
+        setOrgRestrictBackgrounds: (restrict) => {
+          set({ orgRestrictBackgrounds: restrict });
+        },
+
         setIsOrgSettingsLoading: (loading) => {
           set({ isOrgSettingsLoading: loading });
         },
@@ -206,6 +216,8 @@ const useStudioCreateStore = create(
             set({
               orgApprovedClothing: null,
               orgApprovedBackgrounds: null,
+              orgRestrictClothing: false,
+              orgRestrictBackgrounds: false,
               isOrgSettingsLoading: false,
               orgSettingsError: null,
             });
@@ -222,7 +234,7 @@ const useStudioCreateStore = create(
 
             const { data, error } = await supabase
               .from("organizations")
-              .select("approved_clothing, approved_backgrounds")
+              .select("approved_clothing, approved_backgrounds, restrict_clothing_options, restrict_background_options")
               .eq("id", organizationId)
               .single();
 
@@ -231,6 +243,8 @@ const useStudioCreateStore = create(
             set({
               orgApprovedClothing: data?.approved_clothing || null,
               orgApprovedBackgrounds: data?.approved_backgrounds || null,
+              orgRestrictClothing: data?.restrict_clothing_options || false,
+              orgRestrictBackgrounds: data?.restrict_background_options || false,
               isOrgSettingsLoading: false,
               orgSettingsError: null,
             });
@@ -239,6 +253,8 @@ const useStudioCreateStore = create(
             set({
               orgApprovedClothing: null,
               orgApprovedBackgrounds: null,
+              orgRestrictClothing: false,
+              orgRestrictBackgrounds: false,
               isOrgSettingsLoading: false,
               orgSettingsError: error.message,
             });

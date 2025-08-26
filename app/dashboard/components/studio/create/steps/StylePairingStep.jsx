@@ -44,7 +44,7 @@ import { useStudioForm } from "../forms/StudioFormProvider";
 import StepNavigation from "../components/StepNavigation";
 import config from "@/config";
 
-const StylePairingStep = ({ formData, errors, accountContext }) => {
+const StylePairingStep = ({ formData, errors, accountContext, clothingOptions, backgroundOptions }) => {
   // Get fresh data directly from store to avoid stale props
   const {
     updateFormField,
@@ -98,13 +98,14 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
     return config.PLANS[currentPlan] || config.PLANS.starter;
   }, [currentPlan]);
 
-  // Filter clothing options by gender using store data
+  // Filter clothing options by gender using filtered options from props
   const genderFilteredClothingOptions = useMemo(() => {
     if (!currentGender) return [];
-    return GLOBAL_ALL_CLOTHING_OPTIONS.filter(
+    const optionsToFilter = clothingOptions || GLOBAL_ALL_CLOTHING_OPTIONS;
+    return optionsToFilter.filter(
       (item) => item.gender === currentGender || item.gender === "unisex"
     );
-  }, [currentGender]);
+  }, [currentGender, clothingOptions]);
 
   // Extract unique themes for clothing (based on current gender)
   const clothingThemes = useMemo(() => {
@@ -116,11 +117,12 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
 
   // Extract unique themes for backgrounds
   const backgroundThemes = useMemo(() => {
+    const optionsToFilter = backgroundOptions || ALL_BACKGROUND_OPTIONS;
     const themes = [
-      ...new Set(ALL_BACKGROUND_OPTIONS.map((item) => item.theme)),
+      ...new Set(optionsToFilter.map((item) => item.theme)),
     ];
     return ["All", ...themes.sort()];
-  }, []);
+  }, [backgroundOptions]);
 
   // Apply theme filters to clothing options
   const filteredClothingOptions = useMemo(() => {
@@ -132,11 +134,12 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
 
   // Apply theme filters to background options
   const filteredBackgroundOptions = useMemo(() => {
-    if (backgroundThemeFilter === "All") return ALL_BACKGROUND_OPTIONS;
-    return ALL_BACKGROUND_OPTIONS.filter(
+    const optionsToFilter = backgroundOptions || ALL_BACKGROUND_OPTIONS;
+    if (backgroundThemeFilter === "All") return optionsToFilter;
+    return optionsToFilter.filter(
       (item) => item.theme === backgroundThemeFilter
     );
-  }, [backgroundThemeFilter]);
+  }, [backgroundThemeFilter, backgroundOptions]);
 
   // Clear style pairs when plan or gender changes - USING STORE DATA WITH PERSISTENCE
   useEffect(() => {
@@ -332,11 +335,13 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
 
   // Helper functions to get item details - DRY principle
   const getClothingById = (id) => {
-    return GLOBAL_ALL_CLOTHING_OPTIONS.find((item) => item.id === id);
+    const optionsToSearch = clothingOptions || GLOBAL_ALL_CLOTHING_OPTIONS;
+    return optionsToSearch.find((item) => item.id === id);
   };
 
   const getBackgroundById = (id) => {
-    return ALL_BACKGROUND_OPTIONS.find((item) => item.id === id);
+    const optionsToSearch = backgroundOptions || ALL_BACKGROUND_OPTIONS;
+    return optionsToSearch.find((item) => item.id === id);
   };
 
   // Helper function to create optimized style pair structure
@@ -367,12 +372,15 @@ const StylePairingStep = ({ formData, errors, accountContext }) => {
   // Helper function to get full item details for UI display
   const getFullItemDetails = (stylePair) => {
     // Find items by matching name and theme (since we removed IDs)
-    const clothingItem = GLOBAL_ALL_CLOTHING_OPTIONS.find(
+    const clothingOptionsToSearch = clothingOptions || GLOBAL_ALL_CLOTHING_OPTIONS;
+    const backgroundOptionsToSearch = backgroundOptions || ALL_BACKGROUND_OPTIONS;
+    
+    const clothingItem = clothingOptionsToSearch.find(
       (item) =>
         item.name === stylePair.clothing.name &&
         item.theme === stylePair.clothing.theme
     );
-    const backgroundItem = ALL_BACKGROUND_OPTIONS.find(
+    const backgroundItem = backgroundOptionsToSearch.find(
       (item) =>
         item.name === stylePair.background.name &&
         item.theme === stylePair.background.theme

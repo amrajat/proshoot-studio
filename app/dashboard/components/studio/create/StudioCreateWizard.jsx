@@ -56,6 +56,8 @@ const StudioCreateWizard = () => {
     // Organization state
     orgApprovedClothing,
     orgApprovedBackgrounds,
+    orgRestrictClothing,
+    orgRestrictBackgrounds,
     isOrgSettingsLoading,
     orgSettingsError,
 
@@ -79,27 +81,33 @@ const StudioCreateWizard = () => {
   // Get clothing and background options based on context
   const clothingOptions = useMemo(() => {
     const isOrgContext = selectedContext?.type === "organization";
-    if (
-      isOrgContext &&
-      Array.isArray(orgApprovedClothing) &&
-      orgApprovedClothing.length > 0
-    ) {
-      return orgApprovedClothing;
+    
+    // If organization has restrictions enabled, filter to approved items only
+    if (isOrgContext && orgRestrictClothing && Array.isArray(orgApprovedClothing)) {
+      // Filter global options to only include approved IDs
+      return GLOBAL_ALL_CLOTHING_OPTIONS.filter(item => 
+        orgApprovedClothing.includes(item.id)
+      );
     }
+    
+    // Otherwise show all options
     return GLOBAL_ALL_CLOTHING_OPTIONS || [];
-  }, [selectedContext, orgApprovedClothing]);
+  }, [selectedContext, orgRestrictClothing, orgApprovedClothing]);
 
   const backgroundOptions = useMemo(() => {
     const isOrgContext = selectedContext?.type === "organization";
-    if (
-      isOrgContext &&
-      Array.isArray(orgApprovedBackgrounds) &&
-      orgApprovedBackgrounds.length > 0
-    ) {
-      return orgApprovedBackgrounds;
+    
+    // If organization has restrictions enabled, filter to approved items only
+    if (isOrgContext && orgRestrictBackgrounds && Array.isArray(orgApprovedBackgrounds)) {
+      // Filter global options to only include approved IDs
+      return GLOBAL_ALL_BACKGROUND_OPTIONS.filter(item => 
+        orgApprovedBackgrounds.includes(item.id)
+      );
     }
+    
+    // Otherwise show all options
     return GLOBAL_ALL_BACKGROUND_OPTIONS || [];
-  }, [selectedContext, orgApprovedBackgrounds]);
+  }, [selectedContext, orgRestrictBackgrounds, orgApprovedBackgrounds]);
 
   // Define wizard steps
   const steps = useMemo(() => {

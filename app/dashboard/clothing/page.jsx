@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, AlertCircle, Settings, Shirt } from "lucide-react";
 import { CenteredLoader } from "@/components/shared/universal-loader";
@@ -20,7 +21,6 @@ export default function ManageClothingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
 
   const [restrictClothing, setRestrictClothing] = useState(false);
   const [approvedClothing, setApprovedClothing] = useState([]); // Now stores array of IDs
@@ -49,7 +49,6 @@ export default function ManageClothingPage() {
         setRestrictClothing(orgData?.restrict_clothing_options || false);
         setApprovedClothing(orgData?.approved_clothing || []);
       } catch (err) {
-        console.error("Error fetching clothing settings:", err);
         setError("Failed to load clothing settings. " + err.message);
       } finally {
         setIsLoading(false);
@@ -77,11 +76,10 @@ export default function ManageClothingPage() {
   const handleSaveChanges = async () => {
     if (!selectedContext || !isCurrentUserOrgAdmin) return;
 
-    setIsSaving(true);
-    setError(null);
-    setSuccessMessage(null);
-
     try {
+      setIsSaving(true);
+      setError(null);
+
       const { error } = await supabase
         .from("organizations")
         .update({
@@ -90,12 +88,13 @@ export default function ManageClothingPage() {
         })
         .eq("id", selectedContext.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-      setSuccessMessage("Settings saved successfully!");
-    } catch (err) {
-      console.error("Error saving clothing settings:", err);
-      setError(`Failed to save settings. ${err.message}`);
+      toast.success("Clothing settings updated successfully!");
+    } catch (error) {
+      toast.error("Failed to update clothing settings. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -215,19 +214,6 @@ export default function ManageClothingPage() {
       </div>
 
       {/* Status Messages */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {successMessage && (
-        <Alert className="border-success/20 bg-success/10 text-success">
-          <AlertDescription className="text-success flex items-center">
-            {successMessage}
-          </AlertDescription>
-        </Alert>
-      )}
       {!isCurrentUserOrgAdmin && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />

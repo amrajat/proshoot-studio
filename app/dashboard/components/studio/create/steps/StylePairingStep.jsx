@@ -4,11 +4,12 @@
  */
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import Image from "next/image";
 import Masonry from "react-masonry-css";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -218,21 +219,21 @@ const StylePairingStep = ({
 
   const addStylePair = () => {
     if (!selectedClothing || !selectedBackground) {
-      setErrors({ stylePair: "Please select both clothing and background" });
+      toast.error("Please select both clothing and background");
       return;
     }
 
     // Check plan limit
     if (currentPairs.length >= planConfig.stylesLimit) {
-      setErrors({
-        stylePair: `Maximum ${planConfig.stylesLimit} style combinations allowed for your plan`,
-      });
+      toast.error(
+        `Maximum ${planConfig.stylesLimit} style combinations allowed for your plan`
+      );
       return;
     }
 
     // Check if this combination already exists using optimized check
     if (combinationExists(selectedClothing, selectedBackground)) {
-      setErrors({ stylePair: "This combination already exists" });
+      toast.error("This combination already exists");
       return;
     }
 
@@ -243,7 +244,7 @@ const StylePairingStep = ({
     );
 
     if (!optimizedPair) {
-      setErrors({ stylePair: "Invalid clothing or background selection" });
+      toast.error("Invalid clothing or background selection");
       return;
     }
 
@@ -260,10 +261,9 @@ const StylePairingStep = ({
     const availableBackgrounds = filteredBackgroundOptions;
 
     if (availableClothing.length === 0 || availableBackgrounds.length === 0) {
-      setErrors({
-        style_pairs:
-          "No clothing or background options available for pairing with current theme filters.",
-      });
+      toast.error(
+        "No clothing or background options available for pairing with current theme filters."
+      );
       return;
     }
 
@@ -338,9 +338,7 @@ const StylePairingStep = ({
 
     // Validate that at least one combination is selected
     if (latestPairs.length === 0) {
-      setErrors({
-        style_pairs: "At least one style combination is required.",
-      });
+      toast.error("At least one style combination is required.");
       return;
     }
 
@@ -434,7 +432,7 @@ const StylePairingStep = ({
         <div className="flex items-center justify-center gap-2">
           <Badge
             variant="secondary"
-            className="bg-primary/10 text-primary border-primary/20"
+            className="bg-primary/10 text-primary border-primary/20 rounded-full"
           >
             {currentPairs.length} / {planConfig.stylesLimit} combinations
           </Badge>
@@ -447,7 +445,7 @@ const StylePairingStep = ({
           variant="outline"
           onClick={handleAutoPair}
           disabled={currentPairs.length >= planConfig.stylesLimit}
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:from-blue-100 hover:to-indigo-100 text-blue-700"
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:from-blue-100 hover:to-indigo-100 text-blue-700 rounded-full"
         >
           <Shuffle className="h-4 w-4" />
           Auto pair (
@@ -463,7 +461,7 @@ const StylePairingStep = ({
             <Button
               variant="outline"
               disabled={currentPairs.length === 0}
-              className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-700"
+              className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-700 rounded-full"
             >
               <RotateCw className="h-4 w-4" />
               Clear all
@@ -549,12 +547,13 @@ const StylePairingStep = ({
                             : "border-border/50 hover:border-primary/30"
                         }`}
                       >
-                        <div className="aspect-square bg-muted/40">
-                          <img
+                        <div className="aspect-square bg-muted/40 relative">
+                          <Image
                             src={option.image}
                             alt={option.name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw"
                           />
                         </div>
                         {selectedClothing === option.id && (
@@ -619,12 +618,13 @@ const StylePairingStep = ({
                             : "border-border/50 hover:border-primary/30"
                         }`}
                       >
-                        <div className="aspect-square bg-muted/40">
-                          <img
+                        <div className="aspect-square bg-muted/40 relative">
+                          <Image
                             src={option.image}
                             alt={option.name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw"
                           />
                         </div>
                         {selectedBackground === option.id && (
@@ -660,8 +660,8 @@ const StylePairingStep = ({
                 <div className="flex w-full flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   {/* Clothing (left) */}
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-                      <img
+                    <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
+                      <Image
                         src={
                           getClothingById(selectedClothing)?.image ||
                           "/placeholder-clothing.jpg"
@@ -669,8 +669,9 @@ const StylePairingStep = ({
                         alt={
                           getClothingById(selectedClothing)?.name || "Clothing"
                         }
-                        className="w-full h-full object-cover"
-                        loading="lazy"
+                        fill
+                        className="object-cover"
+                        sizes="48px"
                       />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -713,8 +714,8 @@ const StylePairingStep = ({
                         {getBackgroundById(selectedBackground)?.theme || "—"}
                       </p>
                     </div>
-                    <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-                      <img
+                    <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
+                      <Image
                         src={
                           getBackgroundById(selectedBackground)?.image ||
                           "/images/placeholder.svg"
@@ -723,8 +724,9 @@ const StylePairingStep = ({
                           getBackgroundById(selectedBackground)?.name ||
                           "Background"
                         }
-                        className="w-full h-full object-cover"
-                        loading="lazy"
+                        fill
+                        className="object-cover"
+                        sizes="48px"
                       />
                     </div>
                   </div>
@@ -737,14 +739,6 @@ const StylePairingStep = ({
                 </Badge>
               </div>
             </div>
-          )}
-
-          {/* Error Display */}
-          {errors.stylePair && (
-            <Alert variant="destructive" className="border-red-200 bg-red-50">
-              <Info className="h-4 w-4" />
-              <AlertDescription>{errors.stylePair}</AlertDescription>
-            </Alert>
           )}
         </CardContent>
       </Card>
@@ -786,14 +780,16 @@ const StylePairingStep = ({
                       <div className="flex w-full flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-1 min-w-0">
                         {/* Clothing */}
                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-                            <img
+                          <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
+                            <Image
                               src={
                                 clothingItem?.image ||
                                 "/placeholder-clothing.jpg"
                               }
                               alt={pair.clothing.name}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
+                              sizes="48px"
                             />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -813,14 +809,16 @@ const StylePairingStep = ({
 
                         {/* Background */}
                         <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-                          <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-                            <img
+                          <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
+                            <Image
                               src={
                                 backgroundItem?.image ||
                                 "/images/placeholder.svg"
                               }
                               alt={pair.background.name}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
+                              sizes="48px"
                             />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -857,16 +855,6 @@ const StylePairingStep = ({
             </Masonry>
           </CardContent>
         </Card>
-      )}
-
-      {/* Error Display */}
-      {(errors.style_pairs || errors.stylePair) && (
-        <Alert variant="destructive">
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            {errors.style_pairs || errors.stylePair}
-          </AlertDescription>
-        </Alert>
       )}
 
       {/* Navigation */}

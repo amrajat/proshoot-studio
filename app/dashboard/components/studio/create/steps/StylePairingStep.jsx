@@ -44,7 +44,13 @@ import { useStudioForm } from "../forms/StudioFormProvider";
 import StepNavigation from "../components/StepNavigation";
 import config from "@/config";
 
-const StylePairingStep = ({ formData, errors, accountContext, clothingOptions, backgroundOptions }) => {
+const StylePairingStep = ({
+  formData,
+  errors,
+  accountContext,
+  clothingOptions,
+  backgroundOptions,
+}) => {
   // Get fresh data directly from store to avoid stale props
   const {
     updateFormField,
@@ -102,6 +108,18 @@ const StylePairingStep = ({ formData, errors, accountContext, clothingOptions, b
   const genderFilteredClothingOptions = useMemo(() => {
     if (!currentGender) return [];
     const optionsToFilter = clothingOptions || GLOBAL_ALL_CLOTHING_OPTIONS;
+
+    // For non-binary users, show both men's and women's clothing options
+    if (currentGender === "non-binary") {
+      return optionsToFilter.filter(
+        (item) =>
+          item.gender === "man" ||
+          item.gender === "woman" ||
+          item.gender === "unisex"
+      );
+    }
+
+    // For binary genders, filter by exact match or unisex
     return optionsToFilter.filter(
       (item) => item.gender === currentGender || item.gender === "unisex"
     );
@@ -118,9 +136,7 @@ const StylePairingStep = ({ formData, errors, accountContext, clothingOptions, b
   // Extract unique themes for backgrounds
   const backgroundThemes = useMemo(() => {
     const optionsToFilter = backgroundOptions || ALL_BACKGROUND_OPTIONS;
-    const themes = [
-      ...new Set(optionsToFilter.map((item) => item.theme)),
-    ];
+    const themes = [...new Set(optionsToFilter.map((item) => item.theme))];
     return ["All", ...themes.sort()];
   }, [backgroundOptions]);
 
@@ -372,9 +388,11 @@ const StylePairingStep = ({ formData, errors, accountContext, clothingOptions, b
   // Helper function to get full item details for UI display
   const getFullItemDetails = (stylePair) => {
     // Find items by matching name and theme (since we removed IDs)
-    const clothingOptionsToSearch = clothingOptions || GLOBAL_ALL_CLOTHING_OPTIONS;
-    const backgroundOptionsToSearch = backgroundOptions || ALL_BACKGROUND_OPTIONS;
-    
+    const clothingOptionsToSearch =
+      clothingOptions || GLOBAL_ALL_CLOTHING_OPTIONS;
+    const backgroundOptionsToSearch =
+      backgroundOptions || ALL_BACKGROUND_OPTIONS;
+
     const clothingItem = clothingOptionsToSearch.find(
       (item) =>
         item.name === stylePair.clothing.name &&
@@ -699,7 +717,7 @@ const StylePairingStep = ({ formData, errors, accountContext, clothingOptions, b
                       <img
                         src={
                           getBackgroundById(selectedBackground)?.image ||
-                          "/placeholder-background.jpg"
+                          "/images/placeholder.svg"
                         }
                         alt={
                           getBackgroundById(selectedBackground)?.name ||
@@ -799,7 +817,7 @@ const StylePairingStep = ({ formData, errors, accountContext, clothingOptions, b
                             <img
                               src={
                                 backgroundItem?.image ||
-                                "/placeholder-background.jpg"
+                                "/images/placeholder.svg"
                               }
                               alt={pair.background.name}
                               className="w-full h-full object-cover"

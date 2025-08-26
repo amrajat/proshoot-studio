@@ -21,6 +21,7 @@ const initialFormData = {
   hairColor: "",
   hairType: "",
   glasses: "",
+  uploadState: null, // Store image upload state for persistence
 };
 
 // Initial UI state

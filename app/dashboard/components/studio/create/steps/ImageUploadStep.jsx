@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
@@ -12,7 +12,7 @@ import Masonry from "react-masonry-css";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { X, RefreshCw, Info, CheckCircle2 } from "lucide-react";
+import { X, RefreshCw, Info, CheckCircle2, Loader2 } from "lucide-react";
 import {
   InlineLoader,
   ButtonLoader,
@@ -121,24 +121,142 @@ const ImageUploadStep = ({
     setIsSubmitting,
     resetFormCompletely,
     prevStep,
+    updateFormField,
   } = useStudioCreateStore();
 
-  // Component state
-  const [uploadState, setUploadState] = useState({
-    files: [],
-    uploading: false,
-    uploadProgress: {},
-    uploadedFiles: [],
-    currentUUID: uuidv4(),
-    completedCrops: {},
-    processing: false,
-  });
+  // Initialize upload state from persisted data or create new
+  const initializeUploadState = () => {
+    const persistedUploadState = formData.uploadState;
+    if (persistedUploadState && persistedUploadState.files?.length > 0) {
+      // Reconstruct upload progress based on uploaded files
+      const reconstructedProgress = {};
+      persistedUploadState.files.forEach((file, index) => {
+        const uploadedFile = persistedUploadState.uploadedFiles?.find(
+          (f) => f.fileId === file.id
+        );
+        if (uploadedFile) {
+          reconstructedProgress[index] = { status: "completed", progress: 100 };
+        }
+      });
 
-  const [errors, setErrors] = useState({});
+      return {
+        ...persistedUploadState,
+        uploading: false,
+        processing: false,
+        uploadProgress: {
+          ...persistedUploadState.uploadProgress,
+          ...reconstructedProgress,
+        },
+        // Reset transient states but keep files and uploads
+      };
+    }
+    return {
+      files: [],
+      uploading: false,
+      uploadProgress: {},
+      uploadedFiles: [],
+      currentUUID: uuidv4(),
+      completedCrops: {},
+      processing: false,
+    };
+  };
+
+  // Component state
+  const [uploadState, setUploadState] = useState(initializeUploadState);
+
+  // Verify upload and delete status on component mount
+  useEffect(() => {
+    const verifyFileStatus = async () => {
+      if (uploadState.files.length === 0) return;
+
+      const updatedProgress = { ...uploadState.uploadProgress };
+      let updatedFiles = [...uploadState.files];
+      let updatedUploadedFiles = [...(uploadState.uploadedFiles || [])];
+      let hasUpdates = false;
+
+      // Check each file for upload status and deletion status
+      for (let index = uploadState.files.length - 1; index >= 0; index--) {
+        const progress = uploadState.uploadProgress[index];
+        const fileData = uploadState.files[index];
+        const uploadedFile = uploadState.uploadedFiles?.find(
+          (f) => f.fileId === fileData.id
+        );
+
+        // Check if file was being deleted and actually got deleted
+        if (uploadedFile?.objectKey) {
+          try {
+            // Verify file still exists in R2 by attempting a HEAD request
+            const response = await fetch("/api/r2/check-file", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                objectKey: uploadedFile.objectKey,
+                bucketName: "datasets",
+              }),
+            });
+
+            if (!response.ok || !(await response.json()).exists) {
+              // File was deleted from R2, remove from UI
+              updatedFiles = updatedFiles.filter((f) => f.id !== fileData.id);
+              updatedUploadedFiles = updatedUploadedFiles.filter(
+                (f) => f.fileId !== fileData.id
+              );
+              delete updatedProgress[index];
+              hasUpdates = true;
+              continue;
+            }
+          } catch (error) {
+            // If check fails, assume file still exists to avoid false deletions
+            console.warn("Failed to verify file existence:", error);
+          }
+        }
+
+        // Check upload status for files that show as uploading
+        if (
+          progress?.status === "uploading" ||
+          progress?.status === "processing"
+        ) {
+          if (uploadedFile) {
+            // File was completed while away, update progress
+            updatedProgress[index] = { status: "completed", progress: 100 };
+            hasUpdates = true;
+          } else {
+            // File still needs uploading, resume the upload
+            try {
+              await processAndUploadFile(fileData.file, index);
+            } catch (error) {
+              updatedProgress[index] = {
+                status: "failed",
+                progress: 0,
+                error: error.message,
+              };
+              hasUpdates = true;
+            }
+          }
+        }
+      }
+
+      if (hasUpdates) {
+        setUploadState((prev) => ({
+          ...prev,
+          files: updatedFiles,
+          uploadedFiles: updatedUploadedFiles,
+          uploadProgress: updatedProgress,
+        }));
+      }
+    };
+
+    verifyFileStatus();
+  }, []); // Only run on mount
+
+  // Persist upload state to Zustand store whenever it changes
+  useEffect(() => {
+    updateFormField("uploadState", uploadState);
+  }, [uploadState, updateFormField]);
+
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [showRemoveAllDialog, setShowRemoveAllDialog] = useState(false);
   const [localSubmitting, setLocalSubmitting] = useState(false);
-  const [studioMessage, setStudioMessage] = useState("");
   const [isRemovingAll, setIsRemovingAll] = useState(false);
   const [removingFiles, setRemovingFiles] = useState(new Set()); // Track which files are being removed
 
@@ -407,16 +525,35 @@ const ImageUploadStep = ({
     }
   };
 
-  // Exact copy of processImage from working ImageUploader
+  // Process image with HEIC conversion support
   const processImage = async (file) => {
     return new Promise(async (resolve) => {
       try {
-        const objectUrl = URL.createObjectURL(file);
+        let processedFile = file;
+        let objectUrl = URL.createObjectURL(file);
+
+        // Convert HEIC/HEIF to JPEG for preview compatibility
+        if (file.type === "image/heic" || file.type === "image/heif") {
+          try {
+            processedFile = await convertHeicToJpeg(file);
+            // Create new object URL from converted file for preview
+            URL.revokeObjectURL(objectUrl); // Clean up original URL
+            objectUrl = URL.createObjectURL(processedFile);
+          } catch (conversionError) {
+            console.warn(
+              "HEIC conversion failed for preview:",
+              conversionError
+            );
+            // Fall back to original file, but mark as having issues
+          }
+        }
+
         const img = await createImagePromise(objectUrl).catch((err) => {
           throw new Error(
             `Failed to load image for processing: ${err.message}`
           );
         });
+
         let accepted = true;
         let declineReason = "";
         if (
@@ -425,17 +562,41 @@ const ImageUploadStep = ({
         ) {
           declineReason = `This image is smaller than ${MIN_IMAGE_DIMENSION}x${MIN_IMAGE_DIMENSION} pixels, but we will still use it, it may not be perfect.`;
         }
-        const smartCropResult = await applySmartCrop(file);
+
+        // Use converted file for smart crop if available
+        const smartCropResult = await applySmartCrop(processedFile);
+
         resolve({
-          file,
-          preview: objectUrl,
+          file, // Keep original file for upload
+          convertedFile: processedFile, // Store converted file separately
+          preview: objectUrl, // Use converted file's URL for preview
           accepted,
           declineReason,
           initialCrop: smartCropResult,
           dimensions: { width: img.width, height: img.height },
         });
       } catch (error) {
-        const objectUrl = URL.createObjectURL(file); // Create new URL as previous might be revoked on error
+        // For HEIC files that fail to process, try conversion first
+        if (file.type === "image/heic" || file.type === "image/heif") {
+          try {
+            const convertedFile = await convertHeicToJpeg(file);
+            const objectUrl = URL.createObjectURL(convertedFile);
+            resolve({
+              file,
+              convertedFile,
+              preview: objectUrl,
+              accepted: true,
+              declineReason: "HEIC file converted to JPEG for compatibility",
+              initialCrop: { unit: "%", x: 25, y: 25, width: 50, height: 50 },
+              dimensions: { width: 1024, height: 1024 }, // Default dimensions
+            });
+            return;
+          } catch (conversionError) {
+            console.error("HEIC conversion failed:", conversionError);
+          }
+        }
+
+        const objectUrl = URL.createObjectURL(file);
         resolve({
           file,
           preview: objectUrl,
@@ -489,7 +650,7 @@ const ImageUploadStep = ({
       return errorMessages.join(", ");
     });
 
-    setErrors({ images: errors.join("; ") });
+    toast.error(errors.join("; "));
   }, []);
 
   const handleFileDrop = useCallback(
@@ -503,29 +664,24 @@ const ImageUploadStep = ({
       });
 
       if (uniqueFiles.length === 0) {
-        setErrors({
-          images: "All selected files are duplicates and were skipped.",
-        });
+        toast.error("Duplicate images were skipped.");
         return;
       }
 
       if (uploadState.files.length + uniqueFiles.length > MAX_IMAGES) {
-        setErrors({
-          images: `Maximum ${MAX_IMAGES} images allowed. ${uniqueFiles.length} new files would exceed the limit.`,
-        });
+        toast.error(
+          `Maximum ${MAX_IMAGES} images allowed. ${uniqueFiles.length} new files would exceed the limit.`
+        );
         return;
       }
 
       const duplicateCount = acceptedFiles.length - uniqueFiles.length;
       if (duplicateCount > 0) {
-        setErrors({
-          images: `${duplicateCount} duplicate file(s) were skipped.`,
-        });
-        // Clear the error after 3 seconds
-        setTimeout(() => setErrors({}), 3000);
+        toast.warning(`${duplicateCount} duplicate file(s) were skipped.`);
       }
 
       setUploadState((prev) => ({ ...prev, processing: true }));
+      toast.loading("Processing images...");
 
       const processedFiles = [];
       for (let i = 0; i < uniqueFiles.length; i++) {
@@ -540,11 +696,13 @@ const ImageUploadStep = ({
       }
 
       // Add files to state first
-      setUploadState((prev) => ({
-        ...prev,
-        files: [...prev.files, ...processedFiles],
+      const newUploadState = {
+        ...uploadState,
+        files: [...uploadState.files, ...processedFiles],
         processing: false,
-      }));
+      };
+      setUploadState(newUploadState);
+      toast.dismiss(); // Dismiss the processing toast
 
       // Auto-upload each file immediately after adding to state
       setTimeout(async () => {
@@ -555,7 +713,20 @@ const ImageUploadStep = ({
 
           try {
             await processAndUploadFile(fileData.file, fileIndex);
-          } catch (error) {}
+          } catch (error) {
+            // Update progress to show failed state
+            setUploadState((prev) => ({
+              ...prev,
+              uploadProgress: {
+                ...prev.uploadProgress,
+                [fileIndex]: {
+                  status: "failed",
+                  progress: 0,
+                  error: error.message,
+                },
+              },
+            }));
+          }
         }
       }, 100); // Small delay to ensure state is updated
     },
@@ -586,11 +757,51 @@ const ImageUploadStep = ({
       if (uploadedFile && uploadedFile.objectKey) {
         try {
           await deleteFromR2(uploadedFile.objectKey);
+
+          // Immediately update state after successful deletion
+          const newUploadState = {
+            ...uploadState,
+            files: uploadState.files.filter((f) => f.id !== fileId),
+            uploadedFiles: uploadState.uploadedFiles.filter(
+              (f) => f.fileId !== fileId
+            ),
+            completedCrops: Object.fromEntries(
+              Object.entries(uploadState.completedCrops).filter(
+                ([key]) => parseInt(key) !== fileIndex
+              )
+            ),
+            uploadProgress: Object.fromEntries(
+              Object.entries(uploadState.uploadProgress).filter(
+                ([key]) => parseInt(key) !== fileIndex
+              )
+            ),
+          };
+          setUploadState(newUploadState);
         } catch (error) {
-          setErrors({ images: "Failed to delete file. Please try again." });
-          setTimeout(() => setErrors({}), 3000);
+          toast.error("Failed to delete file. Please try again.");
+          // Don't update state if deletion failed
+          return;
         }
       } else {
+        // File not uploaded yet, just remove from UI
+        const newUploadState = {
+          ...uploadState,
+          files: uploadState.files.filter((f) => f.id !== fileId),
+          uploadedFiles: uploadState.uploadedFiles.filter(
+            (f) => f.fileId !== fileId
+          ),
+          completedCrops: Object.fromEntries(
+            Object.entries(uploadState.completedCrops).filter(
+              ([key]) => parseInt(key) !== fileIndex
+            )
+          ),
+          uploadProgress: Object.fromEntries(
+            Object.entries(uploadState.uploadProgress).filter(
+              ([key]) => parseInt(key) !== fileIndex
+            )
+          ),
+        };
+        setUploadState(newUploadState);
       }
     } finally {
       // Remove from removing files set
@@ -600,23 +811,6 @@ const ImageUploadStep = ({
         return newSet;
       });
     }
-
-    // Update state to remove the file (fileIndex is now accessible)
-    setUploadState((prev) => ({
-      ...prev,
-      files: prev.files.filter((f) => f.id !== fileId),
-      uploadedFiles: prev.uploadedFiles.filter((f) => f.fileId !== fileId),
-      completedCrops: Object.fromEntries(
-        Object.entries(prev.completedCrops).filter(
-          ([key]) => parseInt(key) !== fileIndex
-        )
-      ),
-      uploadProgress: Object.fromEntries(
-        Object.entries(prev.uploadProgress).filter(
-          ([key]) => parseInt(key) !== fileIndex
-        )
-      ),
-    }));
   };
 
   const removeAllFiles = async () => {
@@ -625,18 +819,18 @@ const ImageUploadStep = ({
     try {
       await deleteAllFromR2();
 
-      setUploadState((prev) => ({
-        ...prev,
+      const newUploadState = {
+        ...uploadState,
         files: [],
         uploadedFiles: [],
         completedCrops: {},
         uploadProgress: {},
-      }));
+      };
+      setUploadState(newUploadState);
 
-      setStudioMessage("All files removed successfully!");
-      setTimeout(() => setStudioMessage(""), 3000);
+      toast.success("All files removed successfully!");
     } catch (error) {
-      setErrors({ images: "Failed to remove all files. Please try again." });
+      toast.error("Failed to remove all files. Please try again.");
     } finally {
       setIsRemovingAll(false);
       setShowRemoveAllDialog(false);
@@ -648,7 +842,7 @@ const ImageUploadStep = ({
 
     // Validate that we have uploaded files
     if (uploadState.files.length < MIN_IMAGES) {
-      setErrors({ images: `Please upload at least ${MIN_IMAGES} images` });
+      toast.error(`Please upload at least ${MIN_IMAGES} images`);
       return;
     }
 
@@ -674,20 +868,20 @@ const ImageUploadStep = ({
       );
 
       if (failedUploads.length > 0) {
-        setErrors({
-          images: "Some files failed to upload. Please retry failed uploads.",
-        });
+        toast.error(
+          "Some files failed to upload. Please retry failed uploads."
+        );
         return;
       }
 
       if (uploadState.uploadedFiles.length !== uploadState.files.length) {
-        setErrors({
-          images: "Upload in progress. Please wait for all files to complete.",
-        });
+        toast.error(
+          "Upload in progress. Please wait for all files to complete."
+        );
         return;
       }
 
-      setStudioMessage("Uploading crop data...");
+      toast.loading("Finalizing...");
 
       // Create crop data map
       const cropDataMap = {};
@@ -729,7 +923,7 @@ const ImageUploadStep = ({
 
       await uploadToR2(cropJsonBlob, "crop_data.json");
 
-      setStudioMessage("Creating your studio...");
+      toast.loading("Creating your studio...");
 
       // Extract user_id from uploaded files to create full path
       let imagesPath = uploadState.currentUUID;
@@ -797,13 +991,13 @@ const ImageUploadStep = ({
       }
 
       if (result?.success) {
-        setStudioMessage("Studio created successfully!");
+        toast.success("Studio created successfully!");
         router.push(`/dashboard/studio/${result.studioId}`);
       } else {
         throw new Error(result?.error || "Failed to create studio");
       }
     } catch (error) {
-      setStudioMessage(`Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     } finally {
       setLocalSubmitting(false);
       setIsSubmitting(false);
@@ -827,7 +1021,7 @@ const ImageUploadStep = ({
         throw new Error("User not authenticated");
       }
 
-      setStudioMessage("Creating studio record...");
+      toast.loading("Creating studio...");
 
       // Use authenticated user ID to create full path
       const userId = user.id;
@@ -873,7 +1067,7 @@ const ImageUploadStep = ({
         throw new Error(result?.error || "Failed to create studio record");
       }
 
-      setStudioMessage("Redirecting to payment...");
+      toast.loading("Redirecting to payment...");
 
       // Create checkout URL with only studio ID as custom data (user auth handled server-side)
       const checkoutUrl = await createCheckoutUrl(
@@ -893,7 +1087,7 @@ const ImageUploadStep = ({
         throw new Error("Failed to create checkout URL");
       }
     } catch (error) {
-      setStudioMessage(`Payment error: ${error.message}`);
+      toast.error(`Payment error: ${error.message}`);
       setLocalSubmitting(false);
       setIsSubmitting(false);
     }
@@ -944,7 +1138,7 @@ const ImageUploadStep = ({
       {uploadState.files.length === 0 ? (
         <div
           {...getRootProps()}
-          className={`rounded-xl border border-dashed border-muted-foreground/25 p-8 text-center cursor-pointer transition-colors shadow-sm bg-primary/10 ${
+          className={`rounded-xl border border-dashed border-muted-foreground/25 p-8 text-center cursor-crosshair hover:cursor-crosshair transition-colors shadow-sm bg-primary/10 ${
             isDragActive
               ? "border-primary/50 bg-primary/20 ring-1 ring-primary/20"
               : "hover:border-primary/50 hover:bg-primary/20"
@@ -965,7 +1159,7 @@ const ImageUploadStep = ({
             Drag and drop your photos here, or click to browse
           </p>
           <div className="text-sm text-muted-foreground space-y-1">
-            <p>• Supported formats: JPG, PNG, HEIC, HEIF</p>
+            <p>• Supported formats: JPG, JPEG, PNG, HEIC, HEIF</p>
             <p>• Maximum file size: 4MB per image</p>
             <p>• Upload at least {MIN_IMAGES} photos for best results</p>
           </div>
@@ -1053,11 +1247,19 @@ const ImageUploadStep = ({
           >
             {uploadState.files.map((fileData, index) => {
               const progress = uploadState.uploadProgress[index];
-              const isUploaded = progress?.status === "completed";
+              // Check if file is uploaded by looking at uploadedFiles array
+              const uploadedFile = uploadState.uploadedFiles?.find(
+                (f) => f.fileId === fileData.id
+              );
+              const isUploaded = uploadedFile
+                ? true
+                : progress?.status === "completed";
               const isFailed = progress?.status === "failed";
               const isUploading =
-                progress?.status === "uploading" ||
-                progress?.status === "processing";
+                !isUploaded &&
+                !isFailed &&
+                (progress?.status === "uploading" ||
+                  progress?.status === "processing");
               const isRemoving = removingFiles.has(fileData.id);
 
               return (
@@ -1073,20 +1275,19 @@ const ImageUploadStep = ({
                       {(isUploading || isUploaded || isFailed) && (
                         <div className="absolute top-2 left-2 z-10">
                           {isFailed && (
-                            <div className="bg-destructive text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                            <div className="bg-destructive text-white px-2 py-1 rounded-xl text-xs flex items-center gap-1">
                               <X className="h-3 w-3" />
                               Failed
                             </div>
                           )}
                           {isUploaded && (
-                            <div className="bg-success text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                            <div className="pointer-events-none bg-success text-white p-1 rounded-xl text-xs flex items-center gap-1">
                               <CheckCircle2 className="h-3 w-3" />
-                              Uploaded
                             </div>
                           )}
                           {isUploading && (
-                            <div className="bg-primary text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
-                              <InlineLoader size="sm" showText={false} />
+                            <div className="bg-primary text-white px-2 py-1 rounded-xl text-xs flex items-center gap-1">
+                              <Loader2 className="h-3 w-3 animate-spin" />
                               Uploading
                             </div>
                           )}
@@ -1097,14 +1298,15 @@ const ImageUploadStep = ({
                       <Button
                         size="sm"
                         variant="destructive"
-                        className="absolute rounded-full top-0 right-0 translate-x-1/2 -translate-y-1/2 z-10 h-6 w-6 p-0"
+                        className="absolute rounded-full top-0 right-0 translate-x-1/2 -translate-y-1/2 z-10 size-5 p-0"
                         onClick={() => removeFile(fileData.id)}
                         disabled={isRemoving || isUploading || isSubmitting}
                       >
                         {isRemoving ? (
-                          <InlineLoader size="sm" showText={false} />
+                          // <InlineLoader size="sm" showText={false} />
+                          <Loader2 className="size-4 text-white" />
                         ) : (
-                          <X className="h-3 w-3" />
+                          <X className="size-2" />
                         )}
                       </Button>
 
@@ -1206,7 +1408,7 @@ const ImageUploadStep = ({
 
           <div
             {...getRootProps()}
-            className="rounded-xl border border-dashed border-muted-foreground/25 p-4 text-center cursor-pointer hover:border-primary/40 transition-colors bg-primary/10"
+            className="rounded-xl border border-dashed border-muted-foreground/25 p-4 text-center cursor-crosshair hover:cursor-crosshair hover:border-primary/40 transition-colors bg-primary/10"
           >
             <input {...getInputProps()} />
             <Image
@@ -1221,26 +1423,6 @@ const ImageUploadStep = ({
             </p>
           </div>
         </div>
-      )}
-
-      {errors.images && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{errors.images}</AlertDescription>
-        </Alert>
-      )}
-
-      {uploadState.processing && (
-        <Alert>
-          <RefreshCw className="h-4 w-4 animate-spin" />
-          <AlertDescription>Processing images...</AlertDescription>
-        </Alert>
-      )}
-
-      {studioMessage && (
-        <Alert>
-          <AlertDescription>{studioMessage}</AlertDescription>
-        </Alert>
       )}
 
       {/* Navigation */}

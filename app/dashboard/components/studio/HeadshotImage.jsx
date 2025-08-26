@@ -2,12 +2,13 @@
 
 import { useState, memo } from "react";
 import Image from "next/image";
-import { PhotoProvider, PhotoView } from "react-photo-view";
-import { Heart, Loader2 } from "lucide-react";
+import { PhotoView } from "react-photo-view";
+import { Heart, Loader2, ZoomIn, Shield, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import "react-photo-view/dist/react-photo-view.css";
 import { Badge } from "@/components/ui/badge";
+import { InlineLoader } from "@/components/shared/universal-loader";
+import Link from "next/link";
 
 /**
  * Optimized headshot image component with lazy loading and favorite toggle
@@ -19,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
  * @param {number} props.index - Index of the headshot in the list
  * @param {boolean} props.isTogglingFavorite - Loading state for favorite toggle
  * @param {string} props.preferredImageType - Which image to prioritize: 'hd', 'result', or 'preview'
+ * @param {array} props.allImages - All images in the current section for PhotoView navigation
  */
 const HeadshotImage = memo(function HeadshotImage({
   headshot,
@@ -28,6 +30,7 @@ const HeadshotImage = memo(function HeadshotImage({
   isTogglingFavorite = false,
   index,
   preferredImageType = "auto", // 'auto', 'hd', 'result', 'preview'
+  allImages = [], // All images for PhotoView navigation
 }) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -90,35 +93,45 @@ const HeadshotImage = memo(function HeadshotImage({
   };
 
   return (
-    <div className="group relative aspect-square overflow-hidden rounded-lg bg-muted">
-      {/* Loading Spinner */}
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      )}
-
-      {/* Error State */}
-      {hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted">
-          <div className="text-center">
-            <div className="text-muted-foreground text-sm">Failed to load</div>
+    <div className="space-y-2">
+      <div className="group relative aspect-square overflow-hidden rounded-lg bg-muted">
+        {/* Secure Loading State */}
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
+            <div className="flex flex-col items-center gap-3 text-center px-4">
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                <InlineLoader size="sm" showText={false} />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-primary">
+                  Opening Secure Layer
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Decrypting with end-to-end security
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* PhotoView for full-screen overlay */}
-      <PhotoProvider
-        maskOpacity={0.8}
-        speed={() => 300}
-        easing={(type) =>
-          type === 2
-            ? "cubic-bezier(0.36, 0, 0.66, -0.56)"
-            : "cubic-bezier(0.34, 1.56, 0.64, 1)"
-        }
-      >
-        <PhotoView src={imageUrl}>
-          <div className="cursor-pointer">
+        {/* Error State */}
+        {hasError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted">
+            <div className="text-center">
+              <div className="text-muted-foreground text-sm">
+                Failed to load
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PhotoView for full-screen overlay - Now handled by parent PhotoProvider */}
+        <PhotoView
+          src={imageUrl}
+          key={`photo-${headshot.id}-${preferredImageType}`}
+        >
+          <div className="cursor-zoom-in">
             <Image
               src={thumbnailUrl}
               alt={headshot.prompt || "Generated headshot"}
@@ -126,7 +139,7 @@ const HeadshotImage = memo(function HeadshotImage({
               unoptimized={true}
               loading="lazy"
               className={cn(
-                "object-cover transition-all duration-300",
+                "object-cover transition-all duration-300 cursor-zoom-in",
                 "group-hover:scale-105",
                 isLoading && "opacity-0",
                 hasError && "opacity-0"
@@ -135,42 +148,58 @@ const HeadshotImage = memo(function HeadshotImage({
               onError={handleImageError}
             />
 
-            {/* Overlay on hover */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+            {/* Hover Overlay with Zoom Message */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center gap-2 text-white">
+                <ZoomIn className="h-6 w-6" />
+                <span className="text-sm font-medium">
+                  Click to view enlarged
+                </span>
+              </div>
+            </div>
           </div>
         </PhotoView>
-      </PhotoProvider>
 
-      {/* Favorite Toggle Button */}
-      {showFavoriteToggle && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <Button
-            size="sm"
-            variant={isFavorite ? "default" : "secondary"}
-            className={cn(
-              "h-8 w-8 p-0 shadow-lg",
-              isFavorite && "bg-red-500 hover:bg-red-600 text-white"
-            )}
-            onClick={handleToggleFavorite}
-            disabled={isTogglingFavorite}
-          >
-            {isTogglingFavorite ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Heart className={cn("h-4 w-4", isFavorite && "fill-current")} />
-            )}
-          </Button>
-        </div>
-      )}
+        {/* Favorite Toggle Button */}
+        {showFavoriteToggle && (
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <Button
+              size="sm"
+              variant={isFavorite ? "default" : "secondary"}
+              className={cn(
+                "h-8 w-8 p-0 shadow-lg",
+                isFavorite && "bg-red-500 hover:bg-red-600 text-white"
+              )}
+              onClick={handleToggleFavorite}
+              disabled={isTogglingFavorite}
+            >
+              {isTogglingFavorite ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Heart
+                  className={cn("h-4 w-4", isFavorite && "fill-current")}
+                />
+              )}
+            </Button>
+          </div>
+        )}
 
-      {/* Image Type Badge */}
-      {badgeText && (
-        <div className="absolute top-2 left-2">
-          <Badge variant={badgeVariant}>
-            {badgeText} - {index + 1}
-          </Badge>
-        </div>
-      )}
+        {/* Image Type Badge */}
+        {badgeText && (
+          <div className="absolute top-2 left-2">
+            <Badge variant={badgeVariant}>
+              {badgeText} - {index + 1}
+            </Badge>
+          </div>
+        )}
+      </div>
+
+      {/* Download Button - Separate from image container */}
+      <Button variant="outline" size="sm" className="w-full gap-2" asChild>
+        <Link href={thumbnailUrl} target="_blank">
+          <Download className="h-4 w-4" /> Download
+        </Link>
+      </Button>
     </div>
   );
 });

@@ -91,6 +91,7 @@ const config: Config = {
     },
     cursor: {
       crosshair: "crosshair",
+      "zoom-in": "zoom-in",
     },
   },
   plugins: [require("tailwindcss-animate")],

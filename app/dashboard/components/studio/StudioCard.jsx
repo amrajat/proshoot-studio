@@ -43,7 +43,7 @@ export default function StudioCard({ studio }) {
       case "completed":
         return "default";
       case "processing":
-        return "secondary";
+        return "success";
       case "failed":
         return "destructive";
       case "accepted":
@@ -52,13 +52,15 @@ export default function StudioCard({ studio }) {
         return "destructive";
       case "deleted":
         return "destructive";
+      case "payment_pending":
+        return "destructive";
       default:
         return "outline";
     }
   };
 
   return (
-    <Card className="group overflow-hidden transition-all duration-200 hover:shadow-md">
+    <Card className="group overflow-hidden transition-all duration-200 hover:shadow-none ring-1 ring-muted-foreground/15">
       <div className="relative">
         {/* Studio Image - 1:1 Square Ratio */}
         <div className="relative aspect-square w-full overflow-hidden bg-muted">
@@ -73,11 +75,13 @@ export default function StudioCard({ studio }) {
         </div>
 
         {/* Status Badge */}
-        <div className="absolute top-3 right-3">
-          <Badge variant={getStatusVariant(studio.status)}>
-            {studio.status}
-          </Badge>
-        </div>
+        {!(getStatusVariant(studio.status) == "ACCEPTED") && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2">
+            <Badge variant={getStatusVariant(studio.status)}>
+              {studio.status}
+            </Badge>
+          </div>
+        )}
       </div>
 
       <CardContent className="p-4">
@@ -116,17 +120,17 @@ export default function StudioCard({ studio }) {
           <Clock className="mr-1.5 h-4 w-4" />
           <span>{formatDate(studio.created_at)}</span>
         </div>
-
-        {/* Actions */}
-        <div className="flex justify-end">
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/dashboard/studio/${studio.id}`}>
-              <Eye className="mr-1.5 h-4 w-4" />
-              View
-            </Link>
-          </Button>
-        </div>
       </CardContent>
+      {/* Actions */}
+      {/* TODO: DISABLE THIS BUTTON BASED ON THE STUDIO STATUS */}
+      <Button
+        asChild
+        variant="default"
+        size="sm"
+        className="w-full rounded-none border-none shadow"
+      >
+        <Link href={`/dashboard/studio/${studio.id}`}>View</Link>
+      </Button>
     </Card>
   );
 }

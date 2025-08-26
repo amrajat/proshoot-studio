@@ -14,8 +14,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { PlusCircle, AlertCircle, Camera, RefreshCw } from "lucide-react";
+import { PlusCircle, AlertCircle } from "lucide-react";
 import { CenteredLoader } from "@/components/shared/universal-loader";
+import Image from "next/image";
 
 /**
  * Studio List Page
@@ -98,18 +99,16 @@ export default function StudioListPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
-                Studio Management
+                All Headshots
               </h1>
               <p className="text-muted-foreground">
-                {selectedContext?.type === "personal"
-                  ? "Manage your personal AI headshot studios."
-                  : "Manage studios in your organization."}
+                Manage your and your team headshots here.
               </p>
             </div>
             <Button asChild>
               <Link href="/dashboard/studio/create">
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Create New Studio
+                Create Headshots
               </Link>
             </Button>
           </div>
@@ -117,11 +116,11 @@ export default function StudioListPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Your Studios</CardTitle>
+            <CardTitle>Your Headshots</CardTitle>
             <CardDescription>
               {selectedContext?.type === "personal"
-                ? "All your personal headshot studios"
-                : `Studios created in ${
+                ? "All your personal headshots."
+                : `Headshots created in ${
                     selectedContext?.name || "this organization"
                   }`}
             </CardDescription>
@@ -150,17 +149,24 @@ export default function StudioListPage() {
             {/* Empty State */}
             {!isLoading && !error && studiosData.studios.length === 0 && (
               <div className="text-center py-12">
-                <Camera className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Studios Found</h3>
+                <Image
+                  src="/images/page-eaten.svg"
+                  alt="Add files"
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 mx-auto mb-4 opacity-80"
+                />
+                <h3 className="text-lg font-semibold mb-2">
+                  No Headshots Found
+                </h3>
                 <p className="text-muted-foreground mb-4">
-                  {selectedContext?.type === "personal"
-                    ? "You haven't created any personal studios yet. Start by creating your first AI headshot studio."
-                    : "No studios found in this organization. Create a studio to get started."}
+                  No headshots found in this organization. Create a studio to
+                  get started.
                 </p>
                 <Button asChild>
                   <Link href="/dashboard/studio/create">
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Create Your First Studio
+                    Create Headshots
                   </Link>
                 </Button>
               </div>

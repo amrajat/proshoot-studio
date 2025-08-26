@@ -86,20 +86,13 @@ export function InviteMembersDialog({
     if (formState.message) {
       if (formState.success) {
         // Success: close dialog and reset form
-        toast({
-          title: "Success",
-          description: formState.message,
-        });
+        toast.success(formState.message);
         setIsOpen(false);
         form.reset();
         setEmailCount(0);
       } else {
         // Error: keep dialog open to show errors
-        toast({
-          title: "Error",
-          description: formState.message,
-          variant: "destructive",
-        });
+        toast.error(formState.message);
       }
     }
     setPending(false);

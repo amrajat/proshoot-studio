@@ -215,21 +215,12 @@ const AttributesStep = ({ formData, errors }) => {
 
   const handleGenderChange = (value) => {
     updateFormField("gender", value);
-    
-    // Get the new gender for attributes
-    const newGenderForAttributes = value === "non-binary" ? "man" : value;
-    const currentHairLength = formData.hairLength;
-    
-    // Check if current hair length is valid for new gender
-    if (currentHairLength) {
-      const validHairLengths = HAIR_LENGTH[newGenderForAttributes] || HAIR_LENGTH.man;
-      if (!validHairLengths.includes(currentHairLength)) {
-        // Clear invalid hair attributes when gender changes
-        updateFormField("hairLength", "");
-        updateFormField("hairColor", "");
-        updateFormField("hairType", "");
-      }
-    }
+
+    // Always reset all hair attributes when gender changes
+    // This forces user to reselect hair options for the new gender
+    updateFormField("hairLength", "");
+    updateFormField("hairColor", "");
+    updateFormField("hairType", "");
   };
 
   const handleGlassesChange = (value) => {
@@ -272,9 +263,11 @@ const AttributesStep = ({ formData, errors }) => {
       newErrors.hairLength = "Hair length is required";
     } else {
       // Validate hair length is valid for current gender
-      const validHairLengths = HAIR_LENGTH[genderForAttributes] || HAIR_LENGTH.man;
+      const validHairLengths =
+        HAIR_LENGTH[genderForAttributes] || HAIR_LENGTH.man;
       if (!validHairLengths.includes(formData.hairLength)) {
-        newErrors.hairLength = "Please select a valid hair length for the selected gender";
+        newErrors.hairLength =
+          "Please select a valid hair length for the selected gender";
       }
     }
 
@@ -284,19 +277,22 @@ const AttributesStep = ({ formData, errors }) => {
         newErrors.hairColor = "Hair color is required";
       } else {
         // Validate hair color is valid for current gender
-        const validHairColors = HAIR_COLOR[genderForAttributes] || HAIR_COLOR.man;
+        const validHairColors =
+          HAIR_COLOR[genderForAttributes] || HAIR_COLOR.man;
         if (!validHairColors.includes(formData.hairColor)) {
-          newErrors.hairColor = "Please select a valid hair color for the selected gender";
+          newErrors.hairColor =
+            "Please select a valid hair color for the selected gender";
         }
       }
-      
+
       if (!formData.hairType) {
         newErrors.hairType = "Hair type is required";
       } else {
         // Validate hair type is valid for current gender
         const validHairTypes = HAIR_TYPE[genderForAttributes] || HAIR_TYPE.man;
         if (!validHairTypes.includes(formData.hairType)) {
-          newErrors.hairType = "Please select a valid hair type for the selected gender";
+          newErrors.hairType =
+            "Please select a valid hair type for the selected gender";
         }
       }
     }
@@ -357,7 +353,7 @@ const AttributesStep = ({ formData, errors }) => {
   const GlassesField = () => (
     <div className="space-y-2">
       <Label htmlFor="glasses">
-        Do you want Glasses?
+        Glasses?
         <span className="text-red-500 ml-1">*</span>
       </Label>
       <Select

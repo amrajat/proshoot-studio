@@ -251,8 +251,11 @@ const ImageUploadStep = ({
 
   // Persist upload state to Zustand store whenever it changes
   useEffect(() => {
-    updateFormField("uploadState", uploadState);
-  }, [uploadState, updateFormField]);
+    // Only update if uploadState has actually changed to prevent infinite loops
+    if (JSON.stringify(formData.uploadState) !== JSON.stringify(uploadState)) {
+      updateFormField("uploadState", uploadState);
+    }
+  }, [uploadState, updateFormField, formData.uploadState]);
 
   const [showGuidelines, setShowGuidelines] = useState(false);
   const [showRemoveAllDialog, setShowRemoveAllDialog] = useState(false);
@@ -1368,19 +1371,19 @@ const ImageUploadStep = ({
                     <div className="p-3 space-y-2">
                       <p
                         className="text-sm font-medium truncate"
-                        title={fileData.file.name}
+                        title={fileData.file?.name || 'Unknown file'}
                       >
-                        {fileData.file.name.length > 25
+                        {fileData.file?.name?.length > 25
                           ? `${fileData.file.name.slice(
                               0,
                               15
                             )}...${fileData.file.name.slice(-7)}`
-                          : fileData.file.name}
+                          : fileData.file?.name || 'Unknown file'}
                       </p>
 
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>
-                          {(fileData.file.size / 1048576).toFixed(2)} MB
+                          {(fileData.file?.size / 1048576).toFixed(2) || '0.00'} MB
                         </span>
                         {fileData.dimensions && (
                           <span>

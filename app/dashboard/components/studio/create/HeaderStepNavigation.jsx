@@ -204,7 +204,7 @@ const HeaderStepNavigation = ({
                   h-2 flex-1 rounded-full transition-all duration-300
                   ${
                     index < currentStep
-                      ? "bg-green-400"
+                      ? "bg-success"
                       : index === currentStep
                       ? "bg-primary"
                       : "bg-muted"

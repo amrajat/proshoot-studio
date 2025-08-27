@@ -921,7 +921,7 @@ const ImageUploadStep = ({
         type: "application/json",
       });
 
-      await uploadToR2(cropJsonBlob, "crop_data.json");
+      await uploadToR2(cropJsonBlob, "focus_data.json");
 
       toast.loading("Creating your studio...");
 

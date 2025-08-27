@@ -96,7 +96,7 @@ app = modal.App(name="lora-trainer-2", image=image)
 
 # Request/Response models
 class TrainingRequest(BaseModel):
-    object_key: str = Field(..., description="R2 object key containing images and crop_data.json")
+    object_key: str = Field(..., description="R2 object key containing images and focus_data.json")
     gender: str = Field(..., description="Gender for caption generation (man/woman)")
     user_id: str = Field(..., description="User identifier")
     studio_id: str = Field(..., description="Studio identifier")
@@ -118,7 +118,7 @@ def get_s3_client():
     )
 
 def calculate_crop_box(crop_info: Dict[str, Any], image_size: tuple) -> tuple:
-    """Calculate crop box coordinates from crop_data.json format."""
+    """Calculate crop box coordinates from focus_data.json format."""
     width, height = image_size
     
     x_percent = crop_info.get('x', 0)
@@ -139,16 +139,16 @@ def process_dataset(s3_client, training_request: TrainingRequest, dataset_path: 
     logger = logging.getLogger(__name__)
     datasets_bucket = 'datasets'
     object_key = training_request.object_key.rstrip('/')
-    crop_data_key = f"{object_key}/crop_data.json"
+    crop_data_key = f"{object_key}/focus_data.json"
     
-    logger.info(f"Downloading crop_data.json from: {crop_data_key}")
+    logger.info(f"Downloading focus_data.json from: {crop_data_key}")
     
-    # Download crop_data.json
+    # Download focus_data.json
     try:
         crop_data_response = s3_client.get_object(Bucket=datasets_bucket, Key=crop_data_key)
         crop_data = json.loads(crop_data_response['Body'].read().decode('utf-8'))
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to download crop_data.json: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to download focus_data.json: {str(e)}")
     
     # Create dataset directory
     os.makedirs(dataset_path, exist_ok=True)
@@ -173,7 +173,7 @@ def process_dataset(s3_client, training_request: TrainingRequest, dataset_path: 
                 if original_format.upper() != 'PNG' and img.mode != 'RGB':
                     img = img.convert('RGB')
                 
-                # Crop image using crop_data.json coordinates
+                # Crop image using focus_data.json coordinates
                 crop_box = calculate_crop_box(crop_info, img.size)
                 cropped_img = img.crop(crop_box)
                 

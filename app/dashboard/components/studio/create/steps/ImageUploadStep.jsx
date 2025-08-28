@@ -22,11 +22,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { X, RefreshCw, Info, CheckCircle2, Loader2 } from "lucide-react";
 import {
-  InlineLoader,
-  ButtonLoader,
-} from "@/components/shared/universal-loader";
+  X,
+  RefreshCw,
+  Info,
+  CheckCircle2,
+  Loader2,
+  Trash2,
+} from "lucide-react";
 
 import useStudioCreateStore from "@/stores/studioCreateStore";
 import { createCheckoutUrl } from "@/app/dashboard/actions/checkout";
@@ -40,7 +43,7 @@ import { Separator } from "@/components/ui/separator";
 const MB = 1024 * 1024;
 const MAX_FILE_SIZE = 25 * MB;
 const MAX_IMAGES = 20;
-const MIN_IMAGES = 1;
+const MIN_IMAGES = 10;
 const CROP_DIMENSION = 1024;
 const CROP_ASPECT = 1;
 const MIN_IMAGE_DIMENSION = 256;
@@ -1119,21 +1122,80 @@ const ImageUploadStep = ({
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold">Upload photos</h2>
         <p className="text-muted-foreground">
-          Upload at least {MIN_IMAGES} high-quality photos. You can crop each
-          image to focus on your face.
+          Upload at least {MIN_IMAGES} photos with good variation in outfits,
+          lighting, and backgrounds. Each photo should focus on the upper half
+          of your body.
         </p>
       </div>
 
       <div className="flex flex-wrap gap-2 justify-center">
         <Dialog open={showGuidelines} onOpenChange={setShowGuidelines}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="rounded-lg">
+            <Button variant="default" size="sm" className="rounded-lg">
               <Info className="h-4 w-4 mr-2" />
-              Upload Guidelines
+              Photo Guidelines
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-3xl md:max-w-5xl w-[min(100vw-2rem,80rem)] max-h-[85vh] overflow-y-auto rounded-xl p-0">
             <ImageUploadingGuideLines />
+          </DialogContent>
+        </Dialog>
+        <Dialog
+          open={showRemoveAllDialog}
+          onOpenChange={setShowRemoveAllDialog}
+        >
+          <DialogTrigger asChild>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="rounded-lg"
+              disabled={
+                isRemovingAll ||
+                uploadState.files.length === 0 ||
+                uploadState.uploading ||
+                uploadState.processing ||
+                isSubmitting
+              }
+            >
+              {isRemovingAll ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
+              {isRemovingAll ? "Removing..." : "Remove All"}
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Remove All Photos</DialogTitle>
+              <DialogDescription>
+                This will remove all uploaded photos from both your session and
+                cloud storage. This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowRemoveAllDialog(false)}
+                disabled={isRemovingAll}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={removeAllFiles}
+                disabled={isRemovingAll}
+              >
+                {isRemovingAll ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Removing...
+                  </>
+                ) : (
+                  "Remove All"
+                )}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
@@ -1181,66 +1243,7 @@ const ImageUploadStep = ({
                 pending
               </p>
             </div>
-            <div className="flex gap-2">
-              <Dialog
-                open={showRemoveAllDialog}
-                onOpenChange={setShowRemoveAllDialog}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="rounded-lg"
-                    disabled={
-                      isRemovingAll ||
-                      uploadState.files.length === 0 ||
-                      uploadState.uploading ||
-                      uploadState.processing ||
-                      isSubmitting
-                    }
-                  >
-                    {isRemovingAll ? (
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4 mr-2" />
-                    )}
-                    {isRemovingAll ? "Removing..." : "Remove All"}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Remove All Photos</DialogTitle>
-                    <DialogDescription>
-                      This will remove all uploaded photos from both your
-                      session and cloud storage. This action cannot be undone.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowRemoveAllDialog(false)}
-                      disabled={isRemovingAll}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={removeAllFiles}
-                      disabled={isRemovingAll}
-                    >
-                      {isRemovingAll ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                          Removing...
-                        </>
-                      ) : (
-                        "Remove All"
-                      )}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
+            <div className="flex gap-2"></div>
           </div> */}
           <Separator className="my-4" />
           <Masonry
@@ -1306,7 +1309,6 @@ const ImageUploadStep = ({
                         disabled={isRemoving || isUploading || isSubmitting}
                       >
                         {isRemoving ? (
-                          // <InlineLoader size="sm" showText={false} />
                           <Loader2 className="size-4 text-white" />
                         ) : (
                           <X className="size-2" />
@@ -1371,19 +1373,20 @@ const ImageUploadStep = ({
                     <div className="p-3 space-y-2">
                       <p
                         className="text-sm font-medium truncate"
-                        title={fileData.file?.name || 'Unknown file'}
+                        title={fileData.file?.name || "Unknown file"}
                       >
                         {fileData.file?.name?.length > 25
                           ? `${fileData.file.name.slice(
                               0,
                               15
                             )}...${fileData.file.name.slice(-7)}`
-                          : fileData.file?.name || 'Unknown file'}
+                          : fileData.file?.name || "Unknown file"}
                       </p>
 
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>
-                          {(fileData.file?.size / 1048576).toFixed(2) || '0.00'} MB
+                          {(fileData.file?.size / 1048576).toFixed(2) || "0.00"}{" "}
+                          MB
                         </span>
                         {fileData.dimensions && (
                           <span>

@@ -1,10 +1,20 @@
-// import { getCurrentSession } from "@/lib/supabase/actions/server";
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { publicEnv } from "@/lib/env";
-// import * as Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs";
 
-// This function can be marked `async` if using `await` inside
+// Helper function to validate internal redirect paths
+function isValidInternalPath(path) {
+  if (!path || typeof path !== 'string') return false;
+  // Must start with / but not //
+  if (!path.startsWith('/') || path.startsWith('//')) return false;
+  // Must not contain backslashes (prevents /\evil.com)
+  if (path.includes('\\')) return false;
+  // Must not be a protocol (prevents javascript:, data:, etc.)
+  if (path.includes(':')) return false;
+  return true;
+}
+
 export async function middleware(request) {
   const { pathname, origin } = request.nextUrl;
   const response = NextResponse.next();
@@ -25,20 +35,27 @@ export async function middleware(request) {
     }
   );
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  let session = null;
+  try {
+    const { data } = await supabase.auth.getSession();
+    session = data.session;
+  } catch (error) {
+    console.error('Middleware: Failed to get session:', error);
+    Sentry.captureException(error);
+    // Continue without session - will be treated as unauthenticated
+  }
 
   // Define public and auth routes
-  const publicRoutes = ["/", "/pricing", "/terms", "/privacy"]; // Add any other public routes
+  const publicRoutes = ["/", "/pricing", "/terms", "/privacy"];
   const authRoutes = ["/auth", "/auth/callback"];
+  const publicApiRoutes = ["/api/webhooks", "/api/auth"]; // Only specific API routes are public
 
   const isPublicRoute =
     publicRoutes.some(
       (route) =>
         pathname === route ||
         (route !== "/" && pathname.startsWith(route + "/"))
-    ) || pathname.startsWith("/api"); // Also treat API routes as public for now
+    ) || publicApiRoutes.some(route => pathname.startsWith(route));
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
   if (!session && !isPublicRoute && !isAuthRoute) {
@@ -54,7 +71,8 @@ export async function middleware(request) {
     // User is logged in but trying to access /auth page (not callback)
     // Redirect them to dashboard or their intended 'next' page if available
     const nextUrl = request.nextUrl.searchParams.get("next") || "/dashboard";
-    const safeNextUrl = nextUrl.startsWith("/") ? nextUrl : "/dashboard";
+    // Secure redirect validation - only allow internal paths
+    const safeNextUrl = isValidInternalPath(nextUrl) ? nextUrl : "/dashboard";
     return NextResponse.redirect(`${origin}${safeNextUrl}`);
   }
 

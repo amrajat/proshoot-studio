@@ -90,7 +90,6 @@ export const AccountProvider = ({
       } = await supabase.auth.getUser();
 
       if (authError || !user) {
-        console.error("Auth Error:", authError);
         setProfile(null);
         setOrganizations([]);
         return;
@@ -121,7 +120,6 @@ export const AccountProvider = ({
 
       // Handle profile
       if (profileRes.error) {
-        console.error("Profile fetch error:", profileRes.error);
         setProfile(null);
       } else {
         setProfile(profileRes.data);
@@ -129,7 +127,6 @@ export const AccountProvider = ({
 
       // Handle organizations
       if (orgMembersRes.error) {
-        console.error("Organizations fetch error:", orgMembersRes.error);
         setOrganizations([]);
       } else {
         const orgs =
@@ -139,7 +136,6 @@ export const AccountProvider = ({
         setOrganizations(orgs);
       }
     } catch (error) {
-      console.error("Refresh context error:", error);
       setProfile(null);
       setOrganizations([]);
     } finally {
@@ -175,7 +171,6 @@ export const AccountProvider = ({
         // Refresh context to ensure data alignment
         await refreshContext();
       } catch (error) {
-        console.error("Error during context switch:", error);
       } finally {
         setIsLoading(false);
       }
@@ -215,7 +210,6 @@ export const AccountProvider = ({
         setSelectedContextInternal(personal || firstOrg || null);
       }
     } catch (error) {
-      console.error("Error initializing context from localStorage:", error);
       // Fallback to default
       const personal = availableContexts.find((c) => c.type === "personal");
       setSelectedContextInternal(personal || availableContexts[0] || null);
@@ -247,7 +241,6 @@ export const AccountProvider = ({
           }
         }
       } catch (error) {
-        console.error("Error processing cross-tab storage event:", error);
       }
     };
 

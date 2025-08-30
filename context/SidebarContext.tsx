@@ -58,7 +58,7 @@ const getInitialState = (): SidebarContextState => {
       };
     }
   } catch (error) {
-    console.error("Error reading sidebar state from localStorage:", error);
+    
   }
   // Default state if nothing in localStorage or error occurs
   return {
@@ -103,7 +103,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
           JSON.stringify(stateToPersist)
         );
       } catch (error) {
-        console.error("Error writing sidebar state to localStorage:", error);
+        
       }
     }
   }, [isOpen, isHover, settings, isLoaded]);

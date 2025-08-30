@@ -77,7 +77,6 @@ export default function StudioListPage() {
         });
       }
     } catch (e) {
-      console.error("Error fetching studios:", e);
       setError({ message: e.message || "An unexpected error occurred." });
       setStudiosData({
         studios: [],

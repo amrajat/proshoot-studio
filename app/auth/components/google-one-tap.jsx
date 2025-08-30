@@ -91,10 +91,6 @@ const GoogleOneTapComponent = () => {
       alert(
         "An unexpected error occurred during login. Please check the console for details."
       );
-      console.error(
-        "[OneTap] Client-side exception during Google One Tap sign-in:",
-        error
-      );
     }
   };
 
@@ -121,7 +117,6 @@ const GoogleOneTapComponent = () => {
         if (!isMounted) return;
 
         if (sessionError) {
-          // console.error logged by Supabase client already
         }
 
         if (sessionData && sessionData.session) {
@@ -153,9 +148,7 @@ const GoogleOneTapComponent = () => {
             // e.g., if (notification.isNotDisplayed()) { console.info("[OneTap] Prompt not displayed:", notification.getNotDisplayedReason()); }
           });
         }
-      } catch (e) {
-        // console.error("[OneTap] Error during GSI actions:", e); // Potentially noisy
-      }
+      } catch (e) {}
     };
 
     performGsiActions();
@@ -178,9 +171,7 @@ const GoogleOneTapComponent = () => {
             setForceUpdate((c) => c + 1);
           }
         }}
-        onError={(e) => {
-          // console.error("[OneTap] Error loading Google GSI script tag:", e); // Potentially noisy
-        }}
+        onError={(e) => {}}
       />
       <div
         id="google-one-tap-container"

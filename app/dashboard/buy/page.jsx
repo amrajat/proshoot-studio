@@ -322,7 +322,6 @@ export default function BuyCreditsPage() {
         throw new Error("Failed to create checkout URL");
       }
     } catch (error) {
-      console.error("Checkout error:", error);
       setError(`Checkout failed: ${error.message}`);
       setIsLoading(false);
       setSelectedPlan("");

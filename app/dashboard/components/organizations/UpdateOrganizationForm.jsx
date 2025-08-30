@@ -59,7 +59,6 @@ export default function UpdateOrganizationForm({ onSuccess }) {
           .single();
 
         if (error) {
-          console.error("Error fetching organization:", error);
           return;
         }
 
@@ -70,9 +69,7 @@ export default function UpdateOrganizationForm({ onSuccess }) {
             team_size: data.team_size || 2,
           });
         }
-      } catch (error) {
-        console.error("Error fetching organization:", error);
-      }
+      } catch (error) {}
     };
 
     fetchOrganizationData();
@@ -114,7 +111,6 @@ export default function UpdateOrganizationForm({ onSuccess }) {
 
       onSuccess?.(organizationData.id);
     } catch (error) {
-      console.error("Error updating organization:", error);
       setFormError(
         error?.message || "Failed to update organization. Please try again."
       );

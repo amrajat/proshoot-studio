@@ -210,7 +210,6 @@ const ImageUploadStep = ({
             }
           } catch (error) {
             // If check fails, assume file still exists to avoid false deletions
-            console.warn("Failed to verify file existence:", error);
           }
         }
 
@@ -546,10 +545,6 @@ const ImageUploadStep = ({
             URL.revokeObjectURL(objectUrl); // Clean up original URL
             objectUrl = URL.createObjectURL(processedFile);
           } catch (conversionError) {
-            console.warn(
-              "HEIC conversion failed for preview:",
-              conversionError
-            );
             // Fall back to original file, but mark as having issues
           }
         }
@@ -597,9 +592,7 @@ const ImageUploadStep = ({
               dimensions: { width: 1024, height: 1024 }, // Default dimensions
             });
             return;
-          } catch (conversionError) {
-            console.error("HEIC conversion failed:", conversionError);
-          }
+          } catch (conversionError) {}
         }
 
         const objectUrl = URL.createObjectURL(file);
@@ -986,11 +979,8 @@ const ImageUploadStep = ({
       try {
         result = await response.json();
       } catch (parseError) {
-        console.error("Failed to parse response:", parseError);
         throw new Error("Invalid response from server");
       }
-
-      console.log("API Response:", { status: response.status, result });
 
       if (!response.ok) {
         throw new Error(result?.error || `Server error: ${response.status}`);
@@ -1061,7 +1051,6 @@ const ImageUploadStep = ({
       try {
         result = await response.json();
       } catch (parseError) {
-        console.error("Failed to parse response:", parseError);
         throw new Error("Invalid response from server");
       }
 

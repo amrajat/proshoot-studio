@@ -124,7 +124,6 @@ export function Menu({ isOpen, onItemClick }: MenuProps) {
                   <Button
                     onClick={() => {
                       // Add product tour logic here
-                      console.log("Starting product tour...");
                       onItemClick?.();
                     }}
                     variant="outline"

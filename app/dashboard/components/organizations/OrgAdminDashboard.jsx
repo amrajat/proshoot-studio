@@ -122,14 +122,12 @@ export default function OrgAdminDashboard({ orgContext }) {
         .maybeSingle();
 
       if (error) {
-        console.error("Error fetching credits:", error);
         toast.error("Failed to load organization credits");
         return;
       }
 
       setCredits(data);
     } catch (error) {
-      console.error("Unexpected error fetching credits:", error);
       toast.error("Unexpected error loading credits");
     } finally {
       setCreditsLoading(false);
@@ -155,7 +153,6 @@ export default function OrgAdminDashboard({ orgContext }) {
         toast.error(result.error || "Failed to load team members");
       }
     } catch (error) {
-      console.error("Error fetching members:", error);
       toast.error("Failed to load team members");
     } finally {
       setMembersLoading(false);
@@ -176,14 +173,12 @@ export default function OrgAdminDashboard({ orgContext }) {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching invitations:", error);
         toast.error("Failed to load invitations");
         return;
       }
 
       setInvitations(data || []);
     } catch (error) {
-      console.error("Error fetching invitations:", error);
       toast.error("Failed to load invitations");
     } finally {
       setInvitationsLoading(false);
@@ -214,7 +209,6 @@ export default function OrgAdminDashboard({ orgContext }) {
         toast.error(result.error || "Failed to generate shareable link");
       }
     } catch (error) {
-      console.error("Error generating link:", error);
       toast.error("Failed to generate shareable link");
     } finally {
       setShareableLinkLoading(false);
@@ -232,7 +226,6 @@ export default function OrgAdminDashboard({ orgContext }) {
         toast.error(result.error || "Failed to revoke shareable link");
       }
     } catch (error) {
-      console.error("Error revoking link:", error);
       toast.error("Failed to revoke shareable link");
     } finally {
       setShareableLinkLoading(false);
@@ -247,7 +240,6 @@ export default function OrgAdminDashboard({ orgContext }) {
       await navigator.clipboard.writeText(link);
       toast.success("Invite link copied to clipboard");
     } catch (error) {
-      console.error("Failed to copy link:", error);
       toast.error("Failed to copy link to clipboard");
     }
   };
@@ -296,7 +288,6 @@ export default function OrgAdminDashboard({ orgContext }) {
         }
       }
     } catch (error) {
-      console.error("Credit transfer error:", error);
       toast.error("Failed to transfer credits");
     } finally {
       setTransferLoading(false);
@@ -319,7 +310,6 @@ export default function OrgAdminDashboard({ orgContext }) {
         toast.error(result.error || "Failed to resend invitation");
       }
     } catch (error) {
-      console.error("Resend invitation error:", error);
       toast.error("Failed to resend invitation");
     }
   };
@@ -339,7 +329,6 @@ export default function OrgAdminDashboard({ orgContext }) {
         toast.error(result.error || "Failed to remove invitation");
       }
     } catch (error) {
-      console.error("Remove invitation error:", error);
       toast.error("Failed to remove invitation");
     }
   };
@@ -897,7 +886,6 @@ export default function OrgAdminDashboard({ orgContext }) {
             <Button
               onClick={() => {
                 setInsufficientCreditsDialog(false);
-                console.log("redirect to buy page");
               }}
               className="gap-2"
             >

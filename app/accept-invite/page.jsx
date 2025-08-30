@@ -87,7 +87,6 @@ function AcceptInvitePageContent() {
           });
         }
       } catch (error) {
-        console.error("Exception in processInvitation:", error);
         setState({
           status: "error",
           message: "An unexpected error occurred. Please try again later.",
@@ -99,22 +98,13 @@ function AcceptInvitePageContent() {
   );
 
   useEffect(() => {
-    console.log(
-      "🔄 useEffect triggered. hasProcessed:",
-      hasProcessed.current,
-      "token:",
-      token?.substring(0, 10) + "..."
-    );
-
     // Guard to ensure the effect runs only once
     if (hasProcessed.current) {
-      console.log("⏹️ Already processed, skipping...");
       return;
     }
     hasProcessed.current = true;
 
     if (!token || token.trim() === "") {
-      console.log("⚠️ Invalid token detected");
       setState({
         status: "invalid-token",
         message:
@@ -124,7 +114,6 @@ function AcceptInvitePageContent() {
       return;
     }
 
-    console.log("🚀 Processing invitation immediately...");
     processInvitation(token);
   }, [token, processInvitation]);
 

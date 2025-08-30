@@ -58,9 +58,6 @@ export function AccountSwitcher() {
       ) {
         localStorage.removeItem("currentFormStep");
         localStorage.removeItem("formValues");
-        console.log(
-          "Cleared form data from localStorage due to context switch in AccountSwitcher"
-        );
       }
       await setSelectedContext(context);
       // Refresh the current page after context switch

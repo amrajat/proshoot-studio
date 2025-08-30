@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, AlertCircle, Settings, Shirt } from "lucide-react";
 import { CenteredLoader } from "@/components/shared/universal-loader";
+import Image from "next/image";
 
 export default function ManageClothingPage() {
   const { selectedContext, isCurrentUserOrgAdmin } = useAccountContext();
@@ -151,10 +152,14 @@ export default function ManageClothingPage() {
                   className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <div className="aspect-square relative overflow-hidden bg-muted">
-                    <img
-                      src={item.image}
+                    {/* TODO: FIX THE PROPER IMAGE LATER */}
+                    <Image
+                      // src={item.image}
+                      src={"/images/placeholder.svg"}
                       alt={item.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                      fill
+                      sizes="48px"
                       loading="lazy"
                     />
                   </div>
@@ -285,12 +290,16 @@ export default function ManageClothingPage() {
                     }
                   >
                     <div className="aspect-square relative overflow-hidden bg-muted">
-                      <img
-                        src={item.image}
+                      {/* TODO: FIX THE PROPER IMAGE LATER */}
+                      <Image
+                        // src={item.image}
+                        src={"/images/placeholder.svg"}
                         alt={item.name}
                         className={`w-full h-full object-cover transition-transform duration-200 ${
                           isInteractive ? "group-hover:scale-105" : ""
                         }`}
+                        fill
+                        sizes="48px"
                         loading="lazy"
                       />
                       {isApproved && restrictClothing && (

@@ -548,8 +548,10 @@ const StylePairingStep = ({
                         }`}
                       >
                         <div className="aspect-square bg-muted/40 relative">
+                          {/* FIX THE PROPER IMAGE LATER */}
                           <Image
-                            src={option.image}
+                            // src={option.image}
+                            src={"/images/placeholder.svg"}
                             alt={option.name}
                             fill
                             className="object-cover"
@@ -619,8 +621,10 @@ const StylePairingStep = ({
                         }`}
                       >
                         <div className="aspect-square bg-muted/40 relative">
+                          {/* TODO: FIX THE PROPER IMAGE LATER */}
                           <Image
-                            src={option.image}
+                            // src={option.image}
+                            src={"/images/placeholder.svg"}
                             alt={option.name}
                             fill
                             className="object-cover"
@@ -657,14 +661,15 @@ const StylePairingStep = ({
                 }
                 className="group relative bg-background border border-border/50 rounded-xl p-4 transition-all duration-200 cursor-crosshair"
               >
+                {/* FIX THE PROPER IMAGE LATER */}
                 <div className="flex w-full flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   {/* Clothing (left) */}
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
                       <Image
                         src={
-                          getClothingById(selectedClothing)?.image ||
-                          "/placeholder-clothing.jpg"
+                          getClothingById(selectedClothing)?.image &&
+                          "/images/placeholder.svg"
                         }
                         alt={
                           getClothingById(selectedClothing)?.name || "Clothing"
@@ -717,7 +722,7 @@ const StylePairingStep = ({
                     <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
                       <Image
                         src={
-                          getBackgroundById(selectedBackground)?.image ||
+                          getBackgroundById(selectedBackground)?.image &&
                           "/images/placeholder.svg"
                         }
                         alt={

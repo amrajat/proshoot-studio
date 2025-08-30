@@ -150,11 +150,16 @@ export default function ManageBackgroundsPage() {
                   className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <div className="aspect-square relative overflow-hidden bg-muted">
+                    {/* TODO: FIX THE PROPER IMAGE LATER */}
+
                     <img
-                      src={item.image}
+                      // src={item.image}
+                      src="/images/placeholder.svg"
                       alt={item.name}
                       className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                       loading="lazy"
+                      fill
+                      sizes="48px"
                     />
                   </div>
                   <CardContent className="p-3">
@@ -288,12 +293,16 @@ export default function ManageBackgroundsPage() {
                     }
                   >
                     <div className="aspect-square relative overflow-hidden bg-muted">
+                      {/* TODO: FIX THE PROPER IMAGE LATER */}
                       <img
-                        src={item.image}
+                        // src={item.image}
+                        src="/images/placeholder.svg"
                         alt={item.name}
                         className={`w-full h-full object-cover transition-transform duration-200 ${
                           isInteractive ? "group-hover:scale-105" : ""
                         }`}
+                        fill
+                        sizes="48px"
                         loading="lazy"
                       />
                       {isApproved && restrictBackgrounds && (

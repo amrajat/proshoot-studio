@@ -386,7 +386,7 @@ const AttributesStep = ({ formData, errors }) => {
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-semibold">Your attributes</h2>
         <p className="text-muted-foreground">
-          Inputs are used solely to improve AI accuracy and is kept private.
+          Inputs are used solely to improve AI accuracy and kept private.
         </p>
       </div>
 

@@ -1,3 +1,5 @@
+import { getBaseUrlFromEnv } from "@/lib/env";
+
 export default function robots() {
   return {
     rules: {
@@ -5,6 +7,6 @@ export default function robots() {
       allow: "/",
       disallow: "/dashboard/",
     },
-    sitemap: `${process.env.URL}/sitemap.xml`,
+    sitemap: `${getBaseUrlFromEnv()}/sitemap.xml`,
   };
 }

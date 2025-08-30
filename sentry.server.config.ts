@@ -3,10 +3,11 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { env } from "@/lib/env";
 
 Sentry.init({
   dsn: "https://458f233d8eae5d8abea19d7344652a76@o4507332139089920.ingest.us.sentry.io/4507332141645824",
-  enabled: process.env.NODE_ENV === "production",
+  enabled: env.NODE_ENV === "production",
 
   // Adjust sampling rate to reduce noise while still capturing important errors
   tracesSampleRate: 0.2,
@@ -21,7 +22,7 @@ Sentry.init({
   // Add error filtering to reduce noise
   beforeSend(event, hint) {
     // Don't send events in development
-    if (process.env.NODE_ENV === "development") {
+    if (env.NODE_ENV === "development") {
       return null;
     }
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import crypto from "crypto";
+import { env, publicEnv } from "@/lib/env";
 
 // Constants
 const MODAL_TIMEOUT_MS = 45000;
@@ -17,7 +18,7 @@ const createSuccessResponse = (data) => {
 
 // Security helpers
 const verifyWebhookSignature = (rawBody, signature) => {
-  if (!signature || !process.env.LEMONSQUEEZY_WEBHOOK_SECRET) {
+  if (!signature || !env.LEMONSQUEEZY_WEBHOOK_SECRET) {
     console.error("Missing signature or webhook secret");
     return false;
   }
@@ -25,7 +26,7 @@ const verifyWebhookSignature = (rawBody, signature) => {
   try {
     const hmac = crypto.createHmac(
       "sha256",
-      process.env.LEMONSQUEEZY_WEBHOOK_SECRET
+      env.LEMONSQUEEZY_WEBHOOK_SECRET
     );
     hmac.update(rawBody, "utf8");
     const expectedSignature = hmac.digest("hex");
@@ -133,7 +134,7 @@ const triggerModalTraining = async ({
   };
 
   // const ModalResponse = await fetch(
-  //   process.env.MODAL_TRAINING_ENDPOINT,
+  //   env.MODAL_TRAINING_ENDPOINT,
   //   requestOptions
   // );
 
@@ -169,8 +170,8 @@ export async function POST(request) {
     // Initialize Supabase client
     const cookieStore = cookies();
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+      env.SUPABASE_SERVICE_ROLE_KEY,
       {
         cookies: {
           get(name) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { env, publicEnv } from "@/lib/env";
 
 // Constants
 const VALID_PLANS = ["starter", "professional", "studio", "team"];
@@ -90,8 +91,8 @@ export async function POST(request) {
     // Initialize Supabase client
     const cookieStore = cookies();
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+      env.SUPABASE_SERVICE_ROLE_KEY,
       {
         cookies: {
           get(name) {

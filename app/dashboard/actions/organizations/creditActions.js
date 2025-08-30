@@ -6,6 +6,7 @@ import createSupabaseServerClient from "@/lib/supabase/server-client";
 import { revalidatePath } from "next/cache";
 import { sendOrganizationInviteEmail } from "@/lib/email";
 import { getBaseUrl } from "@/lib/utils";
+import { env, publicEnv } from "@/lib/env";
 
 /**
  * Transfer team credits from organization owner to a member
@@ -56,8 +57,8 @@ export async function transferTeamCreditsAction(formData) {
     // Use service role client for credit transfer
     const cookieStore = cookies();
     const serviceSupabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+      env.SUPABASE_SERVICE_ROLE_KEY,
       {
         cookies: {
           get(name) {

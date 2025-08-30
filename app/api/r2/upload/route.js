@@ -1,21 +1,22 @@
 import { NextResponse } from "next/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import createSupabaseServerClient from "@/lib/supabase/server-client";
+import { env, publicEnv } from "@/lib/env";
 
 // --- Centralized R2 Configuration ---
-const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
+const R2_ACCOUNT_ID = env.R2_ACCOUNT_ID;
+const R2_ACCESS_KEY_ID = env.R2_ACCESS_KEY_ID;
+const R2_SECRET_ACCESS_KEY = env.R2_SECRET_ACCESS_KEY;
 const R2_BUCKET_NAME_DATASETS = "datasets";
 
 const BUCKET_CONFIGS = {
   datasets: {
-    name: process.env.NEXT_PUBLIC_DATASETS_BUCKET_NAME,
-    customDomain: process.env.NEXT_PUBLIC_DATASETS_CUSTOM_DOMAIN,
+    name: publicEnv.NEXT_PUBLIC_R2_DATASETS_BUCKET_NAME,
+    customDomain: publicEnv.NEXT_PUBLIC_R2_DATASETS_CUSTOM_DOMAIN,
   },
   images: {
-    name: process.env.NEXT_PUBLIC_IMAGES_BUCKET_NAME,
-    customDomain: process.env.NEXT_PUBLIC_IMAGES_CUSTOM_DOMAIN,
+    name: publicEnv.NEXT_PUBLIC_IMAGES_BUCKET_NAME,
+    customDomain: publicEnv.NEXT_PUBLIC_IMAGES_CUSTOM_DOMAIN,
   },
   // Add other bucket configurations here as needed
 };

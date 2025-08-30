@@ -1,10 +1,11 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { SendMailClient } from "zeptomail";
+import { env } from "@/lib/env";
 
 // Initialize Resend with API key
-const url = process.env.ZOHO_ZEPTOMAIL_URL;
-const token = process.env.ZOHO_ZEPTOMAIL_TOKEN;
+const url = env.ZOHO_ZEPTOMAIL_URL;
+const token = env.ZOHO_ZEPTOMAIL_TOKEN;
 const eMailClient = new SendMailClient({ url, token });
 
 // Rate limiting map
@@ -38,7 +39,7 @@ function isRateLimited(ip) {
 export async function POST(request) {
   // verify webhook secret using search params
   const secret = request.nextUrl.searchParams.get("SUPABASE_WEBHOOK_SECRET");
-  if (secret !== process.env.SUPABASE_WEBHOOK_SECRET) {
+  if (secret !== env.SUPABASE_WEBHOOK_SECRET) {
     return NextResponse.json(
       { error: "Invalid Webhook Secret" },
       { status: 401 }

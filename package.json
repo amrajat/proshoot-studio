@@ -8,11 +8,12 @@
     "start": "next start",
     "lint": "next lint",
     "knip": "knip",
-    "db:snapshot": "npx supabase db dump --data-only --db-url \"postgresql://postgres:postgres@localhost:54322/postgres\" --file supabase/seed.sql"
+    "db:snapshot": "npx supabase db dump --data-only --db-url \"postgresql://postgres:postgres@localhost:54322/postgres\" --file supabase/seed.sql",
+    "check:env": "node scripts/check-env-client.js",
+    "prebuild": "npm run check:env"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.812.0",
-    "@aws-sdk/client-sts": "^3.816.0",
     "@hookform/resolvers": "^3.9.1",
     "@lemonsqueezy/lemonsqueezy.js": "^3.0.0",
     "@marsidev/react-turnstile": "^1.1.0",

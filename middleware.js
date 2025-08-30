@@ -1,6 +1,7 @@
 // import { getCurrentSession } from "@/lib/supabase/actions/server";
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { publicEnv } from "@/lib/env";
 // import * as Sentry from "@sentry/nextjs";
 
 // This function can be marked `async` if using `await` inside
@@ -9,8 +10,8 @@ export async function middleware(request) {
   const response = NextResponse.next();
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+    publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         get: (name) => request.cookies.get(name)?.value,

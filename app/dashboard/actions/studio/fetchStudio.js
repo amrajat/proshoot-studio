@@ -2,6 +2,7 @@
 
 import createSupabaseServerClient from "@/lib/supabase/server-client";
 import { generateSecureImageUrls } from "@/lib/jwt-image-delivery-tokens";
+import { env, publicEnv } from "@/lib/env";
 
 /**
  * Secure Studio Detail Data Fetcher
@@ -104,8 +105,8 @@ export const fetchStudio = async (studioId, currentUserId) => {
 
       // Generate secure URLs for all images
       if (headshots.length > 0) {
-        const jwtSecret = process.env.R2_IMAGES_DELIVERY_PROXY_JWT_SECRET;
-        const deliveryDomain = process.env.NEXT_PUBLIC_IMAGE_DELIVERY_DOMAIN;
+        const jwtSecret = env.R2_IMAGES_DELIVERY_PROXY_JWT_SECRET;
+        const deliveryDomain = publicEnv.NEXT_PUBLIC_IMAGE_DELIVERY_DOMAIN;
 
         if (jwtSecret && deliveryDomain) {
           try {

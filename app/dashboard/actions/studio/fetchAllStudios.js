@@ -2,6 +2,7 @@
 
 import createSupabaseServerClient from "@/lib/supabase/server-client";
 import { createSecureImageUrl } from "@/lib/jwt-image-delivery-tokens";
+import { env, publicEnv } from "@/lib/env";
 
 /**
  * Secure Studios Data Fetcher
@@ -60,8 +61,8 @@ export const fetchAllStudios = async (userId, contextType, contextId) => {
     }
 
     // Generate secure thumbnail URLs for ACCEPTED studios
-    const jwtSecret = process.env.R2_IMAGES_DELIVERY_PROXY_JWT_SECRET;
-    const deliveryDomain = process.env.NEXT_PUBLIC_IMAGE_DELIVERY_DOMAIN;
+    const jwtSecret = env.R2_IMAGES_DELIVERY_PROXY_JWT_SECRET;
+    const deliveryDomain = publicEnv.NEXT_PUBLIC_IMAGE_DELIVERY_DOMAIN;
 
     let studiosWithSecureUrls = studios || [];
 

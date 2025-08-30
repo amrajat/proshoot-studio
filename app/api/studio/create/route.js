@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { env, publicEnv } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -173,8 +174,8 @@ const triggerModalTraining = async ({
   studioID,
 }) => {
   const headers = new Headers({
-    "Modal-Key": process.env.MODAL_KEY,
-    "Modal-Secret": process.env.MODAL_SECRET,
+    "Modal-Key": env.MODAL_KEY,
+    "Modal-Secret": env.MODAL_SECRET,
     "Content-Type": "application/json",
   });
 
@@ -195,7 +196,7 @@ const triggerModalTraining = async ({
   };
 
   // const response = await fetch(
-  //   process.env.MODAL_TRAINING_ENDPOINT_V2,
+  //   env.MODAL_TRAINING_ENDPOINT_V2,
   //   requestOptions
   // );
 
@@ -212,8 +213,8 @@ export async function POST(request) {
     // Initialize Supabase client
     const cookieStore = cookies();
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+      env.SUPABASE_SERVICE_ROLE_KEY,
       {
         cookies: {
           get(name) {

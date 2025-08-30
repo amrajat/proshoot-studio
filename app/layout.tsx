@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import "./globals.css";
 import { GeistSans } from "geist/font/sans";
+import { getBaseUrlFromEnv } from "@/lib/env";
 
 // import FirstPromoterScript from "@/components/services/first-promoter";
 // import { PostHogProvider } from "@/components/services/posthog";
@@ -10,7 +11,7 @@ import GoogleOneTapComponent from "@/app/auth/components/google-one-tap";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.URL || "http://localhost:3000"),
+  metadataBase: new URL(getBaseUrlFromEnv()),
   title: {
     default: "Proshoot.co: Generate Professional Headshots with AI.",
     template: "%s - Proshoot.co AI Portraits",

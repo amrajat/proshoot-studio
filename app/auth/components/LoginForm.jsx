@@ -5,7 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { InlineLoader, ButtonLoader } from "@/components/shared/universal-loader";
+import {
+  InlineLoader,
+  ButtonLoader,
+} from "@/components/shared/universal-loader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {

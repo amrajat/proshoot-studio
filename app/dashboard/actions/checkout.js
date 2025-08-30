@@ -32,23 +32,19 @@ export async function createCheckoutUrl(
   redirectUrl = null
 ) {
   // ===== ENVIRONMENT VALIDATION =====
-  if (!process.env.LEMONSQUEEZY_API_KEY) {
+  if (!env.LEMONSQUEEZY_API_KEY) {
     throw new Error("Lemon Squeezy API key not set in environment variables.");
   }
 
-  if (!process.env.LEMONSQUEEZY_STORE_ID) {
+  if (!env.LEMONSQUEEZY_STORE_ID) {
     throw new Error("Lemon Squeezy Store ID not set in environment variables.");
-  }
-
-  if (!process.env.URL) {
-    throw new Error("URL is not set in environment variables.");
   }
 
   // ===== AUTHENTICATE USER SERVER-SIDE =====
   const cookieStore = cookies();
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY,
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         get(name) {
@@ -58,8 +54,11 @@ export async function createCheckoutUrl(
     }
   );
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
   if (authError || !user) {
     throw new Error("User authentication required");
   }
@@ -69,12 +68,12 @@ export async function createCheckoutUrl(
 
   // ===== LEMONSQUEEZY SETUP =====
   lemonSqueezySetup({
-    apiKey: process.env.LEMONSQUEEZY_API_KEY,
+    apiKey: env.LEMONSQUEEZY_API_KEY,
   });
 
   // ===== CONFIGURATION VALIDATION =====
-  const storeId = parseInt(process.env.LEMONSQUEEZY_STORE_ID);
-  const appUrl = process.env.URL;
+  const storeId = parseInt(env.LEMONSQUEEZY_STORE_ID);
+  const appUrl = getBaseUrlFromEnv();
 
   const planConfig = config.PLANS[plan];
   if (!planConfig || !planConfig.variantID) {
@@ -114,7 +113,8 @@ export async function createCheckoutUrl(
     if (quantity) webhookCustomData.quantity = String(quantity);
     if (userId) webhookCustomData.user = String(userId);
     if (userEmail) webhookCustomData.email_id = String(userEmail);
-    if (process.env.CUSTOM_WEBHOOK_SECRET) webhookCustomData.webhook_secret = String(process.env.CUSTOM_WEBHOOK_SECRET);
+    if (env.WEBHOOK_SECRET)
+      webhookCustomData.webhook_secret = String(env.WEBHOOK_SECRET);
 
     // Add custom data, ensuring all values are strings
     Object.entries(customData).forEach(([key, value]) => {

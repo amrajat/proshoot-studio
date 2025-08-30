@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import createServerSupabaseClient from "@/lib/supabase/server-client";
+import { env } from "@/lib/env";
 
 export async function POST(request) {
   try {
@@ -24,9 +25,9 @@ export async function POST(request) {
     }
 
     // Get R2 credentials from environment
-    const accountId = process.env.R2_ACCOUNT_ID;
-    const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+    const accountId = env.R2_ACCOUNT_ID;
+    const accessKeyId = env.R2_ACCESS_KEY_ID;
+    const secretAccessKey = env.R2_SECRET_ACCESS_KEY;
 
     if (!accountId || !accessKeyId || !secretAccessKey) {
       return NextResponse.json(

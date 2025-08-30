@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { env, publicEnv, getBaseUrlFromEnv } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ const createSuccessResponse = (data) => {
 
 // Security helpers
 const verifyWebhookSignature = (rawBody, signature) => {
-  if (!signature || !process.env.LEMONSQUEEZY_WEBHOOK_SECRET) {
+  if (!signature || !env.LEMONSQUEEZY_WEBHOOK_SECRET) {
     console.error("Missing signature or webhook secret");
     return false;
   }
@@ -28,7 +29,7 @@ const verifyWebhookSignature = (rawBody, signature) => {
   try {
     const hmac = crypto.createHmac(
       "sha256",
-      process.env.LEMONSQUEEZY_WEBHOOK_SECRET
+      env.LEMONSQUEEZY_WEBHOOK_SECRET
     );
     hmac.update(rawBody, "utf8");
     const expectedSignature = hmac.digest("hex");
@@ -60,8 +61,8 @@ export async function POST(request) {
     // Initialize Supabase client
     const cookieStore = cookies();
     const supabase = await createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+      env.SUPABASE_SERVICE_ROLE_KEY,
       {
         cookies: {
           get(name) {
@@ -111,7 +112,7 @@ export async function POST(request) {
     // Validate custom webhook secret if provided
     if (
       webhook_secret &&
-      webhook_secret !== process.env.CUSTOM_WEBHOOK_SECRET
+      webhook_secret !== env.WEBHOOK_SECRET
     ) {
       return createErrorResponse("Invalid custom webhook secret", 401);
     }
@@ -238,7 +239,7 @@ async function handleFirstPromoterTracking({
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          "x-api-key": process.env.FIRSTPROMOTER_API_KEY,
+          "x-api-key": env.FIRSTPROMOTER_API_KEY,
         },
         body: params.toString(),
         signal: AbortSignal.timeout(FIRSTPROMOTER_TIMEOUT),
@@ -261,7 +262,7 @@ async function handleFirstPromoterTracking({
  */
 async function handleStudioCreation({ studioId, user_id, signature }) {
   try {
-    const response = await fetch(`${process.env.URL}/api/studio/process`, {
+    const response = await fetch(`${getBaseUrlFromEnv()}/api/studio/process`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

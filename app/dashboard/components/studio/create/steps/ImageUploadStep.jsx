@@ -1200,7 +1200,7 @@ const ImageUploadStep = ({
         >
           <input {...getInputProps()} />
           <Image
-            src="/images/add_files.svg"
+            src="/images/upload_photos.svg"
             alt="Add files"
             width={96}
             height={96}
@@ -1407,7 +1407,7 @@ const ImageUploadStep = ({
           >
             <input {...getInputProps()} />
             <Image
-              src="/images/add_files.svg"
+              src="/images/upload_photos.svg"
               alt="Add files"
               width={48}
               height={48}

@@ -149,7 +149,7 @@ export default function StudioListPage() {
             {!isLoading && !error && studiosData.studios.length === 0 && (
               <div className="text-center py-12">
                 <Image
-                  src="/images/page-eaten.svg"
+                  src="/images/sad_dog.svg"
                   alt="Add files"
                   width={96}
                   height={96}

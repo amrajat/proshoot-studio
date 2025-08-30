@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAccountContext } from "@/context/AccountContext";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
-import { GLOBAL_ALL_CLOTHING_OPTIONS } from "@/app/utils/styleOptions";
+import { GLOBAL_ALL_CLOTHING_OPTIONS } from "@/utils/styleOptions";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";

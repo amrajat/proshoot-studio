@@ -31,7 +31,7 @@ import { AlertCircle } from "lucide-react";
 import {
   GLOBAL_ALL_CLOTHING_OPTIONS,
   ALL_BACKGROUND_OPTIONS as GLOBAL_ALL_BACKGROUND_OPTIONS,
-} from "@/app/utils/styleOptions";
+} from "@/utils/styleOptions";
 
 const StudioCreateWizard = () => {
   const router = useRouter();
@@ -81,30 +81,38 @@ const StudioCreateWizard = () => {
   // Get clothing and background options based on context
   const clothingOptions = useMemo(() => {
     const isOrgContext = selectedContext?.type === "organization";
-    
+
     // If organization has restrictions enabled, filter to approved items only
-    if (isOrgContext && orgRestrictClothing && Array.isArray(orgApprovedClothing)) {
+    if (
+      isOrgContext &&
+      orgRestrictClothing &&
+      Array.isArray(orgApprovedClothing)
+    ) {
       // Filter global options to only include approved IDs
-      return GLOBAL_ALL_CLOTHING_OPTIONS.filter(item => 
+      return GLOBAL_ALL_CLOTHING_OPTIONS.filter((item) =>
         orgApprovedClothing.includes(item.id)
       );
     }
-    
+
     // Otherwise show all options
     return GLOBAL_ALL_CLOTHING_OPTIONS || [];
   }, [selectedContext, orgRestrictClothing, orgApprovedClothing]);
 
   const backgroundOptions = useMemo(() => {
     const isOrgContext = selectedContext?.type === "organization";
-    
+
     // If organization has restrictions enabled, filter to approved items only
-    if (isOrgContext && orgRestrictBackgrounds && Array.isArray(orgApprovedBackgrounds)) {
+    if (
+      isOrgContext &&
+      orgRestrictBackgrounds &&
+      Array.isArray(orgApprovedBackgrounds)
+    ) {
       // Filter global options to only include approved IDs
-      return GLOBAL_ALL_BACKGROUND_OPTIONS.filter(item => 
+      return GLOBAL_ALL_BACKGROUND_OPTIONS.filter((item) =>
         orgApprovedBackgrounds.includes(item.id)
       );
     }
-    
+
     // Otherwise show all options
     return GLOBAL_ALL_BACKGROUND_OPTIONS || [];
   }, [selectedContext, orgRestrictBackgrounds, orgApprovedBackgrounds]);

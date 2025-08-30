@@ -40,7 +40,7 @@ import useStudioCreateStore from "@/stores/studioCreateStore";
 import {
   GLOBAL_ALL_CLOTHING_OPTIONS,
   ALL_BACKGROUND_OPTIONS,
-} from "@/app/utils/styleOptions";
+} from "@/utils/styleOptions";
 import { useStudioForm } from "../forms/StudioFormProvider";
 import StepNavigation from "../components/StepNavigation";
 import config from "@/config";

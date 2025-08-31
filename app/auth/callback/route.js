@@ -6,7 +6,7 @@ import { publicEnv } from "@/lib/env";
 export async function GET(request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") || "/dashboard"; // Default redirect to /dashboard
+  const next = searchParams.get("next") || "/"; // Default redirect to root
   const error_description = searchParams.get("error_description");
 
   if (error_description) {
@@ -52,7 +52,7 @@ export async function GET(request) {
 
   // After successful OAuth or if it's an OTP redirect without a code (session handled by client-side verifyOtp)
   // Ensure 'next' is a relative path to prevent open redirect vulnerabilities
-  const safeNext = next.startsWith("/") ? next : "/dashboard";
+  const safeNext = next.startsWith("/") ? next : "/";
   console.log(`Redirecting to: ${origin}${safeNext}`);
   return NextResponse.redirect(`${origin}${safeNext}`);
 }

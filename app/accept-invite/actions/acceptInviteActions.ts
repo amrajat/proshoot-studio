@@ -100,9 +100,9 @@ export async function acceptInvitationAction(
     // Check if the invitation was processed successfully
     if (rpcData.success) {
       // Revalidate relevant paths to update the UI
-      revalidatePath("/dashboard", "layout");
-      revalidatePath("/dashboard/organizations", "page");
-      revalidatePath("/dashboard/billing", "page");
+      revalidatePath("/", "layout");
+      revalidatePath("/organizations", "page");
+      revalidatePath("/billing", "page");
 
       return {
         data: {

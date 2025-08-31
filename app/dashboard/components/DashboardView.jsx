@@ -3,14 +3,9 @@
 import { useAccountContext } from "@/context/AccountContext";
 import { PageLoader } from "@/components/shared/universal-loader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import StudioCreate from "@/app/dashboard/studio/create/page";
-import OrgAdminDashboard from "@/app/dashboard/components/organizations/OrgAdminDashboard.jsx";
+import StudioCreate from "@/app/(dashboard)/studio/create/page";
+import OrgAdminDashboard from "@/app/(dashboard)/components/organizations/OrgAdminDashboard.jsx";
 
-/**
- * Main dashboard view that renders different components based on user context
- * - Personal context: Shows StudioCreate
- * - Organization context: Shows OrgAdminDashboard for owners, StudioCreate for members
- */
 export default function DashboardView({ userId }) {
   const {
     selectedContext,

@@ -118,7 +118,7 @@ export function LoginForm({ className, ...props }) {
     if (nextUrl && nextUrl.startsWith("/")) {
       return nextUrl;
     }
-    return "/dashboard";
+    return "/";
   };
 
   const handleGoogleLogin = async () => {
@@ -127,7 +127,7 @@ export function LoginForm({ className, ...props }) {
     const redirectTo = `${window.location.origin}/auth/callback`;
     const nextUrl = getRedirectPath();
     const finalRedirectTo =
-      nextUrl !== "/dashboard"
+      nextUrl !== "/"
         ? `${redirectTo}?next=${encodeURIComponent(nextUrl)}`
         : redirectTo;
 
@@ -151,7 +151,7 @@ export function LoginForm({ className, ...props }) {
     const redirectTo = `${window.location.origin}/auth/callback`;
     const nextUrl = getRedirectPath();
     const finalRedirectTo =
-      nextUrl !== "/dashboard"
+      nextUrl !== "/"
         ? `${redirectTo}?next=${encodeURIComponent(nextUrl)}`
         : redirectTo;
 
@@ -184,7 +184,7 @@ export function LoginForm({ className, ...props }) {
     const redirectTo = `${window.location.origin}/auth/callback`;
     const nextUrl = getRedirectPath();
     const emailRedirectFinal =
-      nextUrl !== "/dashboard"
+      nextUrl !== "/"
         ? `${redirectTo}?method=otp&next=${encodeURIComponent(nextUrl)}`
         : `${redirectTo}?method=otp`;
 

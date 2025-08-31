@@ -30,7 +30,7 @@ function AcceptInvitePageContent() {
 
   const handleRedirectToDashboard = useCallback(() => {
     setState((prev) => ({ ...prev, isRedirecting: true }));
-    router.push("/dashboard");
+    router.push("/");
   }, [router]);
 
   const processInvitation = useCallback(
@@ -211,7 +211,7 @@ function AcceptInvitePageContent() {
                 >
                   Try Again
                 </Button>
-                <Link href="/dashboard" className="w-full">
+                <Link href="/" className="w-full">
                   <Button variant="secondary" className="w-full">
                     <Home className="mr-2 h-4 w-4" />
                     Go to Dashboard
@@ -243,7 +243,7 @@ function AcceptInvitePageContent() {
                   <p className="text-sm text-amber-700">{state.message}</p>
                 </div>
               </div>
-              <Link href="/dashboard" className="w-full">
+              <Link href="/" className="w-full">
                 <Button className="w-full">
                   <Home className="mr-2 h-4 w-4" />
                   Go to Dashboard

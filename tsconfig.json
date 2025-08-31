@@ -27,12 +27,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "middleware.js",
-    "components/homepage/HeadshotShowcase.jsx",
     "lib/utils.ts",
-    "app/dashboard/flux/page.jsx",
-    "components/auth/AuthForm.jsx",
-    "components/layout/Header.jsx",
-    "app/dashboard/components/sidebar/account-switcher.jsx",
+    "app/(dashboard)/components/sidebar/account-switcher.jsx",
     "lib/email.js",
     "app/accept-invite/page.jsx"
   ],

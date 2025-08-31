@@ -74,7 +74,7 @@ const GoogleOneTapComponent = () => {
           explicitNextRedirect ||
           (sessionRedirect && sessionRedirect.startsWith("/")
             ? sessionRedirect
-            : "/dashboard");
+            : "/");
 
         if (sessionRedirect) {
           sessionStorage.removeItem("redirectToAfterLogin");

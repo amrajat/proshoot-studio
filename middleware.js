@@ -69,10 +69,10 @@ export async function middleware(request) {
 
   if (session && isAuthRoute && pathname !== "/auth/callback") {
     // User is logged in but trying to access /auth page (not callback)
-    // Redirect them to dashboard or their intended 'next' page if available
-    const nextUrl = request.nextUrl.searchParams.get("next") || "/dashboard";
+    // Redirect them to root or their intended 'next' page if available
+    const nextUrl = request.nextUrl.searchParams.get("next") || "/";
     // Secure redirect validation - only allow internal paths
-    const safeNextUrl = isValidInternalPath(nextUrl) ? nextUrl : "/dashboard";
+    const safeNextUrl = isValidInternalPath(nextUrl) ? nextUrl : "/";
     return NextResponse.redirect(`${origin}${safeNextUrl}`);
   }
 

@@ -34,8 +34,8 @@ export function getMenuList(pathname: string): Group[] {
       groupLabel: "Home",
       menus: [
         {
-          href: "/dashboard",
-          label: "Dashboard",
+          href: "/",
+          label: "Home",
           icon: LayoutGrid,
           submenus: [],
         },
@@ -45,13 +45,13 @@ export function getMenuList(pathname: string): Group[] {
       groupLabel: "Styles",
       menus: [
         {
-          href: "/dashboard/clothing",
+          href: "/clothing",
           label: "Outfits",
           icon: Shirt,
           submenus: [],
         },
         {
-          href: "/dashboard/backgrounds",
+          href: "/backgrounds",
           label: "Backgrounds",
           icon: Images,
           submenus: [],
@@ -62,12 +62,12 @@ export function getMenuList(pathname: string): Group[] {
       groupLabel: "Headshots",
       menus: [
         {
-          href: "/dashboard/studio",
+          href: "/studio",
           label: "All Headshots",
           icon: Image,
         },
         {
-          href: "/dashboard/studio/create",
+          href: "/studio/create",
           label: "Create Headshots",
           icon: ImagePlus,
         },
@@ -77,18 +77,18 @@ export function getMenuList(pathname: string): Group[] {
       groupLabel: "Billing",
       menus: [
         {
-          href: "/dashboard/buy",
+          href: "/buy",
           label: "Buy Credits",
           icon: Coins,
           submenus: [
             // {
-            //   href: "/dashboard/support",
+            //   href: "/support",
             //   label: "Support",
             // }
           ],
         },
         {
-          href: "/dashboard/billing",
+          href: "/billing",
           label: "Billing",
           icon: ReceiptText,
         },

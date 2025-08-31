@@ -231,7 +231,7 @@ const PlanSelectionStep = ({ credits, formData, errors, selectedContext }) => {
                         You have {plan.userCredits} {plan.creditType} credits
                       </p>
                       <Button variant="outline" size="sm" asChild>
-                        <a href="/dashboard/billing">Buy Credits</a>
+                        <a href="/billing">Buy Credits</a>
                       </Button>
                     </div>
                   </div>

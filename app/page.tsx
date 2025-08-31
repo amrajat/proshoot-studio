@@ -11,27 +11,22 @@ import { PageLoader } from "@/components/shared/universal-loader";
  * Features optimized authentication and error handling.
  */
 export default async function RootPage() {
-  try {
-    const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-    // Redirect unauthenticated users to auth
-    if (userError || !user) {
-      redirect("/auth");
-    }
-
-    // Render dashboard with loading fallback
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <DashboardView userId={user.id} />
-      </Suspense>
-    );
-  } catch (error) {
-    console.error("Root page error:", error);
+  // Redirect unauthenticated users to auth
+  if (userError || !user) {
     redirect("/auth");
   }
+
+  // Render dashboard with loading fallback
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <DashboardView userId={user.id} />
+    </Suspense>
+  );
 }

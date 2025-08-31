@@ -18,6 +18,9 @@ function isValidInternalPath(path) {
 export async function middleware(request) {
   const { pathname, origin } = request.nextUrl;
   const response = NextResponse.next();
+  
+  // Set pathname header for dynamic metadata generation
+  response.headers.set('x-pathname', pathname);
 
   const supabase = createServerClient(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,

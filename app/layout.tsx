@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import "./globals.css";
 import { GeistSans } from "geist/font/sans";
 import { getBaseUrlFromEnv } from "@/lib/env";
+import { generateMetadata as getRouteMetadata } from "@/lib/metadata";
 
 import FirstPromoterScript from "@/components/services/first-promoter";
 import { SidebarProvider } from "@/context/SidebarContext";
@@ -12,16 +13,19 @@ import { Toaster } from "@/components/ui/sonner";
 import DashboardLayout from "./(dashboard)/components/sidebar/dashboard-layout.jsx";
 import createSupabaseServerClient from "@/lib/supabase/server-client";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(getBaseUrlFromEnv()),
-  title: {
-    default: "Proshoot.co: Generate Professional Headshots with AI.",
-    template: "%s - Proshoot.co AI Portraits",
-  },
-  alternates: { canonical: "./" },
-  description:
-    "Create high-quality, professional AI headshots in seconds using Proshoot.co's cutting-edge AI technology. Save time and money, get the perfect AI headshot.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = headers();
+  const pathname = headersList.get("x-pathname") || "/";
+  
+  const routeMetadata = getRouteMetadata(pathname);
+  
+  return {
+    metadataBase: new URL(getBaseUrlFromEnv()),
+    title: `${routeMetadata.title}`,
+    description: routeMetadata.description,
+    robots: routeMetadata.robots,
+  };
+}
 
 /**
  * Optimized Root Layout with Route-Based Rendering

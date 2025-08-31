@@ -6,6 +6,7 @@ export default function robots() {
       userAgent: "*",
       disallow: "/",
     },
-    sitemap: `${getBaseUrlFromEnv()}/sitemap.xml`,
+    // No sitemap for protected app - marketing site handles SEO
+    sitemap: null,
   };
 }

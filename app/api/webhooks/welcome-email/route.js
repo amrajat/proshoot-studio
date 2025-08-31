@@ -76,7 +76,7 @@ export async function POST(request) {
       mail_template_key:
         "2518b.55dd124be7f45b04.k1.fa0ee950-f9db-11ef-bc61-525400b0b0f3.19567102465",
       from: {
-        address: "support@proshoot.co",
+        address: "rajat@proshoot.co",
         name: "Rajat",
       },
       to: [

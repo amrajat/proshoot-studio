@@ -8,6 +8,9 @@ import {
 import createSupabaseServerClient from "@/lib/supabase/server-client";
 import { env } from "@/lib/env";
 
+// Security constants
+const ALLOWED_BUCKETS = ["datasets", "images"];
+
 const s3Client = new S3Client({
   region: "auto",
   endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -27,6 +30,14 @@ const extractUserIdFromPath = (path) => {
 export async function DELETE(request) {
   try {
     const { objectKey, bucketName, deletePath } = await request.json();
+
+    // Validate bucket name
+    if (!bucketName || !ALLOWED_BUCKETS.includes(bucketName)) {
+      return NextResponse.json(
+        { error: "Invalid or unauthorized bucket" },
+        { status: 400 }
+      );
+    }
 
     // --- Authentication ---
     const supabase = await createSupabaseServerClient();
@@ -56,6 +67,14 @@ export async function DELETE(request) {
     if (pathUserId !== user.id) {
       return NextResponse.json(
         { error: "Access denied: You can only delete your own files" },
+        { status: 403 }
+      );
+    }
+
+    // Ensure deletePath is bounded to user's directory
+    if (deletePath && !deletePath.startsWith(`${user.id}/`)) {
+      return NextResponse.json(
+        { error: "Access denied: Invalid path" },
         { status: 403 }
       );
     }

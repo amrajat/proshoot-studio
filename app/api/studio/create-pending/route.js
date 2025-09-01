@@ -123,7 +123,8 @@ export async function POST(request) {
     try {
       validateRequiredFields(studioFormData);
     } catch (error) {
-      return createErrorResponse(error.message);
+      console.error("Validation error:", error);
+      return createErrorResponse("Invalid studio data");
     }
 
     // Build studio record
@@ -134,7 +135,7 @@ export async function POST(request) {
       await createPendingStudio(supabase, studioRecord);
     } catch (error) {
       console.error("Studio creation error:", error);
-      return createErrorResponse(error.message, 500);
+      return createErrorResponse("Failed to create studio", 500);
     }
 
     return createSuccessResponse({

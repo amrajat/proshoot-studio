@@ -450,9 +450,10 @@ const ImageUploadStep = ({
         throw new Error(errorData.error || "Failed to upload file");
       }
 
-      const { objectKey, fileName: returnedFileName } = await response.json();
+      const { objectKey, sanitizedFileName, originalFileName } =
+        await response.json();
 
-      return { objectKey, fileName: returnedFileName };
+      return { objectKey, sanitizedFileName, originalFileName };
     } catch (error) {
       throw new Error(`Upload failed: ${error.message}`);
     }
@@ -494,7 +495,10 @@ const ImageUploadStep = ({
       }));
 
       // Upload to R2
-      const { objectKey } = await uploadToR2(processedFile, processedFile.name);
+      const { objectKey, sanitizedFileName } = await uploadToR2(
+        processedFile,
+        processedFile.name
+      );
 
       setUploadState((prev) => ({
         ...prev,
@@ -506,7 +510,8 @@ const ImageUploadStep = ({
           ...prev.uploadedFiles,
           {
             objectKey,
-            fileName: processedFile.name,
+            fileName: sanitizedFileName || processedFile.name,
+            originalFileName: processedFile.name,
             index,
             fileId: prev.files[index]?.id,
           },

@@ -4,6 +4,33 @@ import createSupabaseServerClient from "@/lib/supabase/server-client";
 import { env, publicEnv } from "@/lib/env";
 
 // --- Centralized R2 Configuration ---
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const ALLOWED_CONTENT_TYPES = [
+  'image/jpeg',
+  'image/jpg', 
+  'image/png',
+  'image/webp',
+  'application/zip'
+];
+
+// Security helpers
+const sanitizeFileName = (fileName) => {
+  if (!fileName || typeof fileName !== 'string') {
+    throw new Error('Invalid filename');
+  }
+  
+  // Remove path separators and limit to safe characters
+  const sanitized = fileName
+    .replace(/[^a-zA-Z0-9._-]/g, '_')
+    .substring(0, 128);
+    
+  if (!sanitized || sanitized.length === 0) {
+    throw new Error('Invalid filename after sanitization');
+  }
+  
+  return sanitized;
+};
+
 const R2_ACCOUNT_ID = env.R2_ACCOUNT_ID;
 const R2_ACCESS_KEY_ID = env.R2_ACCESS_KEY_ID;
 const R2_SECRET_ACCESS_KEY = env.R2_SECRET_ACCESS_KEY;
@@ -51,6 +78,34 @@ export async function POST(req) {
       );
     }
 
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: "File size exceeds 20MB limit" },
+        { status: 400 }
+      );
+    }
+
+    // Validate content type
+    if (!ALLOWED_CONTENT_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: "File type not allowed" },
+        { status: 400 }
+      );
+    }
+
+    // Sanitize filename
+    let sanitizedFileName;
+    try {
+      sanitizedFileName = sanitizeFileName(fileName);
+    } catch (error) {
+      console.error("Filename sanitization error:", error);
+      return NextResponse.json(
+        { error: "Invalid filename" },
+        { status: 400 }
+      );
+    }
+
     const config = BUCKET_CONFIGS[R2_BUCKET_NAME_DATASETS];
     if (!config || !config.name) {
       return NextResponse.json(
@@ -73,7 +128,7 @@ export async function POST(req) {
     userId = data.user.id;
 
     // --- Server-side Upload to R2 ---
-    const objectKey = `${userId}/${fileName}`;
+    const objectKey = `${userId}/${sanitizedFileName}`;
 
     // Convert file to buffer
     const fileBuffer = Buffer.from(await file.arrayBuffer());
@@ -102,6 +157,8 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       objectKey,
+      originalFileName: fileName,
+      sanitizedFileName: sanitizedFileName,
     });
   } catch (error) {
     console.error("[R2 UPLOAD ERROR]:", error);

@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import createServerSupabaseClient from "@/lib/supabase/server-client";
 import { env } from "@/lib/env";
 
+// Security constants
+const ALLOWED_BUCKETS = ["datasets", "images"];
+
 export async function POST(request) {
   try {
     // Verify authentication
@@ -20,6 +23,14 @@ export async function POST(request) {
     if (!objectKey || !bucketName) {
       return NextResponse.json(
         { error: "Missing objectKey or bucketName" },
+        { status: 400 }
+      );
+    }
+
+    // Validate bucket name
+    if (!ALLOWED_BUCKETS.includes(bucketName)) {
+      return NextResponse.json(
+        { error: "Invalid or unauthorized bucket" },
         { status: 400 }
       );
     }

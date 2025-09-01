@@ -37,13 +37,10 @@ function isRateLimited(ip) {
 }
 
 export async function POST(request) {
-  // verify webhook secret using search params
-  const secret = request.nextUrl.searchParams.get("SUPABASE_WEBHOOK_SECRET");
-  if (secret !== env.SUPABASE_WEBHOOK_SECRET) {
-    return NextResponse.json(
-      { error: "Invalid Webhook Secret" },
-      { status: 401 }
-    );
+  // verify webhook secret using header
+  const secret = request.headers.get("x-webhook-secret");
+  if (!secret || secret !== env.SUPABASE_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -104,12 +101,3 @@ export async function POST(request) {
     );
   }
 }
-
-//generate a random string for the webhook secret 32 characters long secure and unique
-function generateRandomString(length) {
-  return Math.random()
-    .toString(36)
-    .substring(2, 2 + length);
-}
-
-console.log(generateRandomString(32));

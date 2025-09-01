@@ -120,15 +120,15 @@ const triggerModalTraining = async ({
     studioID,
   };
 
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-    redirect: "follow",
-    signal: AbortSignal.timeout(MODAL_TIMEOUT_MS),
-  };
+  // const requestOptions = {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //   },
+  //   body: JSON.stringify(payload),
+  //   redirect: "follow",
+  //   signal: AbortSignal.timeout(MODAL_TIMEOUT_MS),
+  // };
 
   // const ModalResponse = await fetch(
   //   env.MODAL_TRAINING_ENDPOINT,
@@ -161,7 +161,8 @@ export async function POST(request) {
       const body = JSON.parse(rawBody);
       ({ studioId, user_id } = validateRequestBody(body));
     } catch (error) {
-      return createErrorResponse(error.message);
+      console.error("Request validation error:", error);
+      return createErrorResponse("Invalid request data");
     }
 
     // Initialize Supabase client
@@ -184,7 +185,7 @@ export async function POST(request) {
       studio = await fetchPendingStudio(supabase, studioId, user_id);
     } catch (error) {
       console.error("Studio fetch error:", error);
-      return createErrorResponse(error.message, 404);
+      return createErrorResponse("Studio not found or invalid", 404);
     }
 
     // Update studio status to PROCESSING
@@ -192,7 +193,7 @@ export async function POST(request) {
       await updateStudioStatus(supabase, studioId, "PROCESSING");
     } catch (error) {
       console.error("Status update error:", error);
-      return createErrorResponse(error.message, 500);
+      return createErrorResponse("Failed to process studio", 500);
     }
 
     // Deduct credits for the studio
@@ -207,7 +208,7 @@ export async function POST(request) {
         console.error
       );
 
-      return createErrorResponse(error.message, 500);
+      return createErrorResponse("Failed to process studio", 500);
     }
 
     // Trigger Modal training
@@ -230,7 +231,7 @@ export async function POST(request) {
       );
 
       return createErrorResponse(
-        `Modal training failed: ${error.message}`,
+        "Failed to start training",
         500
       );
     }

@@ -245,7 +245,8 @@ export async function POST(request) {
     try {
       validateRequiredFields(studioFormData);
     } catch (error) {
-      return createErrorResponse(error.message);
+      console.error("Validation error:", error);
+      return createErrorResponse("Invalid studio data");
     }
 
     // Fetch and validate user credits
@@ -254,7 +255,8 @@ export async function POST(request) {
       creditsRecord = await fetchUserCredits(supabase, user.id);
       validateCredits(creditsRecord, studioFormData.plan);
     } catch (error) {
-      return createErrorResponse(error.message);
+      console.error("Credits validation error:", error);
+      return createErrorResponse("Insufficient credits or validation failed");
     }
 
     // Prepare studio data
@@ -281,7 +283,7 @@ export async function POST(request) {
         studioFormData.studioID,
         "PAYMENT_PENDING"
       );
-      return createErrorResponse(error.message);
+      return createErrorResponse("Failed to create studio");
     }
 
     // Trigger Modal training

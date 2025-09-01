@@ -856,7 +856,8 @@ export default function OwnerDashboard({ orgContext }) {
               Insufficient Credits
             </DialogTitle>
             <DialogDescription>
-              You don&apos;t have enough {creditType} credits for this operation.
+              You don&apos;t have enough {creditType} credits for this
+              operation.
             </DialogDescription>
           </DialogHeader>
 

@@ -240,8 +240,7 @@ export const AccountProvider = ({
             setSelectedContextInternal(null);
           }
         }
-      } catch (error) {
-      }
+      } catch (error) {}
     };
 
     window.addEventListener("storage", handleStorageChange);

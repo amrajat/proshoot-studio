@@ -95,9 +95,10 @@ export async function transferTeamCreditsAction(formData) {
     }
 
     if (!data.success) {
+      console.error("Credit transfer failed:", data.error);
       return {
         success: false,
-        error: data.error,
+        error: "Failed to transfer credits",
         availableCredits: data.available_credits,
       };
     }
@@ -169,7 +170,7 @@ export async function getOrganizationMembersWithCreditsAction(organizationId) {
     console.error("Get organization members action error:", error);
     return {
       success: false,
-      error: error.message,
+      error: "Failed to fetch organization members",
       members: [],
     };
   }
@@ -209,9 +210,10 @@ export async function resendInvitationAction(formData) {
     }
 
     if (!data.success) {
+      console.error("Resend invitation failed:", data.error);
       return {
         success: false,
-        error: data.error,
+        error: "Failed to resend invitation",
       };
     }
 
@@ -301,9 +303,10 @@ export async function removeInvitationAction(formData) {
     }
 
     if (!data.success) {
+      console.error("Remove invitation failed:", data.error);
       return {
         success: false,
-        error: data.error,
+        error: "Failed to remove invitation",
       };
     }
 

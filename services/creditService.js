@@ -26,7 +26,7 @@ export const fetchUserCredits = async (userId) => {
 
     if (error) {
       console.error("Credit fetch error:", error);
-      throw new Error(`Failed to fetch credits: ${error.message}`);
+      throw new Error("Failed to fetch user credits");
     }
 
     return data;

@@ -44,7 +44,8 @@ async function verifyOrganizationOwner(organizationId, supabase) {
     } = await supabase.auth.getUser();
 
     if (authError) {
-      throw new Error(`Authentication error: ${authError.message}`);
+      console.error("Authentication error:", authError);
+      throw new Error("Authentication failed");
     }
 
     if (!user) {
@@ -62,7 +63,8 @@ async function verifyOrganizationOwner(organizationId, supabase) {
       if (orgError.code === "PGRST116") {
         throw new Error("Organization not found");
       }
-      throw new Error(`Database error: ${orgError.message}`);
+      console.error("Database error:", orgError);
+      throw new Error("Failed to verify organization access");
     }
 
     if (!orgData || orgData.owner_user_id !== user.id) {
@@ -96,7 +98,8 @@ async function hasPendingInvitation(email, organizationId, supabase) {
     .single();
 
   if (error && error.code !== "PGRST116") {
-    throw new Error(`Error checking pending invitations: ${error.message}`);
+    console.error("Error checking pending invitations:", error);
+    throw new Error("Failed to check invitation status");
   }
 
   return !!data;
@@ -180,7 +183,8 @@ async function processSingleInvitation(
       .single();
 
     if (insertError) {
-      throw new Error(`Failed to create invitation: ${insertError.message}`);
+      console.error("Failed to create invitation:", insertError);
+      throw new Error("Failed to create invitation");
     }
 
     // Send invitation email
@@ -394,7 +398,8 @@ export async function generateShareableLinkAction(organizationId) {
       .single();
 
     if (error) {
-      throw new Error(`Failed to generate shareable link: ${error.message}`);
+      console.error("Failed to generate shareable link:", error);
+      throw new Error("Failed to generate shareable link");
     }
 
     // ===== REVALIDATE & RETURN =====
@@ -438,7 +443,8 @@ export async function revokeShareableLinkAction(organizationId) {
       .eq("id", organizationId);
 
     if (error) {
-      throw new Error(`Failed to revoke shareable link: ${error.message}`);
+      console.error("Failed to revoke shareable link:", error);
+      throw new Error("Failed to revoke shareable link");
     }
 
     // ===== REVALIDATE & RETURN =====

@@ -68,8 +68,7 @@ export async function acceptInvitationAction(params) {
     if (rpcError) {
       console.error("RPC error in accept_invitation:", rpcError);
       return {
-        error:
-          rpcError.message || "Failed to process invitation. Please try again.",
+        error: "Failed to process invitation. Please try again.",
       };
     }
 
@@ -109,10 +108,8 @@ export async function acceptInvitationAction(params) {
     console.error("Unexpected error in acceptInvitationAction:", error);
 
     // Return user-friendly error message
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
     return {
-      error: `An unexpected error occurred: ${errorMessage}. Please try again later.`,
+      error: "An unexpected error occurred. Please try again later.",
     };
   }
 }

@@ -78,7 +78,7 @@ export default function AllStudios({ studioId, currentUserId }) {
         setHeadshots(result.headshots);
         setFavorites(result.favorites);
       } else {
-        setError(result.error);
+        setError("Failed to fetch studios.");
       }
     } catch (err) {
       setError({ message: "Failed to load studio data. Please try again." });
@@ -136,9 +136,7 @@ export default function AllStudios({ studioId, currentUserId }) {
             toast.success("Removed from favorites");
           }
         } else {
-          toast.error(
-            result.error?.message || "Failed to update favorite status."
-          );
+          toast.error("Failed to update favorite status.");
         }
       } catch (err) {
         toast.error("An unexpected error occurred. Please try again.");
@@ -151,7 +149,7 @@ export default function AllStudios({ studioId, currentUserId }) {
         return newSet;
       });
     },
-    [studio, favorites, headshots, currentUserId, toast, togglingFavorites]
+    [studio, favorites, headshots, currentUserId, togglingFavorites]
   );
 
   // Handle studio status update
@@ -176,9 +174,7 @@ export default function AllStudios({ studioId, currentUserId }) {
           // Refresh data to ensure consistency
           await fetchStudioData();
         } else {
-          toast.error(
-            result.error?.message || "Failed to update studio status."
-          );
+          toast.error("Failed to update studio status.");
         }
       } catch (err) {
         toast.error("An unexpected error occurred. Please try again.");
@@ -188,7 +184,7 @@ export default function AllStudios({ studioId, currentUserId }) {
       setConfirmDialogOpen(false);
       setPendingAction(null);
     },
-    [studio, isUpdatingStatus, toast, fetchStudioData]
+    [studio, isUpdatingStatus, fetchStudioData]
   );
 
   // Handle confirmation dialog

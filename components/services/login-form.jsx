@@ -135,7 +135,7 @@ export function LoginForm({ className, ...props }) {
       },
     });
     if (oauthError) {
-      setError(oauthError.message);
+      setError("Failed to login with Google.");
       setLoading(false);
     } else {
       localStorage.setItem("lastLoginMethod", "Google");
@@ -159,7 +159,7 @@ export function LoginForm({ className, ...props }) {
       },
     });
     if (oauthError) {
-      setError(oauthError.message);
+      setError("Failed to login with Linkedin.");
       setLoading(false);
     } else {
       localStorage.setItem("lastLoginMethod", "LinkedIn");
@@ -194,7 +194,7 @@ export function LoginForm({ className, ...props }) {
       },
     });
     if (otpError) {
-      setError(otpError.message);
+      setError("Error, please try again.");
     } else {
       setSuccessMessage(`OTP sent successfully`);
       setShowOtpInput(true);
@@ -217,7 +217,7 @@ export function LoginForm({ className, ...props }) {
     });
 
     if (verifyError) {
-      setError(verifyError.message);
+      setError("OTP invalid or expired.");
     } else if (data.session) {
       toast.success("Successfully logged in!");
       localStorage.setItem("lastLoginMethod", "OTP (Verified)");

@@ -1,6 +1,7 @@
 /**
  * Error Boundary Component
  * Catches JavaScript errors anywhere in the component tree and displays fallback UI
+ * Includes production-ready error monitoring with Sentry integration
  */
 
 import React from "react";
@@ -8,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import * as Sentry from "@sentry/nextjs";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -33,10 +35,73 @@ class ErrorBoundary extends React.Component {
       errorInfo,
     });
 
-    // Report to error tracking service in production
-    if (process.env.NODE_ENV === "production") {
-      // Add your error reporting service here (e.g., Sentry)
-      console.error("Production error:", { error, errorInfo });
+    // Production-ready error monitoring and reporting
+    this.reportError(error, errorInfo);
+  }
+
+  reportError = (error, errorInfo) => {
+    try {
+      // 1. Sentry Error Reporting
+      Sentry.withScope((scope) => {
+        // Add contextual information
+        scope.setTag("errorBoundary", true);
+        scope.setTag("component", this.props.componentName || "Unknown");
+        scope.setLevel("error");
+        
+        // Add error boundary specific context
+        scope.setContext("errorBoundary", {
+          componentStack: errorInfo.componentStack,
+          errorBoundaryProps: {
+            ...this.props,
+            children: undefined, // Don't serialize children
+          },
+        });
+
+        // Add user context if available
+        if (this.props.userId) {
+          scope.setUser({ id: this.props.userId });
+        }
+
+        // Add breadcrumbs for better debugging
+        Sentry.addBreadcrumb({
+          message: "Error Boundary Triggered",
+          category: "error-boundary",
+          level: "error",
+          data: {
+            errorMessage: error.message,
+            componentName: this.props.componentName,
+          },
+        });
+
+        // Capture the exception
+        Sentry.captureException(error);
+      });
+
+      // 2. Custom Analytics (if you have analytics service)
+      if (typeof window !== "undefined" && window.gtag) {
+        window.gtag("event", "exception", {
+          description: error.message,
+          fatal: false,
+          custom_map: {
+            component: this.props.componentName || "ErrorBoundary",
+            stack: error.stack?.substring(0, 500), // Truncate for analytics
+          },
+        });
+      }
+
+      // 3. Console logging for development
+      if (process.env.NODE_ENV === "development") {
+        console.group("🚨 Error Boundary Details");
+        console.error("Error:", error);
+        console.error("Error Info:", errorInfo);
+        console.error("Component Stack:", errorInfo.componentStack);
+        console.error("Props:", this.props);
+        console.groupEnd();
+      }
+
+    } catch (reportingError) {
+      // Don't let error reporting break the error boundary
+      console.error("Error reporting failed:", reportingError);
     }
   }
 

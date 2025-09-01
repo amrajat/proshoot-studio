@@ -103,9 +103,6 @@ export async function transferTeamCreditsAction(formData) {
       };
     }
 
-    // Revalidate the page to show updated credits
-    revalidatePath("/organizations");
-
     return {
       success: true,
       message: `Successfully transferred ${creditsAmount} credits`,
@@ -253,9 +250,6 @@ export async function resendInvitationAction(formData) {
       }
     }
 
-    // Revalidate the page
-    revalidatePath("/organizations");
-
     return {
       success: true,
       message: data.message,
@@ -309,9 +303,6 @@ export async function removeInvitationAction(formData) {
         error: "Failed to remove invitation",
       };
     }
-
-    // Revalidate the page
-    revalidatePath("/organizations");
 
     return {
       success: true,

@@ -88,7 +88,6 @@ export async function acceptInvitationAction(params) {
     if (rpcData.success) {
       // Revalidate relevant paths to update the UI
       revalidatePath("/", "layout");
-      revalidatePath("/organizations", "page");
       revalidatePath("/billing", "page");
 
       return {

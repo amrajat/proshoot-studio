@@ -49,35 +49,3 @@ export const hasSufficientCredits = (credits, planType, requiredAmount = 1) => {
   const availableCredits = credits[planType.toLowerCase()] || 0;
   return availableCredits >= requiredAmount;
 };
-
-/**
- * Get total available credits across all plan types
- * @param {Object} credits - User credits object
- * @returns {number} Total credits
- */
-export const getTotalCredits = (credits) => {
-  if (!credits) return 0;
-
-  return (
-    (credits.starter || 0) +
-    (credits.professional || 0) +
-    (credits.studio || 0) +
-    (credits.team || 0) +
-    (credits.balance || 0)
-  );
-};
-
-/**
- * Check if user has any plan credits (excluding balance and team)
- * @param {Object} credits - User credits object
- * @returns {boolean} Whether user has plan credits
- */
-export const hasPlanCredits = (credits) => {
-  if (!credits) return false;
-
-  return (
-    (credits.starter || 0) > 0 ||
-    (credits.professional || 0) > 0 ||
-    (credits.studio || 0) > 0
-  );
-};

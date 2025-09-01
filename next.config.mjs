@@ -3,7 +3,6 @@ import { withSentryConfig } from "@sentry/nextjs";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    dangerouslyAllowSVG: true, // TODO: Remove this once we have a proper CSP
     remotePatterns: [
       {
         protocol: "https",
@@ -22,7 +21,7 @@ const nextConfig = {
   eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
-    ignoreDuringBuilds: true,
+    // ignoreDuringBuilds: true,
   },
   // async rewrites() {
   //   return [

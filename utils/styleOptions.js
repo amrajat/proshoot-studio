@@ -1910,7 +1910,7 @@ export const BACKGROUND_OPTIONS = {
 };
 
 // Helper to generate a unique ID from the item name
-export const generateId = (name) => name.toLowerCase().replace(/\s+/g, "-");
+const generateId = (name) => name.toLowerCase().replace(/\s+/g, "-");
 
 // Create a flattened, enriched array of all background options with theme and a unique ID
 export const ALL_BACKGROUND_OPTIONS = Object.entries(

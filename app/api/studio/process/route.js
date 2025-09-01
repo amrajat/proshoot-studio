@@ -24,10 +24,7 @@ const verifyWebhookSignature = (rawBody, signature) => {
   }
 
   try {
-    const hmac = crypto.createHmac(
-      "sha256",
-      env.LEMONSQUEEZY_WEBHOOK_SECRET
-    );
+    const hmac = crypto.createHmac("sha256", env.LEMONSQUEEZY_WEBHOOK_SECRET);
     hmac.update(rawBody, "utf8");
     const expectedSignature = hmac.digest("hex");
 

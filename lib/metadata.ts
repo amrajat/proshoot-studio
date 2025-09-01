@@ -85,21 +85,3 @@ export function generateMetadata(pathname: string): Metadata {
     },
   };
 }
-
-/**
- * Get page title for a given pathname
- */
-export function getPageTitle(pathname: string): string {
-  // First check exact route matches
-  let route = routeMetadata[pathname];
-
-  // If no exact match, check dynamic route patterns
-  if (!route) {
-    const matchedPattern = dynamicRoutePatterns.find((pattern) =>
-      pattern.pattern.test(pathname)
-    );
-    route = matchedPattern?.metadata || routeMetadata["/"];
-  }
-
-  return route.title;
-}

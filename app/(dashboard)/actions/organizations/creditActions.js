@@ -176,51 +176,6 @@ export async function getOrganizationMembersWithCreditsAction(organizationId) {
 }
 
 /**
- * Get member credit transaction history
- */
-export async function getMemberCreditHistoryAction(memberUserId, limit = 50) {
-  try {
-    if (!memberUserId) {
-      throw new Error("Member user ID is required");
-    }
-
-    const supabase = await createSupabaseServerClient();
-
-    // Verify authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      throw new Error("Authentication required");
-    }
-
-    // Get credit history using RPC function
-    const { data, error } = await supabase.rpc("get_member_credit_history", {
-      p_member_user_id: memberUserId,
-      p_limit: limit,
-    });
-
-    if (error) {
-      console.error("Get member credit history error:", error);
-      throw new Error("Failed to fetch credit history");
-    }
-
-    return {
-      success: true,
-      history: data || [],
-    };
-  } catch (error) {
-    console.error("Get member credit history action error:", error);
-    return {
-      success: false,
-      error: error.message,
-      history: [],
-    };
-  }
-}
-
-/**
  * Resend organization invitation
  */
 export async function resendInvitationAction(formData) {

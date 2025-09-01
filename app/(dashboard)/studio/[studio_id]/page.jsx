@@ -1,7 +1,7 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { redirect } from "next/navigation";
 import createSupabaseServerClient from "@/lib/supabase/server-client";
-import StudioDetailClient from "../../components/studio/StudioDetailClient";
+import AllStudios from "@/components/studio/all-studios";
 
 /**
  * Studio Detail Page
@@ -30,5 +30,5 @@ export default async function StudioDetailPage({ params }) {
     redirect("/auth");
   }
 
-  return <StudioDetailClient studioId={studioId} currentUserId={user.id} />;
+  return <AllStudios studioId={studioId} currentUserId={user.id} />;
 }

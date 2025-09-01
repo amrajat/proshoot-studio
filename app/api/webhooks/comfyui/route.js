@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import createSupabaseServerClient from "@/lib/supabase/server-client";
 
 const bodyWebhook = {
   event: "training_completed",

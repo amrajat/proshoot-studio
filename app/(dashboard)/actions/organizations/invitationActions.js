@@ -79,36 +79,6 @@ async function verifyOrganizationOwner(organizationId, supabase) {
 }
 
 /**
- * Check if email is already a member of the organization
- *
- * @param {string} email - Email to check
- * @param {string} organizationId - Organization ID
- * @param {Object} supabase - Supabase client
- * @returns {Promise<boolean>} True if already a member
- */
-async function isEmailAlreadyMember(email, organizationId, supabase) {
-  const { data, error } = await supabase
-    .from("members")
-    .select("id")
-    .eq("organization_id", organizationId)
-    .eq(
-      "user_id",
-      supabase.auth
-        .getUser()
-        .then(({ data }) =>
-          supabase.from("profiles").select("id").eq("email", email).single()
-        )
-    )
-    .single();
-
-  if (error && error.code !== "PGRST116") {
-    throw new Error(`Error checking membership: ${error.message}`);
-  }
-
-  return !!data;
-}
-
-/**
  * Check if email has pending invitation
  *
  * @param {string} email - Email to check
@@ -408,10 +378,7 @@ export async function generateShareableLinkAction(organizationId) {
     const supabase = await createSupabaseServerClient();
 
     // ===== OWNER VERIFICATION =====
-    const { organization: orgData } = await verifyOrganizationOwner(
-      organizationId,
-      supabase
-    );
+    await verifyOrganizationOwner(organizationId, supabase);
 
     // ===== GENERATE NEW TOKEN =====
     const newToken = generateInvitationToken();

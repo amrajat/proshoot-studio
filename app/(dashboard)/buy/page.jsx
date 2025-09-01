@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useAccountContext } from "@/context/AccountContext";
-import { useRouter } from "next/navigation";
-import { createCheckoutUrl } from "@/app/(dashboard)/actions/checkout";
+import { createCheckoutUrl } from "@/lib/checkout";
 import config from "@/config";
 
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,6 @@ import {
   CheckCircle2,
   Users,
   User,
-  Crown,
   Minus,
   Plus,
   Check,
@@ -178,21 +176,9 @@ const planIcons = {
   ),
 };
 
-/**
- * High-Converting Buy Credits Page
- *
- * Features:
- * - Personal/Organization context switching
- * - Dynamic plan rendering from config.js
- * - Quantity selection with volume discounts
- * - Order summary and conversion optimization
- * - Team plan minimum quantity enforcement
- */
-
 export default function BuyCreditsPage() {
   // ===== HOOKS =====
-  const router = useRouter();
-  const { selectedContext, userId } = useAccountContext();
+  const { selectedContext } = useAccountContext();
 
   // ===== STATE MANAGEMENT =====
   const [isLoading, setIsLoading] = useState(false);

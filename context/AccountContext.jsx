@@ -285,11 +285,3 @@ export const useAccountContext = () => {
   }
   return context;
 };
-
-// ============================================================================
-// EXPORTS FOR BACKWARD COMPATIBILITY
-// ============================================================================
-
-// Export types for components that still need them
-export const OrganizationContext = {}; // Placeholder for type compatibility
-export const AvailableContext = {}; // Placeholder for type compatibility

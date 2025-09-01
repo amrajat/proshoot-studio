@@ -6,9 +6,9 @@
 "use client";
 
 import React from "react";
-import ErrorBoundary from "../../components/ui/ErrorBoundary";
-import StudioCreateWizard from "../../components/studio/create/StudioCreateWizard";
-import StudioFormProvider from "../../components/studio/create/forms/StudioFormProvider";
+import ErrorBoundary from "@/components/shared/error-boundary";
+import StudioCreateWizard from "@/components/studio/create/studio-create-wizard";
+import StudioFormProvider from "@/components/studio/create/studio-form-provider";
 
 /**
  * Studio Create Page Component

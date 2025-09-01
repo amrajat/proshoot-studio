@@ -28,9 +28,12 @@
     ".next/types/**/*.ts",
     "middleware.js",
     "lib/utils.ts",
-    "app/(dashboard)/components/sidebar/account-switcher.jsx",
+    "components/sidebar/account-switcher.jsx",
     "lib/email.js",
-    "app/accept-invite/page.jsx"
+    "app/accept-invite/page.jsx",
+    "app/page.jsx",
+    "app/layout.jsx",
+    "app/accept-invite/actions/acceptInviteActions.js"
   ],
   "exclude": ["node_modules"]
 }

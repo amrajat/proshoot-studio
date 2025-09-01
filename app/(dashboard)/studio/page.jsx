@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useAccountContext } from "@/context/AccountContext";
 import { fetchAllStudios } from "../actions/studio/fetchAllStudios";
-import StudioCard from "../components/studio/StudioCard";
+import StudioCard from "@/components/studio/studiocard";
 import { Button } from "@/components/ui/button";
 import {
   Card,

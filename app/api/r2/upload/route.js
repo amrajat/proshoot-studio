@@ -21,17 +21,6 @@ const BUCKET_CONFIGS = {
   // Add other bucket configurations here as needed
 };
 
-// --- Helper Functions ---
-async function getUserIdFromToken(supabase, token) {
-  const { data: userData, error: userError } = await supabase.auth.getUser(
-    token
-  );
-  if (userError || !userData.user) {
-    throw new Error("Authentication failed: Invalid token.");
-  }
-  return userData.user.id;
-}
-
 // --- API Handler ---
 export async function POST(req) {
   // --- Environment Variable Validation ---

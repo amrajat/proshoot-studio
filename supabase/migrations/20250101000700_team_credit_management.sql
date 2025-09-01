@@ -583,8 +583,7 @@ RETURNS TABLE (
     is_primary_transaction BOOLEAN
 )
 LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
     RETURN QUERY
@@ -658,8 +657,7 @@ RETURNS TABLE (
     transfer_pair_id UUID
 )
 LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
     RETURN QUERY

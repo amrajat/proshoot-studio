@@ -20,7 +20,6 @@ CREATE TABLE public.profiles (
     full_name TEXT,
     avatar_url TEXT,
     email TEXT,
-    referred_by TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
@@ -57,7 +56,6 @@ COMMENT ON COLUMN public.profiles.user_id IS 'Reference to auth.users.id';
 COMMENT ON COLUMN public.profiles.full_name IS 'User''s full display name';
 COMMENT ON COLUMN public.profiles.avatar_url IS 'URL to user''s profile picture';
 COMMENT ON COLUMN public.profiles.email IS 'User''s email address (cached from auth)';
-COMMENT ON COLUMN public.profiles.referred_by IS 'Referral code or source';
 COMMENT ON COLUMN public.profiles.created_at IS 'Profile creation timestamp';
 COMMENT ON COLUMN public.profiles.updated_at IS 'Last profile update timestamp';
 

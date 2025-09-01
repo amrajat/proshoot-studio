@@ -102,8 +102,7 @@ CREATE OR REPLACE FUNCTION public.update_studio_status(
 )
 RETURNS JSONB
 LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
+SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
     v_current_status studio_status;

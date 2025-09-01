@@ -58,6 +58,9 @@ const serverSchema = z.object({
   MODAL_COMFYUI_STANDARD_ENDPOINT: z.string().min(1).optional(),
   MODAL_TRAINING_ENDPOINT: z.string().url().optional(),
 
+  // INTERCOM
+  INTERCOM_MESSENGER_SECRET: z.string().min(1).optional(),
+
   // BUILD-TIME ONLY (NOT RUNTIME)
   SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
 });

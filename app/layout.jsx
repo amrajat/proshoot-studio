@@ -11,6 +11,7 @@ import GoogleOneTapComponent from "@/components/services/google-one-tap";
 import { Toaster } from "@/components/ui/sonner";
 import DashboardLayout from "../components/sidebar/dashboard-layout.jsx";
 import createSupabaseServerClient from "@/lib/supabase/server-client";
+import { IntercomProvider } from "@/components/services/intercom-provider";
 
 export async function generateMetadata() {
   const headersList = headers();
@@ -26,13 +27,6 @@ export async function generateMetadata() {
   };
 }
 
-/**
- * Optimized Root Layout with Route-Based Rendering
- *
- * Uses pathname detection to determine layout type:
- * - Dashboard layout for authenticated app routes
- * - Simple layout for auth and public routes
- */
 export default async function RootLayout({ children }) {
   // Get current pathname for route detection
   const headersList = headers();
@@ -49,9 +43,14 @@ export default async function RootLayout({ children }) {
     error: authError,
   } = await supabase.auth.getUser();
 
-  // For authenticated users on app routes, use dashboard layout
-  if (user && !authError && !isAuthRoute) {
-    // ===== PARALLEL DATA FETCHING =====
+  // Determine if we should use dashboard layout
+  const useDashboardLayout = user && !authError && !isAuthRoute;
+
+  // Fetch data only for dashboard layout
+  let profile = null;
+  let organizations = [];
+
+  if (useDashboardLayout) {
     const [profileRes, orgMembersRes] = await Promise.allSettled([
       supabase
         .from("profiles")
@@ -66,72 +65,36 @@ export default async function RootLayout({ children }) {
         .eq("user_id", user.id),
     ]);
 
-    // ===== SAFE DATA PROCESSING =====
-    const profile =
-      profileRes.status === "fulfilled" ? profileRes.value.data : null;
+    profile = profileRes.status === "fulfilled" ? profileRes.value.data : null;
     const orgMembersData =
       orgMembersRes.status === "fulfilled" ? orgMembersRes.value.data : [];
 
-    // Process organizations with error handling
-    const organizations =
+    organizations =
       orgMembersData
         ?.flatMap((member) => member.organizations || [])
         .filter((org) => !!org)
         .filter(
           (org, index, self) => index === self.findIndex((o) => o.id === org.id)
         ) || [];
-
-    // Log errors but don't fail
-    if (profileRes.status === "rejected") {
-      console.error("Layout: Profile fetch error:", profileRes.reason);
-    }
-    if (orgMembersRes.status === "rejected") {
-      console.error("Layout: Organization fetch error:", orgMembersRes.reason);
-    }
-
-    return (
-      <html lang="en" className="scroll-smooth min-h-screen">
-        <FirstPromoterScript />
-        <body className={`${GeistSans.className} antialiased min-h-screen`}>
-          <GoogleOneTapComponent />
-          <SidebarProvider>
-            <DashboardLayout
-              initialProfile={profile}
-              initialOrganizations={organizations}
-            >
-              {children}
-            </DashboardLayout>
-          </SidebarProvider>
-          <Toaster
-            closeButton
-            position="bottom-right"
-            richColors
-            toastOptions={{
-              style: { boxShadow: "none" },
-              classNames: {
-                toast: "bg-background text-foreground border border-border",
-                success: "!bg-success !text-success-foreground !border-success",
-                error:
-                  "!bg-destructive !text-destructive-foreground !border-destructive",
-                warning: "!bg-accent !text-accent-foreground !border-accent",
-                info: "!bg-primary !text-primary-foreground !border-primary",
-                closeButton:
-                  "!bg-destructive !text-destructive-foreground !border-destructive",
-              },
-            }}
-          />
-        </body>
-      </html>
-    );
   }
 
-  // For auth routes or unauthenticated users, use simple layout
   return (
     <html lang="en" className="scroll-smooth min-h-screen">
       <FirstPromoterScript />
       <body className={`${GeistSans.className} antialiased min-h-screen`}>
         <GoogleOneTapComponent />
-        <SidebarProvider>{children}</SidebarProvider>
+        <SidebarProvider>
+          {useDashboardLayout ? (
+            <DashboardLayout
+              initialProfile={profile}
+              initialOrganizations={organizations}
+            >
+              <IntercomProvider>{children}</IntercomProvider>
+            </DashboardLayout>
+          ) : (
+            <IntercomProvider>{children}</IntercomProvider>
+          )}
+        </SidebarProvider>
         <Toaster
           closeButton
           position="bottom-right"

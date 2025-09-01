@@ -4,6 +4,13 @@ import Link from "next/link";
 import { Ellipsis, MapPin, MessageSquare, HelpCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 
+// Declare global Intercom interface for TypeScript
+declare global {
+  interface Window {
+    Intercom: (command: string, ...args: any[]) => void;
+  }
+}
+
 import { cn } from "@/lib/utils";
 import { getMenuList } from "@/components/sidebar/sidebar-menu-list";
 import { Button } from "@/components/ui/button";
@@ -118,12 +125,14 @@ export function Menu({ isOpen, onItemClick }: MenuProps) {
           ))}
           <li className="w-full grow flex flex-col items-end justify-end space-y-2">
             {/* Product Tour Button */}
-            <TooltipProvider disableHoverableContent>
+            {/* <TooltipProvider disableHoverableContent>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <Button
                     onClick={() => {
-                      // Add product tour logic here
+                      if (window.Intercom) {
+                        window.Intercom("show");
+                      }
                       onItemClick?.();
                     }}
                     variant="outline"
@@ -148,7 +157,7 @@ export function Menu({ isOpen, onItemClick }: MenuProps) {
                   <TooltipContent side="right">Product Tour</TooltipContent>
                 )}
               </Tooltip>
-            </TooltipProvider>
+            </TooltipProvider> */}
 
             {/* Feedback Button */}
             <TooltipProvider disableHoverableContent>
@@ -156,11 +165,13 @@ export function Menu({ isOpen, onItemClick }: MenuProps) {
                 <TooltipTrigger asChild>
                   <Button
                     onClick={() => {
-                      // Add feedback logic here
-                      window.open(
-                        "mailto:feedback@proshoot.co?subject=Feedback",
-                        "_blank"
-                      );
+                      console.log(window.Intercom);
+                      if (window.Intercom) {
+                        window.Intercom(
+                          "showNewMessage",
+                          "I would like to provide feedback about - "
+                        );
+                      }
                       onItemClick?.();
                     }}
                     variant="outline"
@@ -193,11 +204,9 @@ export function Menu({ isOpen, onItemClick }: MenuProps) {
                 <TooltipTrigger asChild>
                   <Button
                     onClick={() => {
-                      // Add support logic here
-                      window.open(
-                        "mailto:support@proshoot.co?subject=Support Request",
-                        "_blank"
-                      );
+                      if (window.Intercom) {
+                        window.Intercom("showNewMessage");
+                      }
                       onItemClick?.();
                     }}
                     variant="outline"

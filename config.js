@@ -10,14 +10,13 @@ const config = {
 
   PLANS: {
     starter: {
-      planPrice: 35,
-      variantID: 959888,
+      displayPrice: 35,
       totalHeadshots: 40,
       stylesLimit: 10,
       accountContext: "personal",
       mostPopular: false,
       description:
-        "this is the description of this plan and it will be changed after some time.",
+        "Perfect for individuals looking to create professional headshots for personal branding and career advancement.",
       features: [
         "40 Professional Headshots",
         "10 Unique Clothing Styles",
@@ -30,14 +29,13 @@ const config = {
     },
 
     professional: {
-      planPrice: 49,
-      variantID: 959891,
+      displayPrice: 49,
       totalHeadshots: 60,
       stylesLimit: 20,
       accountContext: "personal",
       mostPopular: true,
       description:
-        "this is the description of this plan and it will be changed after some time.",
+        "Most popular choice for professionals who need variety and quality for their personal brand.",
       features: [
         "80 Professional Headshots",
         "20 Unique Clothing Styles",
@@ -50,14 +48,13 @@ const config = {
     },
 
     studio: {
-      planPrice: 59,
-      variantID: 959892,
+      displayPrice: 59,
       totalHeadshots: 100,
       stylesLimit: 25,
       accountContext: "personal",
       mostPopular: false,
       description:
-        "this is the description of this plan and it will be changed after some time.",
+        "Premium package with maximum variety and customization options for demanding professionals.",
       features: [
         "100 Professional Headshots",
         "25 Unique Clothing Styles",
@@ -70,23 +67,23 @@ const config = {
       ],
     },
     team: {
-      planPrice: 49,
-      variantID: 959893,
+      displayPrice: 49,
       totalHeadshots: 100,
       stylesLimit: 25,
       accountContext: "team",
       mostPopular: false,
       description:
-        "this is the description of this plan and it will be changed after some time.",
+        "Designed for teams and organizations with volume discounts and bulk processing capabilities.",
       features: [
-        "100 Professional Headshots",
+        "100 Professional Headshots per member",
         "25 Unique Clothing Styles",
         "25 Unique Backgrounds",
         "Ready in ~45 minutes",
         "Full Commercial Rights",
         "7-Day Money Back Guarantee",
         "Our Highest-Quality AI Mode",
-        "Extra 24 Customized Wardrobe & Backgrounds",
+        "Volume Discounts Available",
+        "Team Management Dashboard",
       ],
     },
   },

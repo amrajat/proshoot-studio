@@ -27,10 +27,7 @@ const verifyWebhookSignature = (rawBody, signature) => {
   }
 
   try {
-    const hmac = crypto.createHmac(
-      "sha256",
-      env.LEMONSQUEEZY_WEBHOOK_SECRET
-    );
+    const hmac = crypto.createHmac("sha256", env.LEMONSQUEEZY_WEBHOOK_SECRET);
     hmac.update(rawBody, "utf8");
     const expectedSignature = hmac.digest("hex");
 
@@ -110,10 +107,7 @@ export async function POST(request) {
     } = meta.custom_data || {};
 
     // Validate custom webhook secret if provided
-    if (
-      webhook_secret &&
-      webhook_secret !== env.WEBHOOK_SECRET
-    ) {
+    if (webhook_secret && webhook_secret !== env.WEBHOOK_SECRET) {
       return createErrorResponse("Invalid custom webhook secret", 401);
     }
 

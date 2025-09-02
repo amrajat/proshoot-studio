@@ -120,7 +120,7 @@ const PlanSelectionStep = ({ credits, formData, errors, selectedContext }) => {
 
     // Filter and map plans based on account context
     return Object.entries(configPlans)
-      .filter(([key, plan]) => {
+      .filter(([, plan]) => {
         if (contextType === "personal") {
           return plan.accountContext === "personal";
         } else {
@@ -248,7 +248,7 @@ const PlanSelectionStep = ({ credits, formData, errors, selectedContext }) => {
                     <div className="inline-flex flex-wrap items-center gap-3">
                       <div className="inline-flex flex-wrap items-center">
                         <span className="text-2xl self-start me-1">$</span>
-                        {configPlan?.planPrice || 0}
+                        {configPlan?.displayPrice || 0}
                       </div>
                     </div>
                   </h4>

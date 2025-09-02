@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAccountContext } from "@/context/AccountContext";
 import { createCheckoutUrl } from "@/lib/checkout";
+import { validatePlanAction } from "@/lib/plan-validation";
 import config from "@/config";
 
 import { Button } from "@/components/ui/button";
@@ -11,9 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { toast } from "sonner";
 import {
-  AlertCircle,
   CheckCircle2,
   Users,
   User,
@@ -182,10 +182,10 @@ export default function BuyCreditsPage() {
 
   // ===== STATE MANAGEMENT =====
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const [quantities, setQuantities] = useState({});
   const [selectedPlan, setSelectedPlan] = useState("");
   const [activeTab, setActiveTab] = useState("personal");
+  const [planPricing, setPlanPricing] = useState({});
 
   // ===== INITIALIZATION =====
   useEffect(() => {
@@ -223,31 +223,67 @@ export default function BuyCreditsPage() {
     return plans;
   };
 
-  const calculatePlanTotal = (planKey, quantity) => {
-    const plan = config.PLANS[planKey];
-    if (!plan) return { total: 0, discount: 0, savings: 0 };
-
-    const baseTotal = plan.planPrice * quantity;
-    let discount = 0;
-
-    // Apply volume discount for team plans
-    if (planKey === "team" && quantity >= 2) {
-      const applicableDiscount = [...TEAM_VOLUME_DISCOUNTS]
-        .reverse()
-        .find((tier) => quantity >= tier.minQuantity);
-      discount = applicableDiscount?.discount || 0;
+  const calculatePlanTotal = useCallback(async (planKey, quantity) => {
+    // Use server-side validation and pricing calculation
+    try {
+      const result = await validatePlanAction(planKey, quantity);
+      if (result.success) {
+        const { pricing } = result;
+        return {
+          baseTotal: pricing.baseTotal.toFixed(2),
+          total: pricing.total.toFixed(2),
+          discount: pricing.discount.toFixed(0),
+          savings: pricing.savings.toFixed(2),
+        };
+      } else {
+        // Fallback to display price for UI consistency
+        const plan = config.PLANS[planKey];
+        const fallbackTotal = (plan?.displayPrice || 0) * quantity;
+        return {
+          baseTotal: fallbackTotal.toFixed(2),
+          total: fallbackTotal.toFixed(2),
+          discount: "0",
+          savings: "0.00",
+        };
+      }
+    } catch (error) {
+      // Fallback to display price for UI consistency
+      const plan = config.PLANS[planKey];
+      const fallbackTotal = (plan?.displayPrice || 0) * quantity;
+      return {
+        baseTotal: fallbackTotal.toFixed(2),
+        total: fallbackTotal.toFixed(2),
+        discount: "0",
+        savings: "0.00",
+      };
     }
+  }, []);
 
-    const savings = baseTotal * discount;
-    const total = baseTotal - savings;
+  // Helper function to update plan pricing
+  const updatePlanPricing = useCallback(
+    async (planKey, quantity) => {
+      try {
+        const pricing = await calculatePlanTotal(planKey, quantity);
+        setPlanPricing((prev) => ({
+          ...prev,
+          [`${planKey}-${quantity}`]: pricing,
+        }));
+      } catch (error) {
+        }
+    },
+    [calculatePlanTotal]
+  );
 
-    return {
-      baseTotal: baseTotal.toFixed(2),
-      total: total.toFixed(2),
-      discount: (discount * 100).toFixed(0),
-      savings: savings.toFixed(2),
-    };
-  };
+  // Separate effect for pricing initialization to avoid dependency issues
+  useEffect(() => {
+    // Initialize pricing for all plans
+    Object.keys(config.PLANS).forEach((planKey) => {
+      if (planKey !== "balance") {
+        const qty = planKey === "team" ? 2 : 1;
+        updatePlanPricing(planKey, qty);
+      }
+    });
+  }, [updatePlanPricing]);
 
   const updateQuantity = (planKey, change) => {
     setQuantities((prev) => {
@@ -255,6 +291,11 @@ export default function BuyCreditsPage() {
       const newQty = Math.max(planKey === "team" ? 2 : 1, currentQty + change);
       return { ...prev, [planKey]: newQty };
     });
+    // Update pricing when quantity changes
+    updatePlanPricing(
+      planKey,
+      Math.max(planKey === "team" ? 2 : 1, (quantities[planKey] || 1) + change)
+    );
   };
 
   const setDirectQuantity = (planKey, value) => {
@@ -262,11 +303,26 @@ export default function BuyCreditsPage() {
     const minQty = planKey === "team" ? 2 : 1;
     const validQty = Math.max(minQty, numValue);
     setQuantities((prev) => ({ ...prev, [planKey]: validQty }));
+    // Update pricing when quantity changes
+    updatePlanPricing(planKey, validQty);
+  };
+
+  // Helper function to get pricing for a plan
+  const getPlanPricing = (planKey, quantity) => {
+    const key = `${planKey}-${quantity}`;
+    return (
+      planPricing[key] || {
+        total: ((config.PLANS[planKey]?.displayPrice || 0) * quantity).toFixed(
+          2
+        ),
+        discount: "0",
+        savings: "0.00",
+      }
+    );
   };
 
   const handlePlanSelect = (planKey) => {
     setSelectedPlan(planKey);
-    setError(null);
   };
 
   const handleTabChange = (tab) => {
@@ -284,31 +340,50 @@ export default function BuyCreditsPage() {
 
     setIsLoading(true);
     setSelectedPlan(planKey);
-    setError("");
 
     try {
       const quantity = quantities[planKey] || 1;
 
-      // Create checkout URL with proper custom data (user auth handled server-side)
+      toast.loading("Validating plan...");
+
+      // Validate plan server-side before checkout
+      const validation = await validatePlanAction(planKey, quantity);
+      if (!validation.success) {
+        toast.dismiss();
+        toast.error("Plan validation failed. Please try again.");
+        setIsLoading(false);
+        setSelectedPlan("");
+        return;
+      }
+
+      toast.dismiss();
+      toast.loading("Creating secure checkout...");
+
+      // Create checkout URL with secure server-side validation
       const checkoutUrl = await createCheckoutUrl(
         planKey,
         quantity,
         {
           source: "buy_page",
-          plan_price: config.PLANS[planKey].planPrice,
-          total_amount: calculatePlanTotal(planKey, quantity).total,
         },
         `${window.location.origin}/studio/create?payment=success&plan=${planKey}&quantity=${quantity}`
       );
 
+      toast.dismiss();
+
       if (checkoutUrl) {
+        toast.success("Redirecting to secure checkout...");
         // Direct redirect to LemonSqueezy checkout for maximum conversion
         window.location.href = checkoutUrl;
       } else {
-        throw new Error("Failed to create checkout URL");
+        toast.error("Unable to create checkout. Please try again.");
+        setIsLoading(false);
+        setSelectedPlan("");
       }
     } catch (error) {
-      setError(`Checkout failed: ${error.message}`);
+      toast.dismiss();
+      // Sanitized error message for security
+      toast.error("Something went wrong. Please try again or contact support.");
       setIsLoading(false);
       setSelectedPlan("");
     }
@@ -317,7 +392,7 @@ export default function BuyCreditsPage() {
   // ===== RENDER PLAN CARD (NEW STYLED) =====
   const renderPlanCard = (planKey, plan) => {
     const quantity = quantities[planKey] || 1;
-    const pricing = calculatePlanTotal(planKey, quantity);
+    const pricing = getPlanPricing(planKey, quantity);
 
     const getPlanButtonStyle = (key) => {
       if (key === "professional") {
@@ -361,7 +436,7 @@ export default function BuyCreditsPage() {
               <div className="inline-flex flex-wrap items-center gap-3">
                 <div className="inline-flex flex-wrap items-center">
                   <span className="text-2xl self-start me-1">$</span>
-                  {plan.planPrice}
+                  {plan.displayPrice}
                 </div>
               </div>
             </h4>
@@ -461,13 +536,13 @@ export default function BuyCreditsPage() {
 
           {/* Current Discount Alert */}
           {planKey === "team" && quantity >= 5 && (
-            <Alert className="border-success/30 bg-success/10">
+            <div className="flex items-center gap-2 p-3 rounded-lg border border-success/30 bg-success/10">
               <CheckCircle2 className="w-4 h-4 text-success" />
-              <AlertDescription className="text-success text-sm">
+              <span className="text-success text-sm">
                 🎉 You're saving ${pricing.savings} with {pricing.discount}%
                 volume discount!
-              </AlertDescription>
-            </Alert>
+              </span>
+            </div>
           )}
 
           {/* Buy Button */}
@@ -505,10 +580,13 @@ export default function BuyCreditsPage() {
   // ===== RENDER FULL-WIDTH TEAM PLAN CARD =====
   const renderFullWidthTeamCard = (planKey, plan) => {
     const quantity = quantities[planKey] || 1;
-    const pricing = calculatePlanTotal(planKey, quantity);
+    const pricing = getPlanPricing(planKey, quantity);
 
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5">
+      <div
+        key={planKey}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5"
+      >
         {/* Card 1: What's Included */}
         <div
           key={`${planKey}-features`}
@@ -564,7 +642,7 @@ export default function BuyCreditsPage() {
                 <div className="inline-flex flex-wrap items-center gap-3">
                   <div className="inline-flex flex-wrap items-center">
                     <span className="text-2xl self-start me-1">$</span>
-                    {plan.planPrice}
+                    {plan.displayPrice}
                   </div>
                 </div>
               </h4>
@@ -621,13 +699,13 @@ export default function BuyCreditsPage() {
 
             {/* Current Discount Alert */}
             {quantity >= 5 && (
-              <Alert className="border-success/30 bg-success/10 mb-5">
+              <div className="flex items-center gap-2 p-3 rounded-lg border border-success/30 bg-success/10 mb-5">
                 <CheckCircle2 className="w-4 h-4 text-success" />
-                <AlertDescription className="text-success text-sm">
+                <span className="text-success text-sm">
                   You're saving ${pricing.savings} with {pricing.discount}%
                   volume discount!
-                </AlertDescription>
-              </Alert>
+                </span>
+              </div>
             )}
 
             {/* Total */}
@@ -732,15 +810,6 @@ export default function BuyCreditsPage() {
           Professional AI headshots for individuals and teams
         </p>
       </div>
-
-      {/* Error Alert */}
-      {error && (
-        <Alert variant="destructive" className="max-w-2xl mx-auto mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
 
       {/* Main Layout */}
       <div className="space-y-8">

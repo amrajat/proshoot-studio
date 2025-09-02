@@ -5,7 +5,6 @@ import { GeistSans } from "geist/font/sans";
 import { getBaseUrlFromEnv } from "@/lib/env";
 import { generateMetadata as getRouteMetadata } from "@/lib/metadata";
 
-import FirstPromoterScript from "@/components/services/first-promoter";
 import { SidebarProvider } from "@/context/SidebarContext";
 import GoogleOneTapComponent from "@/components/services/google-one-tap";
 import { Toaster } from "@/components/ui/sonner";
@@ -80,7 +79,6 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang="en" className="scroll-smooth min-h-screen">
-      <FirstPromoterScript />
       <body className={`${GeistSans.className} antialiased min-h-screen`}>
         <GoogleOneTapComponent />
         <SidebarProvider>

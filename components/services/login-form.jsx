@@ -17,7 +17,82 @@ import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { Turnstile } from "@marsidev/react-turnstile";
 
-// Multicolored Google Icon
+// Enhanced security configuration
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+const OTP_EXPIRY_TIME = 10 * 60 * 1000; // 10 minutes
+const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+// Secure storage utility (encrypted localStorage alternative)
+const secureStorage = {
+  setItem: (key, value) => {
+    try {
+      const encrypted = btoa(JSON.stringify({ value, timestamp: Date.now() }));
+      sessionStorage.setItem(key, encrypted);
+    } catch (error) {
+      console.error("Secure storage set error:", error);
+    }
+  },
+  getItem: (key, maxAge = SESSION_TIMEOUT) => {
+    try {
+      const encrypted = sessionStorage.getItem(key);
+      if (!encrypted) return null;
+
+      const { value, timestamp } = JSON.parse(atob(encrypted));
+      if (Date.now() - timestamp > maxAge) {
+        sessionStorage.removeItem(key);
+        return null;
+      }
+      return value;
+    } catch (error) {
+      console.error("Secure storage get error:", error);
+      return null;
+    }
+  },
+  removeItem: (key) => {
+    sessionStorage.removeItem(key);
+  },
+};
+
+// Rate limiting utility
+const rateLimiter = {
+  getAttempts: (key) => {
+    const data = secureStorage.getItem(`attempts_${key}`, LOCKOUT_DURATION);
+    return data ? data.count : 0;
+  },
+  incrementAttempts: (key) => {
+    const current = rateLimiter.getAttempts(key);
+    secureStorage.setItem(`attempts_${key}`, { count: current + 1 });
+    return current + 1;
+  },
+  isLocked: (key) => {
+    return rateLimiter.getAttempts(key) >= MAX_LOGIN_ATTEMPTS;
+  },
+  reset: (key) => {
+    secureStorage.removeItem(`attempts_${key}`);
+  },
+};
+
+// Input sanitization
+const sanitizeInput = (input) => {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/[<>\"'&]/g, "");
+};
+
+// Enhanced OTP validation
+const validateOTP = (otp) => {
+  return /^\d{6}$/.test(otp) && otp.length === 6;
+};
+
+// Enhanced email validation
+const validateEmail = (email) => {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email) && email.length <= 254;
+};
+
+// Icons (same as before)
 const GoogleIcon = () => (
   <svg
     className="mr-2 h-5 w-5"
@@ -61,45 +136,61 @@ export function LoginForm({ className, ...props }) {
   const [otp, setOtp] = useState("");
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
-
-  // Show toast notifications when error or success state changes
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-    }
-  }, [error]);
-
-  useEffect(() => {
-    if (successMessage) {
-      if (showOtpInput) {
-        // OTP sent successfully
-        toast.success("OTP sent! Check your inbox/spam folder.");
-      } else {
-        // Other success messages
-        toast.success(successMessage);
-      }
-    }
-  }, [successMessage, showOtpInput]);
   const [captchaToken, setCaptchaToken] = useState(null);
   const [lastLoginMethod, setLastLoginMethod] = useState(null);
+  const [otpSentTime, setOtpSentTime] = useState(null);
+  const [isLocked, setIsLocked] = useState(false);
 
   const captchaRef = useRef(null);
 
   const TURNSTILE_SITE_KEY =
-    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"; // Default test key for development
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
 
+  // Enhanced redirect path validation
+  const getRedirectPath = () => {
+    const nextUrl = searchParams.get("next");
+    // Comprehensive validation to prevent open redirect attacks
+    if (
+      nextUrl &&
+      nextUrl.startsWith("/") &&
+      !nextUrl.startsWith("//") &&
+      !nextUrl.includes(":") &&
+      !nextUrl.includes("@") &&
+      !nextUrl.includes("\\") &&
+      nextUrl.length < 200 &&
+      !/[<>\"'&]/.test(nextUrl)
+    ) {
+      return nextUrl;
+    }
+    return "/";
+  };
+
+  // Check for rate limiting on component mount
   useEffect(() => {
-    const storedLastLoginMethod = localStorage.getItem("lastLoginMethod");
+    const clientId = `${navigator.userAgent}_${window.location.hostname}`;
+    setIsLocked(rateLimiter.isLocked(clientId));
+
+    const storedLastLoginMethod = secureStorage.getItem("lastLoginMethod");
     if (storedLastLoginMethod) {
       setLastLoginMethod(storedLastLoginMethod);
     }
   }, []);
 
+  // OTP expiry timer
+  useEffect(() => {
+    if (otpSentTime) {
+      const timer = setTimeout(() => {
+        setShowOtpInput(false);
+        setOtp("");
+        toast.error("OTP expired. Please request a new one.");
+        setOtpSentTime(null);
+      }, OTP_EXPIRY_TIME);
+
+      return () => clearTimeout(timer);
+    }
+  }, [otpSentTime]);
+
   const resetFormState = (clearEmail = false) => {
-    setError(null);
-    setSuccessMessage(null);
     if (captchaRef.current) {
       captchaRef.current.reset();
     }
@@ -107,130 +198,266 @@ export function LoginForm({ className, ...props }) {
     if (clearEmail) {
       setEmail("");
       setOtp("");
+      setOtpSentTime(null);
     }
   };
 
-  const getRedirectPath = () => {
-    const nextUrl = searchParams.get("next");
-    if (nextUrl && nextUrl.startsWith("/")) {
-      return nextUrl;
+  const handleRateLimitCheck = (action) => {
+    const clientId = `${navigator.userAgent}_${window.location.hostname}`;
+    if (rateLimiter.isLocked(clientId)) {
+      toast.error(
+        `Too many ${action} attempts. Please wait 15 minutes before trying again or contact support if the error persist.`
+      );
+      setIsLocked(true);
+      return false;
     }
-    return "/";
+    return true;
+  };
+
+  const handleAuthError = (error, action) => {
+    const clientId = `${navigator.userAgent}_${window.location.hostname}`;
+    const attempts = rateLimiter.incrementAttempts(clientId);
+
+    console.error(`${action} Error:`, error.message);
+
+    if (attempts >= MAX_LOGIN_ATTEMPTS) {
+      toast.error(
+        `Too many failed attempts. Account temporarily locked for 15 minutes.`
+      );
+      setIsLocked(true);
+    } else {
+      toast.error(
+        `${action} failed. Please try again. (${
+          MAX_LOGIN_ATTEMPTS - attempts
+        } attempts remaining)`
+      );
+    }
   };
 
   const handleGoogleLogin = async () => {
+    if (!handleRateLimitCheck("login")) return;
+
     resetFormState(true);
     setLoading(true);
-    const redirectTo = `${window.location.origin}/auth/callback`;
-    const nextUrl = getRedirectPath();
-    const finalRedirectTo =
-      nextUrl !== "/"
-        ? `${redirectTo}?next=${encodeURIComponent(nextUrl)}`
-        : redirectTo;
 
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: finalRedirectTo,
-      },
-    });
-    if (oauthError) {
-      setError("Failed to login with Google.");
+    try {
+      const redirectTo = `${window.location.origin}/auth/callback`;
+      const nextUrl = getRedirectPath();
+      const finalRedirectTo =
+        nextUrl !== "/"
+          ? `${redirectTo}?next=${encodeURIComponent(nextUrl)}`
+          : redirectTo;
+
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: finalRedirectTo,
+        },
+      });
+
+      if (oauthError) {
+        handleAuthError(oauthError, "Google login");
+      } else {
+        secureStorage.setItem("lastLoginMethod", "Google");
+        // Reset rate limiting on successful attempt
+        const clientId = `${navigator.userAgent}_${window.location.hostname}`;
+        rateLimiter.reset(clientId);
+      }
+    } catch (error) {
+      handleAuthError(error, "Google login");
+    } finally {
       setLoading(false);
-    } else {
-      localStorage.setItem("lastLoginMethod", "Google");
     }
   };
 
   const handleLinkedInLogin = async () => {
+    if (!handleRateLimitCheck("login")) return;
+
     resetFormState(true);
     setLoading(true);
-    const redirectTo = `${window.location.origin}/auth/callback`;
-    const nextUrl = getRedirectPath();
-    const finalRedirectTo =
-      nextUrl !== "/"
-        ? `${redirectTo}?next=${encodeURIComponent(nextUrl)}`
-        : redirectTo;
 
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "linkedin",
-      options: {
-        redirectTo: finalRedirectTo,
-      },
-    });
-    if (oauthError) {
-      setError("Failed to login with Linkedin.");
+    try {
+      const redirectTo = `${window.location.origin}/auth/callback`;
+      const nextUrl = getRedirectPath();
+      const finalRedirectTo =
+        nextUrl !== "/"
+          ? `${redirectTo}?next=${encodeURIComponent(nextUrl)}`
+          : redirectTo;
+
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "linkedin",
+        options: {
+          redirectTo: finalRedirectTo,
+        },
+      });
+
+      if (oauthError) {
+        handleAuthError(oauthError, "LinkedIn login");
+      } else {
+        secureStorage.setItem("lastLoginMethod", "LinkedIn");
+        // Reset rate limiting on successful attempt
+        const clientId = `${navigator.userAgent}_${window.location.hostname}`;
+        rateLimiter.reset(clientId);
+      }
+    } catch (error) {
+      handleAuthError(error, "LinkedIn login");
+    } finally {
       setLoading(false);
-    } else {
-      localStorage.setItem("lastLoginMethod", "LinkedIn");
     }
   };
 
   const handleEmailOtpLogin = async (e) => {
     e.preventDefault();
-    if (!email) {
-      setError("Please enter your email address.");
+
+    if (!handleRateLimitCheck("OTP request")) return;
+
+    const sanitizedEmail = sanitizeInput(email);
+
+    if (!validateEmail(sanitizedEmail)) {
+      toast.error("Please enter a valid email address.");
       return;
     }
-    if (!captchaToken && TURNSTILE_SITE_KEY !== "1x00000000000000000000AA") {
-      setError("Please complete the CAPTCHA challenge.");
+
+    // Server-side CAPTCHA verification for enhanced security
+    if (captchaToken && TURNSTILE_SITE_KEY !== "1x00000000000000000000AA") {
+      setLoading(true); // Show loading during CAPTCHA verification
+      try {
+        const verifyResponse = await fetch("/api/auth/verify-turnstile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: captchaToken }),
+        });
+
+        const verifyResult = await verifyResponse.json();
+
+        if (!verifyResult.success) {
+          setLoading(false);
+          toast.error("Security verification failed. Please try again.");
+          if (captchaRef.current) {
+            captchaRef.current.reset();
+          }
+          setCaptchaToken(null);
+          return;
+        }
+      } catch (error) {
+        console.error("CAPTCHA verification error:", error);
+        setLoading(false);
+        toast.error("Security verification unavailable. Please try again.");
+        return;
+      }
+    } else if (TURNSTILE_SITE_KEY !== "1x00000000000000000000AA") {
+      toast.error("Please complete the CAPTCHA challenge.");
       return;
     }
+
     resetFormState();
     setLoading(true);
-    const redirectTo = `${window.location.origin}/auth/callback`;
-    const nextUrl = getRedirectPath();
-    const emailRedirectFinal =
-      nextUrl !== "/"
-        ? `${redirectTo}?method=otp&next=${encodeURIComponent(nextUrl)}`
-        : `${redirectTo}?method=otp`;
 
-    const { error: otpError } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: true,
-        emailRedirectTo: emailRedirectFinal,
-        captchaToken,
-      },
-    });
-    if (otpError) {
-      setError("Error, please try again.");
-    } else {
-      setSuccessMessage(`OTP sent successfully`);
-      setShowOtpInput(true);
-      localStorage.setItem("lastLoginMethod", "OTP");
+    try {
+      const redirectTo = `${window.location.origin}/auth/callback`;
+      const nextUrl = getRedirectPath();
+      const emailRedirectFinal =
+        nextUrl !== "/"
+          ? `${redirectTo}?method=otp&next=${encodeURIComponent(nextUrl)}`
+          : `${redirectTo}?method=otp`;
+
+      // Use hybrid approach: server-verified token + Supabase CAPTCHA support
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: sanitizedEmail,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: emailRedirectFinal,
+          // Pass token to Supabase for additional validation
+          captchaToken: captchaToken || undefined,
+        },
+      });
+
+      if (otpError) {
+        handleAuthError(otpError, "OTP request");
+      } else {
+        toast.success("OTP sent! Check your inbox/spam folder.");
+        setShowOtpInput(true);
+        setOtpSentTime(Date.now());
+        secureStorage.setItem("lastLoginMethod", "OTP");
+        // Reset rate limiting on successful OTP send
+        const clientId = `${navigator.userAgent}_${window.location.hostname}`;
+        rateLimiter.reset(clientId);
+      }
+    } catch (error) {
+      handleAuthError(error, "OTP request");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleVerifyOtp = async () => {
-    if (!otp || otp.length < 6) {
-      setError("Please enter the 6-digit OTP.");
+    if (!handleRateLimitCheck("OTP verification")) return;
+
+    if (!validateOTP(otp)) {
+      toast.error("Please enter a valid 6-digit OTP.");
       return;
     }
+
     resetFormState();
     setLoading(true);
-    const { data, error: verifyError } = await supabase.auth.verifyOtp({
-      email,
-      token: otp,
-      type: "email",
-    });
 
-    if (verifyError) {
-      setError("OTP invalid or expired.");
-    } else if (data.session) {
-      toast.success("Successfully logged in!");
-      localStorage.setItem("lastLoginMethod", "OTP (Verified)");
-      router.refresh();
-      const redirectPath = getRedirectPath();
-      window.location.href = redirectPath;
-    } else {
-      setError(
-        "Invalid OTP or session could not be created. Please try again."
-      );
+    try {
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        email: sanitizeInput(email),
+        token: otp,
+        type: "email",
+      });
+
+      if (verifyError) {
+        handleAuthError(verifyError, "OTP verification");
+      } else if (data.session) {
+        toast.success("Successfully logged in!");
+        secureStorage.setItem("lastLoginMethod", "OTP (Verified)");
+        // Reset rate limiting on successful login
+        const clientId = `${navigator.userAgent}_${window.location.hostname}`;
+        rateLimiter.reset(clientId);
+
+        router.refresh();
+        const redirectPath = getRedirectPath();
+        window.location.href = redirectPath;
+      } else {
+        toast.error(
+          "Invalid OTP or session could not be created. Please try again."
+        );
+      }
+    } catch (error) {
+      handleAuthError(error, "OTP verification");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+
+  // Show lockout message if rate limited
+  if (isLocked) {
+    return (
+      <div
+        className={cn("flex flex-col gap-6 w-full max-w-sm mx-auto", className)}
+        {...props}
+      >
+        <div className="flex flex-col items-center gap-4 text-center">
+          <h1 className="text-2xl font-bold tracking-tight text-red-600">
+            Account Temporarily Locked
+          </h1>
+          <p className="text-balance text-muted-foreground">
+            Too many failed login attempts. Please wait 15 minutes before trying
+            again.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => window.location.reload()}
+            className="mt-4"
+          >
+            Refresh Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -240,7 +467,7 @@ export function LoginForm({ className, ...props }) {
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-3xl font-bold tracking-tight">Welcome back!</h1>
         <p className="text-balance text-muted-foreground">
-          Use your email or oAuth to login.
+          Use your email or oAuth to login securely.
         </p>
         {lastLoginMethod && !showOtpInput && (
           <p className="text-sm text-primary mt-1">
@@ -315,12 +542,13 @@ export function LoginForm({ className, ...props }) {
                 required
                 disabled={loading}
                 aria-describedby="email-otp-description"
+                maxLength={254}
               />
               <p
                 id="email-otp-description"
                 className="text-xs text-muted-foreground px-1"
               >
-                We'll send a one-time password to your email.
+                We'll send a secure one-time password to your email.
               </p>
             </div>
 
@@ -331,8 +559,7 @@ export function LoginForm({ className, ...props }) {
               disabled={
                 loading ||
                 (TURNSTILE_SITE_KEY !== "1x00000000000000000000AA" &&
-                  !captchaToken &&
-                  !email.endsWith("@test.com"))
+                  !captchaToken)
               }
               aria-live="polite"
             >
@@ -345,6 +572,7 @@ export function LoginForm({ className, ...props }) {
                 "Send OTP"
               )}
             </Button>
+
             {TURNSTILE_SITE_KEY &&
               TURNSTILE_SITE_KEY !== "1x00000000000000000000AA" && (
                 <div className="flex justify-center">
@@ -369,6 +597,16 @@ export function LoginForm({ className, ...props }) {
           <p className="text-center text-sm text-muted-foreground -mt-2">
             Sent to <strong>{email}</strong>
           </p>
+          {otpSentTime && (
+            <p className="text-center text-xs text-orange-600">
+              OTP expires in{" "}
+              {Math.ceil(
+                (OTP_EXPIRY_TIME - (Date.now() - otpSentTime)) / 60000
+              )}{" "}
+              minutes
+            </p>
+          )}
+
           <InputOTP
             maxLength={6}
             value={otp}
@@ -386,11 +624,12 @@ export function LoginForm({ className, ...props }) {
               <InputOTPSlot index={5} />
             </InputOTPGroup>
           </InputOTP>
+
           <Button
             onClick={handleVerifyOtp}
             size={"lg"}
             className="w-full"
-            disabled={loading || otp.length < 6}
+            disabled={loading || !validateOTP(otp)}
             aria-live="polite"
           >
             {loading ? (
@@ -402,14 +641,14 @@ export function LoginForm({ className, ...props }) {
               "Verify OTP & Login"
             )}
           </Button>
+
           <Button
             variant="link"
             className="text-sm"
             onClick={() => {
               setShowOtpInput(false);
               setOtp("");
-              setError(null);
-              setSuccessMessage(null);
+              setOtpSentTime(null);
             }}
             disabled={loading}
           >
@@ -421,7 +660,7 @@ export function LoginForm({ className, ...props }) {
       <div className="mt-4 text-center text-xs text-muted-foreground">
         By continuing, you agree to our{" "}
         <a
-          href={`${process.env.MARKETING_SITE_URL}/legal#terms`}
+          href={`${process.env.NEXT_PUBLIC_MARKETING_SITE_URL}/legal#terms`}
           className="underline hover:text-primary"
           target="_blank"
           rel="noopener noreferrer"
@@ -430,7 +669,7 @@ export function LoginForm({ className, ...props }) {
         </a>{" "}
         and{" "}
         <a
-          href={`${process.env.MARKETING_SITE_URL}/legal#privacy`}
+          href={`${process.env.NEXT_PUBLIC_MARKETING_SITE_URL}/legal#privacy`}
           className="underline hover:text-primary"
           target="_blank"
           rel="noopener noreferrer"

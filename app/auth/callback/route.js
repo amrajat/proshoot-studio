@@ -11,9 +11,9 @@ export async function GET(request) {
 
   if (error_description) {
     console.error("Supabase Auth Callback Error:", error_description);
-    // Redirect to a generic error page or login page with an error message
+    // Redirect with generic error message to prevent information leakage
     return NextResponse.redirect(
-      `${origin}/auth?error=${encodeURIComponent(error_description)}`
+      `${origin}/auth?error=${encodeURIComponent("Authentication failed. Please try again.")}`
     );
   }
 
@@ -43,16 +43,20 @@ export async function GET(request) {
 
     if (exchangeError) {
       console.error("Supabase Code Exchange Error:", exchangeError.message);
-      // Redirect to an error page or login page with an error message
+      // Redirect with generic error message to prevent information leakage
       return NextResponse.redirect(
-        `${origin}/auth?error=${encodeURIComponent(exchangeError.message)}`
+        `${origin}/auth?error=${encodeURIComponent("Authentication failed. Please try again.")}`
       );
     }
   }
 
   // After successful OAuth or if it's an OTP redirect without a code (session handled by client-side verifyOtp)
-  // Ensure 'next' is a relative path to prevent open redirect vulnerabilities
-  const safeNext = next.startsWith("/") ? next : "/";
+  // Strict validation to prevent open redirect vulnerabilities
+  const safeNext = (next && 
+                   next.startsWith("/") && 
+                   !next.startsWith("//") && 
+                   !next.includes(":") &&
+                   next.length < 200) ? next : "/";
   console.log(`Redirecting to: ${origin}${safeNext}`);
   return NextResponse.redirect(`${origin}${safeNext}`);
 }

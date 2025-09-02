@@ -1855,56 +1855,46 @@ export const BACKGROUND_OPTIONS = {
         "/images/styles/backgrounds/home-office/blue-home-residential-comfort.jpg",
     },
   ],
-  Specialized: [
+  "Conference Speaker": [
     {
-      name: "public speaking stage with professional presentation setup",
+      name: "keynote stage with dramatic professional lighting",
       image:
         "/images/styles/backgrounds/specialized/public-speaking-stage-with-professional-presentation-setup.jpg",
     },
     {
-      name: "patriotic display with american flag and national elements",
-      image:
-        "/images/styles/backgrounds/specialized/patriotic-display-with-american-flag-and-national-elements.jpg",
-    },
-    {
-      name: "realtor backdrop with professional real estate setting",
-      image:
-        "/images/styles/backgrounds/specialized/realtor-backdrop-with-professional-real-estate-setting.jpg",
-    },
-    {
-      name: "observatory deck with scientific and educational atmosphere",
-      image:
-        "/images/styles/backgrounds/specialized/observatory-deck-with-scientific-and-educational-atmosphere.jpg",
-    },
-    {
-      name: "conference stage with corporate presentation environment",
+      name: "corporate presentation backdrop with executive environment",
       image:
         "/images/styles/backgrounds/specialized/conference-stage-with-corporate-presentation-environment.jpg",
     },
     {
-      name: "indoor documents setting with professional paperwork backdrop",
-      image:
-        "/images/styles/backgrounds/specialized/indoor-documents-setting-with-professional-paperwork-backdrop.jpg",
-    },
-    {
-      name: "stool and chin rest with portrait photography setup",
-      image:
-        "/images/styles/backgrounds/specialized/stool-and-chin-rest-with-portrait-photography-setup.jpg",
-    },
-    {
-      name: "yellow presentation backdrop with bright professional lighting",
+      name: "professional speaking backdrop with bright studio lighting",
       image:
         "/images/styles/backgrounds/specialized/yellow-presentation-backdrop-with-bright-professional-lighting.jpg",
     },
     {
-      name: "fence setting with outdoor boundary elements",
+      name: "modern conference hall with sophisticated ambiance",
       image:
-        "/images/styles/backgrounds/specialized/fence-setting-with-outdoor-boundary-elements.jpg",
+        "/images/styles/backgrounds/specialized/modern-conference-hall-sophisticated-ambiance.jpg",
     },
     {
-      name: "yellow safety vest with construction and safety theme",
+      name: "executive boardroom with premium corporate setting",
       image:
-        "/images/styles/backgrounds/specialized/yellow-safety-vest-construction.jpg",
+        "/images/styles/backgrounds/specialized/executive-boardroom-premium-corporate-setting.jpg",
+    },
+    {
+      name: "tech conference stage with contemporary design",
+      image:
+        "/images/styles/backgrounds/specialized/tech-conference-stage-contemporary-design.jpg",
+    },
+    {
+      name: "business summit backdrop with professional atmosphere",
+      image:
+        "/images/styles/backgrounds/specialized/business-summit-backdrop-professional-atmosphere.jpg",
+    },
+    {
+      name: "auditorium stage with elegant presentation setup",
+      image:
+        "/images/styles/backgrounds/specialized/auditorium-stage-elegant-presentation-setup.jpg",
     },
   ],
 };

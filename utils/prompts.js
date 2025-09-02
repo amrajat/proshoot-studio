@@ -1,3 +1,58 @@
+/**
+ * PROMPT TEMPLATES BY THEME
+ *
+ * This file contains all prompt templates organized by their compatibleBackgroundThemes.
+ * Each theme lists all prompt templates that can be used with it.
+ *
+ * Themes and their prompt templates:
+ *
+ * 1. Studio Theme (1 template)
+ *    - Studio Colors
+ *
+ * 2. Creative Theme (2 templates)
+ *    - Creative Professionals
+ *    - Artistic Professional
+ *
+ * 3. Office Theme (6 templates)
+ *    - Office Headshots
+ *    - Office Headshots 2
+ *    - High-Rise Office
+ *    - Modern Office
+ *    - Minimalist Office
+ *    - Professional Office Portrait (multiple variations)
+ *
+ * 4. Monochrome Theme (1 template)
+ *    - Monochrome
+ *
+ * 5. Cityscape Theme (2 templates)
+ *    - Cityscape
+ *    - Metropolitan Executive
+ *
+ * 6. Nature Theme (5 templates)
+ *    - Nature
+ *    - Vibrant Garden
+ *    - Dandelion Field
+ *    - Wooded Area
+ *    - Natural Landscape
+ *
+ * 7. Medical Theme (2 templates)
+ *    - Medical
+ *    - Clinical Specialist
+ *
+ * 8. Home Office Theme (2 templates)
+ *    - Home Office
+ *    - Work From Home Executive
+ *
+ * 9. Academic Theme (1 template)
+ *    - University Library
+ *
+ * 10. Conference Speaker Theme (3 templates)
+ *     - Keynote Speaker
+ *     - Panel Discussion Leader
+ *     - Workshop Leader
+ *
+ */
+
 const hairStyle = (character) => {
   if (
     !character.hairLength ||
@@ -370,34 +425,50 @@ export const PROMPT_TEMPLATES = [
   },
   // END ACADEMIC PROMPTS
 
-  // START SPECIALIZED PROMPTS
+  // START CONFERENCE SPEAKER PROMPTS
   {
-    id: "specialized_01",
-    name: "Conference Speaker",
-    description: "Professional portrait for public speaking and presentations.",
+    id: "conference_speaker_01",
+    name: "Keynote Speaker",
+    description:
+      "Professional portrait for main stage presentations and keynote addresses.",
 
-    compatibleBackgroundThemes: ["Specialized"],
+    compatibleBackgroundThemes: ["Conference Speaker"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `Professional conference speaker portrait of a ${
-        character.trigger_word
-      } ${character.gender}${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, positioned in a ${backgroundName} in the background. Captured with Canon EOS R6, 50mm f/1.4 lens, ISO 100, professional studio lighting with key light and fill. Sharp, high-resolution image with confident expression, suitable for speaker introductions, event marketing, and professional presentations. Clean composition with excellent contrast and professional polish.`,
-  },
-  {
-    id: "specialized_02",
-    name: "Industry Professional",
-    description: "Specialized professional portrait for specific industries.",
-
-    compatibleBackgroundThemes: ["Specialized"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `Industry-specific professional portrait of a ${character.trigger_word} ${
+      `Professional keynote speaker portrait of a ${character.trigger_word} ${
         character.gender
       }${hairStyle(character)}${glasses(
         character
-      )}, wearing a ${clothingName}, captured in a ${backgroundName} in the background. Shot with Nikon Z9, 85mm f/1.8 lens, ISO 200, balanced natural and artificial lighting. Professional headshot with industry-appropriate styling, sharp focus on subject, background contextually relevant but not distracting. Perfect for industry publications, professional certifications, and specialized career profiles.`,
+      )}, wearing a ${clothingName}, positioned in a ${backgroundName} in the background. Captured with Canon EOS R6, 50mm f/1.4 lens, ISO 100, professional stage lighting with dramatic key light and subtle fill. Confident and authoritative expression, commanding presence suitable for main stage presentations, keynote introductions, and high-profile speaking events. Sharp focus with excellent contrast and executive polish.`,
   },
-  // END SPECIALIZED PROMPTS
+  {
+    id: "conference_speaker_02",
+    name: "Executive Speaker",
+    description:
+      "Professional portrait for executive presentations and thought leadership.",
+
+    compatibleBackgroundThemes: ["Conference Speaker"],
+    promptFunction: (character, clothingName, backgroundName) =>
+      `Professional executive speaker portrait of a ${character.trigger_word} ${
+        character.gender
+      }${hairStyle(character)}${glasses(
+        character
+      )}, wearing a ${clothingName}, captured against a ${backgroundName} in the background. Shot with Sony Alpha 7R IV, 70mm lens, f/2.0, ISO 160, balanced professional lighting. Confident and engaging expression, commanding executive presence suitable for corporate presentations and thought leadership speaking. Clean composition with professional polish and authoritative presence.`,
+  },
+  {
+    id: "conference_speaker_03",
+    name: "Expert Presenter",
+    description:
+      "Professional portrait for subject matter expert presentations.",
+
+    compatibleBackgroundThemes: ["Conference Speaker"],
+    promptFunction: (character, clothingName, backgroundName) =>
+      `Professional expert presenter portrait of a ${character.trigger_word} ${
+        character.gender
+      }${hairStyle(character)}${glasses(
+        character
+      )}, wearing a ${clothingName}, positioned in a ${backgroundName} in the background. Captured with Nikon Z9, 85mm f/1.8 lens, ISO 200, warm professional lighting. Knowledgeable and approachable expression, demonstrating subject matter expertise suitable for professional presentations and speaking engagements. Sharp focus with authoritative presence and expert credibility.`,
+  },
+  // END CONFERENCE SPEAKER PROMPTS
 ];
 
 export function generatePrompts(userCharacterInputs, stylePairs, stylesLimit) {

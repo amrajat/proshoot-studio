@@ -398,8 +398,10 @@ export default function OwnerDashboard({ orgContext }) {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Card
-            className="flex items-center justify-center bg-primary cursor-pointer text-primary-foreground hover:bg-primary/90"
+            className="flex items-center justify-center bg-primary hover:cursor-pointer cursor-pointer text-primary-foreground hover:bg-primary/90"
             onClick={() => router.push("/buy")}
+            role="button"
+            tabIndex={0}
           >
             <div className="flex items-center space-x-2 px-4 py-2">
               <ShoppingCart className="h-5 w-5" />

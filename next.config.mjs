@@ -2,11 +2,20 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Production security configurations
+  poweredByHeader: false, // Remove X-Powered-By header
+  compress: true, // Enable gzip compression
+
+  // Image optimization with strict security
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "fpczpgjfyejjuezbiqjq.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "secure.proshoot.co", // Custom Supabase domain
       },
       {
         protocol: "https",
@@ -17,115 +26,135 @@ const nextConfig = {
         hostname: "*.googleusercontent.com",
       },
     ],
+    // Security: Limit image sizes to prevent DoS
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    formats: ["image/webp", "image/avif"],
+    minimumCacheTTL: 60,
+    dangerouslyAllowSVG: false, // Security: Block SVG uploads
+    contentSecurityPolicy: "default-src 'self'; script-src 'none';",
   },
+
+  // Security: Strict ESLint enforcement in production
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    // ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false, // Fail builds on ESLint errors
   },
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: "/fp/track",
-  //       destination: "https://t.firstpromoter.com/tr",
-  //     },
-  //     {
-  //       source: "/fp/details",
-  //       destination: "https://t.firstpromoter.com/get_details",
-  //     },
-  //     {
-  //       source: "/ingest/static/:path*",
-  //       destination: "https://us-assets.i.posthog.com/static/:path*",
-  //     },
-  //     {
-  //       source: "/ingest/:path*",
-  //       destination: "https://us.i.posthog.com/:path*",
-  //     },
-  //     {
-  //       source: "/ingest/decide",
-  //       destination: "https://us.i.posthog.com/decide",
-  //     },
-  //     // Sentry rewrites
-  //     {
-  //       source: "/monitoring/api/:path*",
-  //       destination: "https://o4507332139089920.ingest.us.sentry.io/:path*",
-  //     },
-  //   ];
-  // },
-  // This is required to support PostHog trailing slash API requests
-  skipTrailingSlashRedirect: true,
-  // async headers() {
-  //   return [
-  //     {
-  //       source: "/:path*",
-  //       headers: [
-  //         // Clickjacking protection
-  //         {
-  //           key: "X-Frame-Options",
-  //           value: "SAMEORIGIN",
-  //         },
-  //         {
-  //           //FIXME: This is temporary, we need to add the CSP back in, also remove the repliate related thing coz we do't need it
-  //           key: "Content-Security-Policy",
-  //           value: [
-  //             // Default fallback - only allow from same origin
-  //             "default-src 'self'",
-  //             // Scripts - allow specific trusted domains and inline scripts needed for Next.js and Intercom
-  //             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.intercom.io https://*.intercomcdn.com",
-  //             // Styles - needed for Next.js, Tailwind and Intercom
-  //             "style-src 'self' 'unsafe-inline' https://*.intercom.io https://*.intercomcdn.com",
-  //             // Images - allow self, data URLs, blob URLs and your remote patterns
-  //             "img-src 'self' data: blob: https://*.supabase.co https://*.replicate.com https://replicate.delivery https://*.intercom.io https://*.intercomcdn.com https://*.google.com",
-  //             // Fonts
-  //             "font-src 'self' data: https://*.intercomcdn.com",
-  //             // Connect (for API calls, websockets)
-  //             "connect-src 'self' https://*.posthog.com https://*.sentry.io https://*.supabase.co https://*.intercom.io wss://*.intercom.io",
-  //             // Frame ancestors - protect against clickjacking
-  //             "frame-ancestors 'self'",
-  //             // Form actions
-  //             "form-action 'self'",
-  //             // Media
-  //             "media-src 'self' https://*.intercom.io https://*.intercomcdn.com",
-  //             // Object sources (PDFs, plugins)
-  //             "object-src 'none'",
-  //             // Frame sources for embedded content
-  //             "frame-src 'self' https://*.intercom.io https://*.google.com",
-  //             // Worker sources for web workers and service workers
-  //             "worker-src 'self' blob: https://*.intercom.io",
-  //             // Manifest
-  //             "manifest-src 'self'",
-  //           ].join("; "),
-  //         },
-  //         // Protection against MIME type confusion attacks
-  //         {
-  //           key: "X-Content-Type-Options",
-  //           value: "nosniff",
-  //         },
-  //         // XSS protection
-  //         {
-  //           key: "X-XSS-Protection",
-  //           value: "1; mode=block",
-  //         },
-  //         // Control how much referrer information should be included with requests
-  //         {
-  //           key: "Referrer-Policy",
-  //           value: "strict-origin-when-cross-origin",
-  //         },
-  //         // Control which browser features can be used
-  //         {
-  //           key: "Permissions-Policy",
-  //           value:
-  //             "camera=(), microphone=(), geolocation=(), interest-cohort=()",
-  //         },
-  //         // HTTP Strict Transport Security
-  //         {
-  //           key: "Strict-Transport-Security",
-  //           value: "max-age=63072000; includeSubDomains; preload",
-  //         },
-  //       ],
-  //     },
-  //   ];
-  // },
+
+  // Security: TypeScript strict mode
+  typescript: {
+    ignoreBuildErrors: false, // Fail builds on TypeScript errors
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/monitoring/api/:path*",
+        destination: "https://o4507332139089920.ingest.us.sentry.io/:path*",
+      },
+    ];
+  },
+  // Security: Enable trailing slash redirect for consistency
+  skipTrailingSlashRedirect: false,
+
+  // Production-ready security headers
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          // Remove server information
+          {
+            key: "Server",
+            value: "",
+          },
+          // Clickjacking protection - DENY is more secure than SAMEORIGIN
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          // Content Security Policy - Production ready
+          {
+            key: "Content-Security-Policy",
+            value: [
+              // Default: Only allow from same origin
+              "default-src 'self'",
+              // Scripts: Strict policy for production
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://challenges.cloudflare.com https://*.intercom.io https://*.intercomcdn.com https://*.sentry.io",
+              // Styles: Allow inline for Tailwind and components
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com https://*.intercom.io https://*.intercomcdn.com",
+              // Images: Secure image sources
+              "img-src 'self' data: blob: https://secure.proshoot.co https://*.supabase.co https://*.r2.cloudflarestorage.com https://*.googleusercontent.com https://*.intercom.io https://*.intercomcdn.com https://*.google.com",
+              // Fonts: Google Fonts and Intercom
+              "font-src 'self' data: https://fonts.gstatic.com https://*.intercomcdn.com",
+              // Connect: API calls and websockets
+              "connect-src 'self' http://127.0.0.1:* http://localhost:* https://secure.proshoot.co https://*.supabase.co https://challenges.cloudflare.com https://*.sentry.io https://*.intercom.io wss://*.intercom.io https://accounts.google.com https://apis.google.com https://*.googleapis.com https://oauth2.googleapis.com https://www.googleapis.com",
+              // Frame ancestors: Prevent embedding
+              "frame-ancestors 'none'",
+              // Form actions: Only allow same origin
+              "form-action 'self'",
+              // Media: Intercom support
+              "media-src 'self' https://*.intercom.io https://*.intercomcdn.com",
+              // Object: Block all plugins
+              "object-src 'none'",
+              // Frame: Google OAuth and Intercom
+              "frame-src 'self' https://accounts.google.com https://challenges.cloudflare.com https://*.intercom.io",
+              // Worker: Service workers and Intercom
+              "worker-src 'self' blob: https://*.intercom.io",
+              // Manifest: PWA support
+              "manifest-src 'self'",
+              // Base URI: Prevent injection
+              "base-uri 'self'",
+              // Upgrade insecure requests
+              "upgrade-insecure-requests",
+            ].join("; "),
+          },
+          // MIME type protection
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          // XSS protection (legacy but still useful)
+          {
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
+          },
+          // Referrer policy - strict for security
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          // Permissions policy - disable dangerous features
+          {
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(), interest-cohort=(), browsing-topics=()",
+          },
+          // HSTS - Force HTTPS
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+          // Cross-Origin policies
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "credentialless",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "same-origin",
+          },
+        ],
+      },
+    ];
+  },
+
+  // Security: Disable server-side includes
+  experimental: {
+    serverComponentsExternalPackages: [],
+  },
 };
 
 export default withSentryConfig(nextConfig, {

@@ -853,12 +853,6 @@ const ImageUploadStep = ({
       // Check if user has credits for the selected plan
       const hasCredits = hasSufficientCredits(credits, selectedPlan, 1);
 
-      // For personal accounts without credits, redirect to payment
-      if (contextType === "personal" && !hasCredits) {
-        await handlePaymentFlow(selectedPlan);
-        return;
-      }
-
       // Check if all files are uploaded
       const failedUploads = Object.entries(uploadState.uploadProgress).filter(
         ([_, progress]) => progress.status === "failed"
@@ -919,6 +913,12 @@ const ImageUploadStep = ({
       });
 
       await uploadToR2(cropJsonBlob, "focus_data.json");
+
+      // For personal accounts without credits, redirect to payment
+      if (contextType === "personal" && !hasCredits) {
+        await handlePaymentFlow(selectedPlan);
+        return;
+      }
 
       toast.loading("Creating your studio...");
 

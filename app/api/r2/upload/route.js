@@ -6,29 +6,34 @@ import { env, publicEnv } from "@/lib/env";
 // --- Centralized R2 Configuration ---
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const ALLOWED_CONTENT_TYPES = [
-  'image/jpeg',
-  'image/jpg', 
-  'image/png',
-  'image/webp',
-  'application/zip'
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "application/zip",
+  "application/json",
 ];
 
 // Security helpers
 const sanitizeFileName = (fileName) => {
-  if (!fileName || typeof fileName !== 'string') {
-    throw new Error('Invalid filename');
+  if (!fileName || typeof fileName !== "string") {
+    throw new Error("Invalid filename");
   }
-  
-  // Remove path separators and limit to safe characters
-  const sanitized = fileName
-    .replace(/[^a-zA-Z0-9._-]/g, '_')
-    .substring(0, 128);
-    
-  if (!sanitized || sanitized.length === 0) {
-    throw new Error('Invalid filename after sanitization');
-  }
-  
-  return sanitized;
+
+  // Handle paths with forward slashes (for UUID folders)
+  const pathParts = fileName.split("/");
+  const sanitizedParts = pathParts.map((part) => {
+    // Sanitize each part of the path separately
+    const sanitized = part.replace(/[^a-zA-Z0-9._-]/g, "_").substring(0, 128);
+
+    if (!sanitized || sanitized.length === 0) {
+      throw new Error("Invalid filename part after sanitization");
+    }
+
+    return sanitized;
+  });
+
+  return sanitizedParts.join("/");
 };
 
 const R2_ACCOUNT_ID = env.R2_ACCOUNT_ID;
@@ -100,10 +105,7 @@ export async function POST(req) {
       sanitizedFileName = sanitizeFileName(fileName);
     } catch (error) {
       console.error("Filename sanitization error:", error);
-      return NextResponse.json(
-        { error: "Invalid filename" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
     }
 
     const config = BUCKET_CONFIGS[R2_BUCKET_NAME_DATASETS];

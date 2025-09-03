@@ -80,7 +80,14 @@ export function AccountSwitcher() {
       if (error) {
         throw error;
       }
-      router.push("/auth");
+
+      // Force a hard refresh to clear any cached session data
+      if (typeof window !== "undefined") {
+        window.location.href = "/auth";
+      } else {
+        // Fallback for SSR or environments without window
+        router.push("/auth");
+      }
     } catch (error) {
       setIsSigningOut(false);
     }
@@ -190,7 +197,7 @@ export function AccountSwitcher() {
               <DropdownMenuLabel className="text-xs text-muted-foreground px-3 py-2">
                 Switch Account
               </DropdownMenuLabel>
-              {availableContexts.map((context, index) => {
+              {availableContexts.map((context) => {
                 const Icon =
                   context.type === "personal" ? LucideUser : Building2;
                 return (

@@ -98,14 +98,14 @@ COMMENT ON POLICY "studios_delete_org_owners" ON public.studios IS
 
 CREATE OR REPLACE FUNCTION public.update_studio_status(
     p_studio_id UUID,
-    p_new_status studio_status
+    p_new_status public.studio_status
 )
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = ''
 AS $$
 DECLARE
-    v_current_status studio_status;
+    v_current_status public.studio_status;
     v_creator_user_id UUID;
     v_organization_id UUID;
     v_current_user_id UUID;

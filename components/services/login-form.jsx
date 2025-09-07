@@ -285,7 +285,7 @@ export function LoginForm({ className, ...props }) {
           : redirectTo;
 
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: "linkedin",
+        provider: "linkedin_oidc",
         options: {
           redirectTo: finalRedirectTo,
         },

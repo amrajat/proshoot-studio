@@ -104,7 +104,7 @@ const normalizeGender = (gender) => {
   return "person";
 };
 
-export const PROMPT_TEMPLATES = [
+const PROMPT_TEMPLATES = [
   // START OF PROMPTBASE
   {
     id: "studio_01",

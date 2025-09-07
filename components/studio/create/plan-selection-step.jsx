@@ -179,7 +179,7 @@ const PlanSelectionStep = ({ credits, formData, errors, selectedContext }) => {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold">Choose your plan</h2>
+        <h2 className="text-2xl font-semibold">Select your plan</h2>
         <p className="text-muted-foreground">
           Select the plan that best fits your needs.
         </p>
@@ -289,7 +289,7 @@ const PlanSelectionStep = ({ credits, formData, errors, selectedContext }) => {
 
                 {/* Features List */}
                 <ul className="mt-6 space-y-4">
-                  {plan.features.slice(0, 6).map((feature, index) => (
+                  {plan.features.map((feature, index) => (
                     <li key={index} className="flex space-x-4">
                       <Check className="flex-shrink-0 mt-0.5 h-4 w-4 text-success" />
                       <span className="text-sm text-foreground">{feature}</span>

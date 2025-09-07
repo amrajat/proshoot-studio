@@ -41,9 +41,9 @@ const StudioStatusMessage = ({ status, onAction }) => {
       case "PROCESSING":
         return {
           icon: <InlineLoader size="default" showText={false} />,
-          title: "Generating Your Headshots",
+          title: "Generating Headshots...",
           description:
-            "Your AI headshots are being created. This process typically takes 1-2 hours. You&apos;ll receive an email notification when they&apos;re ready.",
+            "This process usually takes 30 to 60 minutes. You will get an email when it is complete. If it takes longer, please contact our support team for assistance. You can close this page and check back later or refresh the page for latest updates, this will not interrupt the process.",
           buttonText: null,
           buttonVariant: null,
           showButton: false,

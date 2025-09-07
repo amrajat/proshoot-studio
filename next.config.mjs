@@ -25,6 +25,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "*.googleusercontent.com",
       },
+      {
+        protocol: "https",
+        hostname: "*.proshoot.co",
+      },
+      {
+        protocol: "https",
+        hostname: "delivery.proshoot.co",
+      },
     ],
     // Security: Limit image sizes to prevent DoS
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
@@ -82,7 +90,7 @@ const nextConfig = {
               // Styles: Allow inline for Tailwind and components
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com https://*.intercom.io https://*.intercomcdn.com",
               // Images: Secure image sources
-              "img-src 'self' data: blob: https://secure.proshoot.co https://*.supabase.co https://*.r2.cloudflarestorage.com https://*.googleusercontent.com https://*.intercom.io https://*.intercomcdn.com https://*.google.com",
+              "img-src 'self' data: blob: https://secure.proshoot.co https://delivery.proshoot.co https://*.supabase.co https://*.r2.cloudflarestorage.com https://*.googleusercontent.com https://*.intercom.io https://*.intercomcdn.com https://*.google.com",
               // Fonts: Google Fonts and Intercom
               "font-src 'self' data: https://fonts.gstatic.com https://*.intercomcdn.com",
               // Connect: API calls and websockets

@@ -12,7 +12,7 @@ const config = {
     starter: {
       displayPrice: 35,
       totalHeadshots: 40,
-      stylesLimit: 10,
+      stylesLimit: 2,
       accountContext: "personal",
       mostPopular: false,
       description:
@@ -31,7 +31,7 @@ const config = {
     professional: {
       displayPrice: 49,
       totalHeadshots: 60,
-      stylesLimit: 20,
+      stylesLimit: 5,
       accountContext: "personal",
       mostPopular: true,
       description:
@@ -50,7 +50,7 @@ const config = {
     studio: {
       displayPrice: 59,
       totalHeadshots: 100,
-      stylesLimit: 25,
+      stylesLimit: 10,
       accountContext: "personal",
       mostPopular: false,
       description:
@@ -69,7 +69,7 @@ const config = {
     team: {
       displayPrice: 49,
       totalHeadshots: 100,
-      stylesLimit: 25,
+      stylesLimit: 5,
       accountContext: "team",
       mostPopular: false,
       description:

@@ -42,8 +42,8 @@ import { Separator } from "@/components/ui/separator";
 
 const MB = 1024 * 1024;
 const MAX_FILE_SIZE = 25 * MB;
-const MAX_IMAGES = 20;
-const MIN_IMAGES = 10;
+const MAX_IMAGES = 12;
+const MIN_IMAGES = 8;
 const CROP_DIMENSION = 1024;
 const CROP_ASPECT = 1;
 const MIN_IMAGE_DIMENSION = 256;
@@ -678,7 +678,7 @@ const ImageUploadStep = ({
       }
 
       setUploadState((prev) => ({ ...prev, processing: true }));
-      toast.loading("Processing images...");
+      toast.success("Processing images...");
 
       const processedFiles = [];
       for (let i = 0; i < uniqueFiles.length; i++) {
@@ -872,7 +872,7 @@ const ImageUploadStep = ({
         return;
       }
 
-      toast.loading("Finalizing...");
+      toast.success("Finalizing...");
 
       // Create crop data map
       const cropDataMap = {};
@@ -920,7 +920,7 @@ const ImageUploadStep = ({
         return;
       }
 
-      toast.loading("Creating your studio...");
+      toast.success("Creating your studio...");
 
       // Extract user_id from uploaded files to create full path
       let imagesPath = uploadState.currentUUID;
@@ -1015,7 +1015,7 @@ const ImageUploadStep = ({
         throw new Error("User not authenticated");
       }
 
-      toast.loading("Creating studio...");
+      toast.success("Creating studio...");
 
       // Use authenticated user ID to create full path
       const userId = user.id;
@@ -1060,7 +1060,7 @@ const ImageUploadStep = ({
         throw new Error(result?.error || "Failed to create studio record");
       }
 
-      toast.loading("Redirecting to payment...");
+      toast.success("Redirecting to payment...");
 
       // Create checkout URL with only studio ID as custom data (user auth handled server-side)
       const checkoutUrl = await createCheckoutUrl(

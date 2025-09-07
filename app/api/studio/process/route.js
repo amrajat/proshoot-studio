@@ -3,16 +3,44 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import crypto from "crypto";
 import { env, publicEnv } from "@/lib/env";
+import * as Sentry from "@sentry/nextjs";
 
 // Constants
 const MODAL_TIMEOUT_MS = 45000;
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 1000;
 
 // Response helpers
-const createErrorResponse = (message, status = 400) => {
-  return NextResponse.json({ success: false, error: message }, { status });
+const createErrorResponse = (message, status = 400, context = {}) => {
+  const errorMessage = typeof message === 'string' ? message : message.message || 'Unknown error';
+  
+  // Log to Sentry with context
+  Sentry.captureException(new Error(errorMessage), {
+    tags: {
+      route: 'studio-process',
+      status: status.toString()
+    },
+    extra: {
+      ...context,
+      timestamp: new Date().toISOString()
+    }
+  });
+  
+  console.error(`❌ Studio Process Error (${status}):`, errorMessage, context);
+  return NextResponse.json({ success: false, error: errorMessage }, { status });
 };
 
 const createSuccessResponse = (data) => {
+  console.log('✅ Studio Process Success:', data);
+  
+  // Track successful studio processing in Sentry
+  Sentry.addBreadcrumb({
+    message: 'Studio processed successfully',
+    category: 'studio',
+    level: 'info',
+    data
+  });
+  
   return NextResponse.json({ success: true, ...data });
 };
 
@@ -73,15 +101,30 @@ const fetchPendingStudio = async (supabase, studioId, user_id) => {
   return studio;
 };
 
-const updateStudioStatus = async (supabase, studioId, status) => {
+const updateStudioStatus = async (supabase, studioId, status, context = '') => {
+  console.log(`📝 Updating studio ${studioId} status to ${status}${context ? ` (${context})` : ''}`);
+  
   const { error: updateError } = await supabase
     .from("studios")
-    .update({ status })
+    .update({ 
+      status,
+      updated_at: new Date().toISOString()
+    })
     .eq("id", studioId);
 
   if (updateError) {
+    console.error(`❌ Failed to update studio ${studioId} status to ${status}:`, updateError);
     throw new Error(`Failed to update studio status: ${updateError.message}`);
   }
+  
+  console.log(`✅ Studio ${studioId} status updated to ${status}`);
+  
+  Sentry.addBreadcrumb({
+    message: `Studio status updated to ${status}`,
+    category: 'database',
+    level: 'info',
+    data: { studioId, status, context }
+  });
 };
 
 const deductStudioCredits = async (supabase, studio, user_id, studioId) => {
@@ -104,6 +147,24 @@ const deductStudioCredits = async (supabase, studio, user_id, studioId) => {
   return creditResult;
 };
 
+// Retry utility with exponential backoff
+const retryWithBackoff = async (fn, maxRetries = MAX_RETRIES, baseDelay = RETRY_DELAY_MS) => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt === maxRetries) {
+        throw error;
+      }
+      
+      const delay = baseDelay * Math.pow(2, attempt - 1);
+      console.warn(`⚠️ Attempt ${attempt} failed, retrying in ${delay}ms:`, error.message);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+};
+
 // External API operations
 const triggerModalTraining = async ({
   datasets_object_key,
@@ -111,40 +172,83 @@ const triggerModalTraining = async ({
   user_id,
   plan,
   studioID,
+  trigger_word = "ohwx",
+  steps = 3000,
+  webhook_url = ""
 }) => {
+  const headers = new Headers({
+    "Modal-Key": env.MODAL_KEY,
+    "Modal-Secret": env.MODAL_SECRET,
+    "Content-Type": "application/json",
+  });
+
   const payload = {
-    datasets_object_key,
+    object_key: datasets_object_key,
     gender,
     user_id,
     plan,
-    studioID,
+    studio_id: studioID,
+    trigger_word,
+    steps,
+    webhook_url
   };
 
-  // const requestOptions = {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //   },
-  //   body: JSON.stringify(payload),
-  //   redirect: "follow",
-  //   signal: AbortSignal.timeout(MODAL_TIMEOUT_MS),
-  // };
+  const requestOptions = {
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+    redirect: "follow",
+    signal: AbortSignal.timeout(MODAL_TIMEOUT_MS),
+  };
 
-  // const ModalResponse = await fetch(
-  //   env.MODAL_TRAINING_ENDPOINT,
-  //   requestOptions
-  // );
+  if (!env.MODAL_TRAINING_ENDPOINT_V2) {
+    throw new Error("Modal training endpoint not configured");
+  }
 
-  // if (!ModalResponse.ok) {
-  //   throw new Error(`Modal API failed with status: ${ModalResponse.status}`);
-  // }
+  const response = await retryWithBackoff(async () => {
+    const res = await fetch(env.MODAL_TRAINING_ENDPOINT_V2, requestOptions);
+    
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => 'Unknown error');
+      const error = new Error(`Modal API Error: ${res.status} - ${errorText}`);
+      error.status = res.status;
+      error.response = errorText;
+      throw error;
+    }
+    
+    return res;
+  });
 
-  console.log("modal api called via api/studio/process");
+  const result = await response.json().catch(() => ({}));
+  
+  // Log successful training initiation
+  Sentry.addBreadcrumb({
+    message: 'Modal training initiated',
+    category: 'modal',
+    level: 'info',
+    data: { studioID, steps, plan }
+  });
+  
+  console.log(`🚀 Modal training started for studio ${studioID} with ${steps} steps`);
+  return result;
 };
 
 // Main handler
 export async function POST(request) {
+  const transaction = Sentry.startTransaction({
+    name: 'POST /api/studio/process',
+    op: 'http.server'
+  });
+  
   try {
+    Sentry.configureScope(scope => {
+      scope.setTag('route', 'studio-process');
+      scope.setContext('request', {
+        method: 'POST',
+        url: request.url,
+        timestamp: new Date().toISOString()
+      });
+    });
     // Get raw body for signature verification
     const rawBody = await request.text();
     const signature = request.headers.get("x-signature");
@@ -152,17 +256,33 @@ export async function POST(request) {
     // Verify webhook signature
     if (!verifyWebhookSignature(rawBody, signature)) {
       console.error("❌ Invalid webhook signature");
-      return createErrorResponse("Unauthorized", 401);
+      return createErrorResponse("Unauthorized", 401, {
+        hasSignature: !!signature,
+        hasSecret: !!env.LEMONSQUEEZY_WEBHOOK_SECRET
+      });
     }
+    
+    Sentry.addBreadcrumb({
+      message: 'Webhook signature verified',
+      category: 'security',
+      level: 'info'
+    });
 
     // Parse and validate request body
     let studioId, user_id;
     try {
       const body = JSON.parse(rawBody);
       ({ studioId, user_id } = validateRequestBody(body));
+      
+      // Set user context for Sentry
+      Sentry.setUser({ id: user_id });
+      
     } catch (error) {
       console.error("Request validation error:", error);
-      return createErrorResponse("Invalid request data");
+      return createErrorResponse("Invalid request data", 400, {
+        parseError: error.message,
+        hasRawBody: !!rawBody
+      });
     }
 
     // Initialize Supabase client
@@ -183,68 +303,131 @@ export async function POST(request) {
     let studio;
     try {
       studio = await fetchPendingStudio(supabase, studioId, user_id);
+      
+      Sentry.addBreadcrumb({
+        message: 'Pending studio fetched',
+        category: 'database',
+        level: 'info',
+        data: { studioId, plan: studio.plan }
+      });
     } catch (error) {
       console.error("Studio fetch error:", error);
-      return createErrorResponse("Studio not found or invalid", 404);
+      return createErrorResponse("Studio not found or invalid", 404, {
+        studioId,
+        user_id,
+        error: error.message
+      });
     }
 
     // Update studio status to PROCESSING
     try {
-      await updateStudioStatus(supabase, studioId, "PROCESSING");
+      await updateStudioStatus(supabase, studioId, "PROCESSING", 'payment-processed');
     } catch (error) {
       console.error("Status update error:", error);
-      return createErrorResponse("Failed to process studio", 500);
+      return createErrorResponse("Failed to process studio", 500, {
+        studioId,
+        operation: 'status-update-processing',
+        error: error.message
+      });
     }
 
     // Deduct credits for the studio
     try {
-      await deductStudioCredits(supabase, studio, user_id, studioId);
-      console.log("✅ Credits deducted successfully");
+      const creditResult = await deductStudioCredits(supabase, studio, user_id, studioId);
+      
+      Sentry.addBreadcrumb({
+        message: 'Credits deducted successfully',
+        category: 'credits',
+        level: 'info',
+        data: { 
+          studioId,
+          plan: studio.plan,
+          success: creditResult.success
+        }
+      });
     } catch (error) {
-      console.error("Credit deduction failed:", error);
+      // Revert studio status to failed with proper error handling
+      try {
+        await updateStudioStatus(supabase, studioId, "FAILED", 'credit-deduction-failed');
+      } catch (rollbackError) {
+        Sentry.captureException(rollbackError, {
+          tags: { operation: 'rollback-studio-status' },
+          extra: { studioId }
+        });
+      }
 
-      // Revert studio status to failed
-      await updateStudioStatus(supabase, studioId, "FAILED").catch(
-        console.error
-      );
-
-      return createErrorResponse("Failed to process studio", 500);
+      return createErrorResponse("Failed to process studio", 500, {
+        studioId,
+        operation: 'credit-deduction',
+        error: error.message
+      });
     }
 
     // Trigger Modal training
     try {
-      await triggerModalTraining({
+      const modalResult = await triggerModalTraining({
         datasets_object_key: studio.datasets_object_key,
-        gender: studio.user_attributes.gender,
+        gender: studio.user_attributes?.gender || 'person',
         user_id,
         plan: studio.plan.toLowerCase(),
         studioID: studioId,
+        trigger_word: studio.user_attributes?.trigger_word || "ohwx",
+        steps: 3000,
+        webhook_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/generate`
       });
 
-      console.log("✅ Modal training initiated successfully");
     } catch (error) {
-      console.error("Modal training failed:", error);
+      // Update studio status to failed with comprehensive error handling
+      try {
+        await updateStudioStatus(supabase, studioId, "FAILED", 'modal-training-failed');
+        
+        Sentry.addBreadcrumb({
+          message: 'Studio status updated to FAILED after training error',
+          category: 'database',
+          level: 'warning',
+          data: { studioId }
+        });
+      } catch (updateError) {
+        Sentry.captureException(updateError, {
+          tags: { operation: 'update-studio-status-failed' },
+          extra: { studioId }
+        });
+      }
 
-      // Update studio status to failed
-      await updateStudioStatus(supabase, studioId, "FAILED").catch(
-        console.error
-      );
-
-      return createErrorResponse(
-        "Failed to start training",
-        500
-      );
+      return createErrorResponse("Failed to start training. Please try again later.", 500, {
+        studioId,
+        operation: 'modal-training',
+        modalError: error.message,
+        modalStatus: error.status
+      });
     }
 
+    transaction.setStatus('ok');
     return createSuccessResponse({
       studioId,
       message: "Studio processed successfully and training initiated",
     });
   } catch (error) {
+    transaction.setStatus('internal_error');
+    
+    // Capture unexpected errors
+    Sentry.captureException(error, {
+      tags: {
+        route: 'studio-process',
+        operation: 'unexpected-error'
+      },
+      extra: {
+        timestamp: new Date().toISOString()
+      }
+    });
+    
     console.error("Process studio error:", error);
     return createErrorResponse(
       "An unexpected error occurred while processing studio",
-      500
+      500,
+      { error: error.message }
     );
+  } finally {
+    transaction.finish();
   }
 }

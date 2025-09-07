@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { env, publicEnv } from "@/lib/env";
+import * as Sentry from "@sentry/nextjs";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -9,13 +9,40 @@ export const maxDuration = 60;
 // Constants
 const VALID_PLANS = ["starter", "professional", "studio", "team"];
 const MODAL_TIMEOUT_MS = 45000;
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 1000;
 
 // Response helpers
-const createErrorResponse = (error, status = 400) => {
-  return NextResponse.json({ success: false, error }, { status });
+const createErrorResponse = (error, status = 400, context = {}) => {
+  const errorMessage = typeof error === 'string' ? error : error.message || 'Unknown error';
+  
+  // Log to Sentry with context
+  Sentry.captureException(new Error(errorMessage), {
+    tags: {
+      route: 'studio-create',
+      status: status.toString()
+    },
+    extra: {
+      ...context,
+      timestamp: new Date().toISOString()
+    }
+  });
+  
+  console.error(`❌ Studio Create Error (${status}):`, errorMessage, context);
+  return NextResponse.json({ success: false, error: errorMessage }, { status });
 };
 
 const createSuccessResponse = (data) => {
+  console.log('✅ Studio Create Success:', data);
+  
+  // Track successful studio creation in Sentry
+  Sentry.addBreadcrumb({
+    message: 'Studio created successfully',
+    category: 'studio',
+    level: 'info',
+    data
+  });
+  
   return NextResponse.json({ success: true, ...data });
 };
 
@@ -133,7 +160,8 @@ const createStudioRecord = async (supabase, studioRecord) => {
     .insert(studioRecord);
 
   if (studioError) {
-    throw new Error(`Failed to create studio: ${studioError.message}`);
+    console.log(studioError)
+    throw new Error("Failed to create studio. Please try again later.");
   }
 };
 
@@ -165,6 +193,24 @@ const deductCredits = async (supabase, user, studioFormData) => {
   return creditResult;
 };
 
+// Retry utility with exponential backoff
+const retryWithBackoff = async (fn, maxRetries = MAX_RETRIES, baseDelay = RETRY_DELAY_MS) => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt === maxRetries) {
+        throw error;
+      }
+      
+      const delay = baseDelay * Math.pow(2, attempt - 1);
+      console.warn(`⚠️ Attempt ${attempt} failed, retrying in ${delay}ms:`, error.message);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+};
+
 // External API operations
 const triggerModalTraining = async ({
   datasets_object_key,
@@ -172,10 +218,13 @@ const triggerModalTraining = async ({
   user_id,
   plan,
   studioID,
+  trigger_word = "ohwx",
+  steps = 3000,
+  webhook_url = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/generate`
 }) => {
   const headers = new Headers({
-    "Modal-Key": env.MODAL_KEY,
-    "Modal-Secret": env.MODAL_SECRET,
+    "Modal-Key": process.env.MODAL_KEY,
+    "Modal-Secret": process.env.MODAL_SECRET,
     "Content-Type": "application/json",
   });
 
@@ -185,6 +234,9 @@ const triggerModalTraining = async ({
     user_id,
     plan,
     studio_id: studioID,
+    trigger_word,
+    steps,
+    webhook_url
   };
 
   const requestOptions = {
@@ -195,26 +247,59 @@ const triggerModalTraining = async ({
     signal: AbortSignal.timeout(MODAL_TIMEOUT_MS),
   };
 
-  // const response = await fetch(
-  //   env.MODAL_TRAINING_ENDPOINT_V2,
-  //   requestOptions
-  // );
+  if (!process.env.MODAL_TRAINING_ENDPOINT_V2) {
+    throw new Error("Modal training endpoint not configured");
+  }
 
-  // if (!response.ok) {
-  //   throw new Error(`Modal API failed with status: ${response.status}`);
-  // }
+  const response = await retryWithBackoff(async () => {
+    const res = await fetch(process.env.MODAL_TRAINING_ENDPOINT_V2, requestOptions);
+    
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => 'Unknown error');
+      const error = new Error(`Modal API Error: ${res.status} - ${errorText}`);
+      error.status = res.status;
+      error.response = errorText;
+      throw error;
+    }
+    
+    return res;
+  });
 
-  console.log("modal api called via api/studio/create");
+  const result = await response.json().catch(() => ({}));
+  
+  // Log successful training initiation
+  Sentry.addBreadcrumb({
+    message: 'Modal training initiated',
+    category: 'modal',
+    level: 'info',
+    data: { studioID, steps, plan }
+  });
+  
+  console.log(`🚀 Modal training started for studio ${studioID} with ${steps} steps`);
+  return result;
 };
 
 // Main handler
 export async function POST(request) {
+  const transaction = Sentry.startTransaction({
+    name: 'POST /api/studio/create',
+    op: 'http.server'
+  });
+  
   try {
+    Sentry.configureScope(scope => {
+      scope.setTag('route', 'studio-create');
+      scope.setContext('request', {
+        method: 'POST',
+        url: request.url,
+        timestamp: new Date().toISOString()
+      });
+    });
     // Initialize Supabase client
     const cookieStore = cookies();
     const supabase = createServerClient(
-      publicEnv.NEXT_PUBLIC_SUPABASE_URL,
-      env.SUPABASE_SERVICE_ROLE_KEY,
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
       {
         cookies: {
           get(name) {
@@ -229,24 +314,47 @@ export async function POST(request) {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
+    
     if (authError || !user) {
-      return createErrorResponse("Authentication required", 401);
+      return createErrorResponse("Authentication required", 401, {
+        authError: authError?.message,
+        hasUser: !!user
+      });
     }
+    
+    // Set user context for Sentry
+    Sentry.setUser({
+      id: user.id,
+      email: user.email
+    });
 
     // Parse and validate request body
-    const body = await request.json();
-    const { studioData: studioFormData } = body;
-
-    if (!studioFormData) {
-      return createErrorResponse("Studio data is required");
+    let body, studioFormData;
+    try {
+      body = await request.json();
+      studioFormData = body.studioData;
+      
+      if (!studioFormData) {
+        throw new Error('Studio data is required');
+      }
+    } catch (error) {
+      return createErrorResponse("Invalid request body or missing studio data", 400, {
+        parseError: error.message
+      });
     }
 
     // Validate required fields and plan
     try {
       validateRequiredFields(studioFormData);
     } catch (error) {
-      console.error("Validation error:", error);
-      return createErrorResponse("Invalid studio data");
+      return createErrorResponse(error.message, 400, {
+        studioFormData: {
+          studioID: studioFormData?.studioID,
+          plan: studioFormData?.plan,
+          hasImages: !!studioFormData?.images,
+          hasName: !!studioFormData?.studioName
+        }
+      });
     }
 
     // Fetch and validate user credits
@@ -255,8 +363,16 @@ export async function POST(request) {
       creditsRecord = await fetchUserCredits(supabase, user.id);
       validateCredits(creditsRecord, studioFormData.plan);
     } catch (error) {
-      console.error("Credits validation error:", error);
-      return createErrorResponse("Insufficient credits or validation failed");
+      return createErrorResponse(error.message, 400, {
+        userId: user.id,
+        plan: studioFormData.plan,
+        creditsRecord: creditsRecord ? {
+          starter: creditsRecord.starter,
+          professional: creditsRecord.professional,
+          studio: creditsRecord.studio,
+          team: creditsRecord.team
+        } : null
+      });
     }
 
     // Prepare studio data
@@ -270,45 +386,112 @@ export async function POST(request) {
     // Create studio record
     try {
       await createStudioRecord(supabase, studioRecord);
+      
+      Sentry.addBreadcrumb({
+        message: 'Studio record created',
+        category: 'database',
+        level: 'info',
+        data: { studioId: studioRecord.id, plan: studioRecord.plan }
+      });
     } catch (error) {
-      return createErrorResponse(error.message, 500);
+      return createErrorResponse("Failed to create studio record", 500, {
+        studioId: studioRecord.id,
+        error: error.message
+      });
     }
-
     // Deduct credits
     try {
-      await deductCredits(supabase, user, studioFormData);
+      const creditResult = await deductCredits(supabase, user, studioFormData);
+      
+      Sentry.addBreadcrumb({
+        message: 'Credits deducted successfully',
+        category: 'credits',
+        level: 'info',
+        data: { 
+          studioId: studioFormData.studioID,
+          plan: studioFormData.plan,
+          success: creditResult.success
+        }
+      });
     } catch (error) {
-      await updateStudioStatus(
-        supabase,
-        studioFormData.studioID,
-        "PAYMENT_PENDING"
-      );
-      return createErrorResponse("Failed to create studio");
+      // Rollback studio status
+      try {
+        await updateStudioStatus(supabase, studioFormData.studioID, "PAYMENT_PENDING");
+      } catch (rollbackError) {
+        Sentry.captureException(rollbackError, {
+          tags: { operation: 'rollback-studio-status' },
+          extra: { studioId: studioFormData.studioID }
+        });
+      }
+      
+      return createErrorResponse(error.message, 400, {
+        studioId: studioFormData.studioID,
+        operation: 'credit-deduction'
+      });
     }
 
     // Trigger Modal training
     try {
-      await triggerModalTraining({
+      const modalResult = await triggerModalTraining({
         datasets_object_key: studioFormData.images,
-        gender: user_attributes.gender,
+        gender: user_attributes.gender || 'person',
         user_id: user.id,
         plan: studioFormData.plan.toLowerCase(),
         studioID: studioFormData.studioID,
+        trigger_word: user_attributes.trigger_word || "ohwx",
+        steps: 3000,
+        webhook_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/generate`
       });
+
     } catch (error) {
-      await updateStudioStatus(supabase, studioFormData.studioID, "FAILED");
-      return createErrorResponse(
-        `Modal training failed: ${error.message}`,
-        500
-      );
+      // Update studio status to failed with comprehensive error handling
+      try {
+        await updateStudioStatus(supabase, studioFormData.studioID, "FAILED");
+        
+        Sentry.addBreadcrumb({
+          message: 'Studio status updated to FAILED after training error',
+          category: 'database',
+          level: 'warning',
+          data: { studioId: studioFormData.studioID }
+        });
+      } catch (updateError) {
+        Sentry.captureException(updateError, {
+          tags: { operation: 'update-studio-status-failed' },
+          extra: { studioId: studioFormData.studioID }
+        });
+      }
+
+      return createErrorResponse("Failed to start training. Please try again later.", 500, {
+        studioId: studioFormData.studioID,
+        operation: 'modal-training',
+        modalError: error.message,
+        modalStatus: error.status
+      });
     }
 
+    transaction.setStatus('ok');
     return createSuccessResponse({
       studioId: studioFormData.studioID,
       message: "Studio created successfully. Training started in background.",
     });
   } catch (error) {
-    console.error("Studio creation error:", error);
-    return createErrorResponse("Internal server error", 500);
+    transaction.setStatus('internal_error');
+    
+    // Capture unexpected errors
+    Sentry.captureException(error, {
+      tags: {
+        route: 'studio-create',
+        operation: 'unexpected-error'
+      },
+      extra: {
+        timestamp: new Date().toISOString()
+      }
+    });
+    
+    return createErrorResponse("An unexpected error occurred while creating studio", 500, {
+      error: error.message
+    });
+  } finally {
+    transaction.finish();
   }
 }

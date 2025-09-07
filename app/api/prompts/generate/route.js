@@ -505,7 +505,7 @@ export const PROMPT_TEMPLATES = [
   // END CONFERENCE SPEAKER PROMPTS
 ];
 
-export function generatePrompts(userCharacterInputs, stylePairs, stylesLimit) {
+function generatePrompts(userCharacterInputs, stylePairs, stylesLimit) {
   if (!userCharacterInputs || !stylePairs?.length || !stylesLimit) {
     console.error("generatePrompts: Invalid inputs", {
       userCharacterInputs,

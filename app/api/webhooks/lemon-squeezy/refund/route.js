@@ -58,7 +58,7 @@ const handleFirstPromoterRefund = async ({ user, amount, eventId }) => {
     const refundData = {
       uid: user,
       event_id: eventId,
-      amount_cents: Math.abs(amount),
+      amount_cents: -Math.abs(amount),
     };
 
     const response = await fetch(

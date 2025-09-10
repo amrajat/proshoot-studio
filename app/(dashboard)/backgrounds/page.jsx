@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAccountContext } from "@/context/AccountContext";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
-import { ALL_BACKGROUND_OPTIONS } from "@/utils/styleOptions";
+import { ALL_BACKGROUND_OPTIONS, getGenderBasedBackgroundPath } from "@/utils/styleOptions";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, AlertCircle, Settings, Image } from "lucide-react";
+import { CheckCircle2, AlertCircle, Settings, Image, User, Users } from "lucide-react";
 import { CenteredLoader } from "@/components/shared/universal-loader";
 
 export default function ManageBackgroundsPage() {
@@ -24,6 +24,7 @@ export default function ManageBackgroundsPage() {
   const [restrictBackgrounds, setRestrictBackgrounds] = useState(false);
   const [approvedBackgrounds, setApprovedBackgrounds] = useState([]); // Now stores array of IDs
   const [activeTab, setActiveTab] = useState("All");
+  const [selectedGender, setSelectedGender] = useState("woman");
 
   const supabase = createSupabaseBrowserClient();
 
@@ -96,35 +97,70 @@ export default function ManageBackgroundsPage() {
       toast.error("Failed to update background settings. Please try again.");
     } finally {
       setIsSaving(false);
-    }
+    };
   };
 
+  const handleGenderChange = (gender) => {
+    setSelectedGender(gender);
+    setActiveTab("All"); // Reset to "All" tab when gender changes
+  };
+
+  // Create background options with gender-specific image paths
+  const backgroundsWithGenderPaths = ALL_BACKGROUND_OPTIONS.map((item) => ({
+    ...item,
+    image: getGenderBasedBackgroundPath(item.image, selectedGender),
+  }));
+
   const backgroundThemes = [
-    ...new Set(ALL_BACKGROUND_OPTIONS.map((item) => item.theme)),
+    ...new Set(backgroundsWithGenderPaths.map((item) => item.theme)),
   ];
   const tabKeys = ["All", ...backgroundThemes];
 
   const itemsToDisplay =
     activeTab === "All"
-      ? ALL_BACKGROUND_OPTIONS
-      : ALL_BACKGROUND_OPTIONS.filter((item) => item.theme === activeTab);
+      ? backgroundsWithGenderPaths
+      : backgroundsWithGenderPaths.filter((item) => item.theme === activeTab);
 
   if (selectedContext?.type === "personal") {
     return (
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-            <Image className="w-5 h-5 text-primary" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+              <Image className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                Available Background Styles
+              </h1>
+              <p className="text-muted-foreground">
+                Management of restrictions is available for organization
+                administrators.
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Available Background Styles
-            </h1>
-            <p className="text-muted-foreground">
-              Management of restrictions is available for organization
-              administrators.
-            </p>
+          
+          {/* Gender Switch */}
+          <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg">
+            <Button
+              variant={selectedGender === "woman" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleGenderChange("woman")}
+              className="flex items-center gap-2 px-3 py-2"
+            >
+              <User className="w-4 h-4" />
+              Woman
+            </Button>
+            <Button
+              variant={selectedGender === "man" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleGenderChange("man")}
+              className="flex items-center gap-2 px-3 py-2"
+            >
+              <Users className="w-4 h-4" />
+              Man
+            </Button>
           </div>
         </div>
 
@@ -150,11 +186,8 @@ export default function ManageBackgroundsPage() {
                   className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <div className="aspect-square relative overflow-hidden bg-muted">
-                    {/* TODO: FIX THE PROPER IMAGE LATER */}
-
                     <img
-                      // src={item.image}
-                      src="/images/placeholder.svg"
+                      src={item.image}
                       alt={item.name}
                       className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                       loading="lazy"
@@ -210,11 +243,34 @@ export default function ManageBackgroundsPage() {
             </p>
           </div>
         </div>
-        {isCurrentUserOrgAdmin && (
-          <Button onClick={handleSaveChanges} disabled={isLoading || isSaving}>
-            {isSaving ? "Saving..." : "Save Changes"}
-          </Button>
-        )}
+        <div className="flex items-center gap-4">
+          {/* Gender Switch */}
+          <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg">
+            <Button
+              variant={selectedGender === "woman" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleGenderChange("woman")}
+              className="flex items-center gap-2 px-3 py-2"
+            >
+              <User className="w-4 h-4" />
+              Woman
+            </Button>
+            <Button
+              variant={selectedGender === "man" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleGenderChange("man")}
+              className="flex items-center gap-2 px-3 py-2"
+            >
+              <Users className="w-4 h-4" />
+              Man
+            </Button>
+          </div>
+          {isCurrentUserOrgAdmin && (
+            <Button onClick={handleSaveChanges} disabled={isLoading || isSaving}>
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Status Messages */}
@@ -293,10 +349,8 @@ export default function ManageBackgroundsPage() {
                     }
                   >
                     <div className="aspect-square relative overflow-hidden bg-muted">
-                      {/* TODO: FIX THE PROPER IMAGE LATER */}
                       <img
-                        // src={item.image}
-                        src="/images/placeholder.svg"
+                        src={item.image}
                         alt={item.name}
                         className={`w-full h-full object-cover transition-transform duration-200 ${
                           isInteractive ? "group-hover:scale-105" : ""

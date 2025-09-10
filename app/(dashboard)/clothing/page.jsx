@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, AlertCircle, Settings, Shirt } from "lucide-react";
+import { CheckCircle2, AlertCircle, Settings, Shirt, User, Users } from "lucide-react";
 import { CenteredLoader } from "@/components/shared/universal-loader";
 import Image from "next/image";
 
@@ -26,6 +26,7 @@ export default function ManageClothingPage() {
   const [restrictClothing, setRestrictClothing] = useState(false);
   const [approvedClothing, setApprovedClothing] = useState([]); // Now stores array of IDs
   const [activeTab, setActiveTab] = useState("All");
+  const [selectedGender, setSelectedGender] = useState("woman");
 
   const supabase = createSupabaseBrowserClient();
 
@@ -101,32 +102,62 @@ export default function ManageClothingPage() {
     }
   };
 
+  const handleGenderChange = (gender) => {
+    setSelectedGender(gender);
+    setActiveTab("All"); // Reset to "All" tab when gender changes
+  };
+
+  // Filter clothing options by selected gender first
+  const genderFilteredClothing = GLOBAL_ALL_CLOTHING_OPTIONS.filter(
+    (item) => item.gender === selectedGender
+  );
+
   const clothingThemes = [
-    ...new Set(GLOBAL_ALL_CLOTHING_OPTIONS.map((item) => item.theme)),
+    ...new Set(genderFilteredClothing.map((item) => item.theme)),
   ];
   const tabKeys = ["All", ...clothingThemes];
 
   const itemsToDisplay =
     activeTab === "All"
-      ? GLOBAL_ALL_CLOTHING_OPTIONS
-      : GLOBAL_ALL_CLOTHING_OPTIONS.filter((item) => item.theme === activeTab);
+      ? genderFilteredClothing
+      : genderFilteredClothing.filter((item) => item.theme === activeTab);
 
   if (selectedContext?.type === "personal") {
     return (
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-            <Shirt className="w-5 h-5 text-primary" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+              <Shirt className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Clothing</h1>
+              <p className="text-gray-600">
+                Manage clothing restrictions for your organization
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Available Clothing Styles
-            </h1>
-            <p className="text-muted-foreground">
-              Management of restrictions is available for organization
-              administrators only.
-            </p>
+          {/* Gender Switch */}
+          <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg">
+            <Button
+              variant={selectedGender === "woman" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleGenderChange("woman")}
+              className="flex items-center gap-2 px-3 py-2"
+            >
+              <User className="w-4 h-4" />
+              Woman
+            </Button>
+            <Button
+              variant={selectedGender === "man" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleGenderChange("man")}
+              className="flex items-center gap-2 px-3 py-2"
+            >
+              <Users className="w-4 h-4" />
+              Man
+            </Button>
           </div>
         </div>
 
@@ -152,14 +183,13 @@ export default function ManageClothingPage() {
                   className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <div className="aspect-square relative overflow-hidden bg-muted">
-                    {/* TODO: FIX THE PROPER IMAGE LATER */}
+                    
                     <Image
-                      // src={item.image}
-                      src={"/images/placeholder.svg"}
+                      src={item.image}
                       alt={item.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                       fill
-                      sizes="48px"
+                      sizes="512px"
                       loading="lazy"
                     />
                   </div>
@@ -211,11 +241,34 @@ export default function ManageClothingPage() {
             </p>
           </div>
         </div>
-        {isCurrentUserOrgAdmin && (
-          <Button onClick={handleSaveChanges} disabled={isLoading || isSaving}>
-            {isSaving ? "Saving..." : "Save Changes"}
-          </Button>
-        )}
+        <div className="flex items-center gap-4">
+          {/* Gender Switch */}
+          <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg">
+            <Button
+              variant={selectedGender === "woman" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleGenderChange("woman")}
+              className="flex items-center gap-2 px-3 py-2"
+            >
+              <User className="w-4 h-4" />
+              Woman
+            </Button>
+            <Button
+              variant={selectedGender === "man" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => handleGenderChange("man")}
+              className="flex items-center gap-2 px-3 py-2"
+            >
+              <Users className="w-4 h-4" />
+              Man
+            </Button>
+          </div>
+          {isCurrentUserOrgAdmin && (
+            <Button onClick={handleSaveChanges} disabled={isLoading || isSaving}>
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Status Messages */}
@@ -292,14 +345,13 @@ export default function ManageClothingPage() {
                     <div className="aspect-square relative overflow-hidden bg-muted">
                       {/* TODO: FIX THE PROPER IMAGE LATER */}
                       <Image
-                        // src={item.image}
-                        src={"/images/placeholder.svg"}
+                        src={item.image}
                         alt={item.name}
                         className={`w-full h-full object-cover transition-transform duration-200 ${
                           isInteractive ? "group-hover:scale-105" : ""
                         }`}
                         fill
-                        sizes="48px"
+                        sizes="512px"
                         loading="lazy"
                       />
                       {isApproved && restrictClothing && (

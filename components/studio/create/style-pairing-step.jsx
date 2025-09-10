@@ -39,6 +39,7 @@ import useStudioCreateStore from "@/stores/studioCreateStore";
 import {
   GLOBAL_ALL_CLOTHING_OPTIONS,
   ALL_BACKGROUND_OPTIONS,
+  getGenderBasedBackgroundPath,
 } from "@/utils/styleOptions";
 import { useStudioForm } from "@/components/studio/create/studio-form-provider";
 import StepNavigation from "@/components/studio/create/step-navigation";
@@ -147,14 +148,21 @@ const StylePairingStep = ({
     );
   }, [genderFilteredClothingOptions, clothingThemeFilter]);
 
-  // Apply theme filters to background options
+  // Apply theme filters to background options and add gender-based paths
   const filteredBackgroundOptions = useMemo(() => {
     const optionsToFilter = backgroundOptions || ALL_BACKGROUND_OPTIONS;
-    if (backgroundThemeFilter === "All") return optionsToFilter;
-    return optionsToFilter.filter(
-      (item) => item.theme === backgroundThemeFilter
-    );
-  }, [backgroundThemeFilter, backgroundOptions]);
+    
+    // First apply theme filter
+    const themeFiltered = backgroundThemeFilter === "All" 
+      ? optionsToFilter 
+      : optionsToFilter.filter((item) => item.theme === backgroundThemeFilter);
+    
+    // Then apply gender-based image paths
+    return themeFiltered.map((item) => ({
+      ...item,
+      image: getGenderBasedBackgroundPath(item.image, currentGender),
+    }));
+  }, [backgroundThemeFilter, backgroundOptions, currentGender]);
 
   // Clear style pairs when plan or gender changes - USING STORE DATA WITH PERSISTENCE
   useEffect(() => {
@@ -353,7 +361,15 @@ const StylePairingStep = ({
 
   const getBackgroundById = (id) => {
     const optionsToSearch = backgroundOptions || ALL_BACKGROUND_OPTIONS;
-    return optionsToSearch.find((item) => item.id === id);
+    const backgroundItem = optionsToSearch.find((item) => item.id === id);
+    
+    if (!backgroundItem) return null;
+    
+    // Apply gender-based path to the background image
+    return {
+      ...backgroundItem,
+      image: getGenderBasedBackgroundPath(backgroundItem.image, currentGender),
+    };
   };
 
   // Helper function to create optimized style pair structure
@@ -400,7 +416,13 @@ const StylePairingStep = ({
         item.theme === stylePair.background.theme
     );
 
-    return { clothingItem, backgroundItem };
+    // Apply gender-based path to background item if found
+    const backgroundItemWithGenderPath = backgroundItem ? {
+      ...backgroundItem,
+      image: getGenderBasedBackgroundPath(backgroundItem.image, currentGender),
+    } : null;
+
+    return { clothingItem, backgroundItem: backgroundItemWithGenderPath };
   };
 
   // Helper function to check if combination exists (using names instead of IDs)
@@ -546,10 +568,8 @@ const StylePairingStep = ({
                         }`}
                       >
                         <div className="aspect-square bg-muted/40 relative">
-                          {/* FIX THE PROPER IMAGE LATER */}
                           <Image
-                            // src={option.image}
-                            src={"/images/placeholder.svg"}
+                            src={option.image}
                             alt={option.name}
                             fill
                             className="object-cover"
@@ -619,10 +639,8 @@ const StylePairingStep = ({
                         }`}
                       >
                         <div className="aspect-square bg-muted/40 relative">
-                          {/* TODO: FIX THE PROPER IMAGE LATER */}
                           <Image
-                            // src={option.image}
-                            src={"/images/placeholder.svg"}
+                            src={option.image}
                             alt={option.name}
                             fill
                             className="object-cover"
@@ -666,7 +684,7 @@ const StylePairingStep = ({
                     <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
                       <Image
                         src={
-                          getClothingById(selectedClothing)?.image &&
+                          getClothingById(selectedClothing)?.image ||
                           "/images/placeholder.svg"
                         }
                         alt={
@@ -720,7 +738,7 @@ const StylePairingStep = ({
                     <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
                       <Image
                         src={
-                          getBackgroundById(selectedBackground)?.image &&
+                          getBackgroundById(selectedBackground)?.image ||
                           "/images/placeholder.svg"
                         }
                         alt={
@@ -787,7 +805,7 @@ const StylePairingStep = ({
                             <Image
                               src={
                                 clothingItem?.image ||
-                                "/placeholder-clothing.jpg"
+                                "/images/placeholder.svg"
                               }
                               alt={pair.clothing.name}
                               fill

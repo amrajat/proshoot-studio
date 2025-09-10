@@ -421,220 +421,216 @@ export const CLOTHING_OPTIONS_MAN = {
       image:
         "/images/styles/clothings/smart-casual/man/army-green-button-down-dress-shirt.jpg",
     },
-  ],
-  "Creative Professional": [
     {
       name: "black turtleneck under navy blazer",
       image:
-        "/images/styles/clothings/creative-professional/man/black-turtleneck-under-navy-blazer.jpg",
+        "/images/styles/clothings/smart-casual/man/black-turtleneck-under-navy-blazer.jpg",
     },
     {
       name: "gray turtleneck under charcoal blazer",
       image:
-        "/images/styles/clothings/creative-professional/man/gray-turtleneck-under-charcoal-blazer.jpg",
+        "/images/styles/clothings/smart-casual/man/gray-turtleneck-under-charcoal-blazer.jpg",
     },
     {
       name: "white turtleneck under black blazer",
       image:
-        "/images/styles/clothings/creative-professional/man/white-turtleneck-under-black-blazer.jpg",
+        "/images/styles/clothings/smart-casual/man/white-turtleneck-under-black-blazer.jpg",
     },
     {
       name: "navy turtleneck sweater",
       image:
-        "/images/styles/clothings/creative-professional/man/navy-turtleneck-sweater.jpg",
+        "/images/styles/clothings/smart-casual/man/navy-turtleneck-sweater.jpg",
     },
     {
       name: "cream turtleneck sweater",
       image:
-        "/images/styles/clothings/creative-professional/man/cream-turtleneck-sweater.jpg",
+        "/images/styles/clothings/smart-casual/man/cream-turtleneck-sweater.jpg",
     },
     {
       name: "black mock neck sweater",
       image:
-        "/images/styles/clothings/creative-professional/man/black-mock-neck-sweater.jpg",
+        "/images/styles/clothings/smart-casual/man/black-mock-neck-sweater.jpg",
     },
     {
       name: "burgundy mock neck pullover",
       image:
-        "/images/styles/clothings/creative-professional/man/burgundy-mock-neck-pullover.jpg",
+        "/images/styles/clothings/smart-casual/man/burgundy-mock-neck-pullover.jpg",
     },
     {
       name: "forest green mock neck sweater",
       image:
-        "/images/styles/clothings/creative-professional/man/forest-green-mock-neck-sweater.jpg",
+        "/images/styles/clothings/smart-casual/man/forest-green-mock-neck-sweater.jpg",
     },
     {
       name: "charcoal collarless jacket over white dress shirt",
       image:
-        "/images/styles/clothings/creative-professional/man/charcoal-collarless-jacket-over-white-dress-shirt.jpg",
+        "/images/styles/clothings/smart-casual/man/charcoal-collarless-jacket-over-white-dress-shirt.jpg",
     },
     {
       name: "navy collarless blazer over gray tee",
       image:
-        "/images/styles/clothings/creative-professional/man/navy-collarless-blazer-over-gray-tee.jpg",
+        "/images/styles/clothings/smart-casual/man/navy-collarless-blazer-over-gray-tee.jpg",
     },
     {
       name: "minimalist gray hoodie under blazer",
       image:
-        "/images/styles/clothings/creative-professional/man/minimalist-gray-hoodie-under-blazer.jpg",
+        "/images/styles/clothings/smart-casual/man/minimalist-gray-hoodie-under-blazer.jpg",
     },
     {
       name: "navy hoodie under light gray blazer",
       image:
-        "/images/styles/clothings/creative-professional/man/navy-hoodie-under-light-gray-blazer.jpg",
+        "/images/styles/clothings/smart-casual/man/navy-hoodie-under-light-gray-blazer.jpg",
     },
-  ],
-  "Tech Professional": [
     {
       name: "white t-shirt under open navy button-up",
       image:
-        "/images/styles/clothings/tech-professional/man/white-t-shirt-under-open-navy-button-up.jpg",
+        "/images/styles/clothings/smart-casual/man/white-t-shirt-under-open-navy-button-up.jpg",
     },
     {
       name: "gray t-shirt under open flannel dress shirt",
       image:
-        "/images/styles/clothings/tech-professional/man/gray-t-shirt-under-open-flannel-dress-shirt.jpg",
+        "/images/styles/clothings/smart-casual/man/gray-t-shirt-under-open-flannel-dress-shirt.jpg",
     },
     {
       name: "black t-shirt under open denim dress shirt",
       image:
-        "/images/styles/clothings/tech-professional/man/black-t-shirt-under-open-denim-dress-shirt.jpg",
+        "/images/styles/clothings/smart-casual/man/black-t-shirt-under-open-denim-dress-shirt.jpg",
     },
     {
       name: "navy hoodie with clean design",
       image:
-        "/images/styles/clothings/tech-professional/man/navy-hoodie-with-clean-design.jpg",
+        "/images/styles/clothings/smart-casual/man/navy-hoodie-with-clean-design.jpg",
     },
     {
       name: "gray hoodie with minimal branding",
       image:
-        "/images/styles/clothings/tech-professional/man/gray-hoodie-with-minimal-branding.jpg",
+        "/images/styles/clothings/smart-casual/man/gray-hoodie-with-minimal-branding.jpg",
     },
     {
       name: "charcoal hoodie with no logos",
       image:
-        "/images/styles/clothings/tech-professional/man/charcoal-hoodie-with-no-logos.jpg",
+        "/images/styles/clothings/smart-casual/man/charcoal-hoodie-with-no-logos.jpg",
     },
     {
       name: "red and black flannel dress shirt",
       image:
-        "/images/styles/clothings/tech-professional/man/red-and-black-flannel-dress-shirt.jpg",
+        "/images/styles/clothings/smart-casual/man/red-and-black-flannel-dress-shirt.jpg",
     },
     {
       name: "blue and gray flannel dress shirt",
       image:
-        "/images/styles/clothings/tech-professional/man/blue-and-gray-flannel-dress-shirt.jpg",
+        "/images/styles/clothings/smart-casual/man/blue-and-gray-flannel-dress-shirt.jpg",
     },
     {
       name: "gray crew-neck sweater",
       image:
-        "/images/styles/clothings/tech-professional/man/gray-crew-neck-sweater.jpg",
+        "/images/styles/clothings/smart-casual/man/gray-crew-neck-sweater.jpg",
     },
     {
       name: "forest green crew-neck sweater",
       image:
-        "/images/styles/clothings/tech-professional/man/forest-green-crew-neck-sweater.jpg",
+        "/images/styles/clothings/smart-casual/man/forest-green-crew-neck-sweater.jpg",
     },
     {
       name: "burgundy crew-neck sweater",
       image:
-        "/images/styles/clothings/tech-professional/man/burgundy-crew-neck-sweater.jpg",
+        "/images/styles/clothings/smart-casual/man/burgundy-crew-neck-sweater.jpg",
     },
     {
       name: "black crewneck t-shirt",
       image:
-        "/images/styles/clothings/tech-professional/man/black-crewneck-t-shirt.jpg",
+        "/images/styles/clothings/smart-casual/man/black-crewneck-t-shirt.jpg",
     },
     {
       name: "white t-shirt",
-      image: "/images/styles/clothings/tech-professional/man/white-t-shirt.jpg",
+      image: "/images/styles/clothings/smart-casual/man/white-t-shirt.jpg",
     },
     {
       name: "navy blue crew-neck t-shirt",
       image:
-        "/images/styles/clothings/tech-professional/man/navy-blue-crew-neck-t-shirt.jpg",
+        "/images/styles/clothings/smart-casual/man/navy-blue-crew-neck-t-shirt.jpg",
     },
     {
       name: "gray t-shirt",
-      image: "/images/styles/clothings/tech-professional/man/gray-t-shirt.jpg",
+      image: "/images/styles/clothings/smart-casual/man/gray-t-shirt.jpg",
     },
     {
       name: "beige t-shirt",
-      image: "/images/styles/clothings/tech-professional/man/beige-t-shirt.jpg",
+      image: "/images/styles/clothings/smart-casual/man/beige-t-shirt.jpg",
     },
     {
       name: "brown t-shirt",
-      image: "/images/styles/clothings/tech-professional/man/brown-t-shirt.jpg",
+      image: "/images/styles/clothings/smart-casual/man/brown-t-shirt.jpg",
     },
     {
       name: "forest green t-shirt",
       image:
-        "/images/styles/clothings/tech-professional/man/forest-green-t-shirt.jpg",
+        "/images/styles/clothings/smart-casual/man/forest-green-t-shirt.jpg",
     },
     {
       name: "charcoal gray t-shirt",
       image:
-        "/images/styles/clothings/tech-professional/man/charcoal-gray-t-shirt.jpg",
+        "/images/styles/clothings/smart-casual/man/charcoal-gray-t-shirt.jpg",
     },
     {
       name: "black short-sleeve t-shirt",
       image:
-        "/images/styles/clothings/tech-professional/man/black-short-sleeve-t-shirt.jpg",
+        "/images/styles/clothings/smart-casual/man/black-short-sleeve-t-shirt.jpg",
     },
     {
       name: "navy blue short-sleeve polo",
       image:
-        "/images/styles/clothings/tech-professional/man/navy-blue-short-sleeve-polo.jpg",
+        "/images/styles/clothings/smart-casual/man/navy-blue-short-sleeve-polo.jpg",
     },
     {
       name: "cream short-sleeve polo",
       image:
-        "/images/styles/clothings/tech-professional/man/cream-short-sleeve-polo.jpg",
+        "/images/styles/clothings/smart-casual/man/cream-short-sleeve-polo.jpg",
     },
     {
       name: "black and white striped polo",
       image:
-        "/images/styles/clothings/tech-professional/man/black-and-white-striped-polo.jpg",
+        "/images/styles/clothings/smart-casual/man/black-and-white-striped-polo.jpg",
     },
     {
       name: "navy striped t-shirt",
       image:
-        "/images/styles/clothings/tech-professional/man/navy-striped-t-shirt.jpg",
+        "/images/styles/clothings/smart-casual/man/navy-striped-t-shirt.jpg",
     },
     {
       name: "striped crew-neck t-shirt",
       image:
-        "/images/styles/clothings/tech-professional/man/striped-crew-neck-t-shirt.jpg",
+        "/images/styles/clothings/smart-casual/man/striped-crew-neck-t-shirt.jpg",
     },
     {
       name: "light cream hoodie",
       image:
-        "/images/styles/clothings/tech-professional/man/light-cream-hoodie.jpg",
+        "/images/styles/clothings/smart-casual/man/light-cream-hoodie.jpg",
     },
     {
       name: "white hooded sweatshirt",
       image:
-        "/images/styles/clothings/tech-professional/man/white-hooded-sweatshirt.jpg",
+        "/images/styles/clothings/smart-casual/man/white-hooded-sweatshirt.jpg",
     },
     {
       name: "black crew-neck pullover",
       image:
-        "/images/styles/clothings/tech-professional/man/black-crew-neck-pullover.jpg",
+        "/images/styles/clothings/smart-casual/man/black-crew-neck-pullover.jpg",
     },
     {
       name: "gray crew-neck pullover",
       image:
-        "/images/styles/clothings/tech-professional/man/gray-crew-neck-pullover.jpg",
+        "/images/styles/clothings/smart-casual/man/gray-crew-neck-pullover.jpg",
     },
     {
       name: "light gray textured sweatshirt",
       image:
-        "/images/styles/clothings/tech-professional/man/light-gray-textured-sweatshirt.jpg",
+        "/images/styles/clothings/smart-casual/man/light-gray-textured-sweatshirt.jpg",
     },
     {
       name: "dark gray sweatshirt",
       image:
-        "/images/styles/clothings/tech-professional/man/dark-gray-sweatshirt.jpg",
+        "/images/styles/clothings/smart-casual/man/dark-gray-sweatshirt.jpg",
     },
   ],
   Medical: [
@@ -891,6 +887,7 @@ export const CLOTHING_OPTIONS_WOMAN = {
         "/images/styles/clothings/business-casual/woman/striped-button-up-blouse.jpg",
     },
   ],
+  
   "Smart Casual": [
     {
       name: "navy fitted knitwear",
@@ -967,144 +964,140 @@ export const CLOTHING_OPTIONS_WOMAN = {
       image:
         "/images/styles/clothings/smart-casual/woman/navy-sleeveless-turtleneck.jpg",
     },
-  ],
-  Creative: [
-    {
-      name: "navy boxy jacket with texture",
-      image:
-        "/images/styles/clothings/creative/woman/navy-boxy-jacket-with-texture.jpg",
-    },
-    {
-      name: "beige textured boxy blazer",
-      image:
-        "/images/styles/clothings/creative/woman/beige-textured-boxy-blazer.jpg",
-    },
-    {
-      name: "charcoal oversized blazer",
-      image:
-        "/images/styles/clothings/creative/woman/charcoal-oversized-blazer.jpg",
-    },
-    {
-      name: "white boho blouse with soft prints",
-      image:
-        "/images/styles/clothings/creative/woman/white-boho-blouse-with-soft-prints.jpg",
-    },
-    {
-      name: "cream boho blouse with floral prints",
-      image:
-        "/images/styles/clothings/creative/woman/cream-boho-blouse-with-floral-prints.jpg",
-    },
-    {
-      name: "navy boho blouse with geometric prints",
-      image:
-        "/images/styles/clothings/creative/woman/navy-boho-blouse-with-geometric-prints.jpg",
-    },
-    {
-      name: "white belted shirt dress",
-      image:
-        "/images/styles/clothings/creative/woman/white-belted-shirt-dress.jpg",
-    },
-    {
-      name: "navy belted shirt dress",
-      image:
-        "/images/styles/clothings/creative/woman/navy-belted-shirt-dress.jpg",
-    },
-    {
-      name: "striped belted shirt dress",
-      image:
-        "/images/styles/clothings/creative/woman/striped-belted-shirt-dress.jpg",
-    },
-    {
-      name: "white puff sleeve blouse",
-      image:
-        "/images/styles/clothings/creative/woman/white-puff-sleeve-blouse.jpg",
-    },
-    {
-      name: "light blue puff sleeve blouse",
-      image:
-        "/images/styles/clothings/creative/woman/light-blue-puff-sleeve-blouse.jpg",
-    },
-    {
-      name: "navy puff sleeve blouse",
-      image:
-        "/images/styles/clothings/creative/woman/navy-puff-sleeve-blouse.jpg",
-    },
-    {
-      name: "black structured kimono-style top",
-      image:
-        "/images/styles/clothings/creative/woman/black-structured-kimono-style-top.jpg",
-    },
-    {
-      name: "navy structured kimono-style blazer",
-      image:
-        "/images/styles/clothings/creative/woman/navy-structured-kimono-style-blazer.jpg",
-    },
-    {
-      name: "cream kimono-style jacket",
-      image:
-        "/images/styles/clothings/creative/woman/cream-kimono-style-jacket.jpg",
-    },
-  ],
-  "Tech Professional": [
     {
       name: "white clean scoop-neck top",
       image:
-        "/images/styles/clothings/tech-professional/woman/white-clean-scoop-neck-top.jpg",
+        "/images/styles/clothings/smart-casual/woman/white-clean-scoop-neck-top.jpg",
     },
     {
       name: "gray clean scoop-neck top",
       image:
-        "/images/styles/clothings/tech-professional/woman/gray-clean-scoop-neck-top.jpg",
+        "/images/styles/clothings/smart-casual/woman/gray-clean-scoop-neck-top.jpg",
     },
     {
       name: "navy clean scoop-neck top",
       image:
-        "/images/styles/clothings/tech-professional/woman/navy-clean-scoop-neck-top.jpg",
+        "/images/styles/clothings/smart-casual/woman/navy-clean-scoop-neck-top.jpg",
     },
     {
       name: "navy blazer over white blouse",
       image:
-        "/images/styles/clothings/tech-professional/woman/navy-blazer-over-white-blouse.jpg",
+        "/images/styles/clothings/smart-casual/woman/navy-blazer-over-white-blouse.jpg",
     },
     {
       name: "gray blazer over black blouse",
       image:
-        "/images/styles/clothings/tech-professional/woman/gray-blazer-over-black-blouse.jpg",
+        "/images/styles/clothings/smart-casual/woman/gray-blazer-over-black-blouse.jpg",
     },
     {
       name: "beige blazer over cream blouse",
       image:
-        "/images/styles/clothings/tech-professional/woman/beige-blazer-over-cream-blouse.jpg",
+        "/images/styles/clothings/smart-casual/woman/beige-blazer-over-cream-blouse.jpg",
     },
     {
       name: "white blouse under gray cardigan",
       image:
-        "/images/styles/clothings/tech-professional/woman/white-blouse-under-gray-cardigan.jpg",
+        "/images/styles/clothings/smart-casual/woman/white-blouse-under-gray-cardigan.jpg",
     },
     {
       name: "black blouse under navy cardigan",
       image:
-        "/images/styles/clothings/tech-professional/woman/black-blouse-under-navy-cardigan.jpg",
+        "/images/styles/clothings/smart-casual/woman/black-blouse-under-navy-cardigan.jpg",
     },
     {
       name: "cream blouse under beige cardigan",
       image:
-        "/images/styles/clothings/tech-professional/woman/cream-blouse-under-beige-cardigan.jpg",
+        "/images/styles/clothings/smart-casual/woman/cream-blouse-under-beige-cardigan.jpg",
     },
     {
       name: "navy button-up blouse with professional fit",
       image:
-        "/images/styles/clothings/tech-professional/woman/navy-button-up-blouse-with-professional-fit.jpg",
+        "/images/styles/clothings/smart-casual/woman/navy-button-up-blouse-with-professional-fit.jpg",
     },
     {
       name: "white button-up blouse with tailored fit",
       image:
-        "/images/styles/clothings/tech-professional/woman/white-button-up-blouse-with-tailored-fit.jpg",
+        "/images/styles/clothings/smart-casual/woman/white-button-up-blouse-with-tailored-fit.jpg",
     },
     {
       name: "light blue button-up blouse",
       image:
-        "/images/styles/clothings/tech-professional/woman/light-blue-button-up-blouse.jpg",
+        "/images/styles/clothings/smart-casual/woman/light-blue-button-up-blouse.jpg",
+    },
+    {
+      name: "navy boxy jacket with texture",
+      image:
+        "/images/styles/clothings/smart-casual/woman/navy-boxy-jacket-with-texture.jpg",
+    },
+    {
+      name: "beige textured boxy blazer",
+      image:
+        "/images/styles/clothings/smart-casual/woman/beige-textured-boxy-blazer.jpg",
+    },
+    {
+      name: "charcoal oversized blazer",
+      image:
+        "/images/styles/clothings/smart-casual/woman/charcoal-oversized-blazer.jpg",
+    },
+    {
+      name: "white boho blouse with soft prints",
+      image:
+        "/images/styles/clothings/smart-casual/woman/white-boho-blouse-with-soft-prints.jpg",
+    },
+    {
+      name: "cream boho blouse with floral prints",
+      image:
+        "/images/styles/clothings/smart-casual/woman/cream-boho-blouse-with-floral-prints.jpg",
+    },
+    {
+      name: "navy boho blouse with geometric prints",
+      image:
+        "/images/styles/clothings/smart-casual/woman/navy-boho-blouse-with-geometric-prints.jpg",
+    },
+    {
+      name: "white belted shirt dress",
+      image:
+        "/images/styles/clothings/smart-casual/woman/white-belted-shirt-dress.jpg",
+    },
+    {
+      name: "navy belted shirt dress",
+      image:
+        "/images/styles/clothings/smart-casual/woman/navy-belted-shirt-dress.jpg",
+    },
+    {
+      name: "striped belted shirt dress",
+      image:
+        "/images/styles/clothings/smart-casual/woman/striped-belted-shirt-dress.jpg",
+    },
+    {
+      name: "white puff sleeve blouse",
+      image:
+        "/images/styles/clothings/smart-casual/woman/white-puff-sleeve-blouse.jpg",
+    },
+    {
+      name: "light blue puff sleeve blouse",
+      image:
+        "/images/styles/clothings/smart-casual/woman/light-blue-puff-sleeve-blouse.jpg",
+    },
+    {
+      name: "navy puff sleeve blouse",
+      image:
+        "/images/styles/clothings/smart-casual/woman/navy-puff-sleeve-blouse.jpg",
+    },
+    {
+      name: "black structured kimono-style top",
+      image:
+        "/images/styles/clothings/smart-casual/woman/black-structured-kimono-style-top.jpg",
+    },
+    {
+      name: "navy structured kimono-style blazer",
+      image:
+        "/images/styles/clothings/smart-casual/woman/navy-structured-kimono-style-blazer.jpg",
+    },
+    {
+      name: "cream kimono-style jacket",
+      image:
+        "/images/styles/clothings/smart-casual/woman/cream-kimono-style-jacket.jpg",
     },
   ],
   Medical: [
@@ -1190,717 +1183,724 @@ export const BACKGROUND_OPTIONS = {
     // Essential Professional Neutrals
     {
       name: "plain solid light gray",
-      image: "/images/styles/backgrounds/studio/plain-solid-light-gray.jpg",
+      image: "/studio/plain-solid-light-gray.jpg",
     },
     {
       name: "plain solid medium gray",
-      image: "/images/styles/backgrounds/studio/plain-solid-medium-gray.jpg",
+      image: "/studio/plain-solid-medium-gray.jpg",
     },
     {
       name: "plain solid charcoal gray",
-      image: "/images/styles/backgrounds/studio/plain-solid-charcoal-gray.jpg",
+      image: "/studio/plain-solid-charcoal-gray.jpg",
     },
     {
       name: "plain solid dark gray",
-      image: "/images/styles/backgrounds/studio/plain-solid-dark-gray.jpg",
+      image: "/studio/plain-solid-dark-gray.jpg",
     },
     {
       name: "plain solid cool white",
-      image: "/images/styles/backgrounds/studio/plain-solid-cool-white.jpg",
+      image: "/studio/plain-solid-cool-white.jpg",
     },
     {
       name: "plain solid warm white",
-      image: "/images/styles/backgrounds/studio/plain-solid-warm-white.jpg",
+      image: "/studio/plain-solid-warm-white.jpg",
     },
     {
       name: "plain solid pure white",
-      image: "/images/styles/backgrounds/studio/plain-solid-pure-white.jpg",
+      image: "/studio/plain-solid-pure-white.jpg",
     },
     {
       name: "plain solid soft black",
-      image: "/images/styles/backgrounds/studio/plain-solid-soft-black.jpg",
+      image: "/studio/plain-solid-soft-black.jpg",
     },
     {
       name: "plain solid matte black",
-      image: "/images/styles/backgrounds/studio/plain-solid-matte-black.jpg",
+      image: "/studio/plain-solid-matte-black.jpg",
     },
     {
       name: "plain solid navy blue",
-      image: "/images/styles/backgrounds/studio/plain-solid-navy-blue.jpg",
+      image: "/studio/plain-solid-navy-blue.jpg",
     },
     {
       name: "smooth gradient gray to white",
       image:
-        "/images/styles/backgrounds/studio/smooth-gradient-gray-to-white.jpg",
+        "/studio/smooth-gradient-gray-to-white.jpg",
     },
     {
       name: "textured gray canvas",
-      image: "/images/styles/backgrounds/studio/textured-gray-canvas.jpg",
+      image: "/studio/textured-gray-canvas.jpg",
     },
     {
       name: "smooth ivory matte finish",
-      image: "/images/styles/backgrounds/studio/smooth-ivory-matte-finish.jpg",
+      image: "/studio/smooth-ivory-matte-finish.jpg",
     },
     {
       name: "plain solid corporate charcoal",
       image:
-        "/images/styles/backgrounds/studio/plain-solid-corporate-charcoal.jpg",
+        "/studio/plain-solid-corporate-charcoal.jpg",
     },
     {
       name: "plain solid warm beige",
-      image: "/images/styles/backgrounds/studio/plain-solid-warm-beige.jpg",
+      image: "/studio/plain-solid-warm-beige.jpg",
     },
 
     // Professional Blues
     {
       name: "plain solid light blue",
-      image: "/images/styles/backgrounds/studio/plain-solid-light-blue.jpg",
+      image: "/studio/plain-solid-light-blue.jpg",
     },
     {
       name: "plain solid pastel blue",
-      image: "/images/styles/backgrounds/studio/plain-solid-pastel-blue.jpg",
+      image: "/studio/plain-solid-pastel-blue.jpg",
     },
     {
       name: "smooth gradient blue to white",
       image:
-        "/images/styles/backgrounds/studio/smooth-gradient-blue-to-white.jpg",
+        "/studio/smooth-gradient-blue-to-white.jpg",
     },
     {
       name: "plain solid deep blue professional",
       image:
-        "/images/styles/backgrounds/studio/plain-solid-deep-blue-professional.jpg",
+        "/studio/plain-solid-deep-blue-professional.jpg",
     },
     {
       name: "plain solid steel blue",
-      image: "/images/styles/backgrounds/studio/plain-solid-steel-blue.jpg",
+      image: "/studio/plain-solid-steel-blue.jpg",
     },
 
     // Subtle Warm Tones
     {
       name: "plain solid cream",
-      image: "/images/styles/backgrounds/studio/plain-solid-cream.jpg",
+      image: "/studio/plain-solid-cream.jpg",
     },
     {
       name: "plain solid light peach",
-      image: "/images/styles/backgrounds/studio/plain-solid-light-peach.jpg",
+      image: "/studio/plain-solid-light-peach.jpg",
     },
     {
       name: "plain solid soft pink",
-      image: "/images/styles/backgrounds/studio/plain-solid-soft-pink.jpg",
+      image: "/studio/plain-solid-soft-pink.jpg",
     },
     {
       name: "textured warm beige canvas",
-      image: "/images/styles/backgrounds/studio/textured-warm-beige-canvas.jpg",
+      image: "/studio/textured-warm-beige-canvas.jpg",
     },
 
     // Professional Earth Tones
     {
       name: "plain solid sage green",
-      image: "/images/styles/backgrounds/studio/plain-solid-sage-green.jpg",
+      image: "/studio/plain-solid-sage-green.jpg",
     },
     {
       name: "plain solid taupe",
-      image: "/images/styles/backgrounds/studio/plain-solid-taupe.jpg",
+      image: "/studio/plain-solid-taupe.jpg",
     },
     {
       name: "plain solid mushroom gray",
-      image: "/images/styles/backgrounds/studio/plain-solid-mushroom-gray.jpg",
+      image: "/studio/plain-solid-mushroom-gray.jpg",
     },
     {
       name: "textured linen fabric",
-      image: "/images/styles/backgrounds/studio/textured-linen-fabric.jpg",
+      image: "/studio/textured-linen-fabric.jpg",
     },
 
     // Premium Textures & Finishes
     {
       name: "smooth paper texture",
-      image: "/images/styles/backgrounds/studio/smooth-paper-texture.jpg",
+      image: "/studio/smooth-paper-texture.jpg",
     },
     {
       name: "fine fabric weave texture",
-      image: "/images/styles/backgrounds/studio/fine-fabric-weave-texture.jpg",
+      image: "/studio/fine-fabric-weave-texture.jpg",
     },
     {
       name: "subtle marble texture",
-      image: "/images/styles/backgrounds/studio/subtle-marble-texture.jpg",
+      image: "/studio/subtle-marble-texture.jpg",
     },
     {
       name: "soft leather texture",
-      image: "/images/styles/backgrounds/studio/soft-leather-texture.jpg",
+      image: "/studio/soft-leather-texture.jpg",
     },
     {
       name: "brushed metal finish",
-      image: "/images/styles/backgrounds/studio/brushed-metal-finish.jpg",
+      image: "/studio/brushed-metal-finish.jpg",
     },
   ],
   Creative: [
     {
       name: "art studio with canvas and creative tools",
       image:
-        "/images/styles/backgrounds/creative/art-studio-with-canvas-and-creative-tools.jpg",
+        "/creative/art-studio-with-canvas-and-creative-tools.jpg",
     },
     {
       name: "co-working space with colorful design elements",
       image:
-        "/images/styles/backgrounds/creative/co-working-space-with-colorful-design-elements.jpg",
+        "/creative/co-working-space-with-colorful-design-elements.jpg",
     },
     {
       name: "creative loft with exposed brick wall texture",
       image:
-        "/images/styles/backgrounds/creative/creative-loft-with-exposed-brick-wall-texture.jpg",
+        "/creative/creative-loft-with-exposed-brick-wall-texture.jpg",
     },
     {
       name: "modern gallery space with artistic lighting",
       image:
-        "/images/styles/backgrounds/creative/modern-gallery-artistic-lighting.jpg",
+        "/creative/modern-gallery-space-with-artistic-lighting.jpg",
     },
     {
       name: "loft interior with industrial and creative elements",
       image:
-        "/images/styles/backgrounds/creative/loft-interior-with-industrial-and-creative-elements.jpg",
+        "/creative/loft-interior-with-industrial-and-creative-elements.jpg",
     },
     {
       name: "red brick wall with artistic urban character",
       image:
-        "/images/styles/backgrounds/creative/red-brick-wall-with-artistic-urban-character.jpg",
+        "/creative/red-brick-wall-with-artistic-urban-character.jpg",
     },
     {
       name: "yellow brick wall with vintage charm",
       image:
-        "/images/styles/backgrounds/creative/yellow-brick-wall-with-vintage-charm.jpg",
+        "/creative/yellow-brick-wall-with-vintage-charm.jpg",
     },
     {
       name: "rustic wood setting with natural textures",
       image:
-        "/images/styles/backgrounds/creative/rustic-wood-setting-with-natural-textures.jpg",
+        "/creative/rustic-wood-setting-with-natural-textures.jpg",
     },
     {
       name: "rustic charm setting with weathered materials",
       image:
-        "/images/styles/backgrounds/creative/rustic-charm-setting-with-weathered-materials.jpg",
+        "/creative/rustic-charm-setting-with-weathered-materials.jpg",
     },
     {
       name: "earthy textures with organic natural elements",
       image:
-        "/images/styles/backgrounds/creative/earthy-textures-with-organic-natural-elements.jpg",
+        "/creative/earthy-textures-with-organic-natural-elements.jpg",
     },
     {
       name: "architectural stonework with classical details",
       image:
-        "/images/styles/backgrounds/creative/architectural-stonework-classical.jpg",
+        "/creative/architectural-stonework-with-classical-details.jpg",
     },
   ],
   Office: [
     {
       name: "modern high-rise office with a blurred city skyline",
       image:
-        "/images/styles/backgrounds/office/modern-high-rise-office-with-a-blurred-city-skyline.jpg",
+        "/office/modern-high-rise-office-with-a-blurred-city-skyline.jpg",
     },
     {
       name: "corporate office with large windows and a blurred city skyline",
       image:
-        "/images/styles/backgrounds/office/corporate-office-with-large-windows-and-a-blurred-city-skyline.jpg",
+        "/office/corporate-office-with-large-windows-and-a-blurred-city-skyline.jpg",
     },
     {
       name: "modern office featuring glass windows and desks",
       image:
-        "/images/styles/backgrounds/office/modern-office-featuring-glass-windows-and-desks.jpg",
+        "/office/modern-office-featuring-glass-windows-and-desks.jpg",
     },
     {
       name: "modern office with floor-to-ceiling windows, a blurred desk, and indoor potted plants",
       image:
-        "/images/styles/backgrounds/office/modern-office-with-floor-to-ceiling-windows-a-blurred-desk-and-indoor-potted-plants.jpg",
+        "/office/modern-office-with-floor-to-ceiling-windows-a-blurred-desk-and-indoor-potted-plants.jpg",
     },
     {
       name: "minimalistic modern office interior",
       image:
-        "/images/styles/backgrounds/office/minimalistic-modern-office-interior.jpg",
+        "/office/minimalistic-modern-office-interior.jpg",
     },
     {
       name: "executive office with marble lobby entrance",
       image:
-        "/images/styles/backgrounds/office/executive-office-with-marble-lobby-entrance.jpg",
+        "/office/executive-office-with-marble-lobby-entrance.jpg",
     },
     {
       name: "professional conference room with presentation stage",
       image:
-        "/images/styles/backgrounds/office/conference-room-presentation-stage.jpg",
+        "/office/professional-conference-room-with-presentation-stage.jpg",
     },
     {
       name: "sleek office environment with computer screens",
       image:
-        "/images/styles/backgrounds/office/sleek-office-environment-with-computer-screens.jpg",
+        "/office/sleek-office-environment-with-computer-screens.jpg",
     },
     {
       name: "data center with server racks",
       image:
-        "/images/styles/backgrounds/office/data-center-with-server-racks.jpg",
+        "/office/data-center-with-server-racks.jpg",
     },
     {
       name: "corporate headquarters lobby",
       image:
-        "/images/styles/backgrounds/office/corporate-headquarters-lobby.jpg",
+        "/office/corporate-headquarters-lobby.jpg",
     },
     {
       name: "nyc skyline office",
-      image: "/images/styles/backgrounds/office/nyc-skyline-office.jpg",
+      image: "/office/nyc-skyline-office.jpg",
     },
     {
       name: "office workspace with modern furniture",
       image:
-        "/images/styles/backgrounds/office/office-workspace-with-modern-furniture.jpg",
+        "/office/office-workspace-with-modern-furniture.jpg",
     },
     {
       name: "server room with technology equipment",
       image:
-        "/images/styles/backgrounds/office/server-room-with-technology-equipment.jpg",
+        "/office/server-room-with-technology-equipment.jpg",
     },
     {
       name: "upscale nyc bar",
-      image: "/images/styles/backgrounds/office/upscale-nyc-bar.jpg",
+      image: "/office/upscale-nyc-bar.jpg",
     },
   ],
   Monochrome: [
     {
       name: "red",
-      image: "/images/styles/backgrounds/monochrome/red",
+      image: "/monochrome/red.jpg",
     },
     {
       name: "yellow",
-      image: "/images/styles/backgrounds/monochrome/yellow",
+      image: "/monochrome/yellow.jpg",
     },
     {
       name: "blue",
-      image: "/images/styles/backgrounds/monochrome/blue",
+      image: "/monochrome/blue.jpg",
     },
     {
       name: "green",
-      image: "/images/styles/backgrounds/monochrome/green",
+      image: "/monochrome/green.jpg",
     },
     {
       name: "black",
-      image: "/images/styles/backgrounds/monochrome/black",
+      image: "/monochrome/black.jpg",
     },
     {
       name: "brown",
-      image: "/images/styles/backgrounds/monochrome/brown",
+      image: "/monochrome/brown.jpg",
     },
     {
       name: "navy blue",
-      image: "/images/styles/backgrounds/monochrome/navy-blue",
+      image: "/monochrome/navy-blue.jpg",
     },
   ],
   Cityscape: [
     {
       name: "bustling urban street setting with blurred skyscrapers",
       image:
-        "/images/styles/backgrounds/cityscape/bustling-urban-street-setting-with-blurred-skyscrapers.jpg",
+        "/cityscape/bustling-urban-street-setting-with-blurred-skyscrapers.jpg",
     },
     {
       name: "brooklyn waterfront with city skyline in soft focus",
       image:
-        "/images/styles/backgrounds/cityscape/brooklyn-waterfront-with-city-skyline-in-soft-focus.jpg",
+        "/cityscape/brooklyn-waterfront-with-city-skyline-in-soft-focus.jpg",
     },
     {
       name: "french rooftop terrace with architectural details",
       image:
-        "/images/styles/backgrounds/cityscape/french-rooftop-terrace-with-architectural-details.jpg",
+        "/cityscape/french-rooftop-terrace-with-architectural-details.jpg",
     },
     {
       name: "urban rooftop setting with soft natural light",
       image:
-        "/images/styles/backgrounds/cityscape/urban-rooftop-setting-with-soft-natural-light.jpg",
+        "/cityscape/urban-rooftop-setting-with-soft-natural-light.jpg",
     },
     {
       name: "modern architecture with depth of field effect",
       image:
-        "/images/styles/backgrounds/cityscape/modern-architecture-with-depth-of-field-effect.jpg",
+        "/cityscape/modern-architecture-with-depth-of-field-effect.jpg",
     },
     {
       name: "historic courthouse steps with classical columns",
       image:
-        "/images/styles/backgrounds/cityscape/historic-courthouse-steps-with-classical-columns.jpg",
+        "/cityscape/historic-courthouse-steps-with-classical-columns.jpg",
     },
     {
       name: "vintage train station with architectural stonework",
       image:
-        "/images/styles/backgrounds/cityscape/vintage-train-station-with-architectural-stonework.jpg",
+        "/cityscape/vintage-train-station-with-architectural-stonework.jpg",
     },
     {
       name: "brick street with warm bokeh lighting",
       image:
-        "/images/styles/backgrounds/cityscape/brick-street-with-warm-bokeh-lighting.jpg",
+        "/cityscape/brick-street-with-warm-bokeh-lighting.jpg",
     },
     {
       name: "urban alley with textured walls and natural shadows",
       image:
-        "/images/styles/backgrounds/cityscape/urban-alley-with-textured-walls-and-natural-shadows.jpg",
+        "/cityscape/urban-alley-with-textured-walls-and-natural-shadows.jpg",
     },
     {
       name: "urban elegance setting with sophisticated city backdrop",
       image:
-        "/images/styles/backgrounds/cityscape/urban-elegance-setting-with-sophisticated-city-backdrop.jpg",
+        "/cityscape/urban-elegance-setting-with-sophisticated-city-backdrop.jpg",
     },
     {
       name: "urban sunlight filtering through architectural elements",
       image:
-        "/images/styles/backgrounds/cityscape/urban-sunlight-filtering-through-architectural-elements.jpg",
+        "/cityscape/urban-sunlight-filtering-through-architectural-elements.jpg",
     },
     {
       name: "urban sitting area with contemporary design",
       image:
-        "/images/styles/backgrounds/cityscape/urban-sitting-area-with-contemporary-design.jpg",
+        "/cityscape/urban-sitting-area-with-contemporary-design.jpg",
     },
     {
       name: "urban wall with interesting textures and patterns",
       image:
-        "/images/styles/backgrounds/cityscape/urban-wall-with-interesting-textures-and-patterns.jpg",
+        "/cityscape/urban-wall-with-interesting-textures-and-patterns.jpg",
     },
     {
       name: "urban texture background with industrial elements",
       image:
-        "/images/styles/backgrounds/cityscape/urban-texture-background-with-industrial-elements.jpg",
+        "/cityscape/urban-texture-background-with-industrial-elements.jpg",
     },
     {
       name: "urban oasis with greenery in city setting",
       image:
-        "/images/styles/backgrounds/cityscape/urban-oasis-with-greenery-in-city-setting.jpg",
+        "/cityscape/urban-oasis-with-greenery-in-city-setting.jpg",
     },
     {
       name: "rooftop terrace with panoramic city views",
       image:
-        "/images/styles/backgrounds/cityscape/rooftop-terrace-with-panoramic-city-views.jpg",
+        "/cityscape/rooftop-terrace-with-panoramic-city-views.jpg",
     },
     {
       name: "golden gate bridge with iconic san francisco backdrop",
       image:
-        "/images/styles/backgrounds/cityscape/golden-gate-bridge-with-iconic-san-francisco-backdrop.jpg",
+        "/cityscape/golden-gate-bridge-with-iconic-san-francisco-backdrop.jpg",
     },
     {
       name: "building exterior with architectural interest",
       image:
-        "/images/styles/backgrounds/cityscape/building-exterior-architectural.jpg",
+        "/cityscape/building-exterior-with-architectural-interest.jpg",
     },
     {
       name: "window setting with natural light and urban views",
       image:
-        "/images/styles/backgrounds/cityscape/window-setting-with-natural-light-and-urban-views.jpg",
+        "/cityscape/window-setting-with-natural-light-and-urban-views.jpg",
     },
     {
       name: "streets with dynamic city atmosphere",
       image:
-        "/images/styles/backgrounds/cityscape/streets-with-dynamic-city-atmosphere.jpg",
+        "/cityscape/streets-with-dynamic-city-atmosphere.jpg",
     },
     {
       name: "alley with urban character and natural shadows",
       image:
-        "/images/styles/backgrounds/cityscape/alley-with-urban-character-and-natural-shadows.jpg",
+        "/cityscape/alley-with-urban-character-and-natural-shadows.jpg",
     },
   ],
   Nature: [
     {
       name: "sunlit park with lush greenery softly blurred",
       image:
-        "/images/styles/backgrounds/nature/sunlit-park-with-lush-greenery-softly-blurred.jpg",
+        "/nature/sunlit-park-with-lush-greenery-softly-blurred.jpg",
     },
     {
       name: "garden setting with blooming flowers and natural light",
       image:
-        "/images/styles/backgrounds/nature/garden-setting-with-blooming-flowers-and-natural-light.jpg",
+        "/nature/garden-setting-with-blooming-flowers-and-natural-light.jpg",
     },
     {
       name: "wooded area with vibrant green foliage in soft focus",
       image:
-        "/images/styles/backgrounds/nature/wooded-area-with-vibrant-green-foliage-in-soft-focus.jpg",
+        "/nature/wooded-area-with-vibrant-green-foliage-in-soft-focus.jpg",
     },
     {
       name: "wildflower field with colorful blooms gently blurred",
       image:
-        "/images/styles/backgrounds/nature/wildflower-field-with-colorful-blooms-gently-blurred.jpg",
+        "/nature/wildflower-field-with-colorful-blooms-gently-blurred.jpg",
     },
     {
       name: "tulip garden with spring flowers in background",
       image:
-        "/images/styles/backgrounds/nature/tulip-garden-with-spring-flowers-in-background.jpg",
+        "/nature/tulip-garden-with-spring-flowers-in-background.jpg",
     },
     {
       name: "botanical pathway with natural shadows and greenery",
       image:
-        "/images/styles/backgrounds/nature/botanical-pathway-with-natural-shadows-and-greenery.jpg",
+        "/nature/botanical-pathway-with-natural-shadows-and-greenery.jpg",
     },
     {
       name: "forest setting with dappled sunlight filtering through trees",
       image:
-        "/images/styles/backgrounds/nature/forest-setting-with-dappled-sunlight-filtering-through-trees.jpg",
+        "/nature/forest-setting-with-dappled-sunlight-filtering-through-trees.jpg",
     },
     {
       name: "tropical oasis with palm fronds softly blurred",
       image:
-        "/images/styles/backgrounds/nature/tropical-oasis-with-palm-fronds-softly-blurred.jpg",
+        "/nature/tropical-oasis-with-palm-fronds-softly-blurred.jpg",
     },
     {
       name: "coastal view with ocean horizon in gentle focus",
       image:
-        "/images/styles/backgrounds/nature/coastal-view-with-ocean-horizon-in-gentle-focus.jpg",
+        "/nature/coastal-view-with-ocean-horizon-in-gentle-focus.jpg",
     },
     {
       name: "beach setting with sunrise lighting and soft waves",
       image:
-        "/images/styles/backgrounds/nature/beach-setting-with-sunrise-lighting-and-soft-waves.jpg",
+        "/nature/beach-setting-with-sunrise-lighting-and-soft-waves.jpg",
     },
     {
       name: "lush greenery with dense foliage softly blurred",
       image:
-        "/images/styles/backgrounds/nature/lush-greenery-with-dense-foliage-softly-blurred.jpg",
+        "/nature/lush-greenery-with-dense-foliage-softly-blurred.jpg",
     },
     {
       name: "muted nature setting with subtle earth tones",
       image:
-        "/images/styles/backgrounds/nature/muted-nature-setting-with-subtle-earth-tones.jpg",
+        "/nature/muted-nature-setting-with-subtle-earth-tones.jpg",
     },
     {
       name: "woods with natural forest atmosphere",
       image:
-        "/images/styles/backgrounds/nature/woods-with-natural-forest-atmosphere.jpg",
+        "/nature/woods-with-natural-forest-atmosphere.jpg",
     },
     {
       name: "beach sunrise with golden hour lighting",
       image:
-        "/images/styles/backgrounds/nature/beach-sunrise-with-golden-hour-lighting.jpg",
+        "/nature/beach-sunrise-with-golden-hour-lighting.jpg",
     },
     {
       name: "lake setting with calm water and natural surroundings",
       image:
-        "/images/styles/backgrounds/nature/lake-setting-with-calm-water-and-natural-surroundings.jpg",
+        "/nature/lake-setting-with-calm-water-and-natural-surroundings.jpg",
     },
     {
       name: "marina with boats and waterfront atmosphere",
       image:
-        "/images/styles/backgrounds/nature/marina-with-boats-and-waterfront-atmosphere.jpg",
+        "/nature/marina-with-boats-and-waterfront-atmosphere.jpg",
     },
     {
       name: "sunset backdrop with warm golden lighting",
       image:
-        "/images/styles/backgrounds/nature/sunset-backdrop-with-warm-golden-lighting.jpg",
+        "/nature/sunset-backdrop-with-warm-golden-lighting.jpg",
     },
     {
       name: "urban garden with city greenery and plants",
       image:
-        "/images/styles/backgrounds/nature/urban-garden-with-city-greenery-and-plants.jpg",
+        "/nature/urban-garden-with-city-greenery-and-plants.jpg",
     },
     {
       name: "botanical shadows with dappled natural light",
       image:
-        "/images/styles/backgrounds/nature/botanical-shadows-with-dappled-natural-light.jpg",
+        "/nature/botanical-shadows-with-dappled-natural-light.jpg",
     },
     {
       name: "blooming pathway with seasonal flowers",
       image:
-        "/images/styles/backgrounds/nature/blooming-pathway-with-seasonal-flowers.jpg",
+        "/nature/blooming-pathway-with-seasonal-flowers.jpg",
     },
     {
       name: "stone steps in natural garden setting",
       image:
-        "/images/styles/backgrounds/nature/stone-steps-in-natural-garden-setting.jpg",
+        "/nature/stone-steps-in-natural-garden-setting.jpg",
     },
     {
       name: "stone barrier with rustic outdoor charm",
       image:
-        "/images/styles/backgrounds/nature/stone-barrier-with-rustic-outdoor-charm.jpg",
+        "/nature/stone-barrier-with-rustic-outdoor-charm.jpg",
     },
     {
       name: "forest pathway with woodland atmosphere",
       image:
-        "/images/styles/backgrounds/nature/forest-pathway-with-woodland-atmosphere.jpg",
+        "/nature/forest-pathway-with-woodland-atmosphere.jpg",
     },
     {
       name: "enchanted pathway with magical natural lighting",
       image:
-        "/images/styles/backgrounds/nature/enchanted-pathway-with-magical-natural-lighting.jpg",
+        "/nature/enchanted-pathway-with-magical-natural-lighting.jpg",
     },
     {
       name: "tunnel to nature with organic framing",
       image:
-        "/images/styles/backgrounds/nature/tunnel-to-nature-with-organic-framing.jpg",
+        "/nature/tunnel-to-nature-with-organic-framing.jpg",
     },
     {
       name: "ivy wall with natural green texture",
       image:
-        "/images/styles/backgrounds/nature/ivy-wall-with-natural-green-texture.jpg",
+        "/nature/ivy-wall-with-natural-green-texture.jpg",
     },
     {
       name: "british country house with traditional garden setting",
       image:
-        "/images/styles/backgrounds/nature/british-country-house-with-traditional-garden-setting.jpg",
+        "/nature/british-country-house-with-traditional-garden-setting.jpg",
     },
     {
       name: "pine home with evergreen forest backdrop",
       image:
-        "/images/styles/backgrounds/nature/pine-home-with-evergreen-forest-backdrop.jpg",
+        "/nature/pine-home-with-evergreen-forest-backdrop.jpg",
     },
   ],
   Medical: [
     {
       name: "sterile medical office with clean white surfaces",
       image:
-        "/images/styles/backgrounds/medical/sterile-medical-office-with-clean-white-surfaces.jpg",
+        "/medical/sterile-medical-office-with-clean-white-surfaces.jpg",
     },
     {
       name: "hospital corridor with professional lighting softly blurred",
       image:
-        "/images/styles/backgrounds/medical/hospital-corridor-with-professional-lighting-softly-blurred.jpg",
+        "/medical/hospital-corridor-with-professional-lighting-softly-blurred.jpg",
     },
     {
       name: "modern clinic setting with medical equipment subtly visible",
       image:
-        "/images/styles/backgrounds/medical/modern-clinic-setting-with-medical-equipment-subtly-visible.jpg",
+        "/medical/modern-clinic-setting-with-medical-equipment-subtly-visible.jpg",
     },
     {
       name: "dental office with clean professional environment",
       image:
-        "/images/styles/backgrounds/medical/dental-office-with-clean-professional-environment.jpg",
+        "/medical/dental-office-with-clean-professional-environment.jpg",
     },
   ],
   Academic: [
     {
       name: "university library with bookshelves in soft focus",
       image:
-        "/images/styles/backgrounds/academic/university-library-with-bookshelves-in-soft-focus.jpg",
+        "/academic/university-library-with-bookshelves-in-soft-focus.jpg",
     },
     {
       name: "ivy league campus with traditional architecture",
       image:
-        "/images/styles/backgrounds/academic/ivy-league-campus-with-traditional-architecture.jpg",
+        "/academic/ivy-league-campus-with-traditional-architecture.jpg",
     },
     {
       name: "academic office with leather-bound books background",
       image:
-        "/images/styles/backgrounds/academic/academic-office-with-leather-bound-books-background.jpg",
+        "/academic/academic-office-with-leather-bound-books-background.jpg",
     },
     {
       name: "graduation ceremony stage with institutional backdrop",
       image:
-        "/images/styles/backgrounds/academic/graduation-ceremony-stage-with-institutional-backdrop.jpg",
+        "/academic/graduation-ceremony-stage-with-institutional-backdrop.jpg",
     },
     {
       name: "bookshelf with academic books and scholarly atmosphere",
       image:
-        "/images/styles/backgrounds/academic/bookshelf-with-academic-books-and-scholarly-atmosphere.jpg",
+        "/academic/bookshelf-with-academic-books-and-scholarly-atmosphere.jpg",
     },
   ],
   "Home Office": [
     {
       name: "cozy home office with bookshelf and personal touches",
       image:
-        "/images/styles/backgrounds/home-office/cozy-home-office-with-bookshelf-and-personal-touches.jpg",
+        "/home-office/cozy-home-office-with-bookshelf-and-personal-touches.jpg",
     },
     {
       name: "modern work-from-home desk setup with natural lighting",
       image:
-        "/images/styles/backgrounds/home-office/modern-wfh-desk-natural-lighting.jpg",
+        "/home-office/modern-work-from-home-desk-setup-with-natural-lighting.jpg",
     },
     {
       name: "home study with plants and framed photos in background",
       image:
-        "/images/styles/backgrounds/home-office/home-study-with-plants-and-framed-photos-in-background.jpg",
+        "/home-office/home-study-with-plants-and-framed-photos-in-background.jpg",
     },
     {
       name: "comfortable home workspace with warm daylight",
       image:
-        "/images/styles/backgrounds/home-office/comfortable-workspace-daylight.jpg",
+        "/home-office/comfortable-home-workspace-with-warm-daylight.jpg",
     },
     {
       name: "cafe setting with cozy coffee shop atmosphere",
       image:
-        "/images/styles/backgrounds/home-office/cafe-setting-with-cozy-coffee-shop-atmosphere.jpg",
+        "/home-office/cafe-setting-with-cozy-coffee-shop-atmosphere.jpg",
     },
     {
       name: "hotel lobby with upscale hospitality design",
       image:
-        "/images/styles/backgrounds/home-office/hotel-lobby-with-upscale-hospitality-design.jpg",
+        "/home-office/hotel-lobby-with-upscale-hospitality-design.jpg",
     },
     {
       name: "kitchen background with residential warmth",
       image:
-        "/images/styles/backgrounds/home-office/kitchen-background-with-residential-warmth.jpg",
+        "/home-office/kitchen-background-with-residential-warmth.jpg",
     },
     {
       name: "white chair setting with clean minimalist design",
       image:
-        "/images/styles/backgrounds/home-office/white-chair-setting-with-clean-minimalist-design.jpg",
+        "/home-office/white-chair-setting-with-clean-minimalist-design.jpg",
     },
     {
       name: "tea time backdrop with elegant afternoon setting",
       image:
-        "/images/styles/backgrounds/home-office/tea-time-backdrop-with-elegant-afternoon-setting.jpg",
+        "/home-office/tea-time-backdrop-with-elegant-afternoon-setting.jpg",
     },
     {
       name: "leather couch with comfortable living room atmosphere",
       image:
-        "/images/styles/backgrounds/home-office/leather-couch-with-comfortable-living-room-atmosphere.jpg",
+        "/home-office/leather-couch-with-comfortable-living-room-atmosphere.jpg",
     },
     {
       name: "cozy christmas setting with holiday warmth",
       image:
-        "/images/styles/backgrounds/home-office/cozy-christmas-setting-with-holiday-warmth.jpg",
+        "/home-office/cozy-christmas-setting-with-holiday-warmth.jpg",
     },
     {
       name: "pine home with rustic cabin atmosphere",
       image:
-        "/images/styles/backgrounds/home-office/pine-home-with-rustic-cabin-atmosphere.jpg",
+        "/home-office/pine-home-with-rustic-cabin-atmosphere.jpg",
     },
     {
       name: "blue home with residential comfort and style",
       image:
-        "/images/styles/backgrounds/home-office/blue-home-residential-comfort.jpg",
+        "/home-office/blue-home-with-residential-comfort-and-style.jpg",
     },
   ],
   "Conference Speaker": [
     {
       name: "keynote stage with dramatic professional lighting",
       image:
-        "/images/styles/backgrounds/specialized/public-speaking-stage-with-professional-presentation-setup.jpg",
+        "/conference-speaker/keynote-stage-with-dramatic-professional-lighting.jpg",
     },
     {
       name: "corporate presentation backdrop with executive environment",
       image:
-        "/images/styles/backgrounds/specialized/conference-stage-with-corporate-presentation-environment.jpg",
+        "/conference-speaker/corporate-presentation-backdrop-with-executive-environment.jpg",
     },
     {
       name: "professional speaking backdrop with bright studio lighting",
       image:
-        "/images/styles/backgrounds/specialized/yellow-presentation-backdrop-with-bright-professional-lighting.jpg",
+        "/conference-speaker/professional-speaking-backdrop-with-bright-studio-lighting.jpg",
     },
     {
       name: "modern conference hall with sophisticated ambiance",
       image:
-        "/images/styles/backgrounds/specialized/modern-conference-hall-sophisticated-ambiance.jpg",
+        "/conference-speaker/modern-conference-hall-with-sophisticated-ambiance.jpg",
     },
     {
       name: "executive boardroom with premium corporate setting",
       image:
-        "/images/styles/backgrounds/specialized/executive-boardroom-premium-corporate-setting.jpg",
+        "/conference-speaker/executive-boardroom-with-premium-corporate-setting.jpg",
     },
     {
       name: "tech conference stage with contemporary design",
       image:
-        "/images/styles/backgrounds/specialized/tech-conference-stage-contemporary-design.jpg",
+        "/conference-speaker/tech-conference-stage-with-contemporary-design.jpg",
     },
     {
       name: "business summit backdrop with professional atmosphere",
       image:
-        "/images/styles/backgrounds/specialized/business-summit-backdrop-professional-atmosphere.jpg",
+        "/conference-speaker/business-summit-backdrop-with-professional-atmosphere.jpg",
     },
     {
       name: "auditorium stage with elegant presentation setup",
       image:
-        "/images/styles/backgrounds/specialized/auditorium-stage-elegant-presentation-setup.jpg",
+        "/conference-speaker/auditorium-stage-with-elegant-presentation-setup.jpg",
     },
   ],
 };
 
 // Helper to generate a unique ID from the item name
 const generateId = (name) => name.toLowerCase().replace(/\s+/g, "-");
+
+// Utility function to generate gender-based background image path
+export const getGenderBasedBackgroundPath = (imagePath, gender) => {
+  // Remove leading slash if present
+  const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
+  return `/images/styles/backgrounds/${gender}/${cleanPath}`;
+};
 
 // Create a flattened, enriched array of all background options with theme and a unique ID
 export const ALL_BACKGROUND_OPTIONS = Object.entries(

@@ -281,217 +281,217 @@ const triggerModalTraining = async ({
 
 // Main handler
 export async function POST(request) {
-  const transaction = Sentry.startTransaction({
-    name: 'POST /api/studio/create',
-    op: 'http.server'
-  });
-  
-  try {
-    Sentry.configureScope(scope => {
-      scope.setTag('route', 'studio-create');
-      scope.setContext('request', {
-        method: 'POST',
-        url: request.url,
-        timestamp: new Date().toISOString()
-      });
+  return await Sentry.withScope(async (scope) => {
+    scope.setTag('route', 'studio-create');
+    scope.setContext('request', {
+      method: 'POST',
+      url: request.url,
+      timestamp: new Date().toISOString()
     });
-    // Initialize Supabase client
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
+
+    return await Sentry.startSpan(
       {
-        cookies: {
-          get(name) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
-
-    // Authenticate user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      return createErrorResponse("Authentication required", 401, {
-        authError: authError?.message,
-        hasUser: !!user
-      });
-    }
-    
-    // Set user context for Sentry
-    Sentry.setUser({
-      id: user.id,
-      email: user.email
-    });
-
-    // Parse and validate request body
-    let body, studioFormData;
-    try {
-      body = await request.json();
-      studioFormData = body.studioData;
-      
-      if (!studioFormData) {
-        throw new Error('Studio data is required');
-      }
-    } catch (error) {
-      return createErrorResponse("Invalid request body or missing studio data", 400, {
-        parseError: error.message
-      });
-    }
-
-    // Validate required fields and plan
-    try {
-      validateRequiredFields(studioFormData);
-    } catch (error) {
-      return createErrorResponse(error.message, 400, {
-        studioFormData: {
-          studioID: studioFormData?.studioID,
-          plan: studioFormData?.plan,
-          hasImages: !!studioFormData?.images,
-          hasName: !!studioFormData?.studioName
-        }
-      });
-    }
-
-    // Fetch and validate user credits
-    let creditsRecord;
-    try {
-      creditsRecord = await fetchUserCredits(supabase, user.id);
-      validateCredits(creditsRecord, studioFormData.plan);
-    } catch (error) {
-      return createErrorResponse(error.message, 400, {
-        userId: user.id,
-        plan: studioFormData.plan,
-        creditsRecord: creditsRecord ? {
-          starter: creditsRecord.starter,
-          professional: creditsRecord.professional,
-          studio: creditsRecord.studio,
-          team: creditsRecord.team
-        } : null
-      });
-    }
-
-    // Prepare studio data
-    const user_attributes = getUserAttributes(studioFormData);
-    const studioRecord = buildStudioRecord(
-      studioFormData,
-      user,
-      user_attributes
-    );
-
-    // Create studio record
-    try {
-      await createStudioRecord(supabase, studioRecord);
-      
-      Sentry.addBreadcrumb({
-        message: 'Studio record created',
-        category: 'database',
-        level: 'info',
-        data: { studioId: studioRecord.id, plan: studioRecord.plan }
-      });
-    } catch (error) {
-      return createErrorResponse("Failed to create studio record", 500, {
-        studioId: studioRecord.id,
-        error: error.message
-      });
-    }
-    // Deduct credits
-    try {
-      const creditResult = await deductCredits(supabase, user, studioFormData);
-      
-      Sentry.addBreadcrumb({
-        message: 'Credits deducted successfully',
-        category: 'credits',
-        level: 'info',
-        data: { 
-          studioId: studioFormData.studioID,
-          plan: studioFormData.plan,
-          success: creditResult.success
-        }
-      });
-    } catch (error) {
-      // Rollback studio status
-      try {
-        await updateStudioStatus(supabase, studioFormData.studioID, "PAYMENT_PENDING");
-      } catch (rollbackError) {
-        Sentry.captureException(rollbackError, {
-          tags: { operation: 'rollback-studio-status' },
-          extra: { studioId: studioFormData.studioID }
-        });
-      }
-      
-      return createErrorResponse(error.message, 400, {
-        studioId: studioFormData.studioID,
-        operation: 'credit-deduction'
-      });
-    }
-
-    // Trigger Modal training
-    try {
-      const modalResult = await triggerModalTraining({
-        datasets_object_key: studioFormData.images,
-        gender: user_attributes.gender || 'person',
-        user_id: user.id,
-        plan: studioFormData.plan.toLowerCase(),
-        studioID: studioFormData.studioID,
-        trigger_word: user_attributes.trigger_word || "ohwx",
-        steps: 3000,
-        webhook_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/generate`
-      });
-
-    } catch (error) {
-      // Update studio status to failed with comprehensive error handling
-      try {
-        await updateStudioStatus(supabase, studioFormData.studioID, "FAILED");
-        
-        Sentry.addBreadcrumb({
-          message: 'Studio status updated to FAILED after training error',
-          category: 'database',
-          level: 'warning',
-          data: { studioId: studioFormData.studioID }
-        });
-      } catch (updateError) {
-        Sentry.captureException(updateError, {
-          tags: { operation: 'update-studio-status-failed' },
-          extra: { studioId: studioFormData.studioID }
-        });
-      }
-
-      return createErrorResponse("Failed to start training. Please try again later.", 500, {
-        studioId: studioFormData.studioID,
-        operation: 'modal-training',
-        modalError: error.message,
-        modalStatus: error.status
-      });
-    }
-
-    transaction.setStatus('ok');
-    return createSuccessResponse({
-      studioId: studioFormData.studioID,
-      message: "Studio created successfully. Training started in background.",
-    });
-  } catch (error) {
-    transaction.setStatus('internal_error');
-    
-    // Capture unexpected errors
-    Sentry.captureException(error, {
-      tags: {
-        route: 'studio-create',
-        operation: 'unexpected-error'
+        name: 'POST /api/studio/create',
+        op: 'http.server'
       },
-      extra: {
-        timestamp: new Date().toISOString()
+      async () => {
+        try {
+          // Initialize Supabase client
+          const cookieStore = cookies();
+          const supabase = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY,
+            {
+              cookies: {
+                get(name) {
+                  return cookieStore.get(name)?.value;
+                },
+              },
+            }
+          );
+
+          // Authenticate user
+          const {
+            data: { user },
+            error: authError,
+          } = await supabase.auth.getUser();
+          
+          if (authError || !user) {
+            return createErrorResponse("Authentication required", 401, {
+              authError: authError?.message,
+              hasUser: !!user
+            });
+          }
+          
+          // Set user context for Sentry
+          Sentry.setUser({
+            id: user.id,
+            email: user.email
+          });
+
+          // Parse and validate request body
+          let body, studioFormData;
+          try {
+            body = await request.json();
+            studioFormData = body.studioData;
+            
+            if (!studioFormData) {
+              throw new Error('Studio data is required');
+            }
+          } catch (error) {
+            return createErrorResponse("Invalid request body or missing studio data", 400, {
+              parseError: error.message
+            });
+          }
+
+          // Validate required fields and plan
+          try {
+            validateRequiredFields(studioFormData);
+          } catch (error) {
+            return createErrorResponse(error.message, 400, {
+              studioFormData: {
+                studioID: studioFormData?.studioID,
+                plan: studioFormData?.plan,
+                hasImages: !!studioFormData?.images,
+                hasName: !!studioFormData?.studioName
+              }
+            });
+          }
+
+          // Fetch and validate user credits
+          let creditsRecord;
+          try {
+            creditsRecord = await fetchUserCredits(supabase, user.id);
+            validateCredits(creditsRecord, studioFormData.plan);
+          } catch (error) {
+            return createErrorResponse(error.message, 400, {
+              userId: user.id,
+              plan: studioFormData.plan,
+              creditsRecord: creditsRecord ? {
+                starter: creditsRecord.starter,
+                professional: creditsRecord.professional,
+                studio: creditsRecord.studio,
+                team: creditsRecord.team
+              } : null
+            });
+          }
+
+          // Prepare studio data
+          const user_attributes = getUserAttributes(studioFormData);
+          const studioRecord = buildStudioRecord(
+            studioFormData,
+            user,
+            user_attributes
+          );
+
+          // Create studio record
+          try {
+            await createStudioRecord(supabase, studioRecord);
+            
+            Sentry.addBreadcrumb({
+              message: 'Studio record created',
+              category: 'database',
+              level: 'info',
+              data: { studioId: studioRecord.id, plan: studioRecord.plan }
+            });
+          } catch (error) {
+            return createErrorResponse("Failed to create studio record", 500, {
+              studioId: studioRecord.id,
+              error: error.message
+            });
+          }
+
+          // Deduct credits
+          try {
+            const creditResult = await deductCredits(supabase, user, studioFormData);
+            
+            Sentry.addBreadcrumb({
+              message: 'Credits deducted successfully',
+              category: 'credits',
+              level: 'info',
+              data: { 
+                studioId: studioFormData.studioID,
+                plan: studioFormData.plan,
+                success: creditResult.success
+              }
+            });
+          } catch (error) {
+            // Rollback studio status
+            try {
+              await updateStudioStatus(supabase, studioFormData.studioID, "PAYMENT_PENDING");
+            } catch (rollbackError) {
+              Sentry.captureException(rollbackError, {
+                tags: { operation: 'rollback-studio-status' },
+                extra: { studioId: studioFormData.studioID }
+              });
+            }
+            
+            return createErrorResponse(error.message, 400, {
+              studioId: studioFormData.studioID,
+              operation: 'credit-deduction'
+            });
+          }
+
+          // Trigger Modal training
+          try {
+            const modalResult = await triggerModalTraining({
+              datasets_object_key: studioFormData.images,
+              gender: user_attributes.gender || 'person',
+              user_id: user.id,
+              plan: studioFormData.plan.toLowerCase(),
+              studioID: studioFormData.studioID,
+              trigger_word: user_attributes.trigger_word || "ohwx",
+              steps: 3000,
+              webhook_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/generate`
+            });
+
+          } catch (error) {
+            // Update studio status to failed with comprehensive error handling
+            try {
+              await updateStudioStatus(supabase, studioFormData.studioID, "FAILED");
+              
+              Sentry.addBreadcrumb({
+                message: 'Studio status updated to FAILED after training error',
+                category: 'database',
+                level: 'warning',
+                data: { studioId: studioFormData.studioID }
+              });
+            } catch (updateError) {
+              Sentry.captureException(updateError, {
+                tags: { operation: 'update-studio-status-failed' },
+                extra: { studioId: studioFormData.studioID }
+              });
+            }
+
+            return createErrorResponse("Failed to start training. Please try again later.", 500, {
+              studioId: studioFormData.studioID,
+              operation: 'modal-training',
+              modalError: error.message,
+              modalStatus: error.status
+            });
+          }
+
+          return createSuccessResponse({
+            studioId: studioFormData.studioID,
+            message: "Studio created successfully. Training started in background.",
+          });
+        } catch (error) {
+          // Capture unexpected errors
+          Sentry.captureException(error, {
+            tags: {
+              route: 'studio-create',
+              operation: 'unexpected-error'
+            },
+            extra: {
+              timestamp: new Date().toISOString()
+            }
+          });
+          
+          return createErrorResponse("An unexpected error occurred while creating studio", 500, {
+            error: error.message
+          });
+        }
       }
-    });
-    
-    return createErrorResponse("An unexpected error occurred while creating studio", 500, {
-      error: error.message
-    });
-  } finally {
-    transaction.finish();
-  }
+    );
+  });
 }

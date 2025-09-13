@@ -235,20 +235,21 @@ const triggerModalTraining = async ({
 
 // Main handler
 export async function POST(request) {
-  const transaction = Sentry.startTransaction({
-    name: 'POST /api/studio/process',
-    op: 'http.server'
-  });
-  
-  try {
-    Sentry.configureScope(scope => {
-      scope.setTag('route', 'studio-process');
-      scope.setContext('request', {
-        method: 'POST',
-        url: request.url,
-        timestamp: new Date().toISOString()
-      });
+  return await Sentry.withScope(async (scope) => {
+    scope.setTag('route', 'studio-process');
+    scope.setContext('request', {
+      method: 'POST',
+      url: request.url,
+      timestamp: new Date().toISOString()
     });
+
+    return await Sentry.startSpan(
+      {
+        name: 'POST /api/studio/process',
+        op: 'http.server'
+      },
+      async () => {
+        try {
     // Get raw body for signature verification
     const rawBody = await request.text();
     const signature = request.headers.get("x-signature");
@@ -402,32 +403,30 @@ export async function POST(request) {
       });
     }
 
-    transaction.setStatus('ok');
-    return createSuccessResponse({
-      studioId,
-      message: "Studio processed successfully and training initiated",
-    });
-  } catch (error) {
-    transaction.setStatus('internal_error');
-    
-    // Capture unexpected errors
-    Sentry.captureException(error, {
-      tags: {
-        route: 'studio-process',
-        operation: 'unexpected-error'
-      },
-      extra: {
-        timestamp: new Date().toISOString()
+          return createSuccessResponse({
+            studioId,
+            message: "Studio processed successfully and training initiated",
+          });
+        } catch (error) {
+          // Capture unexpected errors
+          Sentry.captureException(error, {
+            tags: {
+              route: 'studio-process',
+              operation: 'unexpected-error'
+            },
+            extra: {
+              timestamp: new Date().toISOString()
+            }
+          });
+          
+          console.error("Process studio error:", error);
+          return createErrorResponse(
+            "An unexpected error occurred while processing studio",
+            500,
+            { error: error.message }
+          );
+        }
       }
-    });
-    
-    console.error("Process studio error:", error);
-    return createErrorResponse(
-      "An unexpected error occurred while processing studio",
-      500,
-      { error: error.message }
     );
-  } finally {
-    transaction.finish();
-  }
+  });
 }

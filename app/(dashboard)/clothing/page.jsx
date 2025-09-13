@@ -343,7 +343,6 @@ export default function ManageClothingPage() {
                     }
                   >
                     <div className="aspect-square relative overflow-hidden bg-muted">
-                      {/* TODO: FIX THE PROPER IMAGE LATER */}
                       <Image
                         src={item.image}
                         alt={item.name}

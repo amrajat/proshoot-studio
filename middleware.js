@@ -51,8 +51,7 @@ export async function middleware(request) {
   // Define public and auth routes
   const publicRoutes = ["/", "/pricing", "/terms", "/privacy"];
   const authRoutes = ["/auth", "/auth/callback"];
-  const publicApiRoutes = ["/api/webhooks", "/api/auth", "/api/prompts"]; // Only specific API routes are public
-
+  const publicApiRoutes = ["/api/webhooks", "/api/auth", "/api/prompts", "/api/studio/process"]; // Only specific API routes are public
   const isPublicRoute =
     publicRoutes.some(
       (route) =>

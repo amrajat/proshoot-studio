@@ -35,7 +35,8 @@ WHERE NOT EXISTS (
     SELECT 1 FROM public.profiles p WHERE p.user_id = u.id
 )
 AND u.id IS NOT NULL
-AND u.email IS NOT NULL;
+AND u.email IS NOT NULL
+AND u.email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$';
 
 -- Step 2: Create default organizations for existing users
 INSERT INTO public.organizations (
@@ -55,7 +56,9 @@ FROM public.users u
 WHERE NOT EXISTS (
     SELECT 1 FROM public.organizations o WHERE o.owner_user_id = u.id
 )
-AND u.id IS NOT NULL;
+AND u.id IS NOT NULL
+AND u.email IS NOT NULL
+AND u.email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$';
 
 -- Step 3: Initialize credits for existing users
 INSERT INTO public.credits (
@@ -74,7 +77,9 @@ JOIN public.organizations o ON o.owner_user_id = u.id
 WHERE NOT EXISTS (
     SELECT 1 FROM public.credits c WHERE c.user_id = u.id AND c.organization_id = o.id
 )
-AND u.id IS NOT NULL;
+AND u.id IS NOT NULL
+AND u.email IS NOT NULL
+AND u.email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$';
 
 -- Step 4: Add existing users as owner members of their organizations
 INSERT INTO public.members (
@@ -95,34 +100,9 @@ JOIN public.organizations o ON o.owner_user_id = u.id
 WHERE NOT EXISTS (
     SELECT 1 FROM public.members m WHERE m.user_id = u.id AND m.organization_id = o.id
 )
-AND u.id IS NOT NULL;
-
--- ============================================================================
--- VERIFICATION QUERIES (for manual checking)
--- ============================================================================
-
--- Check migration results
--- SELECT 
---     (SELECT COUNT(*) FROM public.users) as users_count,
---     (SELECT COUNT(*) FROM public.profiles) as profiles_count,
---     (SELECT COUNT(*) FROM public.organizations) as organizations_count,
---     (SELECT COUNT(*) FROM public.credits) as credits_count,
---     (SELECT COUNT(*) FROM public.members) as members_count;
-
--- Verify data integrity
--- SELECT 
---     u.id,
---     u.email,
---     p.user_id IS NOT NULL as has_profile,
---     o.owner_user_id IS NOT NULL as has_organization,
---     c.user_id IS NOT NULL as has_credits,
---     m.user_id IS NOT NULL as has_membership
--- FROM public.users u
--- LEFT JOIN public.profiles p ON p.user_id = u.id
--- LEFT JOIN public.organizations o ON o.owner_user_id = u.id
--- LEFT JOIN public.credits c ON c.user_id = u.id
--- LEFT JOIN public.members m ON m.user_id = u.id
--- ORDER BY u.created_at;
+AND u.id IS NOT NULL
+AND u.email IS NOT NULL
+AND u.email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$';
 
 -- Reset session settings
 RESET ALL;

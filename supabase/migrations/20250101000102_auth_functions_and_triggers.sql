@@ -7,11 +7,11 @@
 -- ============================================================================
 
 -- ============================================================================
--- FUNCTION: handle_new_user
+-- FUNCTION: handle_new_user_v2
 -- DESCRIPTION: Creates a profile when a new user signs up
 -- ============================================================================
 
-CREATE OR REPLACE FUNCTION public.handle_new_user()
+CREATE OR REPLACE FUNCTION public.handle_new_user_v2()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = ''
@@ -94,10 +94,10 @@ $$;
 -- ============================================================================
 
 -- Trigger: Create profile when user signs up
-CREATE TRIGGER on_auth_user_created
+CREATE TRIGGER on_auth_user_created_v2
     AFTER INSERT ON auth.users
     FOR EACH ROW 
-    EXECUTE FUNCTION public.handle_new_user();
+    EXECUTE FUNCTION public.handle_new_user_v2();
 
 -- Trigger: Update timestamp on profile changes
 CREATE TRIGGER on_profiles_updated
@@ -109,10 +109,10 @@ CREATE TRIGGER on_profiles_updated
 -- FUNCTION OWNERSHIP AND COMMENTS
 -- ============================================================================
 
-ALTER FUNCTION public.handle_new_user() OWNER TO postgres;
+ALTER FUNCTION public.handle_new_user_v2() OWNER TO postgres;
 ALTER FUNCTION public.handle_updated_at() OWNER TO postgres;
 
-COMMENT ON FUNCTION public.handle_new_user() IS 
+COMMENT ON FUNCTION public.handle_new_user_v2() IS 
     'Creates profile, initializes credits, and creates default organization when user signs up';
 
 COMMENT ON FUNCTION public.handle_updated_at() IS 
@@ -123,5 +123,5 @@ COMMENT ON FUNCTION public.handle_updated_at() IS
 -- ============================================================================
 
 -- Grant execute permissions
-GRANT EXECUTE ON FUNCTION public.handle_new_user() TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.handle_new_user_v2() TO anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.handle_updated_at() TO anon, authenticated, service_role;

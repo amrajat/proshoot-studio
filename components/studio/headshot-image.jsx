@@ -134,7 +134,7 @@ const HeadshotImage = memo(function HeadshotImage({
           <div className="cursor-zoom-in">
             <Image
               src={thumbnailUrl}
-              alt={headshot.prompt || "Generated headshot"}
+              alt={"Generated headshot"}
               fill
               unoptimized={true}
               loading="lazy"

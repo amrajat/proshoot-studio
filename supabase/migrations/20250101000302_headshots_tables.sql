@@ -233,7 +233,7 @@ DROP TABLE IF EXISTS public.headshots;
 -- ============================================================================
 
 -- Create secure view that filters result/hd columns based on studio status
-CREATE OR REPLACE VIEW public.headshots_secure AS
+CREATE OR REPLACE VIEW public.headshots_secure WITH (security_invoker = on) AS
 SELECT 
     h.id,
     h.studio_id,
@@ -251,7 +251,6 @@ SELECT
         ELSE NULL 
     END AS hd,
     
-    h.prompt,
     h.created_at,
     s.status AS studio_status -- Include status for debugging
 FROM public.headshots h

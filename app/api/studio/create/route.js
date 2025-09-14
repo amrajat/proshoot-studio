@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
+import { env, publicEnv } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -220,11 +221,11 @@ const triggerModalTraining = async ({
   studioID,
   trigger_word = "ohwx",
   steps = 3000,
-  webhook_url = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/generate`
+  webhook_url = `${publicEnv.NEXT_PUBLIC_APP_URL}/api/webhooks/generate`
 }) => {
   const headers = new Headers({
-    "Modal-Key": process.env.MODAL_KEY,
-    "Modal-Secret": process.env.MODAL_SECRET,
+    "Modal-Key": env.MODAL_KEY,
+    "Modal-Secret": env.MODAL_SECRET,
     "Content-Type": "application/json",
   });
 
@@ -247,12 +248,12 @@ const triggerModalTraining = async ({
     signal: AbortSignal.timeout(MODAL_TIMEOUT_MS),
   };
 
-  if (!process.env.MODAL_TRAINING_ENDPOINT_V2) {
+  if (!env.MODAL_TRAINING_ENDPOINT_V2) {
     throw new Error("Modal training endpoint not configured");
   }
 
   const response = await retryWithBackoff(async () => {
-    const res = await fetch(process.env.MODAL_TRAINING_ENDPOINT_V2, requestOptions);
+    const res = await fetch(env.MODAL_TRAINING_ENDPOINT_V2, requestOptions);
     
     if (!res.ok) {
       const errorText = await res.text().catch(() => 'Unknown error');
@@ -299,8 +300,8 @@ export async function POST(request) {
           // Initialize Supabase client
           const cookieStore = cookies();
           const supabase = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.SUPABASE_SERVICE_ROLE_KEY,
+            publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+            env.SUPABASE_SERVICE_ROLE_KEY,
             {
               cookies: {
                 get(name) {
@@ -442,7 +443,7 @@ export async function POST(request) {
               studioID: studioFormData.studioID,
               trigger_word: user_attributes.trigger_word || "ohwx",
               steps: 3000,
-              webhook_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/generate`
+              webhook_url: `${publicEnv.NEXT_PUBLIC_APP_URL}/api/webhooks/generate`
             });
 
           } catch (error) {

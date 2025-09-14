@@ -45,28 +45,15 @@ const createSuccessResponse = (data) => {
 };
 
 // Security helpers
-const verifyWebhookSignature = (rawBody, signature) => {
-  if (!signature || !env.LEMONSQUEEZY_WEBHOOK_SECRET) {
-    console.error("Missing signature or webhook secret");
+const verifyInternalWebhookSecret = (request) => {
+  const webhookSecret = request.headers.get("x-webhook-secret");
+  
+  if (!webhookSecret || !env.WEBHOOK_SECRET) {
+    console.error("Missing webhook secret in internal call");
     return false;
   }
-
-  try {
-    const hmac = crypto.createHmac("sha256", env.LEMONSQUEEZY_WEBHOOK_SECRET);
-    hmac.update(rawBody, "utf8");
-    const expectedSignature = hmac.digest("hex");
-
-    // Remove 'sha256=' prefix if present
-    const cleanSignature = signature.replace(/^sha256=/, "");
-
-    return crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, "hex"),
-      Buffer.from(cleanSignature, "hex")
-    );
-  } catch (error) {
-    console.error("Signature verification error:", error);
-    return false;
-  }
+  
+  return webhookSecret === env.WEBHOOK_SECRET;
 };
 
 // Validation helpers
@@ -250,30 +237,25 @@ export async function POST(request) {
       },
       async () => {
         try {
-    // Get raw body for signature verification
-    const rawBody = await request.text();
-    const signature = request.headers.get("x-signature");
+          // Verify internal webhook secret
+          if (!verifyInternalWebhookSecret(request)) {
+            console.error("❌ Invalid internal webhook secret");
+            return createErrorResponse("Unauthorized", 401, {
+              hasSecret: !!env.WEBHOOK_SECRET
+            });
+          }
+          
+          Sentry.addBreadcrumb({
+            message: 'Internal webhook secret verified',
+            category: 'security',
+            level: 'info'
+          });
 
-    // Verify webhook signature
-    if (!verifyWebhookSignature(rawBody, signature)) {
-      console.error("❌ Invalid webhook signature");
-      return createErrorResponse("Unauthorized", 401, {
-        hasSignature: !!signature,
-        hasSecret: !!env.LEMONSQUEEZY_WEBHOOK_SECRET
-      });
-    }
-    
-    Sentry.addBreadcrumb({
-      message: 'Webhook signature verified',
-      category: 'security',
-      level: 'info'
-    });
-
-    // Parse and validate request body
-    let studioId, user_id;
-    try {
-      const body = JSON.parse(rawBody);
-      ({ studioId, user_id } = validateRequestBody(body));
+          // Parse and validate request body
+          let studioId, user_id;
+          try {
+            const body = await request.json();
+            ({ studioId, user_id } = validateRequestBody(body));
       
       // Set user context for Sentry
       Sentry.setUser({ id: user_id });
@@ -281,8 +263,7 @@ export async function POST(request) {
     } catch (error) {
       console.error("Request validation error:", error);
       return createErrorResponse("Invalid request data", 400, {
-        parseError: error.message,
-        hasRawBody: !!rawBody
+        parseError: error.message
       });
     }
 
@@ -377,6 +358,10 @@ export async function POST(request) {
         webhook_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/generate`
       });
 
+      return createSuccessResponse({
+        studioId,
+        message: "Studio processed successfully and training initiated",
+      });
     } catch (error) {
       // Update studio status to failed with comprehensive error handling
       try {
@@ -402,11 +387,6 @@ export async function POST(request) {
         modalStatus: error.status
       });
     }
-
-          return createSuccessResponse({
-            studioId,
-            message: "Studio processed successfully and training initiated",
-          });
         } catch (error) {
           // Capture unexpected errors
           Sentry.captureException(error, {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from 'crypto';
 import { createServerClient } from "@supabase/ssr";
-import { env } from '@/lib/env';
+import { env, publicEnv } from '@/lib/env';
 import config from '@/config';
 import { cookies } from "next/headers";
 
@@ -57,11 +57,11 @@ const callHeadshotAPI = async (studio_id, weights_url, user_id, prompt, sendemai
         await new Promise(resolve => setTimeout(resolve, delay));
       }
 
-      const response = await fetch(process.env.MODAL_COMFYUI_STANDARD_ENDPOINT_V2, {
+      const response = await fetch(env.MODAL_COMFYUI_STANDARD_ENDPOINT_V2, {
         method: 'POST',
         headers: {
-          'Modal-Key': process.env.MODAL_KEY,
-          'Modal-Secret': process.env.MODAL_SECRET,
+          'Modal-Key': env.MODAL_KEY,
+          'Modal-Secret': env.MODAL_SECRET,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -152,8 +152,8 @@ export async function POST(request) {
     // Initialize Supabase client
     const cookieStore = cookies();
     const supabase = await createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+      env.SUPABASE_SERVICE_ROLE_KEY,
       {
         cookies: {
           get(name) {

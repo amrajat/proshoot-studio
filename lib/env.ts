@@ -56,7 +56,9 @@ const serverSchema = z.object({
   MODAL_KEY: z.string().min(1).optional(),
   MODAL_SECRET: z.string().min(1).optional(),
   MODAL_COMFYUI_STANDARD_ENDPOINT: z.string().min(1).optional(),
+  MODAL_COMFYUI_STANDARD_ENDPOINT_V2: z.string().url().optional(),
   MODAL_TRAINING_ENDPOINT: z.string().url().optional(),
+  MODAL_TRAINING_ENDPOINT_V2: z.string().url().optional(),
 
   // INTERCOM
   INTERCOM_MESSENGER_SECRET: z.string().min(1).optional(),

@@ -260,7 +260,7 @@ async function handleStudioCreation({ studioId, user_id, signature }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-signature": signature,
+        "x-webhook-secret": env.WEBHOOK_SECRET,
       },
       body: JSON.stringify({ studioId, user_id }),
       signal: AbortSignal.timeout(STUDIO_PROCESSING_TIMEOUT),

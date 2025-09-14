@@ -6,6 +6,7 @@ import { getBaseUrlFromEnv } from "@/lib/env";
 import { generateMetadata as getRouteMetadata } from "@/lib/metadata";
 
 import { SidebarProvider } from "@/context/SidebarContext";
+import { AccountProvider } from "@/context/AccountContext";
 import GoogleOneTapComponent from "@/components/services/google-one-tap";
 import { Toaster } from "@/components/ui/sonner";
 import DashboardLayout from "../components/sidebar/dashboard-layout.jsx";
@@ -81,18 +82,21 @@ export default async function RootLayout({ children }) {
     <html lang="en" className="scroll-smooth min-h-screen">
       <body className={`${GeistSans.className} antialiased min-h-screen`}>
         <GoogleOneTapComponent />
-        <SidebarProvider>
-          {useDashboardLayout ? (
-            <DashboardLayout
-              initialProfile={profile}
-              initialOrganizations={organizations}
-            >
+        <AccountProvider
+          initialProfile={profile}
+          initialOrganizations={organizations}
+          initialIsLoading={false}
+        >
+          <SidebarProvider>
+            {useDashboardLayout ? (
+              <DashboardLayout>
+                <IntercomProvider>{children}</IntercomProvider>
+              </DashboardLayout>
+            ) : (
               <IntercomProvider>{children}</IntercomProvider>
-            </DashboardLayout>
-          ) : (
-            <IntercomProvider>{children}</IntercomProvider>
-          )}
-        </SidebarProvider>
+            )}
+          </SidebarProvider>
+        </AccountProvider>
         <Toaster
           closeButton
           position="bottom-right"

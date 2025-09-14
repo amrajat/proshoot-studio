@@ -4,7 +4,6 @@ import { Sidebar } from "./sidebar";
 import { MobileMenu } from "./mobile-menu";
 import { useSidebarContext } from "@/context/SidebarContext";
 import { cn } from "@/lib/utils";
-import { AccountProvider } from "@/context/AccountContext";
 
 /**
  * Dashboard Layout Component
@@ -13,17 +12,10 @@ import { AccountProvider } from "@/context/AccountContext";
  * - Sidebar navigation with responsive behavior
  * - Main content area with proper spacing
  * - Footer with support contact information
- * - Account context provider for user/organization management
  *
  * @param {React.ReactNode} children - Page content to render
- * @param {Object|null} initialProfile - Initial user profile data
- * @param {Array} initialOrganizations - Initial organizations data
  */
-export default function DashboardLayout({
-  children,
-  initialProfile,
-  initialOrganizations,
-}) {
+export default function DashboardLayout({ children }) {
   // ===== SIDEBAR CONTEXT =====
   const sidebar = useSidebarContext();
   const { getOpenState, settings } = sidebar;
@@ -36,10 +28,7 @@ export default function DashboardLayout({
 
   // ===== RENDER =====
   return (
-    <AccountProvider
-      initialProfile={initialProfile}
-      initialOrganizations={initialOrganizations}
-    >
+    <>
       {/* Sidebar Navigation */}
       <Sidebar />
 
@@ -82,6 +71,6 @@ export default function DashboardLayout({
           </div>
         </div>
       </footer> */}
-    </AccountProvider>
+    </>
   );
 }

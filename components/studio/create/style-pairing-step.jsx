@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import Image from "next/image";
+import OptimizedImage from "@/components/shared/optimized-image";
 import Masonry from "react-masonry-css";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,8 @@ const StylePairingStep = ({
   const { validateCurrentStep } = useStudioForm();
   const [selectedClothing, setSelectedClothing] = useState("");
   const [selectedBackground, setSelectedBackground] = useState("");
+  const [selectedClothingItem, setSelectedClothingItem] = useState(null);
+  const [selectedBackgroundItem, setSelectedBackgroundItem] = useState(null);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [clothingThemeFilter, setClothingThemeFilter] = useState("All");
   const [backgroundThemeFilter, setBackgroundThemeFilter] = useState("All");
@@ -259,6 +261,8 @@ const StylePairingStep = ({
     updateFormField("style_pairs", newPairs);
     setSelectedClothing("");
     setSelectedBackground("");
+    setSelectedClothingItem(null);
+    setSelectedBackgroundItem(null);
     setErrors({});
   };
 
@@ -558,7 +562,10 @@ const StylePairingStep = ({
                     <div
                       key={option.id}
                       className="group cursor-pointer transition-all duration-200 focus:outline-none"
-                      onClick={() => setSelectedClothing(option.id)}
+                      onClick={() => {
+                        setSelectedClothing(option.id);
+                        setSelectedClothingItem(option);
+                      }}
                     >
                       <div
                         className={`relative rounded-xl overflow-hidden border transition-all ${
@@ -568,12 +575,13 @@ const StylePairingStep = ({
                         }`}
                       >
                         <div className="aspect-square bg-muted/40 relative">
-                          <Image
+                          <OptimizedImage
                             src={option.image}
                             alt={option.name}
                             fill
                             className="object-cover"
-                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw"
+                            sizes="160px"
+                            priority={false}
                           />
                         </div>
                         {selectedClothing === option.id && (
@@ -629,7 +637,10 @@ const StylePairingStep = ({
                     <div
                       key={option.id}
                       className="group cursor-pointer transition-all duration-200 focus:outline-none"
-                      onClick={() => setSelectedBackground(option.id)}
+                      onClick={() => {
+                        setSelectedBackground(option.id);
+                        setSelectedBackgroundItem(option);
+                      }}
                     >
                       <div
                         className={`relative rounded-xl overflow-hidden border transition-all ${
@@ -639,12 +650,13 @@ const StylePairingStep = ({
                         }`}
                       >
                         <div className="aspect-square bg-muted/40 relative">
-                          <Image
+                          <OptimizedImage
                             src={option.image}
                             alt={option.name}
                             fill
                             className="object-cover"
-                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw"
+                            sizes="160px"
+                            priority={false}
                           />
                         </div>
                         {selectedBackground === option.id && (
@@ -677,31 +689,32 @@ const StylePairingStep = ({
                 }
                 className="group relative bg-background border border-border/50 rounded-xl p-4 transition-all duration-200 cursor-crosshair"
               >
-                {/* FIX THE PROPER IMAGE LATER */}
                 <div className="flex w-full flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   {/* Clothing (left) */}
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
-                      <Image
-                        src={
-                          getClothingById(selectedClothing)?.image ||
-                          "/images/placeholder.svg"
-                        }
-                        alt={
-                          getClothingById(selectedClothing)?.name || "Clothing"
-                        }
-                        fill
-                        className="object-cover"
-                        sizes="48px"
-                      />
+                      {selectedClothingItem ? (
+                        <OptimizedImage
+                          key={`clothing-preview-${selectedClothingItem.id}`}
+                          src={selectedClothingItem.image}
+                          alt={selectedClothingItem.name}
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                          priority={true}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                          <Shirt className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-sm truncate">
-                        {getClothingById(selectedClothing)?.name ||
-                          "Not selected"}
+                        {selectedClothingItem?.name || "Not selected"}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {getClothingById(selectedClothing)?.theme || "—"}
+                        {selectedClothingItem?.theme || "—"}
                       </p>
                     </div>
                   </div>
@@ -728,27 +741,28 @@ const StylePairingStep = ({
                   <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-sm truncate text-right">
-                        {getBackgroundById(selectedBackground)?.name ||
-                          "Not selected"}
+                        {selectedBackgroundItem?.name || "Not selected"}
                       </p>
                       <p className="text-xs text-muted-foreground truncate text-right">
-                        {getBackgroundById(selectedBackground)?.theme || "—"}
+                        {selectedBackgroundItem?.theme || "—"}
                       </p>
                     </div>
                     <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
-                      <Image
-                        src={
-                          getBackgroundById(selectedBackground)?.image ||
-                          "/images/placeholder.svg"
-                        }
-                        alt={
-                          getBackgroundById(selectedBackground)?.name ||
-                          "Background"
-                        }
-                        fill
-                        className="object-cover"
-                        sizes="48px"
-                      />
+                      {selectedBackgroundItem ? (
+                        <OptimizedImage
+                          key={`background-preview-${selectedBackgroundItem.id}`}
+                          src={selectedBackgroundItem.image}
+                          alt={selectedBackgroundItem.name}
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                          priority={true}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                          <ImagesIcon className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -802,7 +816,7 @@ const StylePairingStep = ({
                         {/* Clothing */}
                         <div className="flex items-center gap-2 min-w-0 flex-1">
                           <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
-                            <Image
+                            <OptimizedImage
                               src={
                                 clothingItem?.image ||
                                 "/images/placeholder.svg"
@@ -811,6 +825,7 @@ const StylePairingStep = ({
                               fill
                               className="object-cover"
                               sizes="48px"
+                              priority={false}
                             />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -831,7 +846,7 @@ const StylePairingStep = ({
                         {/* Background */}
                         <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
                           <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
-                            <Image
+                            <OptimizedImage
                               src={
                                 backgroundItem?.image ||
                                 "/images/placeholder.svg"
@@ -840,6 +855,7 @@ const StylePairingStep = ({
                               fill
                               className="object-cover"
                               sizes="48px"
+                              priority={false}
                             />
                           </div>
                           <div className="min-w-0 flex-1">

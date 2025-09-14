@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, AlertCircle, Settings, Image, User, Users } from "lucide-react";
 import { CenteredLoader } from "@/components/shared/universal-loader";
+import OptimizedImage from "@/components/shared/optimized-image";
 
 export default function ManageBackgroundsPage() {
   const { selectedContext, isCurrentUserOrgAdmin } = useAccountContext();
@@ -186,13 +187,13 @@ export default function ManageBackgroundsPage() {
                   className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <div className="aspect-square relative overflow-hidden bg-muted">
-                    <img
+                    <OptimizedImage
                       src={item.image}
                       alt={item.name}
                       className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-                      loading="lazy"
                       fill
-                      sizes="48px"
+                      sizes="160px"
+                      priority={false}
                     />
                   </div>
                   <CardContent className="p-3">
@@ -349,15 +350,15 @@ export default function ManageBackgroundsPage() {
                     }
                   >
                     <div className="aspect-square relative overflow-hidden bg-muted">
-                      <img
+                      <OptimizedImage
                         src={item.image}
                         alt={item.name}
                         className={`w-full h-full object-cover transition-transform duration-200 ${
                           isInteractive ? "group-hover:scale-105" : ""
                         }`}
                         fill
-                        sizes="48px"
-                        loading="lazy"
+                        sizes="160px"
+                        priority={false}
                       />
                       {isApproved && restrictBackgrounds && (
                         <div className="absolute top-2 right-2">

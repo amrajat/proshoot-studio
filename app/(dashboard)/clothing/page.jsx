@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, AlertCircle, Settings, Shirt, User, Users } from "lucide-react";
 import { CenteredLoader } from "@/components/shared/universal-loader";
-import Image from "next/image";
+import OptimizedImage from "@/components/shared/optimized-image";
 
 export default function ManageClothingPage() {
   const { selectedContext, isCurrentUserOrgAdmin } = useAccountContext();
@@ -184,13 +184,13 @@ export default function ManageClothingPage() {
                 >
                   <div className="aspect-square relative overflow-hidden bg-muted">
                     
-                    <Image
+                    <OptimizedImage
                       src={item.image}
                       alt={item.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                       fill
-                      sizes="512px"
-                      loading="lazy"
+                      sizes="160px"
+                      priority={false}
                     />
                   </div>
                   <CardContent className="p-3">
@@ -343,15 +343,15 @@ export default function ManageClothingPage() {
                     }
                   >
                     <div className="aspect-square relative overflow-hidden bg-muted">
-                      <Image
+                      <OptimizedImage
                         src={item.image}
                         alt={item.name}
                         className={`w-full h-full object-cover transition-transform duration-200 ${
                           isInteractive ? "group-hover:scale-105" : ""
                         }`}
                         fill
-                        sizes="512px"
-                        loading="lazy"
+                        sizes="160px"
+                        priority={false}
                       />
                       {isApproved && restrictClothing && (
                         <div className="absolute top-2 right-2">

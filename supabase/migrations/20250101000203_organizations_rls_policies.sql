@@ -13,8 +13,8 @@
 -- Policy: Organization owners have full access to their organization
 CREATE POLICY "organizations_owner_full_access" ON public.organizations
     FOR ALL
-    USING (auth.uid() = owner_user_id)
-    WITH CHECK (auth.uid() = owner_user_id);
+    USING ((select auth.uid()) = owner_user_id)
+    WITH CHECK ((select auth.uid()) = owner_user_id);
 
 -- Policy: Organization members can view their organizations
 CREATE POLICY "organizations_members_select" ON public.organizations
@@ -24,8 +24,8 @@ CREATE POLICY "organizations_members_select" ON public.organizations
 -- Policy: Organization owners can update organization settings
 CREATE POLICY "organizations_owner_update" ON public.organizations
     FOR UPDATE
-    USING (auth.uid() = owner_user_id)
-    WITH CHECK (auth.uid() = owner_user_id);
+    USING ((select auth.uid()) = owner_user_id)
+    WITH CHECK ((select auth.uid()) = owner_user_id);
 
 -- ============================================================================
 -- members TABLE POLICIES
@@ -34,7 +34,7 @@ CREATE POLICY "organizations_owner_update" ON public.organizations
 -- Policy: Users can view their own memberships
 CREATE POLICY "members_select_own" ON public.members
     FOR SELECT
-    USING (auth.uid() = user_id);
+    USING ((select auth.uid()) = user_id);
 
 -- Policy: Organization owners can view all members of their organizations
 CREATE POLICY "members_owners_select_all" ON public.members
@@ -57,7 +57,7 @@ CREATE POLICY "members_delete" ON public.members
     FOR DELETE
     USING (
         -- User can remove themselves
-        auth.uid() = user_id
+        (select auth.uid()) = user_id
         OR
         -- Organization owners can remove any member
         is_org_owner(organization_id)

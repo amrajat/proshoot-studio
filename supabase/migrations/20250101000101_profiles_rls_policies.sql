@@ -13,7 +13,7 @@
 -- Policy: Users can view their own profile
 CREATE POLICY "profiles_select_own" ON public.profiles
     FOR SELECT 
-    USING (auth.uid() = user_id);
+    USING ((select auth.uid()) = user_id);
 
 -- ============================================================================
 -- INSERT POLICIES  
@@ -22,7 +22,7 @@ CREATE POLICY "profiles_select_own" ON public.profiles
 -- Policy: Users can create their own profile (handled by trigger)
 CREATE POLICY "profiles_insert_own" ON public.profiles
     FOR INSERT
-    WITH CHECK (auth.uid() = user_id);
+    WITH CHECK ((select auth.uid()) = user_id);
 
 -- ============================================================================
 -- UPDATE POLICIES
@@ -31,8 +31,8 @@ CREATE POLICY "profiles_insert_own" ON public.profiles
 -- Policy: Users can update their own profile
 CREATE POLICY "profiles_update_own" ON public.profiles
     FOR UPDATE
-    USING (auth.uid() = user_id)
-    WITH CHECK (auth.uid() = user_id);
+    USING ((select auth.uid()) = user_id)
+    WITH CHECK ((select auth.uid()) = user_id);
 
 -- ============================================================================
 -- DELETE POLICIES
@@ -41,7 +41,7 @@ CREATE POLICY "profiles_update_own" ON public.profiles
 -- Policy: Users can delete their own profile (cascade will handle auth.users)
 CREATE POLICY "profiles_delete_own" ON public.profiles
     FOR DELETE
-    USING (auth.uid() = user_id);
+    USING ((select auth.uid()) = user_id);
 
 -- ============================================================================
 -- POLICY COMMENTS

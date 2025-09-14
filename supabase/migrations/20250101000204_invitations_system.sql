@@ -31,6 +31,7 @@ CREATE TABLE public.invitations (
 
 -- Primary access patterns
 CREATE INDEX idx_invitations_organization_id ON public.invitations(organization_id);
+CREATE INDEX idx_invitations_invited_by_user_id ON public.invitations(invited_by_user_id);
 CREATE INDEX idx_invitations_token ON public.invitations(token) WHERE token IS NOT NULL;
 CREATE INDEX idx_invitations_invited_email ON public.invitations(invited_email) WHERE invited_email IS NOT NULL;
 

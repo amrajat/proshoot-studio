@@ -14,7 +14,7 @@
 CREATE POLICY "credits_select_own_credits" ON public.credits
     FOR SELECT
     USING (
-        auth.uid() = user_id 
+        (select auth.uid()) = user_id 
     );
 
 -- ============================================================================
@@ -24,8 +24,8 @@ CREATE POLICY "credits_select_own_credits" ON public.credits
 -- Policy: Allow service_role full access for RPC operations
 CREATE POLICY "credits_service_role_all" ON public.credits
     FOR ALL
-    USING (auth.role() = 'service_role')
-    WITH CHECK (auth.role() = 'service_role');
+    USING ((select auth.role()) = 'service_role')
+    WITH CHECK ((select auth.role()) = 'service_role');
 
 -- ============================================================================
 -- POLICY COMMENTS

@@ -122,7 +122,7 @@ CREATE POLICY "headshots_select_access" ON public.headshots
             FROM public.studios s
             WHERE s.id = headshots.studio_id
             AND (
-                s.creator_user_id = auth.uid()
+                s.creator_user_id = (select auth.uid())
                 OR
                 (s.organization_id IS NOT NULL AND is_org_member(s.organization_id))
             )
@@ -137,7 +137,7 @@ CREATE POLICY "headshots_insert_system" ON public.headshots
             SELECT 1
             FROM public.studios s
             WHERE s.id = headshots.studio_id
-            AND s.creator_user_id = auth.uid()
+            AND s.creator_user_id = (select auth.uid())
         )
     );
 
@@ -149,7 +149,7 @@ CREATE POLICY "headshots_update_system" ON public.headshots
             SELECT 1
             FROM public.studios s
             WHERE s.id = headshots.studio_id
-            AND s.creator_user_id = auth.uid()
+            AND s.creator_user_id = (select auth.uid())
         )
     )
     WITH CHECK (
@@ -157,7 +157,7 @@ CREATE POLICY "headshots_update_system" ON public.headshots
             SELECT 1
             FROM public.studios s
             WHERE s.id = headshots.studio_id
-            AND s.creator_user_id = auth.uid()
+            AND s.creator_user_id = (select auth.uid())
         )
     );
 
@@ -168,19 +168,19 @@ CREATE POLICY "headshots_update_system" ON public.headshots
 -- Policy: Users can view their own favorites
 CREATE POLICY "favorites_select_own" ON public.favorites
     FOR SELECT
-    USING (auth.uid() = user_id);
+    USING ((select auth.uid()) = user_id);
 
 -- Policy: Users can create their own favorites
 CREATE POLICY "favorites_insert_own" ON public.favorites
     FOR INSERT
     WITH CHECK (
-        auth.uid() = user_id
+        (select auth.uid()) = user_id
         AND EXISTS (
             SELECT 1
             FROM public.studios s
             WHERE s.id = favorites.studio_id
             AND (
-                s.creator_user_id = auth.uid()
+                s.creator_user_id = (select auth.uid())
                 OR
                 (s.organization_id IS NOT NULL AND is_org_member(s.organization_id))
             )
@@ -190,7 +190,7 @@ CREATE POLICY "favorites_insert_own" ON public.favorites
 -- Policy: Users can delete their own favorites
 CREATE POLICY "favorites_delete_own" ON public.favorites
     FOR DELETE
-    USING (auth.uid() = user_id);
+    USING ((select auth.uid()) = user_id);
 
 -- Policy: Organization admins can view favorites for org studios
 CREATE POLICY "favorites_select_org_admins" ON public.favorites

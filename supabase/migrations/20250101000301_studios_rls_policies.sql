@@ -13,7 +13,7 @@
 -- Policy: Users can view their own studios
 CREATE POLICY "studios_select_own" ON public.studios
     FOR SELECT
-    USING (auth.uid() = creator_user_id);
+    USING ((select auth.uid()) = creator_user_id);
 
 -- Policy: Organization members can view organization studios
 CREATE POLICY "studios_select_org_members" ON public.studios
@@ -30,13 +30,13 @@ CREATE POLICY "studios_select_org_members" ON public.studios
 -- Policy: Users can create their own studios
 CREATE POLICY "studios_insert_own" ON public.studios
     FOR INSERT
-    WITH CHECK (auth.uid() = creator_user_id);
+    WITH CHECK ((select auth.uid()) = creator_user_id);
 
 -- Policy: Organization members can create studios for their organization
 CREATE POLICY "studios_insert_org_members" ON public.studios
     FOR INSERT
     WITH CHECK (
-        auth.uid() = creator_user_id
+        (select auth.uid()) = creator_user_id
         AND (
             organization_id IS NULL
             OR is_org_member(organization_id)
@@ -57,7 +57,7 @@ CREATE POLICY "studios_insert_org_members" ON public.studios
 -- Policy: Users can delete their own studios
 CREATE POLICY "studios_delete_own" ON public.studios
     FOR DELETE
-    USING (auth.uid() = creator_user_id);
+    USING ((select auth.uid()) = creator_user_id);
 
 -- Policy: Organization owners can delete organization studios
 CREATE POLICY "studios_delete_org_owners" ON public.studios

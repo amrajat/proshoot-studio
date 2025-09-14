@@ -9,14 +9,14 @@
 CREATE POLICY "transactions_select_own" ON public.transactions
     FOR SELECT
     USING (
-        auth.uid() = user_id
+        (select auth.uid()) = user_id
     );
 
 -- Policy: Allow users to insert their own transactions (via function)
 CREATE POLICY "transactions_insert_own" ON public.transactions
     FOR INSERT
     WITH CHECK (
-        auth.uid() = user_id
+        (select auth.uid()) = user_id
     );
 
 -- ============================================================================
@@ -26,8 +26,8 @@ CREATE POLICY "transactions_insert_own" ON public.transactions
 -- Policy: Allow service_role full access for RPC operations
 CREATE POLICY "transactions_service_role_all" ON public.transactions
     FOR ALL
-    USING (auth.role() = 'service_role')
-    WITH CHECK (auth.role() = 'service_role');
+    USING ((select auth.role()) = 'service_role')
+    WITH CHECK ((select auth.role()) = 'service_role');
 
 -- Add policy comments
 COMMENT ON POLICY "transactions_select_own" ON public.transactions IS 'Allow users to read their own personal transactions';

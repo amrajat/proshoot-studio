@@ -24,8 +24,8 @@ import useStudioCreateStore from "@/stores/studioCreateStore";
 const GENDERS = ["man", "woman", "non-binary"];
 
 const ETHNICITIES = [
-  "African",
   "Caucasian",
+  "African",
   "European",
   "East Asian",
   "Hispanic Latino",
@@ -47,11 +47,11 @@ const HAIR_LENGTH = {
   man: [
     "bald",
     "buzz cut",
-    "short cropped",
+    "short-cropped",
     "fade",
     "taper",
     "undercut",
-    "medium length",
+    "medium-length",
     "bro flow",
     "long",
     "man bun",
@@ -63,7 +63,7 @@ const HAIR_LENGTH = {
     "bob cut",
     "lob",
     "long bob",
-    "medium length",
+    "medium-length",
     "long",
     "layered cut",
     "updo",
@@ -73,11 +73,11 @@ const HAIR_LENGTH = {
   "non-binary": [
     "bald",
     "buzz cut",
-    "short cropped",
+    "short-cropped",
     "fade",
     "taper",
     "undercut",
-    "medium length",
+    "medium-length",
     "bro flow",
     "long",
     "man bun",

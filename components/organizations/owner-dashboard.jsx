@@ -72,6 +72,7 @@ import {
   generateShareableLinkAction,
   revokeShareableLinkAction,
 } from "@/app/(dashboard)/actions/organizations/invitationActions";
+import Link from "next/link";
 
 /**
  * Organization Admin Dashboard Component
@@ -888,12 +889,15 @@ export default function OwnerDashboard({ orgContext }) {
             </Button>
             <Button
               onClick={() => {
-                setInsufficientCreditsDialog(false);
+                
               }}
               className="gap-2"
-            >
+
+            asChild>
+              <Link href="/buy">
               <ShoppingCart className="h-4 w-4" />
               Buy Credits
+              </Link>
             </Button>
           </DialogFooter>
         </DialogContent>

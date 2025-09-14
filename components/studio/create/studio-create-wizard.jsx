@@ -86,9 +86,10 @@ const StudioCreateWizard = () => {
       orgRestrictClothing &&
       Array.isArray(orgApprovedClothing)
     ) {
-      // Filter global options to only include approved IDs
+      // Extract approved IDs from objects (new JSON format)
+      const approvedIds = orgApprovedClothing.map(item => item.id);
       return GLOBAL_ALL_CLOTHING_OPTIONS.filter((item) =>
-        orgApprovedClothing.includes(item.id)
+        approvedIds.includes(item.id)
       );
     }
 
@@ -105,9 +106,10 @@ const StudioCreateWizard = () => {
       orgRestrictBackgrounds &&
       Array.isArray(orgApprovedBackgrounds)
     ) {
-      // Filter global options to only include approved IDs
+      // Extract approved IDs from objects (new JSON format)
+      const approvedIds = orgApprovedBackgrounds.map(item => item.id);
       return GLOBAL_ALL_BACKGROUND_OPTIONS.filter((item) =>
-        orgApprovedBackgrounds.includes(item.id)
+        approvedIds.includes(item.id)
       );
     }
 

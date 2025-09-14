@@ -18,8 +18,8 @@ CREATE TABLE public.organizations (
     invite_token TEXT UNIQUE,
     restrict_clothing_options BOOLEAN NOT NULL DEFAULT FALSE,
     restrict_background_options BOOLEAN NOT NULL DEFAULT FALSE,
-    approved_clothing TEXT[] NOT NULL DEFAULT '{}',
-    approved_backgrounds TEXT[] NOT NULL DEFAULT '{}',
+    approved_clothing JSON NOT NULL DEFAULT '[]',
+    approved_backgrounds JSON NOT NULL DEFAULT '[]',
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
@@ -67,8 +67,8 @@ COMMENT ON COLUMN public.organizations.team_size IS 'Number of team members';
 COMMENT ON COLUMN public.organizations.invite_token IS 'Universal invite token for organization';
 COMMENT ON COLUMN public.organizations.restrict_clothing_options IS 'Whether to restrict clothing options to approved list';
 COMMENT ON COLUMN public.organizations.restrict_background_options IS 'Whether to restrict background options to approved list';
-COMMENT ON COLUMN public.organizations.approved_clothing IS 'Array of approved clothing option IDs';
-COMMENT ON COLUMN public.organizations.approved_backgrounds IS 'Array of approved background option IDs';
+COMMENT ON COLUMN public.organizations.approved_clothing IS 'Array of approved clothing items with name and theme details';
+COMMENT ON COLUMN public.organizations.approved_backgrounds IS 'Array of approved background items with name and theme details';
 COMMENT ON COLUMN public.organizations.created_at IS 'Organization creation timestamp';
 COMMENT ON COLUMN public.organizations.updated_at IS 'Last organization update timestamp';
 

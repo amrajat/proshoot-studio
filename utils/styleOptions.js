@@ -1892,8 +1892,20 @@ export const BACKGROUND_OPTIONS = {
   ],
 };
 
-// Helper to generate a unique ID from the item name
-const generateId = (name) => name.toLowerCase().replace(/\s+/g, "-");
+// Helper to generate a unique, URL-safe ID from text
+const generateId = (text) => {
+  return text
+    .toLowerCase()
+    .normalize('NFD') // Normalize unicode characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special chars except spaces and hyphens
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+};
+
+// Generate consistent theme ID
+const generateThemeId = (theme) => generateId(theme);
 
 // Utility function to generate gender-based background image path
 export const getGenderBasedBackgroundPath = (imagePath, gender) => {
@@ -1909,7 +1921,7 @@ export const ALL_BACKGROUND_OPTIONS = Object.entries(
   items.map((item) => ({
     ...item,
     theme,
-    id: `${theme}-${generateId(item.name)}`,
+    id: `bg-${generateThemeId(theme)}-${generateId(item.name)}`,
   }))
 );
 
@@ -1920,7 +1932,7 @@ const manClothing = Object.entries(CLOTHING_OPTIONS_MAN).flatMap(
       ...item,
       gender: "man",
       theme,
-      id: `man-${theme}-${generateId(item.name)}`,
+      id: `cl-man-${generateThemeId(theme)}-${generateId(item.name)}`,
     }))
 );
 
@@ -1930,7 +1942,7 @@ const womanClothing = Object.entries(CLOTHING_OPTIONS_WOMAN).flatMap(
       ...item,
       gender: "woman",
       theme,
-      id: `woman-${theme}-${generateId(item.name)}`,
+      id: `cl-woman-${generateThemeId(theme)}-${generateId(item.name)}`,
     }))
 );
 

@@ -23,7 +23,7 @@ export default function ManageBackgroundsPage() {
   const [error, setError] = useState(null);
 
   const [restrictBackgrounds, setRestrictBackgrounds] = useState(false);
-  const [approvedBackgrounds, setApprovedBackgrounds] = useState([]); // Now stores array of IDs
+  const [approvedBackgrounds, setApprovedBackgrounds] = useState([]); // Now stores array of background objects
   const [activeTab, setActiveTab] = useState("All");
   const [selectedGender, setSelectedGender] = useState("woman");
 
@@ -48,7 +48,11 @@ export default function ManageBackgroundsPage() {
         if (orgError) throw orgError;
 
         setRestrictBackgrounds(orgData?.restrict_background_options || false);
-        setApprovedBackgrounds(orgData?.approved_backgrounds || []);
+        // Parse JSON data or fallback to empty array
+        const parsedBackgrounds = Array.isArray(orgData?.approved_backgrounds) 
+          ? orgData.approved_backgrounds 
+          : [];
+        setApprovedBackgrounds(parsedBackgrounds);
       } catch (err) {
         setError("Failed to load background settings. " + err.message);
       } finally {
@@ -67,11 +71,23 @@ export default function ManageBackgroundsPage() {
   };
 
   const handleBackgroundItemToggle = (itemId) => {
-    setApprovedBackgrounds((prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId]
-    );
+    const item = ALL_BACKGROUND_OPTIONS.find(option => option.id === itemId);
+    if (!item) return;
+
+    setApprovedBackgrounds((prev) => {
+      const existingIndex = prev.findIndex(approved => approved.id === itemId);
+      if (existingIndex >= 0) {
+        // Remove item
+        return prev.filter(approved => approved.id !== itemId);
+      } else {
+        // Add item with structured data
+        return [...prev, {
+          id: item.id,
+          name: item.name,
+          theme: item.theme
+        }];
+      }
+    });
   };
 
   const handleSaveChanges = async () => {
@@ -333,7 +349,7 @@ export default function ManageBackgroundsPage() {
           <TabsContent value={activeTab} className="mt-6">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
               {itemsToDisplay.map((item) => {
-                const isApproved = approvedBackgrounds.includes(item.id);
+                const isApproved = approvedBackgrounds.some(approved => approved.id === item.id);
                 const isInteractive =
                   restrictBackgrounds && isCurrentUserOrgAdmin;
 

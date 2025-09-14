@@ -93,6 +93,9 @@ export const env = serverParse.data;
 
 // HELPER TO GET BASE URL CONSISTENTLY
 export const getBaseUrlFromEnv = (): string => {
+  // In production, prioritize custom domain over Vercel's auto-generated URL
+  if (publicEnv.NEXT_PUBLIC_APP_URL) return publicEnv.NEXT_PUBLIC_APP_URL;
+  if (env.URL) return env.URL;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return publicEnv.NEXT_PUBLIC_APP_URL || env.URL || "http://localhost:3000";
+  return "http://localhost:3000";
 };

@@ -267,13 +267,22 @@ async function handleStudioCreation({ studioId, user_id, signature }) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        // Handle HTML error responses (404, 500, etc.)
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(
+          `Studio processing failed: ${response.status} - ${errorText.substring(0, 200)}`
+        );
+      }
       throw new Error(
         errorData.error || `Studio processing failed: ${response.status}`
       );
     }
 
-    const result = await response.json();
+    const result = await response.json().catch(() => ({}));
     console.log("Studio processing completed:", result);
     return result;
   } catch (error) {

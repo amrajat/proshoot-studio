@@ -81,12 +81,12 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en" className="scroll-smooth min-h-screen">
       <body className={`${GeistSans.className} antialiased min-h-screen`}>
-        <GoogleOneTapComponent />
         <AccountProvider
           initialProfile={profile}
           initialOrganizations={organizations}
           initialIsLoading={false}
         >
+          <GoogleOneTapComponent />
           <SidebarProvider>
             {useDashboardLayout ? (
               <DashboardLayout>

@@ -1,198 +1,160 @@
 "use client";
 
-import Image from "next/image";
-import { Check, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-const followGuidelines = [
+const guidelinesSections = [
   {
-    id: 1,
-    title: "Clear Frontal Face",
-    image: "/image-uploading-guidelines/follow/follow-1.jpg",
-    description: [
-      "Variety is the key, range of outfits and backgrounds.",
-      "Upload photos taken from a good distance, ideally an arms-length away.",
-    ],
+    id: "must-follow",
+    title: "Must follow",
+    textColor: "text-emerald-800",
+    bgColor: "bg-emerald-50",
+    borderColor: "border-emerald-200",
+    badgeColor: "bg-emerald-100 text-emerald-800",
+    items: [
+      {
+        text: "Upload photos with variety: different outfits, lighting, times of day, and backgrounds",
+        isCritical: true
+      },
+      {
+        text: "When cropping after upload, select from head to half-body to keep face and body proportions accurate",
+        isCritical: true
+      },
+      {
+        text: "Don't worry about image quality. Upload at least 2 good photos; the rest can be average. Variety matters more than quality",
+        isCritical: false
+      }
+    ]
   },
   {
-    id: 2,
-    title: "Plain Background",
-    image: "/image-uploading-guidelines/follow/follow-2.jpg",
-    description: [
-      "Your face is focus of photo, free from background distractions.",
-      "Upload photos, ideally from the chest or waist up.",
-    ],
+    id: "must-avoid",
+    title: "Must avoid",
+    textColor: "text-red-800",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-200",
+    badgeColor: "bg-red-100 text-red-800",
+    items: [
+      {
+        text: "Many similar shots (same outfit, background, or lighting)",
+        isCritical: false
+      },
+      {
+        text: "Edited, filtered, or AI-generated images",
+        isCritical: false
+      },
+      {
+        text: "Blurry or out-of-focus photos",
+        isCritical: false
+      },
+      {
+        text: "Heavy makeup or overly processed images",
+        isCritical: false
+      },
+      {
+        text: "Other people in the frame",
+        isCritical: false
+      }
+    ]
   },
   {
-    id: 3,
-    title: "Close-up Shots",
-    image: "/image-uploading-guidelines/follow/follow-3.jpg",
-    description: [
-      "Upload high-quality, well-lit photos with a clear frontal view.",
-    ],
-  },
-  {
-    id: 4,
-    title: "High Resolution",
-    image: "/image-uploading-guidelines/follow/follow-4.jpg",
-    description: [
-      "Use images taken with a professional camera or a good smartphone.",
-    ],
-  },
+    id: "workable",
+    title: "Workable",
+    textColor: "text-amber-800",
+    bgColor: "bg-amber-50",
+    borderColor: "border-amber-200",
+    badgeColor: "bg-amber-100 text-amber-800",
+    items: [
+      {
+        text: "If variety is limited, you may include 1–2 images with hats, sunglasses, or AirPods — but not many",
+        isCritical: false
+      }
+    ]
+  }
 ];
 
-const avoidGuidelines = [
-  {
-    id: 5,
-    title: "Same Day Photos",
-    image: "/image-uploading-guidelines/avoid/avoid-1.jpg",
-    description: [
-      "Do not upload multiple similar photos with the same outfit or taken in the same setting.",
-    ],
-  },
-  {
-    id: 6,
-    title: "Group Photos",
-    image: "/image-uploading-guidelines/avoid/avoid-2.jpg",
-    description: [
-      "Do not use edited, AI-generated images.",
-      "No black-and-white or instagram type filtered images.",
-      "Face must be frontal, directly looking at camera.",
-      "Do not include other people or faces in your image.",
-    ],
-  },
-  {
-    id: 7,
-    title: "Blurry, Low quality, Filters",
-    image: "/image-uploading-guidelines/avoid/avoid-3.jpg",
-    description: [
-      "Avoid wearing heavy makeup.",
-      "Do not upload blurry, out-of-focus, or low-quality images.",
-      "Avoid low-quality images.",
-      "Natural angle, ideally from the front at eye level. Ensure your face is fully visible—avoid extreme angles, cropped framing, or poses that distort your facial proportions.",
-    ],
-  },
-  {
-    id: 8,
-    title: "AI-Generated, Small Faces",
-    image: "/image-uploading-guidelines/avoid/avoid-4.jpg",
-    description: [
-      "Avoid exaggerated or unusual facial expressions.",
-      "Not too far from the camera, ideally an arms-length away.",
-      "Do not wear hats, sunglasses, AirPods, or any other accessories that obstruct your face.",
-      "Must avoid full-body shots.",
-    ],
-  },
-];
+const GuidelineItem = ({ item, textColor }) => {
+  return (
+    <li className="flex items-start gap-2">
+      <div className="flex-1 min-w-0">
+        <p className={`${textColor} text-sm leading-relaxed`}>
+          {item.text}
+        </p>
+      </div>
+    </li>
+  );
+};
+
+const GuidelineSection = ({ section }) => {
+  return (
+    <Card 
+      className={`${section.bgColor} ${section.borderColor} border transition-all duration-200`}
+      role="region"
+      aria-labelledby={`${section.id}-heading`}
+    >
+      <CardContent className="p-3 sm:p-4">
+        <h3 
+          id={`${section.id}-heading`}
+          className={`text-sm sm:text-base font-semibold ${section.textColor} mb-2`}
+        >
+          {section.title}
+        </h3>
+        
+        <ul 
+          className="space-y-2"
+          role="list"
+          aria-label={`${section.title} guidelines`}
+        >
+          {section.items.map((item, index) => (
+            <GuidelineItem 
+              key={index} 
+              item={item} 
+              textColor={section.textColor}
+            />
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+};
 
 export default function ImageUploadGuidelines() {
   return (
-    <div className="w-full space-y-6 py-2 px-4 sm:px-6">
-      <div
-        className="space-y-4 rounded-xl bg-muted/30 ring-1 ring-muted-foreground/15 p-4 sm:p-5"
-        role="note"
-        aria-label="Photo upload recommendations"
+    <div className="w-full max-w-4xl mx-auto p-4">
+      {/* Header Section */}
+      <header 
+        className="mb-4"
+        role="banner"
       >
-        <p className="text-muted-foreground text-sm sm:text-base">
-          To get the best possible results, it&apos;s essential to follow these
-          guidelines closely. While some tips are flexible, the
-          <span className="font-medium underline text-foreground">
-            {" "}
-            5 key recommendations below must be followed
-          </span>
-          —otherwise, you’ll miss out on the best outcomes. The closer you stick
-          to these guidelines, the better your results will be.
-        </p>
-        <div className="inline-flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 text-destructive px-2.5 py-1 text-xs font-medium">
-          Highly recommended: follow these 5 points at least
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+              Our AI works well even with low-quality photos, as long as your uploads have enough variety. 
+              Follow these guidelines to get the best results from your photo session.
+            </p>
+          </CardContent>
+        </Card>
+      </header>
+
+      {/* Guidelines Sections */}
+      <main>
+        <div className="grid gap-3">
+          {guidelinesSections.map((section) => (
+            <GuidelineSection key={section.id} section={section} />
+          ))}
         </div>
-        <ol className="list-decimal ps-4 space-y-2.5 text-sm md:text-base">
-          <li>
-            Variation is key—avoid similar or identical images or same day
-            photos.
-          </li>
-          <li>
-            Upload 8-20 high-quality close-ups and upper-body shots with
-            different outfits, expressions, and backgrounds.
-          </li>
-          <li>Ensure your photos are clear, sharp, and well-lit.</li>
-          <li>
-            Avoid full-body shots, group photos, blurry or out-of-focus images,
-            and small faces.
-          </li>
-          <li>
-            Include some half-body images to capture proportions accurately.
-          </li>
-        </ol>
-      </div>
+      </main>
 
-      <div className="space-y-6">
-        <Card className="rounded-xl bg-background ring-1 ring-muted-foreground/15 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
-              <Check className="text-success h-5 w-5 sm:h-6 sm:w-6" />
-              Follow
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              {followGuidelines.map((item) => (
-                <GuidelineItem key={item.id} item={item} isCorrect={true} />
-              ))}
-            </div>
+      {/* Footer Note */}
+      <footer className="mt-4">
+        <Card className="bg-gray-50 border-gray-200">
+          <CardContent className="p-3 text-center">
+            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+              <strong className="text-gray-900">Pro tip:</strong> Variety matters more than quality. 
+              Even average photos work great if they show different outfits, lighting, times of day, and backgrounds.
+            </p>
           </CardContent>
         </Card>
-
-        <Card className="rounded-xl bg-background ring-1 ring-muted-foreground/15 shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
-              <X className="text-red-600 h-5 w-5 sm:h-6 sm:w-6" />
-              Avoid
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              {avoidGuidelines.map((item) => (
-                <GuidelineItem key={item.id} item={item} isCorrect={false} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      </footer>
     </div>
   );
 }
 
-function GuidelineItem({ item, isCorrect }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2 mb-1">
-        <div
-          className={`w-1.5 h-1.5 rounded-full ${
-            isCorrect ? "bg-success" : "bg-red-600"
-          }`}
-        ></div>
-        <h4 className="font-medium text-sm sm:text-base">{item.title}</h4>
-      </div>
-      <div
-        className={`relative aspect-square rounded-lg overflow-hidden group border-2 ${
-          isCorrect ? "border-success" : "border-red-600"
-        } ring-1 ring-muted-foreground/10 shadow-xs transition-shadow duration-200 hover:shadow-sm bg-muted/20`}
-      >
-        <Image
-          src={item.image}
-          alt={item.title}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover"
-          quality={90}
-        />
-      </div>
-      <ul
-        className={`${
-          isCorrect ? "marker:text-success" : "marker:text-red-600 text-red-600"
-        } list-disc ps-4 space-y-1.5 text-xs sm:text-sm`}
-      >
-        {item.description.map((point, index) => (
-          <li key={index}>{point}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}

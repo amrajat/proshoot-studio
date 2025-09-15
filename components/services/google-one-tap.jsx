@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Script from "next/script";
 import { useRouter, usePathname } from "next/navigation";
 import createSupabaseBrowserClient from "@/lib/supabase/browser-client";
+import { useAccountContext } from "@/context/AccountContext";
 import { toast } from "sonner";
 
 // Enhanced security configuration
@@ -125,6 +126,7 @@ const GoogleOneTapComponent = () => {
   const supabase = createSupabaseBrowserClient();
   const router = useRouter();
   const pathname = usePathname();
+  const { refreshContext } = useAccountContext();
   const gsiScriptLoaded = useRef(false);
   const gsiLibraryInitialized = useRef(false);
   const rawNonceRef = useRef(null);
@@ -219,6 +221,16 @@ const GoogleOneTapComponent = () => {
         });
 
         toast.success("Welcome back!");
+        
+        // Refresh account context to load user profile and organizations
+        try {
+          await refreshContext();
+          console.info("[GoogleOneTap] Account context refreshed successfully");
+        } catch (contextError) {
+          console.error("[GoogleOneTap] Failed to refresh account context:", contextError);
+          // Still proceed with navigation as auth was successful
+        }
+        
         router.push(finalRedirectPath);
         router.refresh();
       } else {
@@ -237,7 +249,7 @@ const GoogleOneTapComponent = () => {
       toast.error("Sign-in unavailable. Please try again later.");
       rateLimiter.recordAttempt(clientId);
     }
-  }, [router, supabase.auth]);
+  }, [router, supabase.auth, refreshContext]);
 
   useEffect(() => {
     const clientId = `${navigator.userAgent}_${window.location.hostname}`;

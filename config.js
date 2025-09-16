@@ -30,14 +30,14 @@ const config = {
 
     professional: {
       displayPrice: 49,
-      totalHeadshots: 60,
+      totalHeadshots: 100,
       stylesLimit: 5,
       accountContext: "personal",
       mostPopular: true,
       description:
         "Most popular choice for professionals who need variety and quality for their personal brand.",
       features: [
-        "80 HD Professional Headshots",
+        "100 HD Professional Headshots",
         "5 Unique Styles",
         "Build your own style.",
         "10K+ style combinations",

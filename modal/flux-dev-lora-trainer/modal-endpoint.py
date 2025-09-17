@@ -599,6 +599,7 @@ async def send_webhook_callback(webhook_url: str, payload: dict, logger: logging
     cpu=10.0,
     memory=32768,
     max_containers=10,
+    max_inputs=1,
     enable_memory_snapshot=True,
     experimental_options={"enable_gpu_snapshot": True},
     

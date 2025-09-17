@@ -484,7 +484,7 @@ export default function AllStudios({ studioId, currentUserId }) {
                     if (headshot?.hd) count++;
                     return total + count;
                   }, 0)}{" "}
-                  favorite images (both SD and 4K versions)
+                  favorite images (both HD and 4K versions)
                 </CardDescription>
               </CardHeader>
               <CardContent>

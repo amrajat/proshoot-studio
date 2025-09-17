@@ -64,8 +64,8 @@ const HeadshotImage = memo(function HeadshotImage({
     badgeText = "4K";
     badgeVariant = "destructive"; // Red for 4K/HD
   } else if (thumbnailUrl === headshot.result) {
-    badgeText = "SD";
-    badgeVariant = "default"; // Primary blue for SD/result
+    badgeText = "HD";
+    badgeVariant = "default"; // Primary blue for HD/result
   } else if (thumbnailUrl === headshot.preview) {
     badgeText = "Preview";
     badgeVariant = "success"; // Green for preview

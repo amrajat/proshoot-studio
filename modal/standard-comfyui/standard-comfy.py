@@ -256,13 +256,14 @@ image = image.add_local_file(
 # Spin up an interactive ComfyUI server by wrapping the `comfy launch` command in a Modal Function
 # and serving it as a [web server](https://modal.com/docs/guide/webhooks#non-asgi-web-servers).
 
-app = modal.App(name="example-comfyapp", image=image)
+app = modal.App(name="headshot-generator-2", image=image)
 
 
 @app.cls(
     scaledown_window=60,  # 1 minute container keep alive after it processes an input
     gpu="H100",
-    max_containers=1,
+    max_containers=5,
+    timeout=1800,  # 30 minutes timeout to match ComfyUI workflow timeout
     volumes={"/cache": vol},
     secrets=[
         modal.Secret.from_name("supabase-credentials"),
@@ -271,7 +272,7 @@ app = modal.App(name="example-comfyapp", image=image)
         modal.Secret.from_name("cloudflare-r2-credentials"),
     ],
 )
-@modal.concurrent(max_inputs=10)
+@modal.concurrent(max_inputs=5)
 class ComfyUI:
     port: int = 8000
 
@@ -287,7 +288,7 @@ class ComfyUI:
         self.poll_server_health()
 
         # runs the comfy run --workflow command as a subprocess
-        cmd = f"comfy run --workflow {workflow_path} --wait --timeout 1200 --verbose"
+        cmd = f"comfy run --workflow {workflow_path} --wait --timeout 1800 --verbose"
         subprocess.run(cmd, shell=True, check=True)
 
         # completed workflows write output images to this directory
@@ -579,7 +580,7 @@ class ComfyUI:
             workflow_data["6"]["inputs"]["text"] = prompt
             
             # Set batch size to 4 for generating 4 images
-            workflow_data["5"]["inputs"]["batch_size"] = 4
+            workflow_data["5"]["inputs"]["batch_size"] = 20
             
             # Set unique filename prefix
             client_id = f"{studio_id}_{uuid.uuid4().hex}"
@@ -606,7 +607,7 @@ class ComfyUI:
             
             # Run inference
             self.poll_server_health()
-            cmd = f"comfy run --workflow {workflow_file} --wait --timeout 1200 --verbose"
+            cmd = f"comfy run --workflow {workflow_file} --wait --timeout 1800 --verbose"
             logger.info(f"Running ComfyUI command: {cmd}")
             print(f"Running ComfyUI command: {cmd}")
             

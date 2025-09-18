@@ -141,7 +141,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Creative"],
     promptFunction: (character, clothingName, backgroundName) => {
-      return `Creative professional portrait of a ${character.trigger_word} ${
+      return `a professional portrait of a ${character.trigger_word} ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character
@@ -155,7 +155,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Office"],
     promptFunction: (character, clothingName, backgroundName) => {
-      return `professional corporate portrait photo of ${
+      return `a professional corporate portrait of ${
         character.trigger_word
       } ${normalizeGender(character.gender)}${hairStyle(character)}${glasses(
         character
@@ -169,7 +169,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Office"],
     promptFunction: (character, clothingName, backgroundName) => {
-      return `Professional portrait photography of a ${
+      return `a professional portrait of a ${
         character.trigger_word
       } ${normalizeGender(character.gender)}${hairStyle(character)}${glasses(
         character
@@ -183,7 +183,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Monochrome"],
     promptFunction: (character, clothingName, backgroundName) => {
-      return `Expertly shot studio portrait of an attractive professional ${
+      return `an expertly shot studio portrait of professional ${
         character.trigger_word
       } ${normalizeGender(character.gender)}${hairStyle(character)}${glasses(
         character
@@ -268,7 +268,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Cityscape"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `Urban professional portrait of a ${character.trigger_word} ${
+      `a professional portrait of a ${character.trigger_word} ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character
@@ -281,7 +281,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Cityscape"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `Metropolitan executive portrait of a ${character.trigger_word} ${
+      `an executive portrait of a ${character.trigger_word} ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character
@@ -308,11 +308,11 @@ const PROMPT_TEMPLATES = [
     id: "nature_02",
     name: "Lush Wildflower Field",
     description:
-      "Captivating portrait in a lush green field with colorful wildflowers.",
+      "a realistic portrait in a lush green field with colorful wildflowers.",
 
     compatibleBackgroundThemes: ["Nature"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `a captivating, photorealistic image of a ${character.trigger_word} ${
+      `a professional photorealistic portrait of a ${character.trigger_word} ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character
@@ -381,7 +381,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Medical"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `Healthcare professional portrait of a ${character.trigger_word} ${
+      `a professional portrait of a ${character.trigger_word} ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character
@@ -394,7 +394,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Medical"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `Clinical specialist portrait of a ${character.trigger_word} ${
+      `a clinical specialist portrait of a ${character.trigger_word} ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character
@@ -422,7 +422,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Home Office"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `Work-from-home executive portrait of a ${character.trigger_word} ${
+      `a professional work-from-home executive portrait of a ${character.trigger_word} ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character
@@ -438,7 +438,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Academic"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `Professional academic portrait of a ${character.trigger_word} ${
+      `a professional academic portrait of a ${character.trigger_word} ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character
@@ -451,7 +451,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Academic"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `Distinguished academic headshot of a ${character.trigger_word} ${
+      `a distinguished academic headshot of a ${character.trigger_word} ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character
@@ -468,7 +468,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Conference Speaker"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `Professional keynote speaker portrait of a ${character.trigger_word} ${
+      `a professional keynote speaker portrait of a ${character.trigger_word} ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character
@@ -482,7 +482,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Conference Speaker"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `Professional executive speaker portrait of a ${character.trigger_word} ${
+      `a professional executive speaker portrait of a ${character.trigger_word} ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character
@@ -496,7 +496,7 @@ const PROMPT_TEMPLATES = [
 
     compatibleBackgroundThemes: ["Conference Speaker"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `Professional expert presenter portrait of a ${character.trigger_word} ${
+      `a professional expert presenter portrait of a ${character.trigger_word} ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character

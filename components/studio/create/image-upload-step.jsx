@@ -727,7 +727,7 @@ const ImageUploadStep = ({
         }
       }, 100); // Small delay to ensure state is updated
     },
-    [uploadState.files.length]
+    [uploadState.files.length, uploadState.uploadedFiles, formData.uploadState]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

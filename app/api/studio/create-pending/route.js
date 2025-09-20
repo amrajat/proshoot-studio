@@ -68,6 +68,7 @@ const buildPendingStudioRecord = (studioFormData, user) => {
     status: "PAYMENT_PENDING",
     provider_id: null,
     provider: "MODAL",
+    weights: `${studioID}/lora.safetensors`,
     datasets_object_key,
     style_pairs,
     user_attributes,

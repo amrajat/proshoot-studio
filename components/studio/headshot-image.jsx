@@ -3,7 +3,7 @@
 import { useState, memo } from "react";
 import Image from "next/image";
 import { PhotoView } from "react-photo-view";
-import { Heart, Loader2, ZoomIn, Shield, Download } from "lucide-react";
+import { Heart, Loader2, ZoomIn, Shield, Download, Edit, Copy, WandSparkles, Pencil, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,86 @@ const HeadshotImage = memo(function HeadshotImage({
 }) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  // Function to handle image download via authenticated R2 API
+  const handleDownload = async (imageUrl) => {
+    if (isDownloading) return; // Prevent multiple simultaneous downloads
+    
+    try {
+      setIsDownloading(true);
+      
+      // Extract object key from Cloudflare Worker JWT token
+      let objectKey = null;
+      try {
+        const url = new URL(imageUrl);
+        const token = url.searchParams.get('token');
+        
+        if (token) {
+          // Decode JWT payload to get the object key
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          objectKey = payload.key;
+        }
+      } catch (e) {
+        throw new Error('Invalid image URL format');
+      }
+
+      if (!objectKey) {
+        throw new Error('Could not extract object key from image URL');
+      }
+
+      // Use authenticated R2 download API
+      const response = await fetch('/api/r2/download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          objectKey,
+          bucketName: 'images'
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Download failed: ${response.status}`);
+      }
+
+      // Get the filename from Content-Disposition header
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = 'headshot.png';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      // Get the blob and trigger download
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      
+      link.href = downloadUrl;
+      link.download = filename;
+      link.style.display = 'none';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Cleanup
+      setTimeout(() => {
+        window.URL.revokeObjectURL(downloadUrl);
+      }, 100);
+      
+    } catch (error) {
+      // Fallback to opening in new tab if download fails
+      window.open(imageUrl, '_blank');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   // Determine which image to display based on preferred type
   let imageUrl, thumbnailUrl;
@@ -194,12 +274,43 @@ const HeadshotImage = memo(function HeadshotImage({
         )}
       </div>
 
-      {/* Download Button - Separate from image container */}
-      <Button variant="outline" size="sm" className="w-full gap-2" asChild>
-        <Link href={thumbnailUrl} target="_blank">
-          <Download className="h-4 w-4" /> Download
-        </Link>
-      </Button>
+      {/* Action Buttons - Icon Only */}
+      <div className="flex gap-2 w-full">
+        <Button 
+          variant="secondary" 
+          size="sm" 
+          className="flex-1 p-2" 
+          onClick={() => handleDownload(thumbnailUrl)}
+          disabled={isDownloading}
+          aria-label={isDownloading ? "Downloading image..." : "Download image"}
+        >
+          {isDownloading ? (
+            <Loader2 className="h-4 w-4 text-primary animate-spin" />
+          ) : (
+            <Download className="h-4 w-4 text-primary" />
+          )}
+        </Button>
+        
+        <Button 
+          variant="secondary" 
+          size="sm" 
+          className="flex-1 p-2"
+          aria-label="Edit image"
+          onClick={() => console.log('Edit clicked')}
+        >
+          <WandSparkles className="h-4 w-4 text-destructive" />
+        </Button>
+        
+        <Button 
+          variant="secondary" 
+          size="sm" 
+          className="flex-1 p-2"
+          aria-label="Generate similar image"
+          onClick={() => console.log('Generate similar clicked')}
+        >
+          <Sparkles className="h-4 w-4 text-success" />
+        </Button>
+      </div>
     </div>
   );
 });

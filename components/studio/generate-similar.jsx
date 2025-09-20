@@ -141,8 +141,7 @@ const GenerateSimilar = ({
               </div>
               <div className="flex items-start gap-2 text-sm text-muted-foreground">
                 <p>
-                  Once generated, you will receive an email notification 
-                  or you can refresh this page after a minute or two.
+                  The process will start in background. You can refresh this page after a minute or two.
                 </p>
               </div>
             </div>

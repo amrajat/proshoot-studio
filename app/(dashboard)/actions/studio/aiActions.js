@@ -291,7 +291,7 @@ export async function generateSimilarImageAction(formData) {
           weights_url: weightsUrl,
           user_id: user.id,
           prompt: headshot.prompt,
-          sendemail: true,
+          sendemail: false,
           user_email: user.email,
           batch_size: 4
         })

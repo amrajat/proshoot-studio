@@ -39,7 +39,7 @@ export const fetchUserCredits = async (userId) => {
 /**
  * Check if user has sufficient credits for a plan
  * @param {Object} credits - User credits object
- * @param {string} planType - Plan type (starter, professional, studio)
+ * @param {string} planType - Plan type (starter, professional, studio, balance)
  * @param {number} requiredAmount - Required credit amount
  * @returns {boolean} Whether user has sufficient credits
  */
@@ -48,4 +48,24 @@ export const hasSufficientCredits = (credits, planType, requiredAmount = 1) => {
 
   const availableCredits = credits[planType.toLowerCase()] || 0;
   return availableCredits >= requiredAmount;
+};
+
+/**
+ * Check if user has sufficient balance credits for AI operations
+ * @param {Object} credits - User credits object
+ * @param {number} requiredAmount - Required credit amount
+ * @returns {boolean} Whether user has sufficient balance credits
+ */
+export const hasSufficientBalanceCredits = (credits, requiredAmount = 25) => {
+  return hasSufficientCredits(credits, 'balance', requiredAmount);
+};
+
+/**
+ * Get available balance credits
+ * @param {Object} credits - User credits object
+ * @returns {number} Available balance credits
+ */
+export const getBalanceCredits = (credits) => {
+  if (!credits) return 0;
+  return credits.balance || 0;
 };

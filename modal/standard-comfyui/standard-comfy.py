@@ -353,7 +353,7 @@ class ComfyUI:
             # all queued inputs will be marked "Failed", so you need to catch these errors in your client and then retry
             raise Exception("ComfyUI server is not healthy, stopping container")
 
-    def generate_headshots(self, studio_id: str, weights_url: str, user_id: str, prompt: str, sendemail: bool, user_email: str):
+    def generate_headshots(self, studio_id: str, weights_url: str, user_id: str, prompt: str, sendemail: bool, user_email: str, batch_size: int = 20):
         """Generate 4 headshot images using LoRA weights and handle all processing."""
         init_sentry()
         logging.basicConfig(level=logging.INFO)
@@ -389,7 +389,7 @@ class ComfyUI:
             try:
                 logger.info("Step 2: Generating images with ComfyUI...")
                 print("Step 2: Generating images with ComfyUI...")
-                image_paths = self.generate_images_with_lora(prompt, studio_id, logger)
+                image_paths = self.generate_images_with_lora(prompt, studio_id, batch_size, logger)
                 logger.info(f"Step 2: Generated {len(image_paths)} images successfully")
                 print(f"Step 2: Generated {len(image_paths)} images successfully")
             except Exception as e:
@@ -566,7 +566,7 @@ class ComfyUI:
             logger.error(f"Failed to download LoRA weights: {str(e)}")
             raise e
 
-    def generate_images_with_lora(self, prompt: str, studio_id: str, logger):
+    def generate_images_with_lora(self, prompt: str, studio_id: str, batch_size: int, logger):
         """Generate 4 images using ComfyUI with LoRA weights."""
         try:
             # Ensure LoRA directory exists
@@ -579,8 +579,9 @@ class ComfyUI:
             # Update workflow with prompt
             workflow_data["6"]["inputs"]["text"] = prompt
             
-            # Set batch size to 4 for generating 4 images
-            workflow_data["5"]["inputs"]["batch_size"] = 20
+            # Set batch size for generating images
+            workflow_data["5"]["inputs"]["batch_size"] = batch_size
+            logger.info(f"Using batch_size: {batch_size}")
             
             # Set unique filename prefix
             client_id = f"{studio_id}_{uuid.uuid4().hex}"
@@ -1083,6 +1084,7 @@ class ComfyUI:
             prompt = request_data["prompt"]
             sendemail = request_data.get("sendemail", False)
             user_email = request_data.get("user_email", "")
+            batch_size = request_data.get("batch_size", 20)
             
             # Validate email if sendemail is True
             if sendemail and not user_email:
@@ -1096,7 +1098,8 @@ class ComfyUI:
                 user_id=user_id,
                 prompt=prompt,
                 sendemail=sendemail,
-                user_email=user_email
+                user_email=user_email,
+                batch_size=batch_size
             )
             
             # Return immediately
@@ -1115,7 +1118,7 @@ class ComfyUI:
             raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
     @modal.method()
-    def generate_headshots_background(self, studio_id: str, weights_url: str, user_id: str, prompt: str, sendemail: bool, user_email: str):
+    def generate_headshots_background(self, studio_id: str, weights_url: str, user_id: str, prompt: str, sendemail: bool, user_email: str, batch_size: int = 20):
         """Background method that does the actual headshot generation."""
         try:
             # Call the existing generation method
@@ -1125,7 +1128,8 @@ class ComfyUI:
                 user_id=user_id,
                 prompt=prompt,
                 sendemail=sendemail,
-                user_email=user_email
+                user_email=user_email,
+                batch_size=batch_size
             )
             logging.info(f"Background headshot generation completed for studio_id: {studio_id}")
             return result

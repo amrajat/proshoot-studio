@@ -3,12 +3,13 @@
 import { useState, memo } from "react";
 import Image from "next/image";
 import { PhotoView } from "react-photo-view";
-import { Heart, Loader2, ZoomIn, Shield, Download, Edit, Copy, WandSparkles, Pencil, Sparkles } from "lucide-react";
+import { Heart, Loader2, ZoomIn, Shield, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { InlineLoader } from "@/components/shared/universal-loader";
-import Link from "next/link";
+import AIEditor from "./ai-editor";
+import GenerateSimilar from "./generate-similar";
 
 /**
  * Optimized headshot image component with lazy loading and favorite toggle
@@ -21,6 +22,7 @@ import Link from "next/link";
  * @param {boolean} props.isTogglingFavorite - Loading state for favorite toggle
  * @param {string} props.preferredImageType - Which image to prioritize: 'hd', 'result', or 'preview'
  * @param {array} props.allImages - All images in the current section for PhotoView navigation
+ * @param {string} props.studioStatus - Studio status for conditional button behavior
  */
 const HeadshotImage = memo(function HeadshotImage({
   headshot,
@@ -31,6 +33,8 @@ const HeadshotImage = memo(function HeadshotImage({
   index,
   preferredImageType = "auto", // 'auto', 'hd', 'result', 'preview'
   allImages = [], // All images for PhotoView navigation
+  studioStatus = "COMPLETED", // Studio status for button behavior
+  studioId, // Studio ID for transaction tracking
 }) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -291,25 +295,9 @@ const HeadshotImage = memo(function HeadshotImage({
           )}
         </Button>
         
-        <Button 
-          variant="secondary" 
-          size="sm" 
-          className="flex-1 p-2"
-          aria-label="Edit image"
-          onClick={() => console.log('Edit clicked')}
-        >
-          <WandSparkles className="h-4 w-4 text-destructive" />
-        </Button>
+        <AIEditor studioStatus={studioStatus} headshot={headshot} studioId={studioId} />
         
-        <Button 
-          variant="secondary" 
-          size="sm" 
-          className="flex-1 p-2"
-          aria-label="Generate similar image"
-          onClick={() => console.log('Generate similar clicked')}
-        >
-          <Sparkles className="h-4 w-4 text-success" />
-        </Button>
+        <GenerateSimilar studioStatus={studioStatus} headshot={headshot} studioId={studioId} />
       </div>
     </div>
   );

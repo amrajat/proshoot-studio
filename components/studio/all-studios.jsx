@@ -458,6 +458,8 @@ export default function AllStudios({ studioId, currentUserId }) {
                       showFavoriteToggle={false}
                       preferredImageType="preview"
                       allImages={headshots}
+                      studioStatus={studio.status}
+                      studioId={studio.id}
                     />
                   ))}
                 </div>
@@ -550,6 +552,8 @@ export default function AllStudios({ studioId, currentUserId }) {
                             )}
                             preferredImageType={imageData.preferredType}
                             allImages={allFavoriteImages}
+                            studioStatus={studio.status}
+                            studioId={studio.id}
                           />
                         ))}
                     </div>
@@ -607,6 +611,8 @@ export default function AllStudios({ studioId, currentUserId }) {
                             isTogglingFavorite={isToggling}
                             preferredImageType="result"
                             allImages={resultImages}
+                            studioStatus={studio.status}
+                            studioId={studio.id}
                           />
                         );
                       })}
@@ -684,6 +690,8 @@ export default function AllStudios({ studioId, currentUserId }) {
                           isTogglingFavorite={isToggling}
                           preferredImageType="hd"
                           allImages={hdImages}
+                          studioStatus={studio.status}
+                          studioId={studio.id}
                         />
                       );
                     })}

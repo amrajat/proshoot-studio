@@ -133,6 +133,16 @@ export async function POST(request) {
 
     const creditType = creditTypeMap[plan.toLowerCase()] || "BALANCE";
 
+    // Define balance credits to add based on plan
+    const planBalanceCredits = {
+      starter: 1000,
+      professional: 5000,
+      team: 5000,
+      studio: 10000,
+    };
+
+    const balanceCreditsToAdd = (planBalanceCredits[plan.toLowerCase()] || 0) * creditsQuantity;
+
     // Create purchase record using RPC function (automatically handles credits)
     const { data: purchaseUserId, error: purchaseError } = await supabase.rpc(
       "create_purchase_record",
@@ -170,6 +180,37 @@ export async function POST(request) {
     }
 
     console.log(`Purchase record created for ${purchaseUserId}`);
+
+    // Add balance credits based on plan (in addition to the plan-specific credits)
+    if (balanceCreditsToAdd > 0) {
+      const { error: balanceError } = await supabase
+        .from("credits")
+        .update({
+          balance: supabase.raw(`balance + ${balanceCreditsToAdd}`),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user);
+
+      if (balanceError) {
+        console.error("Failed to add balance credits:", balanceError);
+        // Don't fail the webhook for balance credit errors, just log
+      } else {
+        console.log(`Added ${balanceCreditsToAdd} balance credits for plan ${plan}`);
+        
+        // Create transaction record for balance credits
+        await supabase
+          .from("transactions")
+          .insert({
+            user_id: user,
+            context: "PERSONAL",
+            credits_used: balanceCreditsToAdd,
+            credit_type: "BALANCE",
+            description: `Balance credits bonus for ${plan.toUpperCase()} plan purchase (${balanceCreditsToAdd} credits)`,
+          })
+          .select()
+          .single();
+      }
+    }
 
     // Handle Studio creation if studio_id exists
     if (

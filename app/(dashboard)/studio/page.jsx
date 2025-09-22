@@ -95,19 +95,20 @@ export default function StudioListPage() {
       {/* Studio Management Section */}
       <section>
         <div className="mb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
                 All Headshots
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Manage your and your team headshots here.
               </p>
             </div>
-            <Button asChild>
+            <Button asChild className="w-fit">
               <Link href="/studio/create">
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Create Headshots
+                <span className="hidden xs:inline">Create Headshots</span>
+                <span className="xs:hidden">Create</span>
               </Link>
             </Button>
           </div>
@@ -162,10 +163,11 @@ export default function StudioListPage() {
                   No headshots found in this organization. Create a studio to
                   get started.
                 </p>
-                <Button asChild>
+                <Button asChild className="w-fit mx-auto">
                   <Link href="/studio/create">
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Create Headshots
+                    <span className="hidden xs:inline">Create Headshots</span>
+                    <span className="xs:hidden">Create</span>
                   </Link>
                 </Button>
               </div>

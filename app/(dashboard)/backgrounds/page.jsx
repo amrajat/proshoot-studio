@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, AlertCircle, Settings, Image, User, Users } from "lucide-react";
 import { CenteredLoader } from "@/components/shared/universal-loader";
+import UniversalLoader from "@/components/shared/universal-loader";
 import OptimizedImage from "@/components/shared/optimized-image";
 
 export default function ManageBackgroundsPage() {
@@ -26,6 +27,7 @@ export default function ManageBackgroundsPage() {
   const [approvedBackgrounds, setApprovedBackgrounds] = useState([]); // Now stores array of background objects
   const [activeTab, setActiveTab] = useState("All");
   const [selectedGender, setSelectedGender] = useState("woman");
+  const [isGenderChanging, setIsGenderChanging] = useState(false);
 
   const supabase = createSupabaseBrowserClient();
 
@@ -117,9 +119,17 @@ export default function ManageBackgroundsPage() {
     };
   };
 
-  const handleGenderChange = (gender) => {
+  const handleGenderChange = async (gender) => {
+    if (isGenderChanging || selectedGender === gender) return;
+    
+    setIsGenderChanging(true);
     setSelectedGender(gender);
     setActiveTab("All"); // Reset to "All" tab when gender changes
+    
+    // Small delay to allow UI to update
+    setTimeout(() => {
+      setIsGenderChanging(false);
+    }, 300);
   };
 
   // Create background options with gender-specific image paths
@@ -142,41 +152,44 @@ export default function ManageBackgroundsPage() {
     return (
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
               <Image className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">
-                Available Background Styles
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+                Available Backgrounds
               </h1>
-              <p className="text-muted-foreground">
-                Management of restrictions is available for organization
-                administrators.
+              <p className="text-sm sm:text-base text-muted-foreground">
+              We can add more options if you need.
               </p>
             </div>
           </div>
           
           {/* Gender Switch */}
-          <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg">
+          <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg w-fit">
             <Button
               variant={selectedGender === "woman" ? "default" : "ghost"}
               size="sm"
               onClick={() => handleGenderChange("woman")}
-              className="flex items-center gap-2 px-3 py-2"
+              disabled={isGenderChanging}
+              className="flex items-center gap-2 px-3 py-2 transition-all duration-200"
             >
               <User className="w-4 h-4" />
-              Woman
+              <span className="hidden xs:inline">Woman</span>
+              <span className="xs:hidden">W</span>
             </Button>
             <Button
               variant={selectedGender === "man" ? "default" : "ghost"}
               size="sm"
               onClick={() => handleGenderChange("man")}
-              className="flex items-center gap-2 px-3 py-2"
+              disabled={isGenderChanging}
+              className="flex items-center gap-2 px-3 py-2 transition-all duration-200"
             >
               <Users className="w-4 h-4" />
-              Man
+              <span className="hidden xs:inline">Man</span>
+              <span className="xs:hidden">M</span>
             </Button>
           </div>
         </div>
@@ -196,8 +209,17 @@ export default function ManageBackgroundsPage() {
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-              {itemsToDisplay.map((item) => (
+            {isGenderChanging ? (
+              <div className="py-12">
+                <UniversalLoader 
+                  size="lg" 
+                  variant="centered" 
+                  text={`Loading ${selectedGender} backgrounds`}
+                />
+              </div>
+            ) : (
+              <div key={selectedGender} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+                {itemsToDisplay.map((item) => (
                 <Card
                   key={item.name}
                   className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200"
@@ -219,7 +241,8 @@ export default function ManageBackgroundsPage() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
@@ -245,41 +268,45 @@ export default function ManageBackgroundsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
             <Settings className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
               Background Preferences
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Manage background options for{" "}
               {selectedContext?.name || "your organization"}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
           {/* Gender Switch */}
-          <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg">
+          <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg w-fit">
             <Button
               variant={selectedGender === "woman" ? "default" : "ghost"}
               size="sm"
               onClick={() => handleGenderChange("woman")}
-              className="flex items-center gap-2 px-3 py-2"
+              disabled={isGenderChanging}
+              className="flex items-center gap-2 px-3 py-2 transition-all duration-200"
             >
               <User className="w-4 h-4" />
-              Woman
+              <span className="hidden xs:inline">Woman</span>
+              <span className="xs:hidden">W</span>
             </Button>
             <Button
               variant={selectedGender === "man" ? "default" : "ghost"}
               size="sm"
               onClick={() => handleGenderChange("man")}
-              className="flex items-center gap-2 px-3 py-2"
+              disabled={isGenderChanging}
+              className="flex items-center gap-2 px-3 py-2 transition-all duration-200"
             >
               <Users className="w-4 h-4" />
-              Man
+              <span className="hidden xs:inline">Man</span>
+              <span className="xs:hidden">M</span>
             </Button>
           </div>
           {isCurrentUserOrgAdmin && (
@@ -347,8 +374,17 @@ export default function ManageBackgroundsPage() {
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-              {itemsToDisplay.map((item) => {
+            {isGenderChanging ? (
+              <div className="py-12">
+                <UniversalLoader 
+                  size="lg" 
+                  variant="centered" 
+                  text={`Loading ${selectedGender} backgrounds`}
+                />
+              </div>
+            ) : (
+              <div key={selectedGender} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+                {itemsToDisplay.map((item) => {
                 const isApproved = approvedBackgrounds.some(approved => approved.id === item.id);
                 const isInteractive =
                   restrictBackgrounds && isCurrentUserOrgAdmin;
@@ -415,7 +451,8 @@ export default function ManageBackgroundsPage() {
                   </Card>
                 );
               })}
-            </div>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       )}

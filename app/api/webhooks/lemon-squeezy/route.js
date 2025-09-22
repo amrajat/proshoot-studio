@@ -135,10 +135,10 @@ export async function POST(request) {
 
     // Define balance credits to add based on plan
     const planBalanceCredits = {
-      starter: 1000,
-      professional: 5000,
-      team: 5000,
-      studio: 10000,
+      starter: 100,
+      professional: 500,
+      team: 500,
+      studio: 1000,
     };
 
     const balanceCreditsToAdd = (planBalanceCredits[plan.toLowerCase()] || 0) * creditsQuantity;
@@ -183,32 +183,46 @@ export async function POST(request) {
 
     // Add balance credits based on plan (in addition to the plan-specific credits)
     if (balanceCreditsToAdd > 0) {
-      const { error: balanceError } = await supabase
+      // First, get the current balance
+      const { data: currentCredits, error: fetchError } = await supabase
         .from("credits")
-        .update({
-          balance: supabase.raw(`balance + ${balanceCreditsToAdd}`),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user);
+        .select("balance")
+        .eq("user_id", user)
+        .single();
 
-      if (balanceError) {
-        console.error("Failed to add balance credits:", balanceError);
+      if (fetchError) {
+        console.error("Failed to fetch current balance:", fetchError);
         // Don't fail the webhook for balance credit errors, just log
       } else {
-        console.log(`Added ${balanceCreditsToAdd} balance credits for plan ${plan}`);
-        
-        // Create transaction record for balance credits
-        await supabase
-          .from("transactions")
-          .insert({
-            user_id: user,
-            context: "PERSONAL",
-            credits_used: balanceCreditsToAdd,
-            credit_type: "BALANCE",
-            description: `Balance credits bonus for ${plan.toUpperCase()} plan purchase (${balanceCreditsToAdd} credits)`,
+        // Update with the new balance
+        const newBalance = (currentCredits?.balance || 0) + balanceCreditsToAdd;
+        const { error: balanceError } = await supabase
+          .from("credits")
+          .update({
+            balance: newBalance,
+            updated_at: new Date().toISOString(),
           })
-          .select()
-          .single();
+          .eq("user_id", user);
+
+        if (balanceError) {
+          console.error("Failed to add balance credits:", balanceError);
+          // Don't fail the webhook for balance credit errors, just log
+        } else {
+          console.log(`Added ${balanceCreditsToAdd} balance credits for plan ${plan}`);
+        
+          // Create transaction record for balance credits
+          await supabase
+            .from("transactions")
+            .insert({
+              user_id: user,
+              context: "PERSONAL",
+              credits_used: balanceCreditsToAdd,
+              credit_type: "BALANCE",
+              description: `Balance credits bonus for ${plan.toUpperCase()} plan purchase (${balanceCreditsToAdd} credits)`,
+            })
+            .select()
+            .single();
+        }
       }
     }
 

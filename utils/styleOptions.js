@@ -1882,7 +1882,11 @@ const generateThemeId = (theme) => generateId(theme);
 export const getGenderBasedBackgroundPath = (imagePath, gender) => {
   // Remove leading slash if present
   const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
-  return `/images/styles/backgrounds/${gender}/${cleanPath}`;
+  
+  // Use 'man' backgrounds for 'non-binary' gender (fallback)
+  const backgroundGender = gender === 'non-binary' ? 'man' : gender;
+  
+  return `/images/styles/backgrounds/${backgroundGender}/${cleanPath}`;
 };
 
 // Create a flattened, enriched array of all background options with theme and a unique ID

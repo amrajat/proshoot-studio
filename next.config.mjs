@@ -170,7 +170,7 @@ export default withSentryConfig(nextConfig, {
   // https://github.com/getsentry/sentry-webpack-plugin#options
 
   org: "prime-ai-company",
-  project: "javascript-nextjs",
+  project: "proshoot-studio",
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,

@@ -315,7 +315,7 @@ export async function generateSimilarImageAction(formData) {
           p_credits_to_deduct: CREDITS_COST,
           p_context: "PERSONAL",
           p_studio_id: studioId,
-          p_description: `Generate Similar Images - ${headshot.prompt.substring(0, 50)}... (${CREDITS_COST} credits)`,
+          p_description: `Generate Similar Images (${CREDITS_COST} credits)`,
         }
       );
 

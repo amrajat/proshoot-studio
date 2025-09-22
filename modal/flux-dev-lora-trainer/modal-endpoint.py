@@ -55,7 +55,7 @@ image = (
     .apt_install("git", "libgl1", "libglib2.0-0", "unzip", "wget", "curl")
     .pip_install("torch", "torchvision", "torchaudio", extra_options="--index-url https://download.pytorch.org/whl/cu121")
     .pip_install("fastapi[standard]", "boto3", "requests", "httpx")
-    .pip_install("sentry-sdk[fastapi]")
+    .pip_install("sentry-sdk[fastapi]", "supabase")
     .env({
         "HF_HUB_ENABLE_HF_TRANSFER": "1",
         "HF_HOME": "/cache",

@@ -235,8 +235,8 @@ export async function POST(request) {
     
     const processedCount = successful;
     
-    // Studio status will be updated to COMPLETED by ComfyUI when sendemail=true (last prompt)
-    // No need to update status here as it's handled in the ComfyUI function
+    // Studio status is already updated to COMPLETED by LoRA trainer when training finished
+    // ComfyUI will generate images for a studio that's already marked as COMPLETED
     
     return createSuccessResponse({
       message: 'Headshot generation initiated for all prompts',

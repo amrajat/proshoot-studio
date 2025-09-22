@@ -262,7 +262,7 @@ app = modal.App(name="headshot-generator-2", image=image)
 @app.cls(
     scaledown_window=60,  # 1 minute container keep alive after it processes an input
     gpu="H100",
-    max_containers=5,
+    max_containers=100,
     timeout=1800,  # 30 minutes timeout to match ComfyUI workflow timeout
     volumes={"/cache": vol},
     secrets=[
@@ -272,7 +272,7 @@ app = modal.App(name="headshot-generator-2", image=image)
         modal.Secret.from_name("cloudflare-r2-credentials"),
     ],
 )
-@modal.concurrent(max_inputs=5)
+@modal.concurrent(max_inputs=1)
 class ComfyUI:
     port: int = 8000
 
@@ -421,29 +421,19 @@ class ComfyUI:
                 print(f"Step 4 FAILED: {str(e)}")
                 raise Exception(f"Failed to update database: {str(e)}")
             
-            # Step 5: Update studio status to COMPLETED if this is the final prompt (sendemail=true)
-            if sendemail:
-                try:
-                    logger.info("Step 5a: Updating studio status to COMPLETED...")
-                    print("Step 5a: Updating studio status to COMPLETED...")
-                    self.update_studio_status_to_completed(studio_id, supabase, logger)
-                    logger.info("Step 5a: Studio status updated to COMPLETED")
-                    print("Step 5a: Studio status updated to COMPLETED")
-                except Exception as e:
-                    logger.error(f"Step 5a FAILED: {str(e)}")
-                    print(f"Step 5a FAILED: {str(e)}")
-                    # Don't fail the entire process for status update error
+            # Step 5: Studio status is now updated by LoRA trainer when training completes
+            # No need to update status here since it's already COMPLETED when training finished
             
-            # Step 6: Send email notification if requested
+            # Step 5: Send email notification if requested
             if sendemail and user_email:
-                logger.info("Step 6: Sending email notification...")
-                print("Step 6: Sending email notification...")
+                logger.info("Step 5: Sending email notification...")
+                print("Step 5: Sending email notification...")
                 self.send_completion_email(user_email, studio_id, logger)
-                logger.info("Step 6: Email sent successfully")
-                print("Step 6: Email sent successfully")
+                logger.info("Step 5: Email sent successfully")
+                print("Step 5: Email sent successfully")
             else:
-                logger.info("Step 6: Email notification skipped (not requested or no email provided)")
-                print("Step 6: Email notification skipped (not requested or no email provided)")
+                logger.info("Step 5: Email notification skipped (not requested or no email provided)")
+                print("Step 5: Email notification skipped (not requested or no email provided)")
             
             logger.info(f"Successfully completed headshot generation for studio_id: {studio_id}")
             print(f"Successfully completed headshot generation for studio_id: {studio_id}")

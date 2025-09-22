@@ -23,6 +23,7 @@ import hmac
 import hashlib
 from functools import wraps
 from botocore.exceptions import ClientError, BotoCoreError
+from supabase import create_client, Client
 
 # Add ai-toolkit to path
 sys.path.insert(0, "/root/ai-toolkit")
@@ -586,6 +587,39 @@ async def send_webhook_callback(webhook_url: str, payload: dict, logger: logging
             wait_time = 2 ** attempt
             await asyncio.sleep(wait_time)
 
+@retry_with_backoff(
+    max_retries=3,
+    base_delay=1.0,
+    exceptions=(Exception,)
+)
+def update_studio_status_to_completed(studio_id: str, logger: logging.Logger):
+    """Update studio status to COMPLETED in Supabase database."""
+    try:
+        logger.info(f"Updating studio status to COMPLETED for studio_id: {studio_id}")
+        
+        # Initialize Supabase client
+        supabase_url = os.environ.get("SUPABASE_URL")
+        supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+        
+        if not supabase_url or not supabase_key:
+            raise Exception("Supabase credentials not found in environment variables")
+        
+        supabase = create_client(supabase_url, supabase_key)
+        
+        # Update studio status
+        result = supabase.table('studios').update({'status': 'COMPLETED'}).eq('id', studio_id).execute()
+        
+        # Check if update was successful
+        if hasattr(result, 'error') and result.error:
+            logger.error(f"Database status update error: {result.error}")
+            raise Exception(f"Failed to update studio status: {result.error}")
+        
+        logger.info(f"Successfully updated studio status to COMPLETED for studio_id: {studio_id}")
+        
+    except Exception as e:
+        logger.error(f"Failed to update studio status: {str(e)}")
+        raise e
+
 @app.function(
     gpu="H200",
     timeout=7200,
@@ -595,6 +629,7 @@ async def send_webhook_callback(webhook_url: str, payload: dict, logger: logging
         modal.Secret.from_name("huggingface-token"),
         modal.Secret.from_name("sentry-credentials"),
         modal.Secret.from_name("webhook-credentials"),
+        modal.Secret.from_name("supabase-credentials"),
     ],
     cpu=10.0,
     memory=32768,
@@ -730,6 +765,16 @@ async def run_training_background(training_request_dict: dict):
         
         # Upload weights with retry logic
         weights_url = upload_weights(s3_client, lora_file, studio_id)
+        
+        # Update studio status to COMPLETED immediately after successful upload
+        try:
+            logger.info("🎯 Updating studio status to COMPLETED...")
+            update_studio_status_to_completed(studio_id, logger)
+            logger.info("✅ Studio status updated to COMPLETED")
+        except Exception as status_error:
+            logger.error(f"Failed to update studio status: {status_error}")
+            # Don't fail the entire process for status update error, but log it
+            sentry_sdk.capture_exception(status_error)
         
         # Clean up local safetensors file after successful upload
         try:

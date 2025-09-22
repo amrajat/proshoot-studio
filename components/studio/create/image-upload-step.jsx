@@ -42,7 +42,7 @@ import { Separator } from "@/components/ui/separator";
 
 const MB = 1024 * 1024;
 const MAX_FILE_SIZE = 25 * MB;
-const MAX_IMAGES = 12;
+const MAX_IMAGES = 25;
 const MIN_IMAGES = 8;
 const CROP_DIMENSION = 1024;
 const CROP_ASPECT = 1;

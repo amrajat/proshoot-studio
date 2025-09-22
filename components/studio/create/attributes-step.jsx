@@ -68,7 +68,7 @@ const HAIR_LENGTH = {
     "layered cut",
     "updo",
     "bun",
-    "hisab",
+    "hijab",
   ],
   "non-binary": [
     "bald",
@@ -143,7 +143,6 @@ const HAIR_COLOR = {
     "silver",
     "gray",
     "white",
-    "dark brown",
     "espresso",
     "chestnut brown",
     "strawberry blonde",
@@ -192,7 +191,7 @@ const AttributesStep = ({ formData, errors }) => {
   // Check if hair length disables hair color and type
   const isHairDisabled = useMemo(() => {
     const hairLength = formData.hairLength?.toLowerCase();
-    return hairLength === "bald" || hairLength === "hisab";
+    return hairLength === "bald" || hairLength === "hijab";
   }, [formData.hairLength]);
 
   const handleFieldChange = (field, value) => {
@@ -200,8 +199,8 @@ const AttributesStep = ({ formData, errors }) => {
     const processedValue = field === "studioName" ? value.trim() : value;
     updateFormField(field, processedValue);
 
-    // Clear hair color and type if hair length is bald or hisab
-    if (field === "hairLength" && (value === "bald" || value === "hisab")) {
+    // Clear hair color and type if hair length is bald or hijab
+    if (field === "hairLength" && (value === "bald" || value === "hijab")) {
       updateFormField("hairColor", "");
       updateFormField("hairType", "");
     }
@@ -265,7 +264,7 @@ const AttributesStep = ({ formData, errors }) => {
       }
     }
 
-    // Hair color and type are required unless hair length is bald or hisab
+    // Hair color and type are required unless hair length is bald or hijab
     if (!isHairDisabled) {
       if (!formData.hairColor) {
         newErrors.hairColor = "Hair color is required";
@@ -463,7 +462,7 @@ const AttributesStep = ({ formData, errors }) => {
               <Info className="h-4 w-4" />
               <AlertDescription>
                 Hair color and type are not applicable when hair length is
-                "bald" or "hisab".
+                "bald" or "hijab".
               </AlertDescription>
             </Alert>
           )}

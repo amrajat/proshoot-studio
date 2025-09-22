@@ -7,92 +7,58 @@ const verifyApiKey = (apiKey) => {
   if (!apiKey || !env.WEBHOOK_SECRET) {
     return false;
   }
-  
+
   return crypto.timingSafeEqual(
     Buffer.from(apiKey),
     Buffer.from(env.WEBHOOK_SECRET)
   );
 };
 
-// Create error response helper
 const createErrorResponse = (message, status = 400) => {
   return NextResponse.json({ error: message }, { status });
 };
 
-// Create success response helper
 const createSuccessResponse = (data) => {
   return NextResponse.json({ success: true, ...data });
 };
-/**
- * PROMPT TEMPLATES BY THEME
- *
- * This file contains all prompt templates organized by their compatibleBackgroundThemes.
- * Each theme lists all prompt templates that can be used with it.
- *
- * Themes and their prompt templates:
- *
- * 1. Studio Theme (1 template)
- *    - Studio Colors
- *
- * 2. Creative Theme (2 templates)
- *    - Creative Professionals
- *    - Artistic Professional
- *
- * 3. Office Theme (6 templates)
- *    - Office Headshots
- *    - Office Headshots 2
- *    - High-Rise Office
- *    - Modern Office
- *    - Minimalist Office
- *    - Professional Office Portrait (multiple variations)
- *
- * 4. Monochrome Theme (1 template)
- *    - Monochrome
- *
- * 5. Cityscape Theme (2 templates)
- *    - Cityscape
- *    - Metropolitan Executive
- *
- * 6. Nature Theme (5 templates)
- *    - Nature
- *    - Vibrant Garden
- *    - Dandelion Field
- *    - Wooded Area
- *    - Natural Landscape
- *
- * 7. Medical Theme (2 templates)
- *    - Medical
- *    - Clinical Specialist
- *
- * 8. Home Office Theme (2 templates)
- *    - Home Office
- *    - Work From Home Executive
- *
- * 9. Academic Theme (1 template)
- *    - University Library
- *
- * 10. Conference Speaker Theme (3 templates)
- *     - Keynote Speaker
- *     - Panel Discussion Leader
- *     - Workshop Leader
- *
- */
 
 const hairStyle = (character) => {
-  if (
-    !character.hairLength ||
-    character.hairLength === "Hisab"
-  ) {
+  // Return empty string if no hair length or if wearing hijab
+  if (!character.hairLength || character.hairLength.toLowerCase() === "hijab") {
     return "";
   }
-  if(character.hairLength === "Bald") {
-    return "bald head";
+  
+  // Handle bald case
+  if (character.hairLength.toLowerCase() === "bald") {
+    return " with a bald head";
   }
-  return `, ${character.hairLength} ${character.hairColor} ${character.hairType} hair`;
+  
+  // Build hair description with available attributes
+  const hairParts = [];
+  
+  // Always include hair length (it's required)
+  hairParts.push(character.hairLength);
+  
+  // Add hair color if available
+  if (character.hairColor && character.hairColor.trim()) {
+    hairParts.push(character.hairColor);
+  }
+  
+  // Add hair type if available
+  if (character.hairType && character.hairType.trim()) {
+    hairParts.push(character.hairType);
+  }
+  
+  // Return formatted hair description
+  return ` with ${hairParts.join(" ")} hair`;
 };
 
 const glasses = (character) => {
-  return character.glasses ? ", wearing glasses" : "";
+  // Handle boolean values and string representations
+  if (character.glasses === true || character.glasses === "true") {
+    return ", wearing glasses";
+  }
+  return "";
 };
 
 // Helper function to normalize gender for AI image generation
@@ -105,404 +71,103 @@ const normalizeGender = (gender) => {
 };
 
 const PROMPT_TEMPLATES = [
-  // START OF PROMPTBASE
   {
-    id: "studio_01",
-    name: "Studio Colors",
-    description: "Clean, professional studio shot on professional backgrounds.",
-
-    compatibleBackgroundThemes: ["Studio"],
-    promptFunction: (character, clothingName, backgroundName) => {
-      return `a photorealistic studio portrait of a ${character.trigger_word} ${
+    id: "academic_01",
+    name: "Academic Headshots",
+    compatibleBackgroundThemes: ["Academic"],
+    promptFunction: (character, clothingName, backgroundName) =>
+      `a sleek and professional headshot of a ohwx ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, neutral and professional tone, suitable for various business uses, most popular on Shutterstock, photorealistic, captured using Canon 7D mirrorless camera, 50mm lens, ISO 250, half body portrait, RAW format, on a ${backgroundName} background, realistic skin textures with minimal makeup, confident pose, soft lighting with soft reflections and shadows, centered composition`;
-    },
+      }${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, positioned in a ${backgroundName}. Captured with Canon EOS R5, 85mm lens, ISO 200, even professional lighting illuminates the subject naturally. Subject is in sharp focus with a clean depth of field, background softly blurred for a scholarly yet approachable atmosphere. Expression conveys expertise, credibility, and warmth. Centered composition with professional framing ensures a polished, trustworthy, and accessible academic presence, ideal for faculty directories, university websites, conference presentations, and scholarly publications.`,
+  }, 
+  {
+    id: "cityscape_02",
+    name: "Cityscape Headshots",
+    compatibleBackgroundThemes: ["Cityscape"],
+    promptFunction: (character, clothingName, backgroundName) =>
+      `a sleek and professional headshot of a ohwx ${
+        normalizeGender(character.gender)
+      }${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, positioned in a ${backgroundName}. Captured with Sony Alpha 7R IV, 85mm lens, ISO 200. Soft, even natural lighting with gentle highlights ensures a polished and flattering look that blends seamlessly with urban environments. Subject is in sharp focus with shallow depth of field, background softly blurred to suggest city energy and sophistication. Centered composition with clean framing, expression confident yet approachable, conveying professionalism and modern metropolitan presence. Ideal for executive profiles, LinkedIn branding, corporate communications, and professional networking in urban contexts.`,
   },
   {
-    id: "creative_01",
-    name: "Creative Professionals",
-    description: "Approachable professional in a modern office setting.",
-
+    id: "creative_03",
+    name: "Creative Headshots",
     compatibleBackgroundThemes: ["Creative"],
-    promptFunction: (character, clothingName, backgroundName) => {
-      return `a realistic portrait of a cheerful ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, smiling warmly with a confident expression; soft natural lighting highlights face, with a background featuring ${backgroundName} in the background; professional and approachable atmosphere, ideal for business or creative work settings. Use a high-end camera like the Hasselblad H6D-400c or Canon EOS R5`;
-    },
-  },
-  {
-    id: "creative_02",
-    name: "Artistic Professional",
-    description: "Creative professional portrait in artistic environments.",
-
-    compatibleBackgroundThemes: ["Creative"],
-    promptFunction: (character, clothingName, backgroundName) => {
-      return `a professional portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, positioned in a ${backgroundName} in the background. Shot with Canon EOS R6, 50mm f/1.4 lens, ISO 160, natural lighting with creative shadows and depth. Artistic yet professional composition with confident, inspiring expression, perfect for designers, artists, architects, and creative entrepreneurs. High-quality headshot with creative energy and professional polish, suitable for portfolios and creative industry branding.`;
-    },
-  },
-  {
-    id: "office_01",
-    name: "Office Headshots",
-    description: "Professional office portraits.",
-
-    compatibleBackgroundThemes: ["Office"],
-    promptFunction: (character, clothingName, backgroundName) => {
-      return `a professional corporate portrait of ${
-        character.trigger_word
-      } ${normalizeGender(character.gender)}${hairStyle(character)}${glasses(
-        character
-      )}, captured in a ${backgroundName} in the background, wearing a ${clothingName}, half body portrait, captured on a sony alpha, with a 50mm zoom lens, professional photo retouching, with natural light, photorealistic quality with RAW format, front view centered composition, confident pose and a bright smile`;
-    },
-  },
-  {
-    id: "office_02",
-    name: "Office Headshots 2",
-    description: "Professional office portraits.",
-
-    compatibleBackgroundThemes: ["Office"],
-    promptFunction: (character, clothingName, backgroundName) => {
-      return `a professional portrait of a ${
-        character.trigger_word
-      } ${normalizeGender(character.gender)}${hairStyle(character)}${glasses(
-        character
-      )}, standing in a ${backgroundName} in the background. Attire is a ${clothingName}, with a confident smile and approachable demeanor. Captured using an 85mm f/1.4 lens at f/2.0, ISO 100, and 1/200 shutter speed on a full-frame DSLR, with single-point autofocus locked on the eyes. Lighting is natural daylight softened through a window, enhanced with a reflector for balanced fill. The crisp, noise-free clarity and smooth bokeh radiate professionalism, competence, and trustworthiness—perfect for business cards, company profiles, and executive introductions.`;
-    },
-  },
-  {
-    id: "monochrome_01",
-    name: "Monochrome",
-    description: "Professional monochrome portrait.",
-
-    compatibleBackgroundThemes: ["Monochrome"],
-    promptFunction: (character, clothingName, backgroundName) => {
-      return `an expertly shot studio portrait of professional ${
-        character.trigger_word
-      } ${normalizeGender(character.gender)}${hairStyle(character)}${glasses(
-        character
-      )}, model wearing a stylish trendy monochromatic ${backgroundName} outfit, front view half body shot, neutral facial expression, on a plain solid ${backgroundName} background, captured on a canon eos r6, 85mm f/1.4, 24k resolution, RAW format, professional studio lighting`;
-    },
-  },
-  // END OF PROMPTBASE
-  // START OFFICE PROMPTS
-  {
-    id: "office_03",
-    name: "High-Rise Office",
-    description: "Sleek portrait in a high-rise office with a city skyline.",
-
-    compatibleBackgroundThemes: ["Office"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `a sleek and professional portrait of a ${character.trigger_word} ${
+      `a sleek and professional headshot of a ohwx ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, corporate and polished tone, ideal for LinkedIn and executive profiles. Standing in a ${backgroundName} in the background. Captured using a Canon EOS R5, 70mm lens, ISO 250, with bright natural lighting and balanced shadows, exuding professionalism. Realistic skin textures with minimal makeup, a composed expression, and clean, centered composition ensure a polished finish.`,
+      }${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, confident and approachable expression, suitable for creative professionals, designers, artists, and entrepreneurs. Positioned in a ${backgroundName}. Captured with Hasselblad H6D-400c, 85mm lens, ISO 200. Soft, even lighting with gentle shadows emphasizes facial features and harmonizes with the artistic environment. Realistic skin textures, minimal makeup, and relaxed yet professional posture. Centered composition with clean focus conveys creativity, professionalism, and inspiration, adaptable across all creative workspaces.`,
   },
   {
-    id: "office_04",
-    name: "Corporate Office",
-    description:
-      "Professional portrait in a corporate office with large windows.",
-
-    compatibleBackgroundThemes: ["Office"],
+    id: "conference_speaker_04",
+    name: "Keynote Conference Speakers",
+    compatibleBackgroundThemes: ["Conference Speaker"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `a sleek professional portrait of a ${character.trigger_word} ${
+      `a sleek and professional keynote speaker headshot of a ohwx ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, global and business-oriented tone, perfect for high-level corporate branding. Photorealistically captured in a ${backgroundName} in the background. Shot with a Canon EOS R3, 50mm lens, ISO 320, with soft natural lighting. Realistic skin textures, minimal makeup, and a composed expression emphasize authority and clarity.`,
+      }${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, positioned in a ${backgroundName}. Captured with Canon EOS R6, 50mm f/1.4 lens, ISO 200, dramatic professional stage lighting that emphasizes authority and commanding presence. The speaker has a confident, engaging, and authoritative expression with approachable charisma, conveying thought leadership and expertise. Sharp focus, centered composition, and polished presentation suitable for high-profile conferences, corporate summits, and keynote introductions.`,
   },
   {
-    id: "office_05",
-    name: "Modern Office",
-    description: "Cinematic portrait in a modern office with glass windows.",
-
-    compatibleBackgroundThemes: ["Office"],
+    id: "home_office_05",
+    name: "Home Office Headshots",
+    compatibleBackgroundThemes: ["Home Office"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `a cinematic-style studio portrait of a ${character.trigger_word} ${
+      `a sleek and professional headshot of a ohwx ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, vibrant yet professional tone, suitable for LinkedIn and business profiles. Captured with a Canon 7D mirrorless camera, 85mm lens, ISO 400, and a diffused spotlight setup. Half-body portrait with soft bokeh from a ${backgroundName} in the background, exuding confidence. Realistic skin textures enhanced subtly with warm tones, natural makeup, and sharp details. Crisp lighting emphasizes facial features with dynamic shadow play, centered composition.`,
+      }${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, natural and approachable tone, suitable for corporate profiles, LinkedIn, and professional remote work. Positioned in a ${backgroundName}. Captured with Canon EOS R5, 85mm lens, ISO 200. Soft, even indoor lighting with gentle highlights and shadows creates a flattering, consistent look across all home office environments. Realistic skin textures, minimal makeup, and a relaxed yet professional pose. Centered composition with clean focus emphasizes warmth, professionalism, and authenticity.`,
   },
   {
     id: "office_06",
-    name: "Office With Plants",
-    description:
-      "Approachable portrait in an office with floor-to-ceiling windows and plants.",
-
+    name: "Professional Office Headshots",
     compatibleBackgroundThemes: ["Office"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `a sleek and professional portrait of a ${character.trigger_word} ${
+      `a sleek and professional headshot of a ohwx ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, corporate and approachable tone, perfect for LinkedIn profiles. Standing in a ${backgroundName} in the background. Captured using a Canon EOS R5, 85mm lens, ISO 320, with soft natural lighting, exuding confidence and professionalism. Realistic skin textures, minimal makeup, and a poised expression. The composition balances subject focus with a clean, modern office ambiance.`,
+      }${hairStyle(character)}${glasses(character)}, confident and approachable tone, suitable for LinkedIn, executive profiles, and corporate branding. The subject wears ${clothingName}. Positioned in a ${backgroundName}. Captured with Canon EOS R5, 85mm lens, ISO 320, with soft natural lighting and balanced shadows. Realistic skin textures, minimal makeup, and a composed expression emphasize professionalism and authority. Centered composition with clean focus ensures a polished, corporate-ready finish, adaptable across modern high-rise offices, corporate interiors, and professional workspaces.`,
   },
   {
-    id: "office_07",
-    name: "Minimalist Office",
-    description: "Refined portrait in a minimalistic modern office interior.",
-
-    compatibleBackgroundThemes: ["Office"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a refined professional portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, corporate and neutral tone, perfect for business branding. Standing in a ${backgroundName} in the background. Captured with a Canon EOS R6, 50mm lens, ISO 200, using soft studio lighting, radiating confidence. Realistic skin textures with soft highlights, minimal makeup, and a confident pose. The composition balances subject focus with a professional office ambiance.`,
-  },
-  // END OFFICE PROMPTS
-  // START CITYSCAPE PROMPTS
-  {
-    id: "cityscape_01",
-    name: "Cityscape",
-    description: "Urban professional portrait with city architecture.",
-
-    compatibleBackgroundThemes: ["Cityscape"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a professional portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, positioned against a ${backgroundName} in the background. Shot with Canon EOS R5, 85mm f/1.8 lens, ISO 200, during golden hour for warm natural lighting. Professional composition with beautiful bokeh, capturing the dynamic energy of the city while maintaining focus on the subject. Perfect for LinkedIn profiles, business networking, and metropolitan professional branding with urban sophistication.`,
-  },
-  {
-    id: "cityscape_02",
-    name: "Metropolitan Executive",
-    description: "Sophisticated city executive portrait for Flux-1.dev.",
-
-    compatibleBackgroundThemes: ["Cityscape"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `an executive portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, captured with a ${backgroundName} in the background. Shot with Sony Alpha 7R IV, 70mm lens, f/2.8, ISO 160, professional outdoor lighting with reflector. Executive presence with sophisticated urban atmosphere, leveraging architectural elements and city textures. Sharp focus with premium quality, ideal for C-suite profiles, corporate leadership, and high-end business communications in urban settings.`,
-  },
-  // END CITYSCAPE PROMPTS
-  // START OF NATURE PROMPTS
-  {
-    id: "nature_01",
-    name: "Sunlit Park",
-    description:
-      "Professional portrait in a sunlit park with blurred greenery.",
-
-    compatibleBackgroundThemes: ["Nature"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a photorealistic professional portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, natural and approachable tone, suitable for corporate profiles and linkedin. captured in a ${backgroundName} in the background. captured using a canon eos r6, 50mm lens, iso 200, with natural sunlight and soft fill lighting, exuding confidence and warmth. realistic skin textures, minimal makeup, and a relaxed yet professional pose. the composition emphasizes natural beauty with a clean, centered focus.`,
-  },
-
-  {
-    id: "nature_02",
-    name: "Lush Wildflower Field",
-    description:
-      "a realistic portrait in a lush green field with colorful wildflowers.",
-
-    compatibleBackgroundThemes: ["Nature"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a professional photorealistic portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, vibrant and nostalgic tone, perfect for creative business branding. posing confidently in a ${backgroundName} in the background. captured in cinematic quality with a sony alpha 7r iv, 50mm lens, iso 200, exuding a timeless blend of professionalism and charm. realistic skin textures, warm lighting, and a centered composition create an impactful and engaging visual tone.`,
-  },
-  {
-    id: "nature_03",
-    name: "Vibrant Garden",
-    description: "Serene portrait in a vibrant garden with lush greenery.",
-
-    compatibleBackgroundThemes: ["Nature"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a serene professional portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, natural and polished tone, ideal for business branding. photorealistically captured in a vibrant ${backgroundName} in the background. shot with a canon eos r3, 50mm lens, iso 250, with diffused sunlight for soft lighting, radiating confidence. realistic skin textures, minimal makeup, and a composed, friendly expression. centered composition highlights professionalism in a natural setting.`,
-  },
-  {
-    id: "nature_04",
-    name: "Dandelion Field",
-    description: "Warm portrait in a grass field full of dandelions.",
-
-    compatibleBackgroundThemes: ["Nature"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a warm and professional portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, approachable and natural tone, suitable for business and personal branding. standing in a ${backgroundName} in the background. captured using a canon 7d, 35mm lens, iso 200, with natural lighting on a sunny day, exuding professionalism and warmth. realistic skin textures with minimal makeup, a slight smile, and a natural pose. the composition is vibrant and detailed, emphasizing clarity and authenticity.`,
-  },
-  {
-    id: "nature_05",
-    name: "Wooded Area",
-    description:
-      "Calm and professional headshot in a wooded area with vibrant foliage.",
-
-    compatibleBackgroundThemes: ["Nature"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a calm and professional headshot of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, natural yet polished tone, perfect for eco-conscious or outdoor industry profiles. standing in a ${backgroundName} in the background. captured using a sony alpha 7 iv, 50mm lens, iso 320, with soft, natural lighting and intricate details, conveying confidence. realistic skin textures with minimal makeup, a composed expression, and centered framing enhance professionalism.`,
-  },
-  {
-    id: "nature_06",
-    name: "Natural Landscape",
-    description:
-      "Serene professional portrait in a natural landscape with gentle sunlight.",
-
-    compatibleBackgroundThemes: ["Nature"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a serene professional portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, calm yet confident tone, suitable for eco-conscious or creative professionals. standing in front of a ${backgroundName} in the background. captured using a sony alpha 7 iv, 50mm lens, iso 100, during morning light for soft, natural illumination, blending professionalism with individuality. realistic skin textures enhanced by soft highlights, minimal makeup, and a calm expression. the composition emphasizes harmony between the subject and nature, perfectly centered.`,
-  },
-  //END OF NATURE PROMPTS
-  // START MEDICAL PROMPTS
-  {
-    id: "medical_01",
-    name: "Medical",
-    description: "Healthcare professional portrait in medical environments.",
-
+    id: "medical_08",
+    name: "Medical Professional",
     compatibleBackgroundThemes: ["Medical"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `a professional portrait of a ${character.trigger_word} ${
+      `a sleek and professional headshot of a ohwx ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, positioned in a ${backgroundName} in the background. Shot with Canon EOS R6, 85mm f/1.8 lens, ISO 200, soft natural lighting creating trustworthy and professional atmosphere. Clean medical headshot with compassionate yet authoritative expression, conveying medical expertise and patient care. Perfect for medical practice websites, hospital directories, and healthcare professional profiles with clinical credibility.`,
+      }${hairStyle(character)}${glasses(character)}. The subject wears a clinical ${clothingName}, photographed in a ${backgroundName}. Captured with Canon EOS R6, 85mm f/1.8 lens, ISO 200, using soft clinical lighting to emphasize professionalism and warmth. Expression should be compassionate yet authoritative, conveying trust, medical expertise, and patient care. Perfect for hospital directories, medical websites, healthcare leadership profiles, and professional practice branding.`,
   },
   {
-    id: "medical_02",
-    name: "Clinical Specialist",
-    description: "Authoritative medical specialist portrait for Flux-1.dev.",
-
-    compatibleBackgroundThemes: ["Medical"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a clinical specialist portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
+    id: "monochrome_09",
+    name: "Monochrome Portraits",
+    compatibleBackgroundThemes: ["Monochrome"],
+    // We intentially don't use clothingName here since it's monochrome so we want same color for clothing and background
+    promptFunction: (character, clothingName, backgroundName) => {
+      return `a photorealistic studio portrait of ${
+        character.trigger_word
+      } ${normalizeGender(character.gender)}${hairStyle(character)}${glasses(
         character
-      )}, wearing a ${clothingName}, captured against a ${backgroundName} in the background. Shot with Sony Alpha 7R IV, 70mm lens, f/2.0, ISO 160, professional medical facility lighting. Authoritative yet approachable medical professional, sharp focus with clean composition. Ideal for specialist consultations, medical conferences, and clinical leadership profiles.`,
-  },
-  // END MEDICAL PROMPTS
-  // START HOME OFFICE PROMPTS
-  {
-    id: "home_office_01",
-    name: "Home Office",
-    description: "Professional home office portrait.",
-
-    compatibleBackgroundThemes: ["Home Office", "Academic"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a warm and professional portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, intellectual and polished tone, ideal for consulting and academic profiles. Standing in front of a ${backgroundName} in the background. Captured with a Canon EOS R5, 50mm lens, ISO 320, with soft, warm lighting, exuding professionalism and depth. Realistic skin textures with subtle highlights, minimal makeup, and a calm expression. The composition balances focus on the subject with a knowledge-rich ambiance.`,
+      )}. The subject wears a professional monochromatic ${backgroundName} blazer over a ${backgroundName} ${character.gender=== "woman" ? "blouse": "dress shirt"}, front view half body shot, neutral facial expression, on a plain solid ${backgroundName} background. Captured with Canon EOS R6, 85mm f/1.4 lens, 24k resolution, RAW format, professional studio lighting.`;
+    },
   },
   {
-    id: "home_office_02",
-    name: "Work From Home Executive",
-    description: "Sophisticated home office executive portrait for Flux-1.dev.",
-
-    compatibleBackgroundThemes: ["Home Office"],
+    id: "nature_10",
+    name: "Nature Headshots: Sunlit Park Based",
+    compatibleBackgroundThemes: ["Nature"],
     promptFunction: (character, clothingName, backgroundName) =>
-      `a professional work-from-home executive portrait of a ${character.trigger_word} ${
+      `a photorealistic professional portrait of a ohwx ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, captured against a ${backgroundName} in the background. Shot with Sony Alpha 7R IV, 85mm lens, f/1.8, ISO 160, professional home studio lighting setup. Executive presence with home office sophistication, sharp focus and premium quality. Ideal for senior remote professionals, virtual leadership, and modern executive communications.`,
-  },
-  // END HOME OFFICE PROMPTS
-
-  // START ACADEMIC PROMPTS
-  {
-    id: "academic_01",
-    name: "University Library",
-    description: "Professional academic portrait in scholarly setting.",
-
-    compatibleBackgroundThemes: ["Academic"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a professional academic portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, intellectual and scholarly atmosphere. Positioned in a ${backgroundName} in the background, captured with a Canon EOS R5, 85mm f/1.8 lens, ISO 200, natural window lighting creating soft shadows. Sharp focus on subject with shallow depth of field, warm academic ambiance, conveying expertise and approachability. Professional headshot composition with clean background blur, suitable for university profiles and academic publications.`,
+      }${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, natural and approachable tone, suitable for corporate profiles and LinkedIn. Captured in a ${backgroundName}. Shot with a Canon EOS R6, 50mm lens, ISO 200. Soft, natural outdoor lighting creates flattering highlights and gentle shadows that complement the natural environment. Realistic skin textures, minimal makeup, and a relaxed yet professional pose. Centered composition with clean focus emphasizes authenticity and warmth, making it versatile across diverse natural environments.`,
   },
   {
-    id: "academic_02",
-    name: "Campus Setting",
-    description: "Distinguished academic portrait with institutional backdrop.",
-
-    compatibleBackgroundThemes: ["Academic"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a distinguished academic headshot of a ${character.trigger_word} ${
+    id: "studio_11",
+    name: "Studio Headshots",
+    compatibleBackgroundThemes: ["Studio"],
+    promptFunction: (character, clothingName, backgroundName) => {
+      return `a photorealistic studio portrait of a ohwx ${
         normalizeGender(character.gender)
       }${hairStyle(character)}${glasses(
         character
-      )}, wearing a ${clothingName}, positioned against a ${backgroundName} in the background. Shot with Sony Alpha 7R IV, 70mm lens, f/2.8, ISO 160, during golden hour for warm natural lighting. Professional composition with subject in sharp focus, background softly blurred, conveying academic authority and wisdom. Ideal for faculty directories, conference presentations, and scholarly publications.`,
+      )}. The subject wears a ${clothingName}, neutral and professional tone, suitable for various business uses, most popular on Shutterstock, photorealistic, captured using Canon 7D mirrorless camera, 50mm lens, ISO 250, half body portrait, RAW format, on a ${backgroundName} background, realistic skin textures with minimal makeup, confident pose, soft lighting with soft reflections and shadows, centered composition`;
+    },
   },
-  // END ACADEMIC PROMPTS
-
-  // START CONFERENCE SPEAKER PROMPTS
-  {
-    id: "conference_speaker_01",
-    name: "Keynote Speaker",
-    description:
-      "Professional portrait for main stage presentations and keynote addresses.",
-
-    compatibleBackgroundThemes: ["Conference Speaker"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a professional keynote speaker portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, positioned in a ${backgroundName} in the background. Captured with Canon EOS R6, 50mm f/1.4 lens, ISO 100, professional stage lighting with dramatic key light and subtle fill. Confident and authoritative expression, commanding presence suitable for main stage presentations, keynote introductions, and high-profile speaking events. Sharp focus with excellent contrast and executive polish.`,
-  },
-  {
-    id: "conference_speaker_02",
-    name: "Executive Speaker",
-    description:
-      "Professional portrait for executive presentations and thought leadership.",
-
-    compatibleBackgroundThemes: ["Conference Speaker"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a professional executive speaker portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, captured against a ${backgroundName} in the background. Shot with Sony Alpha 7R IV, 70mm lens, f/2.0, ISO 160, balanced professional lighting. Confident and engaging expression, commanding executive presence suitable for corporate presentations and thought leadership speaking. Clean composition with professional polish and authoritative presence.`,
-  },
-  {
-    id: "conference_speaker_03",
-    name: "Expert Presenter",
-    description:
-      "Professional portrait for subject matter expert presentations.",
-
-    compatibleBackgroundThemes: ["Conference Speaker"],
-    promptFunction: (character, clothingName, backgroundName) =>
-      `a professional expert presenter portrait of a ${character.trigger_word} ${
-        normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(
-        character
-      )}, wearing a ${clothingName}, positioned in a ${backgroundName} in the background. Captured with Nikon Z9, 85mm f/1.8 lens, ISO 200, warm professional lighting. Knowledgeable and approachable expression, demonstrating subject matter expertise suitable for professional presentations and speaking engagements. Sharp focus with authoritative presence and expert credibility.`,
-  },
-  // END CONFERENCE SPEAKER PROMPTS
 ];
 
 function generatePrompts(userCharacterInputs, stylePairs, stylesLimit) {

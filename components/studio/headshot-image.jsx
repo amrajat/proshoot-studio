@@ -38,84 +38,27 @@ const HeadshotImage = memo(function HeadshotImage({
 }) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  // Function to handle image download via authenticated R2 API
-  const handleDownload = async (imageUrl) => {
-    if (isDownloading) return; // Prevent multiple simultaneous downloads
-    
+  // Function to handle direct image download
+  const handleDownload = (imageUrl) => {
     try {
-      setIsDownloading(true);
+      // Get filename from URL
+      const filename = imageUrl.split('/').pop()?.split('?')[0] || 'headshot.png';
       
-      // Extract object key from Cloudflare Worker JWT token
-      let objectKey = null;
-      try {
-        const url = new URL(imageUrl);
-        const token = url.searchParams.get('token');
-        
-        if (token) {
-          // Decode JWT payload to get the object key
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          objectKey = payload.key;
-        }
-      } catch (e) {
-        throw new Error('Invalid image URL format');
-      }
-
-      if (!objectKey) {
-        throw new Error('Could not extract object key from image URL');
-      }
-
-      // Use authenticated R2 download API
-      const response = await fetch('/api/r2/download', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          objectKey,
-          bucketName: 'images'
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Download failed: ${response.status}`);
-      }
-
-      // Get the filename from Content-Disposition header
-      const contentDisposition = response.headers.get('Content-Disposition');
-      let filename = 'headshot.png';
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-        if (filenameMatch) {
-          filename = filenameMatch[1];
-        }
-      }
-
-      // Get the blob and trigger download
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
+      // Create invisible download link
       const link = document.createElement('a');
-      
-      link.href = downloadUrl;
+      link.href = imageUrl;
       link.download = filename;
-      link.style.display = 'none';
+      link.rel = 'noopener noreferrer';
       
+      // Trigger download
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      // Cleanup
-      setTimeout(() => {
-        window.URL.revokeObjectURL(downloadUrl);
-      }, 100);
-      
     } catch (error) {
-      // Fallback to opening in new tab if download fails
+      console.error('Download failed:', error);
+      // Fallback: open in new tab where user can right-click save
       window.open(imageUrl, '_blank');
-    } finally {
-      setIsDownloading(false);
     }
   };
 
@@ -285,14 +228,9 @@ const HeadshotImage = memo(function HeadshotImage({
           size="sm" 
           className="flex-1 p-2" 
           onClick={() => handleDownload(thumbnailUrl)}
-          disabled={isDownloading}
-          aria-label={isDownloading ? "Downloading image..." : "Download image"}
+          aria-label="Download image"
         >
-          {isDownloading ? (
-            <Loader2 className="h-4 w-4 text-primary animate-spin" />
-          ) : (
-            <Download className="h-4 w-4 text-primary" />
-          )}
+          <Download className="h-4 w-4 text-primary" />
         </Button>
         
         <AIEditor studioStatus={studioStatus} headshot={headshot} studioId={studioId} />

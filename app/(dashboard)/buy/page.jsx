@@ -563,7 +563,7 @@ export default function BuyCreditsPage() {
 
           {/* Features List */}
           <ul className="mt-6 space-y-4">
-            {plan.features.slice(0, 6).map((feature, index) => {
+            {plan.features.slice(0, 8).map((feature, index) => {
               return (
                 <li key={index} className="flex space-x-4">
                   <Check className="flex-shrink-0 mt-0.5 h-4 w-4 text-success" />

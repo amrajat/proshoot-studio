@@ -162,57 +162,6 @@ const AIEditor = ({
         return;
       }
 
-      // Extract object key from URL if it's a delivery.proshoot.co URL
-      let objectKey = null;
-      try {
-        const url = new URL(currentImageUrl);
-        if (url.hostname === 'delivery.proshoot.co') {
-          const token = url.searchParams.get('token');
-          if (token) {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            objectKey = payload.key;
-          }
-        }
-      } catch (e) {
-        // If it's not a delivery URL or token parsing fails, try direct download
-      }
-
-      if (objectKey) {
-        // Use the existing R2 download API for original images
-        const response = await fetch('/api/r2/download', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            objectKey,
-            bucketName: 'images'
-          }),
-        });
-
-        if (response.ok) {
-          const blob = await response.blob();
-          const downloadUrl = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = downloadUrl;
-          link.download = `headshot-${Date.now()}.jpg`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          setTimeout(() => {
-            window.URL.revokeObjectURL(downloadUrl);
-          }, 100);
-          
-          toast.success('Image downloaded successfully');
-        } else {
-          throw new Error('Download API failed');
-        }
-      } else {
-        // Fallback: open in new tab for any other URLs
-        window.open(currentImageUrl, '_blank');
-        toast.info('Image opened in new tab');
-      }
     } catch (error) {
       console.error('Download failed:', error);
       toast.error('Failed to download image');
@@ -377,9 +326,9 @@ const AIEditor = ({
                   <p className="text-sm text-white/70 mb-3">Example prompts:</p>
                   <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
                     {[
-                      "change background to a modern office",
+                      "change background to a plain solid grey color",
                       "remove the glasses",
-                      "chagne outfit to a burgundy kint sweater",
+                      "change outfit to a burgundy knit sweater",
                       "change the hair color to brown",
                     ].map((example, index) => (
                       <button

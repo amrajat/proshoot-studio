@@ -1,8 +1,44 @@
 "use server";
 
 import createSupabaseServerClient from "@/lib/supabase/server-client";
-import { createSecureImageUrl } from "@/lib/jwt-image-delivery-tokens";
-import { env, publicEnv } from "@/lib/env";
+import { S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { env } from "@/lib/env";
+
+// Configure R2 Client
+const r2Client = new S3Client({
+  region: "auto",
+  endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+  },
+});
+
+/**
+ * Generate presigned URL for a single object key
+ * @param {string} objectKey - The R2 object key
+ * @returns {Promise<string>} Presigned URL
+ */
+const generatePresignedUrl = async (objectKey) => {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: "images",
+      Key: objectKey,
+      ResponseContentDisposition: `attachment; filename="${objectKey.split('/').pop()}"`,
+    });
+
+    const presignedUrl = await getSignedUrl(r2Client, command, {
+      expiresIn: 3600, // 1 hour
+    });
+
+    return presignedUrl;
+  } catch (error) {
+    console.error(`Error generating presigned URL for ${objectKey}:`, error);
+    return "/images/image-delivery-fallback.png";
+  }
+};
 
 /**
  * Secure Studios Data Fetcher
@@ -60,15 +96,12 @@ export const fetchAllStudios = async (userId, contextType, contextId) => {
       };
     }
 
-    // Generate secure thumbnail URLs for ACCEPTED studios
-    const jwtSecret = env.R2_IMAGES_DELIVERY_PROXY_JWT_SECRET;
-    const deliveryDomain = publicEnv.NEXT_PUBLIC_IMAGE_DELIVERY_DOMAIN;
-
+    // Generate presigned thumbnail URLs for ACCEPTED studios
     let studiosWithSecureUrls = studios || [];
 
-    if (jwtSecret && deliveryDomain && studiosWithSecureUrls.length > 0) {
+    if (studiosWithSecureUrls.length > 0) {
       try {
-        // Process studios to add secure thumbnail URLs
+        // Process studios to add presigned thumbnail URLs
         studiosWithSecureUrls = await Promise.all(
           studiosWithSecureUrls.map(async (studio) => {
             // Only generate thumbnails for ACCEPTED studios
@@ -89,15 +122,11 @@ export const fetchAllStudios = async (userId, contextType, contextId) => {
                     sampleHeadshot.result || sampleHeadshot.preview;
 
                   if (thumbnailKey) {
-                    const secureUrl = await createSecureImageUrl(
-                      thumbnailKey,
-                      jwtSecret,
-                      deliveryDomain
-                    );
+                    const presignedUrl = await generatePresignedUrl(thumbnailKey);
 
                     return {
                       ...studio,
-                      imageUrl: secureUrl,
+                      imageUrl: presignedUrl,
                     };
                   }
                 }
@@ -114,7 +143,7 @@ export const fetchAllStudios = async (userId, contextType, contextId) => {
           })
         );
       } catch (urlError) {
-        console.error("Error generating secure URLs for studios:", urlError);
+        console.error("Error generating presigned URLs for studios:", urlError);
         // Continue with original data
       }
     }

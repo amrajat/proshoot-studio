@@ -15,8 +15,6 @@ const publicSchema = z.object({
   NEXT_PUBLIC_R2_DATASETS_BUCKET_NAME: z.string().min(1).optional(),
   NEXT_PUBLIC_R2_DATASETS_CUSTOM_DOMAIN: z.string().min(1).optional(),
 
-  // IMAGE DELIVERY
-  NEXT_PUBLIC_IMAGE_DELIVERY_DOMAIN: z.string().min(1).optional(),
 });
 
 // =============================================================================
@@ -50,7 +48,6 @@ const serverSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().min(1).optional(),
   R2_ENDPOINT: z.string().url().optional(),
   R2_PUBLIC_URL: z.string().min(1).optional(),
-  R2_IMAGES_DELIVERY_PROXY_JWT_SECRET: z.string().min(1).optional(),
 
   // MODAL (AI TRAINING)
   MODAL_KEY: z.string().min(1).optional(),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, memo } from "react";
+import { useState, memo, useEffect } from "react";
 import Image from "next/image";
 import { PhotoView } from "react-photo-view";
 import { Heart, Loader2, ZoomIn, Shield, Download } from "lucide-react";
@@ -38,6 +38,37 @@ const HeadshotImage = memo(function HeadshotImage({
 }) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+
+  // Determine which image to display based on preferred type
+  let imageUrl, thumbnailUrl;
+
+  if (preferredImageType === "hd") {
+    // For 4K section: prioritize HD, fallback to result, then preview
+    imageUrl = headshot.hd || headshot.result || headshot.preview;
+    thumbnailUrl = headshot.hd || headshot.result || headshot.preview;
+  } else if (preferredImageType === "result") {
+    // For result section: prioritize result, fallback to preview
+    imageUrl = headshot.result || headshot.preview;
+    thumbnailUrl = headshot.result || headshot.preview;
+  } else if (preferredImageType === "preview") {
+    // For preview section: only show preview
+    imageUrl = headshot.preview;
+    thumbnailUrl = headshot.preview;
+  } else {
+    // Auto mode: HD > result > preview (default behavior)
+    imageUrl = headshot.hd || headshot.result || headshot.preview;
+    thumbnailUrl = headshot.result || headshot.preview;
+  }
+
+  // Preload image for PhotoProvider to eliminate loading spinner
+  useEffect(() => {
+    if (thumbnailUrl && index < 12) { // Preload first 12 images
+      const img = new window.Image();
+      img.src = thumbnailUrl;
+      // No need to handle onload/onerror as Next.js Image handles caching
+    }
+  }, [thumbnailUrl, index]);
+
   // Function to handle direct image download
   const handleDownload = (imageUrl) => {
     try {
@@ -61,27 +92,6 @@ const HeadshotImage = memo(function HeadshotImage({
       window.open(imageUrl, '_blank');
     }
   };
-
-  // Determine which image to display based on preferred type
-  let imageUrl, thumbnailUrl;
-
-  if (preferredImageType === "hd") {
-    // For 4K section: prioritize HD, fallback to result, then preview
-    imageUrl = headshot.hd || headshot.result || headshot.preview;
-    thumbnailUrl = headshot.hd || headshot.result || headshot.preview;
-  } else if (preferredImageType === "result") {
-    // For result section: prioritize result, fallback to preview
-    imageUrl = headshot.result || headshot.preview;
-    thumbnailUrl = headshot.result || headshot.preview;
-  } else if (preferredImageType === "preview") {
-    // For preview section: only show preview
-    imageUrl = headshot.preview;
-    thumbnailUrl = headshot.preview;
-  } else {
-    // Auto mode: HD > result > preview (default behavior)
-    imageUrl = headshot.hd || headshot.result || headshot.preview;
-    thumbnailUrl = headshot.result || headshot.preview;
-  }
 
   // Determine which badge to show based on the actual image being displayed
   let badgeText = null;
@@ -153,9 +163,9 @@ const HeadshotImage = memo(function HeadshotImage({
           </div>
         )}
 
-        {/* PhotoView for full-screen overlay - Now handled by parent PhotoProvider */}
+        {/* PhotoView for full-screen overlay - Using same URL to avoid re-loading */}
         <PhotoView
-          src={imageUrl}
+          src={thumbnailUrl}
           key={`photo-${headshot.id}-${preferredImageType}`}
         >
           <div className="cursor-zoom-in">
@@ -164,7 +174,7 @@ const HeadshotImage = memo(function HeadshotImage({
               alt={"Generated headshot"}
               fill
               unoptimized={true}
-              loading="lazy"
+              loading={index < 8 ? "eager" : "lazy"}
               className={cn(
                 "object-cover transition-all duration-300 cursor-zoom-in",
                 "group-hover:scale-105",

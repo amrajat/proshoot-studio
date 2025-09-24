@@ -45,6 +45,17 @@ import StudioStatusMessage from "./studio-status-message";
 import { PhotoProvider } from "react-photo-view";
 import "react-photo-view/dist/react-photo-view.css";
 
+// Optimized PhotoProvider configuration for instant loading
+const photoProviderConfig = {
+  maskOpacity: 0.8,
+  speed: () => 150,
+  brokenElement: <div className="text-white">Failed to load</div>,
+  easing: (type) =>
+    type === 2
+      ? "cubic-bezier(0.36, 0, 0.66, -0.56)"
+      : "cubic-bezier(0.34, 1.56, 0.64, 1)"
+};
+
 /**
  * Studio Detail Client Component
  * Handles studio detail view with headshots and favorites
@@ -440,15 +451,7 @@ export default function AllStudios({ studioId, currentUserId }) {
                 </p>
               </div>
             ) : (
-              <PhotoProvider
-                maskOpacity={0.8}
-                speed={() => 300}
-                easing={(type) =>
-                  type === 2
-                    ? "cubic-bezier(0.36, 0, 0.66, -0.56)"
-                    : "cubic-bezier(0.34, 1.56, 0.64, 1)"
-                }
-              >
+              <PhotoProvider {...photoProviderConfig}>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {headshots.map((headshot, index) => (
                     <HeadshotImage
@@ -504,7 +507,8 @@ export default function AllStudios({ studioId, currentUserId }) {
                 ) : (
                   <PhotoProvider
                     maskOpacity={0.8}
-                    speed={() => 300}
+                    speed={() => 150}
+                brokenElement={<div className="text-white">Failed to load</div>}
                     easing={(type) =>
                       type === 2
                         ? "cubic-bezier(0.36, 0, 0.66, -0.56)"
@@ -589,7 +593,8 @@ export default function AllStudios({ studioId, currentUserId }) {
                 ) : (
                   <PhotoProvider
                     maskOpacity={0.8}
-                    speed={() => 300}
+                    speed={() => 150}                
+                brokenElement={<div className="text-white">Failed to load</div>}
                     easing={(type) =>
                       type === 2
                         ? "cubic-bezier(0.36, 0, 0.66, -0.56)"
@@ -666,15 +671,7 @@ export default function AllStudios({ studioId, currentUserId }) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <PhotoProvider
-                  maskOpacity={0.8}
-                  speed={() => 300}
-                  easing={(type) =>
-                    type === 2
-                      ? "cubic-bezier(0.36, 0, 0.66, -0.56)"
-                      : "cubic-bezier(0.34, 1.56, 0.64, 1)"
-                  }
-                >
+                <PhotoProvider {...photoProviderConfig}>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                     {hdImages.map((headshot, index) => {
                       const isFavorite = favoriteHeadshotIds.has(headshot.id);

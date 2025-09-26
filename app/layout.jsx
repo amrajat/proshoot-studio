@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import * as Sentry from '@sentry/nextjs';
 
 import "./globals.css";
 import { GeistSans } from "geist/font/sans";
@@ -24,6 +25,9 @@ export async function generateMetadata() {
     title: `${routeMetadata.title}`,
     description: routeMetadata.description,
     robots: routeMetadata.robots,
+    other: {
+      ...Sentry.getTraceData()
+    }
   };
 }
 

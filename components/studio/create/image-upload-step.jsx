@@ -12,6 +12,7 @@ import Masonry from "react-masonry-css";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -1098,6 +1099,35 @@ const ImageUploadStep = ({
     return hasSufficientCredits(credits, selectedPlan, 1);
   };
 
+  // Check if any files are currently uploading
+  const isAnyFileUploading = () => {
+    return Object.values(uploadState.uploadProgress).some(
+      (progress) => progress.status === "processing" || progress.status === "uploading"
+    );
+  };
+
+  // Get uploading progress info
+  const getUploadingInfo = () => {
+    const uploadingFiles = Object.values(uploadState.uploadProgress).filter(
+      (progress) => progress.status === "processing" || progress.status === "uploading"
+    );
+    return {
+      count: uploadingFiles.length,
+      isUploading: uploadingFiles.length > 0
+    };
+  };
+
+  // Get minimum images feedback
+  const getMinImagesInfo = () => {
+    const currentCount = uploadState.files.length;
+    const needed = Math.max(0, MIN_IMAGES - currentCount);
+    return {
+      current: currentCount,
+      needed,
+      hasMinimum: currentCount >= MIN_IMAGES
+    };
+  };
+
   const breakpointColumns = {
     default: 3,
     1100: 2,
@@ -1418,6 +1448,28 @@ const ImageUploadStep = ({
         </div>
       )}
 
+      {/* Minimum Images Feedback */}
+      {!getMinImagesInfo().hasMinimum && (
+        <Alert className="mb-4">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            Please upload {getMinImagesInfo().needed} more image{getMinImagesInfo().needed !== 1 ? 's' : ''} to proceed. 
+            You currently have {getMinImagesInfo().current} of {MIN_IMAGES} required images.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Upload Progress Feedback */}
+      {isAnyFileUploading() && (
+        <Alert className="mb-4">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <AlertDescription>
+            Uploading {getUploadingInfo().count} image{getUploadingInfo().count !== 1 ? 's' : ''}... 
+            Please wait for uploads to complete before proceeding.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Navigation */}
       <div className="flex flex-col items-center space-y-3">
         <StepNavigation
@@ -1429,13 +1481,16 @@ const ImageUploadStep = ({
             uploadState.uploadedFiles.length !== uploadState.files.length ||
             localSubmitting ||
             isRemovingAll ||
-            removingFiles.size > 0
+            removingFiles.size > 0 ||
+            isAnyFileUploading()
           }
           nextText={
             localSubmitting
               ? hasCreditsForPlan()
                 ? "Creating..."
                 : "Processing Payment..."
+              : isAnyFileUploading()
+              ? `Uploading... (${getUploadingInfo().count} remaining)`
               : hasCreditsForPlan()
               ? "Create Headshots"
               : "Pay and Create"

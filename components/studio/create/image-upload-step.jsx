@@ -38,6 +38,7 @@ import { hasSufficientCredits } from "@/services/creditService";
 import ImageUploadGuidelines from "@/components/studio/create/image-upload-guidelines";
 import StepNavigation from "@/components/studio/create/step-navigation";
 import { Separator } from "@/components/ui/separator";
+import { studioMonitoring, uxMonitoring } from "@/lib/monitoring";
 
 // Constants
 
@@ -840,12 +841,19 @@ const ImageUploadStep = ({
 
     // Validate that we have uploaded files
     if (uploadState.files.length < MIN_IMAGES) {
+      studioMonitoring.buttonDisabled("Create Studio", "Insufficient images", {
+        currentImages: uploadState.files.length,
+        requiredImages: MIN_IMAGES
+      });
       toast.error(`Please upload at least ${MIN_IMAGES} images`);
       return;
     }
 
     setLocalSubmitting(true);
     setIsSubmitting(true);
+
+    // Track studio creation start
+    studioMonitoring.startStudioCreation(selectedContext?.id, formData.plan);
 
     try {
       const contextType = selectedContext?.type || "personal";
@@ -860,13 +868,21 @@ const ImageUploadStep = ({
       );
 
       if (failedUploads.length > 0) {
+        studioMonitoring.uploadIssue("Failed uploads blocking studio creation", {
+          failedCount: failedUploads.length,
+          totalFiles: uploadState.files.length
+        });
         toast.error(
-          "Some files failed to upload. Please retry failed uploads."
+          `Please retry failed uploads before creating studio (${failedUploads.length} failed)`
         );
         return;
       }
 
       if (uploadState.uploadedFiles.length !== uploadState.files.length) {
+        studioMonitoring.uploadIssue("Incomplete uploads blocking studio creation", {
+          uploadedCount: uploadState.uploadedFiles.length,
+          totalFiles: uploadState.files.length
+        });
         toast.error(
           "Upload in progress. Please wait for all files to complete."
         );
@@ -986,12 +1002,22 @@ const ImageUploadStep = ({
       }
 
       if (result?.success) {
+        uxMonitoring.trackSuccess("studio-creation", {
+          studioId: result.studioId,
+          plan: formData.plan,
+          imageCount: uploadState.files.length
+        });
         toast.success("Studio created successfully!");
         router.push(`/studio/${result.studioId}`);
       } else {
         throw new Error(result?.error || "Failed to create studio");
       }
     } catch (error) {
+      studioMonitoring.paymentIssue(error.message, {
+        plan: formData.plan,
+        hasCredits: hasCreditsForPlan(),
+        step: "studio-creation"
+      });
       toast.error(`Error: ${error.message}`);
     } finally {
       setLocalSubmitting(false);
@@ -1000,6 +1026,9 @@ const ImageUploadStep = ({
   };
 
   const handlePaymentFlow = async (selectedPlan) => {
+    // Track payment flow start
+    studioMonitoring.stepCompleted("payment-flow-start", { plan: selectedPlan });
+    
     try {
       // Get authenticated user ID from Supabase
       const createSupabaseBrowserClient = (
@@ -1075,12 +1104,21 @@ const ImageUploadStep = ({
       );
 
       if (checkoutUrl) {
+        studioMonitoring.stepCompleted("checkout-redirect", { 
+          plan: selectedPlan,
+          studioId: uploadState.currentUUID 
+        });
         // Redirect to checkout
         window.location.href = checkoutUrl;
       } else {
         throw new Error("Failed to create checkout URL");
       }
     } catch (error) {
+      studioMonitoring.paymentIssue(error.message, {
+        plan: selectedPlan,
+        step: "payment-flow",
+        studioId: uploadState.currentUUID
+      });
       toast.error(`Payment error: ${error.message}`);
       setLocalSubmitting(false);
       setIsSubmitting(false);
@@ -1104,17 +1142,6 @@ const ImageUploadStep = ({
     return Object.values(uploadState.uploadProgress).some(
       (progress) => progress.status === "processing" || progress.status === "uploading"
     );
-  };
-
-  // Get uploading progress info
-  const getUploadingInfo = () => {
-    const uploadingFiles = Object.values(uploadState.uploadProgress).filter(
-      (progress) => progress.status === "processing" || progress.status === "uploading"
-    );
-    return {
-      count: uploadingFiles.length,
-      isUploading: uploadingFiles.length > 0
-    };
   };
 
   // Get minimum images feedback
@@ -1464,7 +1491,7 @@ const ImageUploadStep = ({
         <Alert className="mb-4">
           <Loader2 className="h-4 w-4 animate-spin" />
           <AlertDescription>
-            Uploading {getUploadingInfo().count} image{getUploadingInfo().count !== 1 ? 's' : ''}... 
+            Uploading... 
             Please wait for uploads to complete before proceeding.
           </AlertDescription>
         </Alert>
@@ -1490,7 +1517,7 @@ const ImageUploadStep = ({
                 ? "Creating..."
                 : "Processing Payment..."
               : isAnyFileUploading()
-              ? `Uploading... (${getUploadingInfo().count} remaining)`
+              ? `Uploading...`
               : hasCreditsForPlan()
               ? "Create Headshots"
               : "Pay and Create"

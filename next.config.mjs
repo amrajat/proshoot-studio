@@ -52,14 +52,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false, // Fail builds on TypeScript errors
   },
-  async rewrites() {
-    return [
-      {
-        source: "/monitoring/api/:path*",
-        destination: "https://o4507332139089920.ingest.us.sentry.io/:path*",
-      },
-    ];
-  },
   // Security: Enable trailing slash redirect for consistency
   skipTrailingSlashRedirect: false,
 
@@ -182,11 +174,8 @@ export default withSentryConfig(nextConfig, {
   // Upload a larger set of source maps for prettier stack traces (increases build time)
   widenClientFileUpload: true,
 
-  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
-  tunnelRoute: "/monitoring",
+  // Tunnel route handled manually via /app/monitoring/route.js
+  // tunnelRoute: "/monitoring", // Disabled - using custom route handler
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size
   disableLogger: true,

@@ -51,7 +51,7 @@ export async function middleware(request) {
   // Define public and auth routes
   const publicRoutes = ["/", "/pricing", "/terms", "/privacy"];
   const authRoutes = ["/auth", "/auth/callback"];
-  const publicApiRoutes = ["/api/webhooks", "/api/auth", "/api/prompts", "/api/studio/process"]; // Only specific API routes are public
+  const publicApiRoutes = ["/api/webhooks", "/api/auth", "/api/prompts", "/api/studio/process", "/api/monitoring"]; // Only specific API routes are public
   const isPublicRoute =
     publicRoutes.some(
       (route) =>
@@ -94,7 +94,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - images (if you have a public /images folder)
-     * - api (if you want to exclude all api routes, though some auth api might be needed)
      */
     "/((?!_next/static|_next/image|favicon.ico|images).*)",
   ],

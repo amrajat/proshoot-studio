@@ -14,7 +14,7 @@ export async function aiEditImageAction(formData) {
     const prompt = formData.get("prompt");
     const imageUrls = JSON.parse(formData.get("imageUrls") || "[]");
     const numImages = parseInt(formData.get("numImages") || "1");
-    const outputFormat = formData.get("outputFormat") || "png";
+    const outputFormat = formData.get("outputFormat") || "jpeg";
     const studioId = formData.get("studioId");
 
     // Validate required parameters

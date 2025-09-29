@@ -88,7 +88,7 @@ const AIEditor = ({
       formData.append('prompt', prompt.trim());
       formData.append('imageUrls', JSON.stringify([currentImageUrl]));
       formData.append('numImages', '1');
-      formData.append('outputFormat', 'png');
+      formData.append('outputFormat', 'jpeg');
       formData.append('studioId', studioId);
 
       const result = await aiEditImageAction(formData);
@@ -153,7 +153,7 @@ const AIEditor = ({
         // Handle base64 data URI download
         const link = document.createElement('a');
         link.href = currentImageUrl;
-        link.download = `edited-headshot-${Date.now()}.png`;
+        link.download = `edited-headshot-${Date.now()}.jpeg`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

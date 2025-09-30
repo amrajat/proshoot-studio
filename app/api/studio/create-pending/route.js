@@ -77,14 +77,61 @@ const buildPendingStudioRecord = (studioFormData, user) => {
   };
 };
 
-// Database operations
-const createPendingStudio = async (supabase, studioRecord) => {
-  const { error: studioError } = await supabase
+// Database operations with UPSERT logic
+const createOrUpdatePendingStudio = async (supabase, studioRecord) => {
+  // First, check if studio already exists
+  const { data: existingStudio, error: checkError } = await supabase
     .from("studios")
-    .insert(studioRecord);
+    .select("id, status")
+    .eq("id", studioRecord.id)
+    .single();
 
-  if (studioError) {
-    throw new Error(`Failed to create pending studio: ${studioError.message}`);
+  // If check fails for reasons other than "not found", throw error
+  if (checkError && checkError.code !== "PGRST116") {
+    console.error("Database check error:", checkError);
+    throw new Error("DATABASE_CHECK_ERROR");
+  }
+
+  if (existingStudio) {
+    // Studio exists - check status
+    if (existingStudio.status === "PAYMENT_PENDING") {
+      // Allow retry - UPDATE the existing record with ALL fields
+      const { error: updateError } = await supabase
+        .from("studios")
+        .update({
+          name: studioRecord.name,
+          datasets_object_key: studioRecord.datasets_object_key,
+          style_pairs: studioRecord.style_pairs,
+          user_attributes: studioRecord.user_attributes,
+          plan: studioRecord.plan,
+          organization_id: studioRecord.organization_id,
+          weights: studioRecord.weights,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", studioRecord.id);
+
+      if (updateError) {
+        console.error("Database update error:", updateError);
+        throw new Error("DATABASE_UPDATE_ERROR");
+      }
+
+      return { isUpdate: true, status: existingStudio.status };
+    } else {
+      // Studio already processing/completed - return existing status
+      return { alreadyExists: true, status: existingStudio.status };
+    }
+  } else {
+    // New studio - INSERT with ALL fields
+    const { error: insertError } = await supabase
+      .from("studios")
+      .insert(studioRecord);
+
+    if (insertError) {
+      console.error("Database insert error:", insertError);
+      throw new Error("DATABASE_INSERT_ERROR");
+    }
+
+    return { isNew: true };
   }
 };
 
@@ -133,23 +180,41 @@ export async function POST(request) {
     // Build studio record
     const studioRecord = buildPendingStudioRecord(studioFormData, user);
 
-    // Create pending studio
+    // Create or update pending studio with UPSERT logic
     try {
-      await createPendingStudio(supabase, studioRecord);
+      const result = await createOrUpdatePendingStudio(supabase, studioRecord);
+
+      // Handle different scenarios
+      if (result.alreadyExists) {
+        // Studio already exists and is not PAYMENT_PENDING
+        return createSuccessResponse({
+          studioId: studioFormData.studioID,
+          alreadyExists: true,
+          status: result.status,
+          message: `Studio already exists with status: ${result.status}`,
+        });
+      }
+
+      if (result.isUpdate) {
+        // Studio was updated (retry scenario)
+        return createSuccessResponse({
+          studioId: studioFormData.studioID,
+          isUpdate: true,
+          message: "Studio created.",
+        });
+      }
+
+      // New studio created
+      return createSuccessResponse({
+        studioId: studioFormData.studioID,
+        message: "Studio created.",
+      });
     } catch (error) {
       console.error("Studio creation error:", error);
-      return createErrorResponse("Failed to create studio", 500);
+      return createErrorResponse("Unable to create studio. Please try again.", 500);
     }
-
-    return createSuccessResponse({
-      studioId: studioFormData.studioID,
-      message: "Studio created with PAYMENT_PENDING status.",
-    });
   } catch (error) {
     console.error("Create pending studio error:", error);
-    return createErrorResponse(
-      "An unexpected error occurred while creating studio",
-      500
-    );
+    return createErrorResponse("Unable to process your request. Please try again.", 500);
   }
 }

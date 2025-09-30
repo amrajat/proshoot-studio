@@ -98,9 +98,6 @@ const useStudioCreateStore = create(
             (currentContextId !== contextId ||
               currentContextType !== contextType)
           ) {
-            console.log(
-              "[StudioCreateStore] Context changed, resetting form and step"
-            );
             // Reset everything when context changes
             set({
               formData: { ...initialFormData },
@@ -272,13 +269,12 @@ const useStudioCreateStore = create(
           });
         },
 
-        // Complete form reset including persistent storage
-        resetFormCompletely: () => {
+        // Reset form without page reload (for successful studio creation)
+        resetFormWithoutReload: () => {
           // Clear localStorage/persistent storage
           if (typeof window !== "undefined") {
             try {
               localStorage.removeItem("studio-create-store");
-              console.log("[StudioCreateStore] Cleared persistent storage");
             } catch (error) {
               console.error(
                 "[StudioCreateStore] Error clearing storage:",
@@ -294,12 +290,34 @@ const useStudioCreateStore = create(
             ...initialCreditsState,
             ...initialOrgState,
           });
-          // Revalidate or refresh the page to ensure the UI is updated
+        },
+
+        // Complete form reset with page reload (for context switching)
+        resetFormCompletely: () => {
+          // Clear localStorage/persistent storage
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.removeItem("studio-create-store");
+            } catch (error) {
+              console.error(
+                "[StudioCreateStore] Error clearing storage:",
+                error
+              );
+            }
+          }
+
+          // Reset all state to initial values
+          set({
+            formData: { ...initialFormData },
+            ...initialUIState,
+            ...initialCreditsState,
+            ...initialOrgState,
+          });
+          
+          // Reload page to ensure context change is reflected
           if (typeof window !== "undefined") {
             window.location.reload();
           }
-
-          console.log("[StudioCreateStore] Complete form reset performed");
         },
       }),
       {

@@ -119,7 +119,7 @@ const ImageUploadStep = ({
   isOrgWithTeamCredits,
 }) => {
   const router = useRouter();
-  const { formData, isSubmitting, setIsSubmitting, prevStep, updateFormField } =
+  const { formData, isSubmitting, setIsSubmitting, prevStep, updateFormField, resetFormWithoutReload } =
     useStudioCreateStore();
 
   // Initialize upload state from persisted data or create new
@@ -1007,6 +1007,10 @@ const ImageUploadStep = ({
           plan: formData.plan,
           imageCount: uploadState.files.length
         });
+        
+        // Reset form without reload before redirecting
+        resetFormWithoutReload();
+        
         toast.success("Studio created successfully!");
         router.push(`/studio/${result.studioId}`);
       } else {
@@ -1090,7 +1094,34 @@ const ImageUploadStep = ({
         throw new Error(result?.error || "Failed to create studio record");
       }
 
-      toast.success("Redirecting to payment...");
+      // Handle studio already exists scenario
+      if (result.alreadyExists) {
+        const status = result.status;
+        
+        if (status === "PROCESSING" || status === "COMPLETED" || status === "ACCEPTED") {
+          // Studio is already being processed or completed - redirect to studio page
+          // Reset form without reload before redirecting
+          resetFormWithoutReload();
+          
+          toast.success("Studio already created! Redirecting...");
+          studioMonitoring.stepCompleted("studio-already-exists", { 
+            studioId: uploadState.currentUUID,
+            status 
+          });
+          router.push(`/studio/${uploadState.currentUUID}`);
+          return;
+        } else if (status === "FAILED") {
+          // Studio failed previously - allow retry by proceeding to payment
+          toast.info("Retrying studio creation...");
+        }
+      }
+
+      // Handle update scenario (retry payment)
+      if (result.isUpdate) {
+        toast.info("Redirecting to payment...");
+      } else {
+        toast.success("Redirecting to payment...");
+      }
 
       // Create checkout URL with only studio ID as custom data (user auth handled server-side)
       const checkoutUrl = await createCheckoutUrl(
@@ -1106,7 +1137,8 @@ const ImageUploadStep = ({
       if (checkoutUrl) {
         studioMonitoring.stepCompleted("checkout-redirect", { 
           plan: selectedPlan,
-          studioId: uploadState.currentUUID 
+          studioId: uploadState.currentUUID,
+          isRetry: result.isUpdate || false
         });
         // Redirect to checkout
         window.location.href = checkoutUrl;
@@ -1116,12 +1148,35 @@ const ImageUploadStep = ({
     } catch (error) {
       studioMonitoring.paymentIssue(error.message, {
         plan: selectedPlan,
-        step: "payment-flow",
+        step: "payment-flow-error-fallback",
         studioId: uploadState.currentUUID
       });
-      toast.error(`Payment error: ${error.message}`);
-      setLocalSubmitting(false);
-      setIsSubmitting(false);
+      
+      // FAIL FORWARD: On any error, redirect to payment directly
+      // Just like the buy page - simple and robust
+      try {
+        toast.info("Redirecting to payment...");
+        
+        const checkoutUrl = await createCheckoutUrl(
+          selectedPlan,
+          1,
+          {
+            source: "studio_create_error_fallback",
+          },  
+          `${window.location.origin}/studio/create`
+        );
+        
+        if (checkoutUrl) {
+          window.location.href = checkoutUrl;
+        } else {
+          throw new Error("Failed to create checkout URL");
+        }
+      } catch (checkoutError) {
+        console.error("Checkout creation failed:", checkoutError);
+        toast.error("Unable to proceed to payment. Please try again or contact support.");
+        setLocalSubmitting(false);
+        setIsSubmitting(false);
+      }
     }
   };
 

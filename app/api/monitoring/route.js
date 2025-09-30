@@ -12,48 +12,30 @@ export async function POST(request) {
     // Get the raw body as text (Sentry envelope format)
     const body = await request.text();
     
-    // Extract Sentry parameters from query string
-    const { searchParams } = new URL(request.url);
-    let orgId = searchParams.get('o');
-    let projectId = searchParams.get('p');
-    const region = searchParams.get('r') || 'us';
+    // Extract DSN and project ID from envelope header (official Sentry method)
+    let sentryHost = 'o4507332139089920.ingest.us.sentry.io';
+    let projectId = '4510038552477697';
     
-    // If no query params, try to extract from the envelope body or use defaults
-    if (!orgId || !projectId) {
-      // Try to extract project ID from the envelope body
-      try {
-        const lines = body.split('\n');
-        const headerLine = lines[0];
-        if (headerLine) {
-          const header = JSON.parse(headerLine);
-          if (header.dsn) {
-            const dsnMatch = header.dsn.match(/\/(\d+)$/);
-            if (dsnMatch) {
-              projectId = dsnMatch[1];
-              orgId = '4507332139089920'; // Your org ID
-              console.log('Sentry tunnel: Extracted project ID from envelope', { orgId, projectId });
-            }
-          }
+    try {
+      const lines = body.split('\n');
+      const headerLine = lines[0];
+      if (headerLine) {
+        const header = JSON.parse(headerLine);
+        if (header.dsn) {
+          const dsn = new URL(header.dsn);
+          sentryHost = dsn.host;
+          projectId = dsn.pathname.replace(/^\/+/, '');
         }
-      } catch (e) {
-        // Fallback to default if parsing fails
       }
-      
-      // Final fallback to your main project ID
-      if (!orgId || !projectId) {
-        orgId = '4507332139089920';
-        projectId = '4510038552477697';
-        console.log('Sentry tunnel: Using default project ID', { orgId, projectId });
-      }
+    } catch (e) {
+      // Use fallback values if parsing fails
     }
 
     // Construct the Sentry ingest URL
-    const sentryIngestUrl = `https://${region}.ingest.sentry.io/api/${projectId}/envelope/`;
-    
-    console.log('Sentry tunnel: Forwarding request to', sentryIngestUrl);
+    const sentryIngestUrl = `https://${sentryHost}/api/${projectId}/envelope/`;
 
-    // Forward the request to Sentry with proper headers
-    const sentryResponse = await fetch(sentryIngestUrl, {
+    // Forward the request to Sentry
+    await fetch(sentryIngestUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-sentry-envelope',
@@ -61,8 +43,6 @@ export async function POST(request) {
       },
       body: body,
     });
-
-    console.log('Sentry tunnel: Response status', sentryResponse.status);
 
     // Always return success to avoid breaking the client
     return new NextResponse(null, { 

@@ -24,12 +24,12 @@ const createSuccessResponse = (data) => {
 
 const hairStyle = (character) => {
   // Return empty string if no hair length or if wearing hijab
-  if (!character.hairLength || character.hairLength.toLowerCase() === "hijab") {
+  if (!character.hair_length || character.hair_length.toLowerCase() === "hijab") {
     return "";
   }
   
   // Handle bald case
-  if (character.hairLength.toLowerCase() === "bald") {
+  if (character.hair_length.toLowerCase() === "bald") {
     return " with a bald head";
   }
   
@@ -37,16 +37,16 @@ const hairStyle = (character) => {
   const hairParts = [];
   
   // Always include hair length (it's required)
-  hairParts.push(character.hairLength);
+  hairParts.push(character.hair_length);
   
   // Add hair color if available
-  if (character.hairColor && character.hairColor.trim()) {
-    hairParts.push(character.hairColor);
+  if (character.hair_color && character.hair_color.trim()) {
+    hairParts.push(character.hair_color);
   }
   
   // Add hair type if available
-  if (character.hairType && character.hairType.trim()) {
-    hairParts.push(character.hairType);
+  if (character.hair_type && character.hair_type.trim()) {
+    hairParts.push(character.hair_type);
   }
   
   // Return formatted hair description

@@ -39,7 +39,6 @@ const ETHNICITIES = [
   "Romani",
   "South Asian",
   "Southeast Asian",
-  "Other",
 ];
 
 // Hair Attributes by Gender

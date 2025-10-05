@@ -6,6 +6,7 @@ import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
   dsn: "https://8839f6cae063fa38a3d0fe49ec13bf3c@o4507332139089920.ingest.us.sentry.io/4510038552477697",
+  enabled: process.env.NODE_ENV === "production",
   
   // Tunnel to bypass ad-blockers - ALL requests go through our API
   tunnel: "/api/monitoring",

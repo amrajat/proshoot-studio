@@ -19,7 +19,7 @@ export const PostHogProvider = ({ children }) => {
     if (!isClient || typeof window === "undefined") return;
 
     // Disable PostHog in development mode
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NEXT_PUBLIC_NODE_ENV === "development") {
       console.log("[PostHog] Disabled in development mode");
       return;
     }
@@ -92,7 +92,7 @@ const PostHogPageView = () => {
     if (!isClient || typeof window === "undefined") return;
     
     // Skip pageview tracking in development mode
-    if (process.env.NODE_ENV === "development") return;
+    if (process.env.NEXT_PUBLIC_NODE_ENV === "development") return;
 
     if (pathname && posthog) {
       let url = window.origin + pathname;

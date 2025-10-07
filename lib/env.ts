@@ -15,6 +15,10 @@ const publicSchema = z.object({
   NEXT_PUBLIC_R2_DATASETS_BUCKET_NAME: z.string().min(1).optional(),
   NEXT_PUBLIC_R2_DATASETS_CUSTOM_DOMAIN: z.string().min(1).optional(),
 
+  // ENVIRONMENT
+  NEXT_PUBLIC_NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .optional(),
 });
 
 // =============================================================================

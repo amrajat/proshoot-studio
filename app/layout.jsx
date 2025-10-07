@@ -13,6 +13,8 @@ import { Toaster } from "@/components/ui/sonner";
 import DashboardLayout from "../components/sidebar/dashboard-layout.jsx";
 import createSupabaseServerClient from "@/lib/supabase/server-client";
 import { IntercomProvider } from "@/components/services/intercom-provider";
+import { PostHogProvider } from "@/components/PostHogProvider";
+import { PostHogIdentifier } from "@/components/PostHogIdentifier";
 
 export async function generateMetadata() {
   const headersList = headers();
@@ -85,40 +87,43 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en" className="scroll-smooth min-h-screen">
       <body className={`${GeistSans.className} antialiased min-h-screen`}>
-        <AccountProvider
-          initialProfile={profile}
-          initialOrganizations={organizations}
-          initialIsLoading={false}
-        >
-          <GoogleOneTapComponent />
-          <SidebarProvider>
-            {useDashboardLayout ? (
-              <DashboardLayout>
+        <PostHogProvider>
+          <AccountProvider
+            initialProfile={profile}
+            initialOrganizations={organizations}
+            initialIsLoading={false}
+          >
+            <PostHogIdentifier />
+            <GoogleOneTapComponent />
+            <SidebarProvider>
+              {useDashboardLayout ? (
+                <DashboardLayout>
+                  <IntercomProvider>{children}</IntercomProvider>
+                </DashboardLayout>
+              ) : (
                 <IntercomProvider>{children}</IntercomProvider>
-              </DashboardLayout>
-            ) : (
-              <IntercomProvider>{children}</IntercomProvider>
-            )}
-          </SidebarProvider>
-        </AccountProvider>
-        <Toaster
-          closeButton
-          position="bottom-right"
-          richColors
-          toastOptions={{
-            style: { boxShadow: "none" },
-            classNames: {
-              toast: "bg-background text-foreground border border-border",
-              success: "!bg-success !text-success-foreground !border-success",
-              error:
-                "!bg-destructive !text-destructive-foreground !border-destructive",
-              warning: "!bg-accent !text-accent-foreground !border-accent",
-              info: "!bg-primary !text-primary-foreground !border-primary",
-              closeButton:
-                "!bg-destructive !text-destructive-foreground !border-destructive",
-            },
-          }}
-        />
+              )}
+            </SidebarProvider>
+          </AccountProvider>
+          <Toaster
+            closeButton
+            position="bottom-right"
+            richColors
+            toastOptions={{
+              style: { boxShadow: "none" },
+              classNames: {
+                toast: "bg-background text-foreground border border-border",
+                success: "!bg-success !text-success-foreground !border-success",
+                error:
+                  "!bg-destructive !text-destructive-foreground !border-destructive",
+                warning: "!bg-accent !text-accent-foreground !border-accent",
+                info: "!bg-primary !text-primary-foreground !border-primary",
+                closeButton:
+                  "!bg-destructive !text-destructive-foreground !border-destructive",
+              },
+            }}
+          />
+        </PostHogProvider>
       </body>
     </html>
   );

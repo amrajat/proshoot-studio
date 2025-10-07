@@ -52,8 +52,23 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false, // Fail builds on TypeScript errors
   },
-  // Security: Enable trailing slash redirect for consistency
-  skipTrailingSlashRedirect: false,
+  // PostHog: Enable trailing slash redirect for PostHog API requests
+  skipTrailingSlashRedirect: true,
+
+  // PostHog proxy rewrites for ad-blocker bypass
+  // Using unique path to avoid ad-blocker detection
+  async rewrites() {
+    return [
+      {
+        source: "/ps-data/static/:path*",
+        destination: "https://us-assets.i.posthog.com/static/:path*",
+      },
+      {
+        source: "/ps-data/:path*",
+        destination: "https://us.i.posthog.com/:path*",
+      },
+    ];
+  },
 
   // Production-ready security headers
   async headers() {
@@ -78,7 +93,7 @@ const nextConfig = {
               // Default: Only allow from same origin
               "default-src 'self'",
               // Scripts: Strict policy for production
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://challenges.cloudflare.com https://*.intercom.io https://*.intercomcdn.com https://*.sentry.io",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://challenges.cloudflare.com https://*.intercom.io https://*.intercomcdn.com https://*.sentry.io https://*.posthog.com",
               // Styles: Allow inline for Tailwind and components
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com https://*.intercom.io https://*.intercomcdn.com",
               // Images: Secure image sources
@@ -86,7 +101,7 @@ const nextConfig = {
               // Fonts: Google Fonts and Intercom
               "font-src 'self' data: https://fonts.gstatic.com https://*.intercomcdn.com",
               // Connect: API calls and websockets
-              "connect-src 'self' http://127.0.0.1:* http://localhost:* https://secure.proshoot.co https://delivery.proshoot.co https://*.supabase.co https://challenges.cloudflare.com https://*.sentry.io https://*.intercom.io wss://*.intercom.io https://accounts.google.com https://apis.google.com https://*.googleapis.com https://oauth2.googleapis.com https://www.googleapis.com https://*.r2.cloudflarestorage.com",
+              "connect-src 'self' http://127.0.0.1:* http://localhost:* https://secure.proshoot.co https://delivery.proshoot.co https://*.supabase.co https://challenges.cloudflare.com https://*.sentry.io https://*.intercom.io wss://*.intercom.io https://accounts.google.com https://apis.google.com https://*.googleapis.com https://oauth2.googleapis.com https://www.googleapis.com https://*.r2.cloudflarestorage.com https://*.posthog.com",
               // Frame ancestors: Prevent embedding
               "frame-ancestors 'none'",
               // Form actions: Only allow same origin

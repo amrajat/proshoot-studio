@@ -99,7 +99,7 @@ export const AccountProvider = ({
       const [profileRes, orgMembersRes] = await Promise.all([
         supabase
           .from("profiles")
-          .select("user_id, full_name")
+          .select("user_id, full_name, email, created_at")
           .eq("user_id", user.id)
           .single(),
         supabase
@@ -258,6 +258,8 @@ export const AccountProvider = ({
 
   const contextValue = {
     userId,
+    profile,
+    organizations,
     availableContexts,
     selectedContext,
     setSelectedContext,

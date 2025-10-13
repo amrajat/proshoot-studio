@@ -254,7 +254,7 @@ const ImageUploadStep = ({
     }
   }, [uploadState, updateFormField, formData.uploadState]);
 
-  const [showGuidelines, setShowGuidelines] = useState(false);
+  const [showGuidelines, setShowGuidelines] = useState(true); // Open by default on mount
   const [showRemoveAllDialog, setShowRemoveAllDialog] = useState(false);
   const [localSubmitting, setLocalSubmitting] = useState(false);
   const [isRemovingAll, setIsRemovingAll] = useState(false);
@@ -1172,7 +1172,6 @@ const ImageUploadStep = ({
           throw new Error("Failed to create checkout URL");
         }
       } catch (checkoutError) {
-        console.error("Checkout creation failed:", checkoutError);
         toast.error("Unable to proceed to payment. Please try again or contact support.");
         setLocalSubmitting(false);
         setIsSubmitting(false);

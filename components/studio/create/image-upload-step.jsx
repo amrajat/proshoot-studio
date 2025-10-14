@@ -1221,8 +1221,7 @@ const ImageUploadStep = ({
         <h2 className="text-2xl font-bold">Upload photos</h2>
         <p className="text-muted-foreground">
           Upload at least {MIN_IMAGES} photos with good variation in outfits,
-          lighting, and backgrounds. Each photo should focus on the upper half
-          of your body.
+          lighting, and backgrounds. When cropping after upload, keep waist-up photo in selection area.
         </p>
       </div>
 

@@ -61,6 +61,12 @@ const GenerateSimilar = ({
       return;
     }
 
+    // Check if headshot has a prompt
+    if (!headshot?.prompt || headshot.prompt === null) {
+      toast.error('Cannot generate similar images.');
+      return;
+    }
+
     setIsModalOpen(true);
   };
 
@@ -100,6 +106,9 @@ const GenerateSimilar = ({
     }
   };
 
+  // Check if button should be disabled, if the image was edited.
+  const isButtonDisabled = !headshot?.prompt || headshot.prompt === null;
+
   return (
     <>
       <Button 
@@ -107,7 +116,9 @@ const GenerateSimilar = ({
         size={size}
         className={className}
         onClick={handleGenerateSimilarClick}
-        aria-label="Generate similar image"
+        disabled={isButtonDisabled}
+        aria-label={isButtonDisabled ? "Can't generate similar images" : "Generate similar image"}
+        title={isButtonDisabled ? "This headshot was edited" : "Generate similar images"}
       >
         <Sparkles className="h-4 w-4 text-success" />
       </Button>

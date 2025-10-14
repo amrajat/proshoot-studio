@@ -61,6 +61,9 @@ const serverSchema = z.object({
   MODAL_TRAINING_ENDPOINT: z.string().url().optional(),
   MODAL_TRAINING_ENDPOINT_V2: z.string().url().optional(),
 
+  // FAL.AI (AI IMAGE EDITING)
+  FAL_KEY: z.string().min(1).optional(),
+
   // INTERCOM
   INTERCOM_MESSENGER_SECRET: z.string().min(1).optional(),
 

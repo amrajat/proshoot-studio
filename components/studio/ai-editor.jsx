@@ -8,7 +8,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAccountContext } from '@/context/AccountContext';
 import { fetchUserCredits, hasSufficientBalanceCredits, getBalanceCredits } from '@/services/creditService';
-import { aiEditImageAction } from '@/app/(dashboard)/actions/studio/aiActions';
 
 const AIEditor = ({ 
   studioStatus, 
@@ -84,22 +83,31 @@ const AIEditor = ({
 
     setIsGenerating(true);
     try {
-      const formData = new FormData();
-      formData.append('prompt', prompt.trim());
-      formData.append('imageUrls', JSON.stringify([currentImageUrl]));
-      formData.append('numImages', '1');
-      formData.append('outputFormat', 'jpeg');
-      formData.append('studioId', studioId);
+      // Call API route instead of server action
+      const response = await fetch('/api/ai-edit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          imageUrls: [currentImageUrl],
+          numImages: 1,
+          studioId: studioId,
+        }),
+      });
 
-      const result = await aiEditImageAction(formData);
+      const result = await response.json();
       
       if (result.success && result.images && result.images.length > 0) {
+        // The edited image is now saved in the database with presigned URL
+        const presignedUrl = result.images[0].url;
+        
         // Store current image in history before updating
         setEditHistory(prev => [...prev, currentImageUrl]);
         
-        // Update current image to the AI-generated one
-        const newImageUrl = result.images[0].url;
-        setCurrentImageUrl(newImageUrl);
+        // Update current image to the AI-generated one (use presigned URL)
+        setCurrentImageUrl(presignedUrl);
         
         // Update user credits
         if (userCredits) {
@@ -137,36 +145,6 @@ const AIEditor = ({
       // Just clear prompt if no edits made
       setPrompt('');
       toast.info('Prompt cleared');
-    }
-  };
-
-  const handleDownload = async () => {
-    if (!currentImageUrl) {
-      toast.error('No image to download');
-      return;
-    }
-
-    setIsDownloading(true);
-    try {
-      // Check if it's a base64 data URI (from AI editing)
-      if (currentImageUrl.startsWith('data:')) {
-        // Handle base64 data URI download
-        const link = document.createElement('a');
-        link.href = currentImageUrl;
-        link.download = `edited-headshot-${Date.now()}.jpeg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast.success('Image downloaded successfully');
-        return;
-      }
-
-    } catch (error) {
-      console.error('Download failed:', error);
-      toast.error('Failed to download image');
-    } finally {
-      setIsDownloading(false);
     }
   };
 
@@ -210,25 +188,6 @@ const AIEditor = ({
                   {isImageLoading && (
                     <div className="absolute inset-0 bg-slate-800/50 rounded-xl flex items-center justify-center z-10">
                       <Loader2 className="h-8 w-8 text-white animate-spin" />
-                    </div>
-                  )}
-                  
-                  {/* Download button overlay - only show for edited images */}
-                  {currentImageUrl !== originalImageUrl && (
-                    <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <Button
-                        onClick={handleDownload}
-                        disabled={isDownloading || isImageLoading}
-                        className="h-10 w-10 p-0 bg-black/50 hover:bg-black/70 backdrop-blur-sm border border-white/20 rounded-lg transition-all duration-200"
-                        variant="ghost"
-                        aria-label={isDownloading ? "Downloading..." : "Download edited image"}
-                      >
-                        {isDownloading ? (
-                          <Loader2 className="h-4 w-4 text-white animate-spin" />
-                        ) : (
-                          <Download className="h-4 w-4 text-white" />
-                        )}
-                      </Button>
                     </div>
                   )}
                   

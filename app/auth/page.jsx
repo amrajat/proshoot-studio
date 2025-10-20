@@ -19,6 +19,7 @@ export default function LoginPage() {
           className="absolute inset-0 h-full w-full object-cover"
           width={1024}
           height={1024}
+          priority
         />
         {/* Gradient overlay for better text visibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { env } from "@/lib/env";
 
 export async function POST(request) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request) {
       );
     }
 
-    const secretKey = process.env.TURNSTILE_SECRET_KEY;
+    const secretKey = env.TURNSTILE_SECRET_KEY;
 
     if (!secretKey) {
       return NextResponse.json(

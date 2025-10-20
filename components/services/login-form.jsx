@@ -140,11 +140,11 @@ export function LoginForm({ className, ...props }) {
   const [lastLoginMethod, setLastLoginMethod] = useState(null);
   const [otpSentTime, setOtpSentTime] = useState(null);
   const [isLocked, setIsLocked] = useState(false);
+  const [turnstileError, setTurnstileError] = useState(false);
 
   const captchaRef = useRef(null);
 
-  const TURNSTILE_SITE_KEY =
-    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
+  const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || null;
 
   // Enhanced redirect path validation
   const getRedirectPath = () => {
@@ -192,9 +192,14 @@ export function LoginForm({ className, ...props }) {
 
   const resetFormState = (clearEmail = false) => {
     if (captchaRef.current) {
-      captchaRef.current.reset();
+      try {
+        captchaRef.current.reset();
+      } catch (error) {
+        console.error("Failed to reset Turnstile:", error);
+      }
     }
     setCaptchaToken(null);
+    setTurnstileError(false); // Reset error state
     if (clearEmail) {
       setEmail("");
       setOtp("");
@@ -319,7 +324,8 @@ export function LoginForm({ className, ...props }) {
     }
 
     // Server-side CAPTCHA verification for enhanced security
-    if (captchaToken && TURNSTILE_SITE_KEY !== "1x00000000000000000000AA") {
+    // Skip CAPTCHA if Turnstile had an error (graceful degradation)
+    if (captchaToken && TURNSTILE_SITE_KEY && !turnstileError) {
       setLoading(true); // Show loading during CAPTCHA verification
       try {
         const verifyResponse = await fetch("/api/auth/verify-turnstile", {
@@ -332,20 +338,25 @@ export function LoginForm({ className, ...props }) {
 
         if (!verifyResult.success) {
           setLoading(false);
-          toast.error("Security verification failed. Please try again.");
-          if (captchaRef.current) {
-            captchaRef.current.reset();
-          }
-          setCaptchaToken(null);
-          return;
+          console.warn("[Turnstile] Server verification failed:", verifyResult.error);
+          
+          // Graceful degradation: Allow login without CAPTCHA if verification fails
+          setTurnstileError(true);
+          toast.warning("Security check failed. Proceeding without verification.");
+          
+          // Don't return - continue with login
         }
       } catch (error) {
-        console.error("CAPTCHA verification error:", error);
+        console.error("[Turnstile] Verification API error:", error);
         setLoading(false);
-        toast.error("Security verification unavailable. Please try again.");
-        return;
+        
+        // Graceful degradation: Allow login if API is down
+        setTurnstileError(true);
+        toast.warning("Security check unavailable. Proceeding without verification.");
+        
+        // Don't return - continue with login
       }
-    } else if (TURNSTILE_SITE_KEY !== "1x00000000000000000000AA") {
+    } else if (TURNSTILE_SITE_KEY && !captchaToken && !turnstileError) {
       toast.error("Please complete the CAPTCHA challenge.");
       return;
     }
@@ -556,11 +567,7 @@ export function LoginForm({ className, ...props }) {
               type="submit"
               size={"lg"}
               className="w-full"
-              disabled={
-                loading ||
-                (TURNSTILE_SITE_KEY !== "1x00000000000000000000AA" &&
-                  !captchaToken)
-              }
+              disabled={loading || (TURNSTILE_SITE_KEY && !captchaToken && !turnstileError)}
               aria-live="polite"
             >
               {loading ? (
@@ -573,17 +580,46 @@ export function LoginForm({ className, ...props }) {
               )}
             </Button>
 
-            {TURNSTILE_SITE_KEY &&
-              TURNSTILE_SITE_KEY !== "1x00000000000000000000AA" && (
-                <div className="flex justify-center">
-                  <Turnstile
-                    siteKey={TURNSTILE_SITE_KEY}
-                    onSuccess={setCaptchaToken}
-                    ref={captchaRef}
-                    options={{ theme: "light" }}
-                  />
-                </div>
-              )}
+            {TURNSTILE_SITE_KEY && (
+              <div className="flex justify-center flex-col items-center gap-2">
+                <Turnstile
+                  siteKey={TURNSTILE_SITE_KEY}
+                  onSuccess={(token) => {
+                    setCaptchaToken(token);
+                    setTurnstileError(false);
+                  }}
+                  onError={(error) => {
+                    console.error("[Turnstile] Widget error:", error);
+                    setCaptchaToken(null);
+                    setTurnstileError(true);
+                    // Graceful degradation - allow login without CAPTCHA
+                  }}
+                  onTimeout={() => {
+                    console.error("[Turnstile] Widget timeout - network issue or slow connection");
+                    setCaptchaToken(null);
+                    setTurnstileError(true);
+                  }}
+                  onExpire={() => {
+                    console.warn("[Turnstile] Token expired - user needs to solve again");
+                    setCaptchaToken(null);
+                    setTurnstileError(true);
+                  }}
+                  ref={captchaRef}
+                  options={{ 
+                    theme: "light",
+                    retry: "never",
+                    execution: "render",
+                    appearance: "always",
+                    size: "normal"
+                  }}
+                />
+                {turnstileError && (
+                  <p className="text-xs text-muted-foreground">
+                    Security check unavailable. You can still proceed.
+                  </p>
+                )}
+              </div>
+            )}
           </form>
         </>
       ) : (

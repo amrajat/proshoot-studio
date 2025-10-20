@@ -19,6 +19,9 @@ const publicSchema = z.object({
   NEXT_PUBLIC_NODE_ENV: z
     .enum(["development", "test", "production"])
     .optional(),
+
+  // CLOUDFLARE TURNSTILE (CAPTCHA)
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
 });
 
 // =============================================================================
@@ -66,6 +69,9 @@ const serverSchema = z.object({
 
   // INTERCOM
   INTERCOM_MESSENGER_SECRET: z.string().min(1).optional(),
+
+  // CLOUDFLARE TURNSTILE (SERVER-SIDE VERIFICATION)
+  TURNSTILE_SECRET_KEY: z.string().optional(),
 
   // BUILD-TIME ONLY (NOT RUNTIME)
   SENTRY_AUTH_TOKEN: z.string().min(1).optional(),

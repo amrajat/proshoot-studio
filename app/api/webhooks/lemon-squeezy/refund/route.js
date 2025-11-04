@@ -42,7 +42,7 @@ const verifyWebhookSignature = (rawBody, signature) => {
 };
 
 // FirstPromoter refund tracking
-const handleFirstPromoterRefund = async ({ user, amount, eventId }) => {
+const handleFirstPromoterRefund = async ({ user, amount, saleEventId, refundEventId }) => {
   if (!env.FIRSTPROMOTER_API_KEY) {
     console.log(
       "FirstPromoter API key not configured, skipping refund tracking"
@@ -52,14 +52,18 @@ const handleFirstPromoterRefund = async ({ user, amount, eventId }) => {
 
   try {
     console.log(
-      `Processing FirstPromoter refund for user ${user}, amount: ${amount}, eventId: ${eventId}`
+      `Processing FirstPromoter refund for user ${user}, amount: ${amount}, saleEventId: ${saleEventId}, refundEventId: ${refundEventId}`
     );
 
+    // Build refund data - amount_cents must be POSITIVE (API makes it negative)
     const refundData = {
       uid: user,
-      event_id: eventId,
-      amount_cents: -Math.abs(amount),
+      event_id: refundEventId, // Unique refund event ID to prevent duplicates
+      amount_cents: Math.abs(amount), // MUST be positive - API converts to negative
+      ref_event_id: saleEventId, // Original sale event_id for proper tracking
     };
+
+    console.log('FirstPromoter refund payload:', JSON.stringify(refundData, null, 2));
 
     const response = await fetch(
       "https://firstpromoter.com/api/v1/track/refund",
@@ -106,7 +110,14 @@ export async function POST(request) {
     }
 
     // Parse webhook data
-    const webhookData = JSON.parse(rawBody);
+    let webhookData;
+    try {
+      webhookData = JSON.parse(rawBody);
+    } catch (parseError) {
+      console.error("Failed to parse webhook JSON:", parseError);
+      return createErrorResponse("Invalid JSON payload", 400);
+    }
+    
     const { data, meta } = webhookData;
 
     // Validate webhook structure
@@ -123,7 +134,6 @@ export async function POST(request) {
         refunded,
         refunded_amount,
         user_email,
-        total,
         refunded_at,
       },
     } = data;
@@ -145,20 +155,28 @@ export async function POST(request) {
     console.log(`Processing refund webhook for order ${orderId}`);
     console.log(`Refunded amount: ${refunded_amount}, User: ${user_email}`);
 
-    // Extract FirstPromoter tracking data
+    // Validate refunded amount
+    if (!refunded_amount || refunded_amount <= 0) {
+      console.error(`Invalid refunded amount: ${refunded_amount}`);
+      return createErrorResponse("Invalid refunded amount", 400);
+    }
+
+    // Extract FirstPromoter tracking data (only present if sale was from affiliate)
     const { first_promoter_reference, first_promoter_t_i_d, user } =
       custom_data;
 
     // Handle FirstPromoter refund tracking if reference exists
+    // Note: Not all orders have FirstPromoter data - only affiliate sales
     if (first_promoter_reference && first_promoter_t_i_d && user) {
       await handleFirstPromoterRefund({
         user: user,
         amount: refunded_amount,
-        eventId: orderId,
+        saleEventId: orderId, // Original sale's LemonSqueezy order ID (same as refund)
+        refundEventId: `refund_${orderId}`, // Unique refund event ID
       });
     } else {
       console.log(
-        "No FirstPromoter tracking data found, skipping refund tracking"
+        "No FirstPromoter tracking data found - order was not from affiliate link"
       );
     }
 

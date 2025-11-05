@@ -55,25 +55,24 @@ const handleFirstPromoterRefund = async ({ user, amount, saleEventId, refundEven
       `Processing FirstPromoter refund for user ${user}, amount: ${amount}, saleEventId: ${saleEventId}, refundEventId: ${refundEventId}`
     );
 
-    // Build refund data - amount_cents must be POSITIVE (API makes it negative)
-    const refundData = {
+    const params = new URLSearchParams({
       uid: user,
-      event_id: refundEventId, // Unique refund event ID to prevent duplicates
-      amount_cents: Math.abs(amount), // MUST be positive - API converts to negative
-      ref_event_id: saleEventId, // Original sale event_id for proper tracking
-    };
+      event_id: refundEventId,
+      amount: Math.abs(amount).toString(),
+      ref_event_id: saleEventId,
+    });
 
-    console.log('FirstPromoter refund payload:', JSON.stringify(refundData, null, 2));
+    console.log('FirstPromoter refund payload:', params.toString());
 
     const response = await fetch(
       "https://firstpromoter.com/api/v1/track/refund",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "X-API-KEY": env.FIRSTPROMOTER_API_KEY,
+          "Content-Type": "application/x-www-form-urlencoded",
+          "x-api-key": env.FIRSTPROMOTER_API_KEY,
         },
-        body: JSON.stringify(refundData),
+        body: params.toString(),
         signal: AbortSignal.timeout(FIRSTPROMOTER_TIMEOUT),
       }
     );

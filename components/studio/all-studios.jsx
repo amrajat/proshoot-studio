@@ -42,6 +42,7 @@ import { toggleFavorite } from "@/app/(dashboard)/actions/studio/toggleFavorite"
 import { updateStudioStatus } from "@/app/(dashboard)/actions/studio/updateStudioStatus";
 import HeadshotImage from "./headshot-image";
 import StudioStatusMessage from "./studio-status-message";
+import StudioCompletionInstructionsDialog from "./studio-completion-instructions-dialog";
 import { PhotoProvider } from "react-photo-view";
 import "react-photo-view/dist/react-photo-view.css";
 
@@ -73,6 +74,7 @@ export default function AllStudios({ studioId, currentUserId }) {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
+  const [instructionsDialogOpen, setInstructionsDialogOpen] = useState(false);
 
   // Fetch studio data
   const fetchStudioData = useCallback(async () => {
@@ -708,6 +710,16 @@ export default function AllStudios({ studioId, currentUserId }) {
             onAction={handleStatusAction}
           />
         </div>
+      )}
+
+      {/* Completion Instructions Dialog - Auto-shows for COMPLETED status */}
+      {isCompleted && (
+        <StudioCompletionInstructionsDialog
+          open={instructionsDialogOpen}
+          onOpenChange={setInstructionsDialogOpen}
+          studioId={studioId}
+          autoShow={true}
+        />
       )}
     </div>
   );

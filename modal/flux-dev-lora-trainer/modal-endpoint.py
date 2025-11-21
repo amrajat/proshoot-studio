@@ -12,7 +12,7 @@ import time
 import logging
 import asyncio
 import random
-from PIL import Image
+from PIL import Image, ImageOps
 from typing import Dict, Any, Callable, Optional
 from fastapi import HTTPException, Request
 from pydantic import BaseModel, Field
@@ -219,6 +219,32 @@ def calculate_crop_box(crop_info: Dict[str, Any], image_size: tuple) -> tuple:
     
     return (left, top, right, bottom)
 
+# ==================== MONITORING FUNCTION START (TESTING ONLY - REMOVE AFTER TESTING) ====================
+@retry_with_backoff(
+    max_retries=3,
+    base_delay=1.0,
+    exceptions=(ClientError, BotoCoreError, Exception)
+)
+def upload_to_monitoring_bucket(s3_client, local_file_path: str, remote_key: str) -> bool:
+    """Upload processed training files to datasets_temp_monitor bucket for monitoring."""
+    logger = logging.getLogger(__name__)
+    monitoring_bucket = 'datasets-temp-monitor'
+    
+    try:
+        with open(local_file_path, 'rb') as f:
+            s3_client.put_object(
+                Bucket=monitoring_bucket,
+                Key=remote_key,
+                Body=f.read(),
+                ContentType='image/jpeg' if local_file_path.endswith(('.jpg', '.jpeg')) else 'text/plain'
+            )
+        logger.debug(f"Uploaded to monitoring bucket: {remote_key}")
+        return True
+    except Exception as e:
+        logger.warning(f"Failed to upload {remote_key} to monitoring bucket: {str(e)}")
+        return False
+# ==================== MONITORING FUNCTION END (TESTING ONLY - REMOVE AFTER TESTING) ====================
+
 @retry_with_backoff(
     max_retries=5,
     base_delay=2.0,
@@ -287,6 +313,26 @@ def process_dataset(s3_client, training_request: TrainingRequest, dataset_path: 
     # Download focus_data.json with retry
     crop_data = download_focus_data(s3_client, datasets_bucket, crop_data_key)
     
+    # ==================== MONITORING START (TESTING ONLY - REMOVE AFTER TESTING) ====================
+    # Upload focus_data.json to monitoring bucket for testing purposes
+    try:
+        monitoring_bucket = 'datasets-temp-monitor'
+        monitoring_focus_key = f"{object_key}/focus_data.json"
+        
+        # Convert crop_data dict back to JSON string for upload
+        focus_json_content = json.dumps(crop_data, indent=2)
+        
+        s3_client.put_object(
+            Bucket=monitoring_bucket,
+            Key=monitoring_focus_key,
+            Body=focus_json_content.encode('utf-8'),
+            ContentType='application/json'
+        )
+        logger.info(f"Uploaded focus_data.json to monitoring bucket: {monitoring_focus_key}")
+    except Exception as e:
+        logger.warning(f"Failed to upload focus_data.json to monitoring bucket: {str(e)}")
+    # ==================== MONITORING END (TESTING ONLY - REMOVE AFTER TESTING) ====================
+    
     # Create dataset directory
     os.makedirs(dataset_path, exist_ok=True)
     
@@ -314,6 +360,11 @@ def process_dataset(s3_client, training_request: TrainingRequest, dataset_path: 
                 # Preserve original format and quality
                 original_format = img.format or 'JPEG'
                 file_ext = '.png' if original_format.upper() == 'PNG' else '.jpg'
+                
+                # Apply EXIF orientation to match frontend display orientation
+                # This fixes the issue where phone photos have EXIF rotation metadata
+                # Frontend calculates crops on rotated display, but PIL opens raw orientation
+                img = ImageOps.exif_transpose(img)
                 
                 # Only convert to RGB if necessary for JPEG
                 if original_format.upper() != 'PNG' and img.mode != 'RGB':
@@ -360,6 +411,23 @@ def process_dataset(s3_client, training_request: TrainingRequest, dataset_path: 
                 processed_count += 1
                 logger.info(f"Processed {processed_filename} -> {caption_content}")
                 
+                # ==================== MONITORING START (TESTING ONLY - REMOVE AFTER TESTING) ====================
+                # Upload to monitoring bucket (non-blocking, failures are logged but don't stop processing)
+                try:
+                    # Create monitoring path: datasets_temp_monitor/{object_key}/{processed_filename}
+                    monitoring_image_key = f"{object_key}/{processed_filename}"
+                    monitoring_caption_key = f"{object_key}/{caption_filename}"
+                    
+                    # Upload image and caption to monitoring bucket
+                    upload_to_monitoring_bucket(s3_client, image_path, monitoring_image_key)
+                    upload_to_monitoring_bucket(s3_client, caption_path, monitoring_caption_key)
+                    
+                    logger.debug(f"Uploaded to monitoring: {monitoring_image_key}")
+                except Exception as e:
+                    # Don't fail processing if monitoring upload fails
+                    logger.warning(f"Monitoring upload failed for {processed_filename}: {str(e)}")
+                # ==================== MONITORING END (TESTING ONLY - REMOVE AFTER TESTING) ====================
+                
         except (FileNotFoundError, PermissionError) as e:
             logger.warning(f"Skipping {filename}: {str(e)}")
             failed_images.append(filename)
@@ -374,6 +442,9 @@ def process_dataset(s3_client, training_request: TrainingRequest, dataset_path: 
         logger.warning(f"Failed to process {len(failed_images)} images: {failed_images[:5]}{'...' if len(failed_images) > 5 else ''}")
     
     logger.info(f"Successfully processed {processed_count} images with gender: {caption_gender}")
+    # ==================== MONITORING LOG (TESTING ONLY - REMOVE AFTER TESTING) ====================
+    logger.info(f"Processed images uploaded to monitoring bucket: datasets-temp-monitor/{object_key}/")
+    # ==================== MONITORING LOG END (TESTING ONLY - REMOVE AFTER TESTING) ====================
     return processed_count
 
 def create_optimized_config(training_request: TrainingRequest, dataset_path: str, output_path: str) -> str:

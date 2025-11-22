@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
@@ -30,6 +30,7 @@ import {
   CheckCircle2,
   Loader2,
   Trash2,
+  CloudUpload,
 } from "lucide-react";
 
 import useStudioCreateStore from "@/stores/studioCreateStore";
@@ -44,18 +45,59 @@ import { studioMonitoring, uxMonitoring } from "@/lib/monitoring";
 
 const MB = 1024 * 1024;
 const MAX_FILE_SIZE = 25 * MB;
-const MAX_IMAGES = 25;
+const MAX_IMAGES = 20;
 const MIN_IMAGES = 8;
 const CROP_DIMENSION = 1024;
 const CROP_ASPECT = 1;
 const MIN_IMAGE_DIMENSION = 256;
 const SMART_CROP_TIMEOUT = 600000; // TIME TO LOAD SMARTCROP
-const COMPRESSION_THRESHOLD = 4 * MB;
+const BLOB_REVOKE_DELAY = 100; // Delay before revoking blob URLs (ms)
+const PREVIEW_MAX_DIMENSION = 800; // Max dimension for preview thumbnails (reduces memory)
+const PREVIEW_QUALITY = 0.85; // JPEG quality for preview thumbnails
 const ACCEPTED_TYPES = {
   "image/jpeg": [".jpg", ".jpeg"],
   "image/png": [".png"],
   "image/heic": [".heic"],
   "image/heif": [".heif"],
+};
+
+const mapEntriesToFileIds = (files = [], source = {}) => {
+  if (!source || typeof source !== "object") {
+    return {};
+  }
+
+  const result = {};
+
+  Object.entries(source).forEach(([key, value]) => {
+    const fileById = files.find((file) => file.id === key);
+    if (fileById) {
+      result[key] = value;
+      return;
+    }
+
+    const numericIndex = Number(key);
+    if (!Number.isNaN(numericIndex) && files[numericIndex]) {
+      result[files[numericIndex].id] = value;
+      return;
+    }
+
+    result[key] = value;
+  });
+
+  return result;
+};
+
+const getRelativeObjectKey = (objectKey, fallbackName = "") => {
+  if (!objectKey) {
+    return fallbackName;
+  }
+
+  const parts = objectKey.split("/");
+  if (parts.length > 1) {
+    return parts.slice(1).join("/");
+  }
+
+  return objectKey;
 };
 
 // Helper functions - exact copy from working ImageUploader
@@ -79,25 +121,32 @@ const normalizeCropData = (crop, imageWidth, imageHeight) => {
   };
 };
 
-// Function to check for duplicate files - robust production-ready approach
-const isDuplicateFile = (newFile, existingFiles) => {
-  return existingFiles.some((existingFile) => {
-    // Primary check: name, size, and lastModified (most reliable)
-    const basicMatch =
-      existingFile.file.name === newFile.name &&
-      existingFile.file.size === newFile.size &&
-      existingFile.file.lastModified === newFile.lastModified;
+// Calculate SHA-256 hash of file content
+const calculateFileHash = async (file) => {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+  } catch (error) {
+    console.error('Error calculating file hash:', error);
+    // Fallback to name+size if hash calculation fails
+    return `${file.name}-${file.size}`;
+  }
+};
 
-    // Secondary check: same name and size but different lastModified
-    // This catches files that might be the same but re-saved
-    const nameAndSizeMatch =
-      existingFile.file.name === newFile.name &&
-      existingFile.file.size === newFile.size;
+// Function to check for duplicate files using content hash
+const isDuplicateFile = async (newFile, existingFiles) => {
+  // Quick size check first (optimization)
+  const sameSizeFiles = existingFiles.filter(f => f.file.size === newFile.size);
+  if (sameSizeFiles.length === 0) return false;
 
-    // For images, if name and size match exactly, it's very likely a duplicate
-    // even if lastModified differs (could be due to file system differences)
-    return basicMatch || nameAndSizeMatch;
-  });
+  // Calculate hash for new file
+  const newFileHash = await calculateFileHash(newFile);
+
+  // Check if hash already exists
+  return sameSizeFiles.some(existingFile => existingFile.hash === newFileHash);
 };
 
 const createImagePromise = (src) => {
@@ -113,6 +162,56 @@ const createImagePromise = (src) => {
   });
 };
 
+// Create compressed thumbnail for preview to reduce memory usage
+const createCompressedPreview = async (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.createElement('img');
+      img.onload = () => {
+        // Calculate scaled dimensions
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > PREVIEW_MAX_DIMENSION || height > PREVIEW_MAX_DIMENSION) {
+          if (width > height) {
+            height = (height / width) * PREVIEW_MAX_DIMENSION;
+            width = PREVIEW_MAX_DIMENSION;
+          } else {
+            width = (width / height) * PREVIEW_MAX_DIMENSION;
+            height = PREVIEW_MAX_DIMENSION;
+          }
+        }
+        
+        // Create canvas and compress
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convert to blob with compression
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedUrl = URL.createObjectURL(blob);
+              resolve(compressedUrl);
+            } else {
+              reject(new Error('Failed to create compressed preview'));
+            }
+          },
+          'image/jpeg',
+          PREVIEW_QUALITY
+        );
+      };
+      img.onerror = () => reject(new Error('Failed to load image for compression'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+};
+
 const ImageUploadStep = ({
   selectedContext,
   credits,
@@ -122,33 +221,128 @@ const ImageUploadStep = ({
   const { formData, isSubmitting, setIsSubmitting, prevStep, updateFormField, resetFormWithoutReload } =
     useStudioCreateStore();
 
-  // Initialize upload state from persisted data or create new
-  const initializeUploadState = () => {
-    const persistedUploadState = formData.uploadState;
-    if (persistedUploadState && persistedUploadState.files?.length > 0) {
-      // Reconstruct upload progress based on uploaded files
-      const reconstructedProgress = {};
-      persistedUploadState.files.forEach((file, index) => {
-        const uploadedFile = persistedUploadState.uploadedFiles?.find(
-          (f) => f.fileId === file.id
-        );
-        if (uploadedFile) {
-          reconstructedProgress[index] = { status: "completed", progress: 100 };
-        }
-      });
+  // Initialize upload state - always starts fresh (no persistence)
+  const [uploadState, setUploadState] = useState({
+    files: [],
+    uploading: false,
+    uploadProgress: {},
+    uploadedFiles: [],
+    currentUUID: uuidv4(),
+    completedCrops: {},
+    processing: false,
+  });
+  const heicConversionQueueRef = useRef([]);
+  const isMountedRef = useRef(true);
 
-      return {
-        ...persistedUploadState,
-        uploading: false,
-        processing: false,
-        uploadProgress: {
-          ...persistedUploadState.uploadProgress,
-          ...reconstructedProgress,
-        },
-        // Reset transient states but keep files and uploads
-      };
+  // Check if there are active uploads
+  const hasActiveUploads = useCallback(() => {
+    return Object.values(uploadState.uploadProgress).some(
+      (progress) => progress.status === "uploading" || progress.status === "converting"
+    );
+  }, [uploadState.uploadProgress]);
+
+  // Check if all uploads are completed
+  const hasCompletedUploads = useCallback(() => {
+    return uploadState.files.length > 0 && 
+           uploadState.uploadedFiles.length === uploadState.files.length;
+  }, [uploadState.files.length, uploadState.uploadedFiles.length]);
+
+  // Browser/tab close warning during upload
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasActiveUploads()) {
+        e.preventDefault();
+        e.returnValue = "Uploads in progress will be lost. Are you sure you want to leave?";
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasActiveUploads]);
+
+  // Browser back button handling during upload
+  useEffect(() => {
+    const handlePopState = (e) => {
+      if (hasActiveUploads()) {
+        e.preventDefault();
+        const confirmLeave = window.confirm(
+          "Uploads in progress will be lost. Are you sure you want to go back?"
+        );
+        if (!confirmLeave) {
+          window.history.pushState(null, "", window.location.href);
+        }
+      }
+    };
+
+    // Push initial state to enable back button interception
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [hasActiveUploads]);
+
+  // Cleanup blob URLs on component unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    return () => {
+      isMountedRef.current = false;
+      
+      // Revoke all blob URLs when component unmounts
+      // Use functional state update to access latest files
+      setUploadState((prev) => {
+        prev.files.forEach((file) => {
+          if (file.preview && file.preview.startsWith('blob:')) {
+            URL.revokeObjectURL(file.preview);
+          }
+        });
+        return prev; // Return unchanged state
+      });
+    };
+  }, []); // Empty deps = only runs on mount/unmount
+
+  const [showGuidelines, setShowGuidelines] = useState(true); // Open by default on mount
+  const [showRemoveAllDialog, setShowRemoveAllDialog] = useState(false);
+  const [localSubmitting, setLocalSubmitting] = useState(false);
+  const [isRemovingAll, setIsRemovingAll] = useState(false);
+  const [removingFiles, setRemovingFiles] = useState(new Set()); // Track which files are being removed
+  const [isConvertingHeic, setIsConvertingHeic] = useState(false);
+  const [showNavigationWarning, setShowNavigationWarning] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
+
+  // Handle navigation with blocking and warnings
+  const handlePreviousStep = useCallback(() => {
+    // Block navigation during active uploads
+    if (hasActiveUploads()) {
+      toast.error("Please wait for uploads to complete before navigating.");
+      return;
     }
-    return {
+
+    // Warn about re-upload when navigating after completion
+    if (hasCompletedUploads()) {
+      setPendingNavigation("previous");
+      setShowNavigationWarning(true);
+      return;
+    }
+
+    // No uploads or warnings needed, navigate normally
+    prevStep();
+  }, [hasActiveUploads, hasCompletedUploads, prevStep]);
+
+  // Confirm navigation and reset state
+  const handleConfirmNavigation = useCallback(() => {
+    // Revoke all blob URLs before resetting state
+    uploadState.files.forEach((file) => {
+      if (file.preview && file.preview.startsWith('blob:')) {
+        URL.revokeObjectURL(file.preview);
+      }
+    });
+
+    // Reset upload state with fresh UUID
+    setUploadState({
       files: [],
       uploading: false,
       uploadProgress: {},
@@ -156,124 +350,44 @@ const ImageUploadStep = ({
       currentUUID: uuidv4(),
       completedCrops: {},
       processing: false,
-    };
-  };
+    });
 
-  // Component state
-  const [uploadState, setUploadState] = useState(initializeUploadState);
+    // Note: uploadState not in Zustand store (no-persistence strategy)
 
-  // Verify upload and delete status on component mount
-  useEffect(() => {
-    const verifyFileStatus = async () => {
-      if (uploadState.files.length === 0) return;
+    // Close dialog
+    setShowNavigationWarning(false);
 
-      const updatedProgress = { ...uploadState.uploadProgress };
-      let updatedFiles = [...uploadState.files];
-      let updatedUploadedFiles = [...(uploadState.uploadedFiles || [])];
-      let hasUpdates = false;
-
-      // Check each file for upload status and deletion status
-      for (let index = uploadState.files.length - 1; index >= 0; index--) {
-        const progress = uploadState.uploadProgress[index];
-        const fileData = uploadState.files[index];
-        const uploadedFile = uploadState.uploadedFiles?.find(
-          (f) => f.fileId === fileData.id
-        );
-
-        // Check if file was being deleted and actually got deleted
-        if (uploadedFile?.objectKey) {
-          try {
-            // Verify file still exists in R2 by attempting a HEAD request
-            const response = await fetch("/api/r2/check-file", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                objectKey: uploadedFile.objectKey,
-                bucketName: "datasets",
-              }),
-            });
-
-            if (!response.ok || !(await response.json()).exists) {
-              // File was deleted from R2, remove from UI
-              updatedFiles = updatedFiles.filter((f) => f.id !== fileData.id);
-              updatedUploadedFiles = updatedUploadedFiles.filter(
-                (f) => f.fileId !== fileData.id
-              );
-              delete updatedProgress[index];
-              hasUpdates = true;
-              continue;
-            }
-          } catch (error) {
-            // If check fails, assume file still exists to avoid false deletions
-          }
-        }
-
-        // Check upload status for files that show as uploading
-        if (
-          progress?.status === "uploading" ||
-          progress?.status === "processing"
-        ) {
-          if (uploadedFile) {
-            // File was completed while away, update progress
-            updatedProgress[index] = { status: "completed", progress: 100 };
-            hasUpdates = true;
-          } else {
-            // File still needs uploading, resume the upload
-            try {
-              await processAndUploadFile(fileData.file, index);
-            } catch (error) {
-              updatedProgress[index] = {
-                status: "failed",
-                progress: 0,
-                error: error.message,
-              };
-              hasUpdates = true;
-            }
-          }
-        }
-      }
-
-      if (hasUpdates) {
-        setUploadState((prev) => ({
-          ...prev,
-          files: updatedFiles,
-          uploadedFiles: updatedUploadedFiles,
-          uploadProgress: updatedProgress,
-        }));
-      }
-    };
-
-    verifyFileStatus();
-  }, []); // Only run on mount
-
-  // Persist upload state to Zustand store whenever it changes
-  useEffect(() => {
-    // Only update if uploadState has actually changed to prevent infinite loops
-    if (JSON.stringify(formData.uploadState) !== JSON.stringify(uploadState)) {
-      updateFormField("uploadState", uploadState);
+    // Execute pending navigation
+    if (pendingNavigation === "previous") {
+      prevStep();
     }
-  }, [uploadState, updateFormField, formData.uploadState]);
 
-  const [showGuidelines, setShowGuidelines] = useState(true); // Open by default on mount
-  const [showRemoveAllDialog, setShowRemoveAllDialog] = useState(false);
-  const [localSubmitting, setLocalSubmitting] = useState(false);
-  const [isRemovingAll, setIsRemovingAll] = useState(false);
-  const [removingFiles, setRemovingFiles] = useState(new Set()); // Track which files are being removed
+    setPendingNavigation(null);
+  }, [pendingNavigation, prevStep, uploadState.files]);
 
-  // File processing functions
+  // Cancel navigation
+  const handleCancelNavigation = useCallback(() => {
+    setShowNavigationWarning(false);
+    setPendingNavigation(null);
+  }, []);
+
+  // Convert HEIC to JPEG (on main thread, but sequential with delays)
   const convertHeicToJpeg = async (file) => {
     try {
-      // Dynamic import to avoid SSR issues
       const heic2any = (await import("heic2any")).default;
 
       const convertedBlob = await heic2any({
         blob: file,
         toType: "image/jpeg",
-        quality: 0.9,
+        quality: 0.92,
       });
 
+      const finalBlob = Array.isArray(convertedBlob) 
+        ? convertedBlob[0] 
+        : convertedBlob;
+
       const convertedFile = new File(
-        [convertedBlob],
+        [finalBlob],
         file.name.replace(/\.(heic|heif)$/i, ".jpg"),
         { type: "image/jpeg" }
       );
@@ -284,53 +398,137 @@ const ImageUploadStep = ({
     }
   };
 
-  const compressImage = async (file) => {
-    try {
-      const fileSizeMB = file.size / 1024 / 1024;
-
-      // Only compress if file is above 4MB threshold
-      if (file.size <= COMPRESSION_THRESHOLD) {
-        return file;
-      }
-
-      // Dynamic import to avoid SSR issues
-      const imageCompression = (await import("browser-image-compression"))
-        .default;
-
-      // Progressive compression approach to maintain quality
-      const options = {
-        maxSizeMB: 3.8, // Target under 4MB with some buffer
-        maxWidthOrHeight: 4096, // Keep higher resolution
-        useWebWorker: true,
-        initialQuality: 0.92, // Start with high quality
-        alwaysKeepResolution: true, // Try to maintain resolution
-      };
-
-      // Don't change file type for PNG to preserve transparency
-      if (file.type !== "image/png") {
-        options.fileType = "image/jpeg";
-      }
-
-      let compressedFile = await imageCompression(file, options);
-
-      // If still too large, try with slightly lower quality but maintain resolution
-      if (compressedFile.size > COMPRESSION_THRESHOLD) {
-        const secondaryOptions = {
-          ...options,
-          maxSizeMB: 3.5,
-          initialQuality: 0.85,
-          maxWidthOrHeight: 3840, // Slightly reduce max dimension
-        };
-        compressedFile = await imageCompression(file, secondaryOptions);
-      }
-
-      const compressedSizeMB = compressedFile.size / 1024 / 1024;
-      const savings = ((file.size - compressedFile.size) / file.size) * 100;
-
-      return compressedFile;
-    } catch (error) {
-      return file; // Return original if compression fails
+  // Process HEIC queue sequentially
+  const processHeicQueue = async () => {
+    if (isConvertingHeic || heicConversionQueueRef.current.length === 0) {
+      return;
     }
+
+    setIsConvertingHeic(true);
+
+    while (heicConversionQueueRef.current.length > 0) {
+      const { file, fileId } = heicConversionQueueRef.current.shift();
+
+      try {
+        // Convert HEIC to JPEG
+        const jpegFile = await convertHeicToJpeg(file);
+
+        // Load converted image to get dimensions and run SmartCrop
+        const tempUrl = URL.createObjectURL(jpegFile);
+        const img = await createImagePromise(tempUrl);
+        URL.revokeObjectURL(tempUrl); // Clean up temporary URL immediately after loading
+        const smartCropResult = await applySmartCrop(jpegFile);
+
+        // Create compressed preview URL for the converted file (reduces memory)
+        const previewUrl = await createCompressedPreview(jpegFile).catch(() => URL.createObjectURL(jpegFile));
+
+        // Update file in state with converted version and proper preview
+        setUploadState((prev) => ({
+          ...prev,
+          files: prev.files.map((f) =>
+            f.id === fileId
+              ? {
+                  ...f,
+                  file: jpegFile,
+                  preview: previewUrl,
+                  isConverting: false,
+                  initialCrop: smartCropResult,
+                  dimensions: { width: img.width, height: img.height },
+                }
+              : f
+          ),
+        }));
+
+        // Start upload for this file
+        await processAndUploadFile(jpegFile, fileId);
+
+        // Small delay to let UI breathe
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (error) {
+        console.error(`Failed to convert HEIC ${fileId}:`, error);
+        toast.error(`Failed to convert HEIC: ${error.message}`);
+        setUploadState((prev) => ({
+          ...prev,
+          uploadProgress: {
+            ...prev.uploadProgress,
+            [fileId]: { status: 'failed', progress: 0, error: error.message },
+          },
+        }));
+      }
+    }
+
+    setIsConvertingHeic(false);
+  };
+
+  // Queue HEIC file for conversion
+  const queueHeicConversion = (file, fileId) => {
+    heicConversionQueueRef.current.push({ file, fileId });
+    processHeicQueue();
+  };
+
+  // Get presigned URL for direct R2 upload
+  const getPresignedUrl = async (fileName, fileType) => {
+    const response = await fetch('/api/r2/presigned-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileName,
+        fileType,
+        studioId: uploadState.currentUUID,
+      }),
+    });
+
+    // Session expiry detection
+    if (response.status === 401) {
+      toast.error("Your session has expired. Please login again.");
+      const currentPath = window.location.pathname;
+      router.push(`/auth`);
+      throw new Error('Session expired');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to get presigned URL');
+    }
+
+    const data = await response.json();
+    return data;
+  };
+
+  // Upload file directly to R2 using presigned URL
+  const uploadDirectToR2 = async (presignedUrl, file, fileId) => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const progress = Math.round((e.loaded / e.total) * 100);
+          setUploadState((prev) => ({
+            ...prev,
+            uploadProgress: {
+              ...prev.uploadProgress,
+              [fileId]: { status: 'uploading', progress },
+            },
+          }));
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 200) {
+          resolve();
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new Error('Upload failed'));
+      });
+
+      xhr.open('PUT', presignedUrl);
+      xhr.setRequestHeader('Content-Type', file.type);
+      xhr.send(file);
+    });
   };
 
   // Exact copy of applySmartCrop from working ImageUploader
@@ -435,16 +633,16 @@ const ImageUploadStep = ({
     }
   };
 
+  // Legacy uploadToR2 for focus_data.json only
   const uploadToR2 = async (file, fileName) => {
     try {
-      // Create FormData for server-side upload
       const formData = new FormData();
       formData.append("file", file);
       formData.append("fileName", `${uploadState.currentUUID}/${fileName}`);
 
       const response = await fetch("/api/r2/upload", {
         method: "POST",
-        body: formData, // Send file directly to server
+        body: formData,
       });
 
       if (!response.ok) {
@@ -461,95 +659,118 @@ const ImageUploadStep = ({
     }
   };
 
-  // Auto-upload function for individual files
-  const processAndUploadFile = async (file, index) => {
+  // Upload file directly to R2 using presigned URL
+  const processAndUploadFile = async (file, fileId) => {
     try {
       setUploadState((prev) => ({
         ...prev,
         uploadProgress: {
           ...prev.uploadProgress,
-          [index]: { status: "processing", progress: 10 },
+          [fileId]: { status: "preparing", progress: 5 },
         },
       }));
 
-      let processedFile = file;
-
-      // Convert HEIC/HEIF to JPEG
-      if (file.type === "image/heic" || file.type === "image/heif") {
-        processedFile = await convertHeicToJpeg(file);
-        setUploadState((prev) => ({
-          ...prev,
-          uploadProgress: {
-            ...prev.uploadProgress,
-            [index]: { status: "processing", progress: 30 },
-          },
-        }));
-      }
-
-      // Compress if needed (above 1MB)
-      processedFile = await compressImage(processedFile);
-      setUploadState((prev) => ({
-        ...prev,
-        uploadProgress: {
-          ...prev.uploadProgress,
-          [index]: { status: "uploading", progress: 50 },
-        },
-      }));
-
-      // Upload to R2
-      const { objectKey, sanitizedFileName } = await uploadToR2(
-        processedFile,
-        processedFile.name
+      // Get presigned URL
+      const { presignedUrl, objectKey, sanitizedFileName } = await getPresignedUrl(
+        file.name,
+        file.type
       );
 
       setUploadState((prev) => ({
         ...prev,
         uploadProgress: {
           ...prev.uploadProgress,
-          [index]: { status: "completed", progress: 100 },
+          [fileId]: { status: "uploading", progress: 10 },
         },
-        uploadedFiles: [
-          ...prev.uploadedFiles,
-          {
-            objectKey,
-            fileName: sanitizedFileName || processedFile.name,
-            originalFileName: processedFile.name,
-            index,
-            fileId: prev.files[index]?.id,
+      }));
+
+      // Upload directly to R2
+      await uploadDirectToR2(presignedUrl, file, fileId);
+
+      setUploadState((prev) => {
+        // Safety check: only add to uploadedFiles if file still exists in files array
+        const fileStillExists = prev.files.some(f => f.id === fileId);
+        
+        if (!fileStillExists) {
+          // File was removed during upload, clean up uploadProgress and don't add to uploadedFiles
+          const { [fileId]: removed, ...remainingProgress } = prev.uploadProgress;
+          return {
+            ...prev,
+            uploadProgress: remainingProgress,
+          };
+        }
+        
+        // Check if already in uploadedFiles (prevent duplicates)
+        const alreadyUploaded = prev.uploadedFiles.some(f => f.fileId === fileId);
+        
+        return {
+          ...prev,
+          uploadProgress: {
+            ...prev.uploadProgress,
+            [fileId]: { status: "completed", progress: 100 },
           },
-        ],
-      }));
+          uploadedFiles: alreadyUploaded 
+            ? prev.uploadedFiles 
+            : [
+                ...prev.uploadedFiles,
+                {
+                  objectKey,
+                  fileName: sanitizedFileName || file.name,
+                  originalFileName: file.name,
+                  fileId,
+                },
+              ],
+        };
+      });
     } catch (error) {
-      setUploadState((prev) => ({
-        ...prev,
-        uploadProgress: {
-          ...prev.uploadProgress,
-          [index]: { status: "failed", progress: 0, error: error.message },
-        },
-      }));
+      setUploadState((prev) => {
+        // Check if file still exists before setting error state
+        const fileStillExists = prev.files.some(f => f.id === fileId);
+        
+        if (!fileStillExists) {
+          // File was removed, clean up uploadProgress
+          const { [fileId]: removed, ...remainingProgress } = prev.uploadProgress;
+          return {
+            ...prev,
+            uploadProgress: remainingProgress,
+          };
+        }
+        
+        return {
+          ...prev,
+          uploadProgress: {
+            ...prev.uploadProgress,
+            [fileId]: { status: "failed", progress: 0, error: error.message },
+          },
+        };
+      });
     }
   };
 
-  // Process image with HEIC conversion support
+  // Process image - lightweight preview generation only
   const processImage = async (file) => {
     return new Promise(async (resolve) => {
       try {
-        let processedFile = file;
-        let objectUrl = URL.createObjectURL(file);
+        const isHeic = file.type === "image/heic" || file.type === "image/heif";
 
-        // Convert HEIC/HEIF to JPEG for preview compatibility
-        if (file.type === "image/heic" || file.type === "image/heif") {
-          try {
-            processedFile = await convertHeicToJpeg(file);
-            // Create new object URL from converted file for preview
-            URL.revokeObjectURL(objectUrl); // Clean up original URL
-            objectUrl = URL.createObjectURL(processedFile);
-          } catch (conversionError) {
-            // Fall back to original file, but mark as having issues
-          }
+        // For HEIC files, show placeholder and queue for conversion
+        if (isHeic) {
+          resolve({
+            file,
+            preview: "/images/processing-heic.svg", // Placeholder
+            accepted: true,
+            declineReason: "",
+            initialCrop: { unit: "%", x: 25, y: 25, width: 50, height: 50 },
+            dimensions: { width: 1024, height: 1024 },
+            isConverting: true,
+          });
+          return;
         }
 
+        // For JPEG/PNG, create compressed preview and run SmartCrop
+        const objectUrl = URL.createObjectURL(file);
         const img = await createImagePromise(objectUrl).catch((err) => {
+          URL.revokeObjectURL(objectUrl); // Clean up on error
           throw new Error(
             `Failed to load image for processing: ${err.message}`
           );
@@ -564,37 +785,26 @@ const ImageUploadStep = ({
           declineReason = `This image is smaller than ${MIN_IMAGE_DIMENSION}x${MIN_IMAGE_DIMENSION} pixels, but we will still use it, it may not be perfect.`;
         }
 
-        // Use converted file for smart crop if available
-        const smartCropResult = await applySmartCrop(processedFile);
+        // SmartCrop for preview
+        const smartCropResult = await applySmartCrop(file);
+
+        // Create compressed thumbnail for preview (reduces memory by ~80%)
+        const compressedPreview = await createCompressedPreview(file).catch(() => objectUrl);
+        
+        // Revoke original objectUrl if compression succeeded
+        if (compressedPreview !== objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+        }
 
         resolve({
-          file, // Keep original file for upload
-          convertedFile: processedFile, // Store converted file separately
-          preview: objectUrl, // Use converted file's URL for preview
+          file,
+          preview: compressedPreview,
           accepted,
           declineReason,
           initialCrop: smartCropResult,
           dimensions: { width: img.width, height: img.height },
         });
       } catch (error) {
-        // For HEIC files that fail to process, try conversion first
-        if (file.type === "image/heic" || file.type === "image/heif") {
-          try {
-            const convertedFile = await convertHeicToJpeg(file);
-            const objectUrl = URL.createObjectURL(convertedFile);
-            resolve({
-              file,
-              convertedFile,
-              preview: objectUrl,
-              accepted: true,
-              declineReason: "HEIC file converted to JPEG for compatibility",
-              initialCrop: { unit: "%", x: 25, y: 25, width: 50, height: 50 },
-              dimensions: { width: 1024, height: 1024 }, // Default dimensions
-            });
-            return;
-          } catch (conversionError) {}
-        }
-
         const objectUrl = URL.createObjectURL(file);
         resolve({
           file,
@@ -608,27 +818,32 @@ const ImageUploadStep = ({
     });
   };
 
-  // Exact copy of handleCropComplete from working ImageUploader
+  // Handle crop completion - keyed by fileId
   const handleCropComplete = useCallback(
-    (crop, percentCrop, index) => {
+    (crop, percentCrop, fileId) => {
       if (!percentCrop) return;
-      const file = uploadState.files[index];
-      if (!file) return; // File might have been removed
-      const dimensions = file.dimensions || { width: 1024, height: 1024 }; // Default if not set
-      const normalizedCrop = normalizeCropData(
-        percentCrop,
-        dimensions.width,
-        dimensions.height
-      );
-      setUploadState((prev) => ({
-        ...prev,
-        completedCrops: {
-          ...prev.completedCrops,
-          [index]: normalizedCrop,
-        },
-      }));
+      
+      setUploadState((prev) => {
+        const file = prev.files.find((f) => f.id === fileId);
+        if (!file) return prev; // File might have been removed
+        
+        const dimensions = file.dimensions || { width: 1024, height: 1024 };
+        const normalizedCrop = normalizeCropData(
+          percentCrop,
+          dimensions.width,
+          dimensions.height
+        );
+        
+        return {
+          ...prev,
+          completedCrops: {
+            ...prev.completedCrops,
+            [fileId]: normalizedCrop,
+          },
+        };
+      });
     },
-    [uploadState.files]
+    []
   );
 
   // Drop zone handlers
@@ -654,16 +869,21 @@ const ImageUploadStep = ({
 
   const handleFileDrop = useCallback(
     async (acceptedFiles) => {
-      // Filter out duplicate files
-      const uniqueFiles = acceptedFiles.filter((file) => {
-        const isDuplicate = isDuplicateFile(file, uploadState.files);
+      // Filter out duplicate files using hash-based detection
+      const uniqueFiles = [];
+      const duplicateFiles = [];
+
+      for (const file of acceptedFiles) {
+        const isDuplicate = await isDuplicateFile(file, uploadState.files);
         if (isDuplicate) {
+          duplicateFiles.push(file.name);
+        } else {
+          uniqueFiles.push(file);
         }
-        return !isDuplicate;
-      });
+      }
 
       if (uniqueFiles.length === 0) {
-        toast.error("Duplicate images were skipped.");
+        toast.error("All images were duplicates and skipped.");
         return;
       }
 
@@ -674,9 +894,8 @@ const ImageUploadStep = ({
         return;
       }
 
-      const duplicateCount = acceptedFiles.length - uniqueFiles.length;
-      if (duplicateCount > 0) {
-        toast.warning(`${duplicateCount} duplicate file(s) were skipped.`);
+      if (duplicateFiles.length > 0) {
+        toast.warning(`${duplicateFiles.length} duplicate file(s) were skipped.`);
       }
 
       setUploadState((prev) => ({ ...prev, processing: true }));
@@ -686,39 +905,63 @@ const ImageUploadStep = ({
       for (let i = 0; i < uniqueFiles.length; i++) {
         const file = uniqueFiles[i];
 
+        // Calculate hash for the file
+        const fileHash = await calculateFileHash(file);
+
         const processedFile = await processImage(file);
         const fileWithId = {
           ...processedFile,
-          id: Date.now() + i,
+          id: processedFile.id || crypto.randomUUID?.() || `${Date.now()}-${i}`,
+          hash: fileHash, // Store hash for future duplicate detection
         };
         processedFiles.push(fileWithId);
       }
 
-      // Add files to state first
-      const newUploadState = {
-        ...uploadState,
-        files: [...uploadState.files, ...processedFiles],
+      // Add files to state first using functional update
+      setUploadState((prev) => ({
+        ...prev,
+        files: [...prev.files, ...processedFiles],
         processing: false,
-      };
-      setUploadState(newUploadState);
+      }));
       toast.dismiss(); // Dismiss the processing toast
 
-      // Auto-upload each file immediately after adding to state
-      setTimeout(async () => {
-        const currentFileCount = uploadState.files.length;
-        for (let i = 0; i < processedFiles.length; i++) {
-          const fileData = processedFiles[i];
-          const fileIndex = currentFileCount + i; // Use current count before adding new files
+      // Process files immediately (no setTimeout to avoid race conditions)
+      for (const fileData of processedFiles) {
+        // Check if component is still mounted
+        if (!isMountedRef.current) {
+          console.warn('Component unmounted, stopping file processing');
+          break;
+        }
 
-          try {
-            await processAndUploadFile(fileData.file, fileIndex);
-          } catch (error) {
-            // Update progress to show failed state
+        try {
+          const isHeic = fileData.file.type === "image/heic" || fileData.file.type === "image/heif";
+
+          if (isHeic) {
+            // Queue HEIC for conversion (non-blocking)
+            queueHeicConversion(fileData.file, fileData.id);
+            
+            // Only update state if still mounted
+            if (isMountedRef.current) {
+              setUploadState((prev) => ({
+                ...prev,
+                uploadProgress: {
+                  ...prev.uploadProgress,
+                  [fileData.id]: { status: "converting", progress: 0 },
+                },
+              }));
+            }
+          } else {
+            // Upload JPEG/PNG immediately
+            await processAndUploadFile(fileData.file, fileData.id);
+          }
+        } catch (error) {
+          // Only update state if still mounted
+          if (isMountedRef.current) {
             setUploadState((prev) => ({
               ...prev,
               uploadProgress: {
                 ...prev.uploadProgress,
-                [fileIndex]: {
+                [fileData.id]: {
                   status: "failed",
                   progress: 0,
                   error: error.message,
@@ -727,9 +970,9 @@ const ImageUploadStep = ({
             }));
           }
         }
-      }, 100); // Small delay to ensure state is updated
+      }
     },
-    [uploadState.files.length, uploadState.uploadedFiles, formData.uploadState]
+    [processAndUploadFile, queueHeicConversion, uploadState.files]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -741,9 +984,6 @@ const ImageUploadStep = ({
   });
 
   const removeFile = async (fileId) => {
-    // Find the file index in the files array (move outside try block)
-    const fileIndex = uploadState.files.findIndex((f) => f.id === fileId);
-
     // Add to removing files set
     setRemovingFiles((prev) => new Set([...prev, fileId]));
 
@@ -754,56 +994,43 @@ const ImageUploadStep = ({
       );
 
       if (uploadedFile && uploadedFile.objectKey) {
-        try {
-          await deleteFromR2(uploadedFile.objectKey);
+        await deleteFromR2(uploadedFile.objectKey);
+      }
 
-          // Immediately update state after successful deletion
-          const newUploadState = {
-            ...uploadState,
-            files: uploadState.files.filter((f) => f.id !== fileId),
-            uploadedFiles: uploadState.uploadedFiles.filter(
-              (f) => f.fileId !== fileId
-            ),
-            completedCrops: Object.fromEntries(
-              Object.entries(uploadState.completedCrops).filter(
-                ([key]) => parseInt(key) !== fileIndex
-              )
-            ),
-            uploadProgress: Object.fromEntries(
-              Object.entries(uploadState.uploadProgress).filter(
-                ([key]) => parseInt(key) !== fileIndex
-              )
-            ),
-          };
-          setUploadState(newUploadState);
-        } catch (error) {
-          toast.error("Failed to delete file. Please try again.");
-          // Don't update state if deletion failed
-          return;
+      // Update state using functional update to get latest state
+      setUploadState((prev) => {
+        // Find the file to revoke its blob URL
+        const fileToRemove = prev.files.find((f) => f.id === fileId);
+        
+        // Revoke blob URL immediately before removing from state
+        if (fileToRemove?.preview?.startsWith('blob:')) {
+          // Use setTimeout to revoke after React finishes rendering
+          setTimeout(() => {
+            URL.revokeObjectURL(fileToRemove.preview);
+          }, BLOB_REVOKE_DELAY);
         }
-      } else {
-        // File not uploaded yet, just remove from UI
-        const newUploadState = {
-          ...uploadState,
-          files: uploadState.files.filter((f) => f.id !== fileId),
-          uploadedFiles: uploadState.uploadedFiles.filter(
-            (f) => f.fileId !== fileId
-          ),
+
+        return {
+          ...prev,
+          files: prev.files.filter((f) => f.id !== fileId),
+          uploadedFiles: prev.uploadedFiles.filter((f) => f.fileId !== fileId),
           completedCrops: Object.fromEntries(
-            Object.entries(uploadState.completedCrops).filter(
-              ([key]) => parseInt(key) !== fileIndex
+            Object.entries(prev.completedCrops).filter(
+              ([key]) => key !== String(fileId)
             )
           ),
           uploadProgress: Object.fromEntries(
-            Object.entries(uploadState.uploadProgress).filter(
-              ([key]) => parseInt(key) !== fileIndex
+            Object.entries(prev.uploadProgress).filter(
+              ([key]) => key !== String(fileId)
             )
           ),
         };
-        setUploadState(newUploadState);
-      }
+      });
+    } catch (error) {
+      console.error('Error removing file:', error);
+      toast.error("Failed to delete file. Please try again.");
     } finally {
-      // Remove from removing files set
+      // Remove from removing files set - always runs
       setRemovingFiles((prev) => {
         const newSet = new Set(prev);
         newSet.delete(fileId);
@@ -816,6 +1043,13 @@ const ImageUploadStep = ({
     setIsRemovingAll(true);
 
     try {
+      // Revoke all blob URLs to prevent memory leak
+      uploadState.files.forEach((file) => {
+        if (file.preview && file.preview.startsWith('blob:')) {
+          URL.revokeObjectURL(file.preview);
+        }
+      });
+
       await deleteAllFromR2();
 
       const newUploadState = {
@@ -894,7 +1128,7 @@ const ImageUploadStep = ({
       // Create crop data map
       const cropDataMap = {};
       uploadState.files.forEach((fileData, index) => {
-        const cropData = uploadState.completedCrops[index] ||
+        const cropData = uploadState.completedCrops[fileData.id] ||
           fileData.initialCrop || {
             unit: "%",
             x: 25,
@@ -903,18 +1137,26 @@ const ImageUploadStep = ({
             height: 50,
           };
         const uploadedFile = uploadState.uploadedFiles.find(
-          (f) => f.index === index
+          (f) => f.fileId === fileData.id
         );
 
         if (uploadedFile && cropData) {
-          cropDataMap[uploadedFile.fileName] = cropData;
+          const focusKey = getRelativeObjectKey(
+            uploadedFile.objectKey,
+            uploadedFile.fileName
+          );
+          cropDataMap[focusKey] = cropData;
         }
       });
 
       // Ensure we have crop data
       if (Object.keys(cropDataMap).length === 0) {
         uploadState.uploadedFiles.forEach((uploadedFile) => {
-          cropDataMap[uploadedFile.fileName] = {
+          const focusKey = getRelativeObjectKey(
+            uploadedFile.objectKey,
+            uploadedFile.fileName
+          );
+          cropDataMap[focusKey] = {
             unit: "%",
             x: 25,
             y: 25,
@@ -1191,12 +1433,16 @@ const ImageUploadStep = ({
     return hasSufficientCredits(credits, selectedPlan, 1);
   };
 
-  // Check if any files are currently uploading
-  const isAnyFileUploading = () => {
+  // Check if any files are currently uploading or converting
+  const isAnyFileUploading = useCallback(() => {
     return Object.values(uploadState.uploadProgress).some(
-      (progress) => progress.status === "processing" || progress.status === "uploading"
+      (progress) => 
+        progress.status === "processing" || 
+        progress.status === "uploading" ||
+        progress.status === "converting" ||
+        progress.status === "preparing"
     );
-  };
+  }, [uploadState.uploadProgress]);
 
   // Get minimum images feedback
   const getMinImagesInfo = () => {
@@ -1251,7 +1497,8 @@ const ImageUploadStep = ({
                 uploadState.files.length === 0 ||
                 uploadState.uploading ||
                 uploadState.processing ||
-                isSubmitting
+                isSubmitting ||
+                isAnyFileUploading()
               }
             >
               {isRemovingAll ? (
@@ -1298,50 +1545,64 @@ const ImageUploadStep = ({
       </div>
 
       {uploadState.files.length === 0 ? (
-        <div
-          {...getRootProps()}
-          className={`rounded-xl border border-dashed border-muted-foreground/25 p-8 text-center cursor-crosshair hover:cursor-crosshair transition-colors shadow-sm bg-primary/10 ${
-            isDragActive
-              ? "border-primary/50 bg-primary/20 ring-1 ring-primary/20"
-              : "hover:border-primary/50 hover:bg-primary/20"
-          }`}
-        >
-          <input {...getInputProps()} />
-          <Image
-            src="/images/upload_photos.svg"
-            alt="Add files"
-            width={96}
-            height={96}
-            className="h-24 w-24 mx-auto mb-4 opacity-80"
-          />
-          <h3 className="text-lg font-semibold mb-2">
-            {isDragActive ? "Drop your photos here" : "Upload your photos"}
-          </h3>
-          <p className="text-muted-foreground mb-4">
-            Drag and drop your photos here, or click to browse
-          </p>
-          <div className="text-sm text-muted-foreground space-y-1">
-            <p>• Supported formats: JPG, JPEG, PNG, HEIC, HEIF</p>
-            <p>• Maximum file size: 4MB per image</p>
-            <p>• Upload at least {MIN_IMAGES} photos for best results</p>
+        <div className="p-6 rounded-3xl bg-primary/5">
+          <div
+            {...getRootProps()}
+            className={`relative rounded-2xl border-[3px] border-dashed p-12 text-center cursor-pointer transition-all duration-200 overflow-hidden ${
+              isDragActive
+                ? "border-primary bg-primary/5 scale-[0.99]"
+                : "border-primary/40 hover:border-primary/60 hover:bg-primary/5"
+            }`}
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233b82f6' fill-opacity='0.08'%3E%3Cpath d='M0 0h20v20H0V0zm20 20h20v20H20V20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              backgroundSize: '40px 40px',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'repeat'
+            }}
+          >
+            {/* Content */}
+            <div className="relative z-10 space-y-6">
+              <input {...getInputProps()} />
+              
+              {/* Upload Icon */}
+              <div className="flex justify-center">
+                <Image
+                  src="/images/upload_photos.svg"
+                  alt="Upload photos"
+                  width={80}
+                  height={80}
+                  className="h-20 w-20 opacity-90"
+                />
+              </div>
+              
+              {/* Upload Button */}
+              <div className="flex justify-center">
+                 <Button
+                 variant="default"
+                 size="default"
+                 className="rounded-lg"
+                 >
+                   <CloudUpload className="h-4 w-4 mr-2" />
+                   Upload your photos
+                 </Button>
+              </div>
+              
+              {/* Drag & Drop Text */}
+              <p className="text-muted-foreground text-base">
+                {isDragActive ? "Drop your photos here" : "or drag & drop your photos here"}
+              </p>
+              
+              {/* File Info */}
+              <div className="text-sm text-muted-foreground/80 space-y-1 pt-2">
+                <p>Supported formats: JPG, JPEG, PNG, HEIC, HEIF</p>
+                <p>Maximum file size: 4MB per image</p>
+                <p>Upload at least {MIN_IMAGES} photos for best results</p>
+              </div>
+            </div>
           </div>
         </div>
       ) : (
         <div className="space-y-4">
-          {/* <div className="flex items-center justify-between rounded-xl p-3 sm:p-4 bg-muted/30 ring-1 ring-muted-foreground/15 shadow-sm">
-            <div className="space-y-1">
-              <p className="font-medium">
-                {uploadState.files.length} photo
-                {uploadState.files.length !== 1 ? "s" : ""} ready
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {uploadState.uploadedFiles.length} uploaded •{" "}
-                {uploadState.files.length - uploadState.uploadedFiles.length}{" "}
-                pending
-              </p>
-            </div>
-            <div className="flex gap-2"></div>
-          </div> */}
           <Separator className="my-4" />
           <Masonry
             breakpointCols={breakpointColumns}
@@ -1349,7 +1610,7 @@ const ImageUploadStep = ({
             columnClassName="pl-4 bg-clip-padding"
           >
             {uploadState.files.map((fileData, index) => {
-              const progress = uploadState.uploadProgress[index];
+              const progress = uploadState.uploadProgress[fileData.id];
               // Check if file is uploaded by looking at uploadedFiles array
               const uploadedFile = uploadState.uploadedFiles?.find(
                 (f) => f.fileId === fileData.id
@@ -1358,11 +1619,14 @@ const ImageUploadStep = ({
                 ? true
                 : progress?.status === "completed";
               const isFailed = progress?.status === "failed";
+              const isConverting = progress?.status === "converting";
               const isUploading =
                 !isUploaded &&
                 !isFailed &&
+                !isConverting &&
                 (progress?.status === "uploading" ||
-                  progress?.status === "processing");
+                  progress?.status === "processing" ||
+                  progress?.status === "preparing");
               const isRemoving = removingFiles.has(fileData.id);
 
               return (
@@ -1375,7 +1639,7 @@ const ImageUploadStep = ({
                   <CardContent className="p-0">
                     <div className="relative">
                       {/* Upload Status Badge */}
-                      {(isUploading || isUploaded || isFailed) && (
+                      {(isConverting || isUploading || isUploaded || isFailed) && (
                         <div className="absolute top-2 left-2 z-10">
                           {isFailed && (
                             <div className="bg-destructive text-white px-2 py-1 rounded-xl text-xs flex items-center gap-1">
@@ -1386,6 +1650,12 @@ const ImageUploadStep = ({
                           {isUploaded && (
                             <div className="pointer-events-none bg-success text-white p-1 rounded-xl text-xs flex items-center gap-1">
                               <CheckCircle2 className="h-3 w-3" />
+                            </div>
+                          )}
+                          {isConverting && (
+                            <div className="bg-amber-500 text-white px-2 py-1 rounded-xl text-xs flex items-center gap-1">
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                              Converting
                             </div>
                           )}
                           {isUploading && (
@@ -1415,7 +1685,7 @@ const ImageUploadStep = ({
                       {/* ReactCrop - now unobstructed */}
                       <ReactCrop
                         crop={
-                          uploadState.completedCrops[index] ||
+                          uploadState.completedCrops[fileData.id] ||
                           fileData.initialCrop || {
                             unit: "%",
                             x: 25,
@@ -1424,8 +1694,8 @@ const ImageUploadStep = ({
                             height: 50,
                           }
                         }
-                        onChange={(c, pc) => handleCropComplete(c, pc, index)}
-                        onComplete={(c, pc) => handleCropComplete(c, pc, index)}
+                        onChange={(c, pc) => handleCropComplete(c, pc, fileData.id)}
+                        onComplete={(c, pc) => handleCropComplete(c, pc, fileData.id)}
                         aspect={CROP_ASPECT}
                         className="max-w-full h-auto"
                         minWidth={100}
@@ -1445,6 +1715,10 @@ const ImageUploadStep = ({
                             isUploading ? "opacity-70" : ""
                           }`}
                           unoptimized={true}
+                          onError={(e) => {
+                            // Fallback if blob URL is revoked
+                            e.currentTarget.style.display = 'none';
+                          }}
                         />
                       </ReactCrop>
 
@@ -1455,7 +1729,7 @@ const ImageUploadStep = ({
                             size="sm"
                             variant="default"
                             onClick={() =>
-                              processAndUploadFile(fileData.file, index)
+                              processAndUploadFile(fileData.file, fileData.id)
                             }
                             className="text-xs"
                             disabled={isUploading || isSubmitting}
@@ -1511,19 +1785,22 @@ const ImageUploadStep = ({
 
           <div
             {...getRootProps()}
-            className="rounded-xl border border-dashed border-muted-foreground/25 p-4 text-center cursor-crosshair hover:cursor-crosshair hover:border-primary/40 transition-colors bg-primary/10"
+            className="relative rounded-2xl border-[3px] border-dashed border-primary/40 p-6 text-center cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-all duration-200 overflow-hidden"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233b82f6' fill-opacity='0.08'%3E%3Cpath d='M0 0h20v20H0V0zm20 20h20v20H20V20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              backgroundSize: '40px 40px',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'repeat'
+            }}
           >
-            <input {...getInputProps()} />
-            <Image
-              src="/images/upload_photos.svg"
-              alt="Add files"
-              width={48}
-              height={48}
-              className="h-12 w-12 mx-auto mb-2 opacity-80"
-            />
-            <p className="text-sm">
-              Add more photos (up to {MAX_IMAGES} total)
-            </p>
+            {/* Content */}
+            <div className="relative z-10 flex items-center justify-center gap-3">
+              <input {...getInputProps()} />
+              <CloudUpload className="h-5 w-5 text-primary" />
+              <p className="text-sm font-medium">
+                Add more photos (up to {MAX_IMAGES} total)
+              </p>
+            </div>
           </div>
         </div>
       )}
@@ -1550,11 +1827,31 @@ const ImageUploadStep = ({
         </Alert>
       )}
 
+      {/* Navigation Warning Dialog */}
+      <Dialog open={showNavigationWarning} onOpenChange={setShowNavigationWarning}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Leave Upload Step?</DialogTitle>
+            <DialogDescription>
+              You will need to upload all images again if you navigate away. All current uploads will be cleared.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelNavigation}>
+              Stay Here
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmNavigation}>
+              Leave & Clear Uploads
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Navigation */}
       <div className="flex flex-col items-center space-y-3">
         <StepNavigation
           onNext={handleCreateStudio}
-          onPrevious={prevStep}
+          onPrevious={handlePreviousStep}
           nextDisabled={
             uploadState.files.length < MIN_IMAGES ||
             uploadState.uploading ||

@@ -687,7 +687,7 @@ const StylePairingStep = ({
                   !selectedBackground ||
                   currentPairs.length >= planConfig.stylesLimit
                 }
-                className="group relative bg-background border border-border/50 rounded-xl p-4 transition-all duration-200 cursor-crosshair"
+                className="group relative bg-background border border-primary/25 rounded-xl p-4 transition-all duration-200 cursor-crosshair"
               >
                 <div className="flex w-full flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   {/* Clothing (left) */}
@@ -767,10 +767,10 @@ const StylePairingStep = ({
                   </div>
                 </div>
                 <Badge
-                  variant="secondary"
-                  className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 bg-primary/10 text-primary text-xs font-semibold"
+                  variant="destructive"
+                  className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-semibold w-full flex items-center justify-center rounded-lg"
                 >
-                  New Style
+                  Click here to add your combination
                 </Badge>
               </div>
             </div>

@@ -39,7 +39,7 @@ import { hasSufficientCredits } from "@/services/creditService";
 import ImageUploadGuidelines from "@/components/studio/create/image-upload-guidelines";
 import StepNavigation from "@/components/studio/create/step-navigation";
 import { Separator } from "@/components/ui/separator";
-import { studioMonitoring, uxMonitoring } from "@/lib/monitoring";
+import { studioMonitoring, uxMonitoring, uploadMonitoring } from "@/lib/monitoring";
 
 // Constants
 
@@ -218,7 +218,7 @@ const ImageUploadStep = ({
   isOrgWithTeamCredits,
 }) => {
   const router = useRouter();
-  const { formData, isSubmitting, setIsSubmitting, prevStep, updateFormField, resetFormWithoutReload } =
+  const { formData, isSubmitting, setIsSubmitting, prevStep, updateFormField, resetStore } =
     useStudioCreateStore();
 
   // Initialize upload state - always starts fresh (no persistence)
@@ -233,6 +233,8 @@ const ImageUploadStep = ({
   });
   const heicConversionQueueRef = useRef([]);
   const isMountedRef = useRef(true);
+  const uploadSessionRef = useRef(null); // Track current upload session for monitoring
+  const uploadStartTimeRef = useRef({}); // Track start times for each file upload
 
   // Check if there are active uploads
   const hasActiveUploads = useCallback(() => {
@@ -262,9 +264,14 @@ const ImageUploadStep = ({
   }, [hasActiveUploads]);
 
   // Browser back button handling during upload
+  // Use ref to access hasActiveUploads without re-running effect
+  const hasActiveUploadsRef = useRef(hasActiveUploads);
+  hasActiveUploadsRef.current = hasActiveUploads;
+  
   useEffect(() => {
     const handlePopState = (e) => {
-      if (hasActiveUploads()) {
+      // Use ref to get current value without dependency
+      if (hasActiveUploadsRef.current()) {
         e.preventDefault();
         const confirmLeave = window.confirm(
           "Uploads in progress will be lost. Are you sure you want to go back?"
@@ -275,14 +282,14 @@ const ImageUploadStep = ({
       }
     };
 
-    // Push initial state to enable back button interception
+    // Push initial state ONCE on mount to enable back button interception
     window.history.pushState(null, "", window.location.href);
     window.addEventListener("popstate", handlePopState);
 
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [hasActiveUploads]);
+  }, []); // Empty deps - only run once on mount
 
   // Cleanup blob URLs on component unmount
   useEffect(() => {
@@ -408,10 +415,22 @@ const ImageUploadStep = ({
 
     while (heicConversionQueueRef.current.length > 0) {
       const { file, fileId } = heicConversionQueueRef.current.shift();
+      const conversionStartTime = Date.now();
+      
+      // Track HEIC conversion start
+      uploadMonitoring.heicConversionStarted(uploadSessionRef.current, fileId, file.name);
 
       try {
         // Convert HEIC to JPEG
         const jpegFile = await convertHeicToJpeg(file);
+        
+        // Track HEIC conversion completed
+        uploadMonitoring.heicConversionCompleted(
+          uploadSessionRef.current, 
+          fileId, 
+          file.name, 
+          Date.now() - conversionStartTime
+        );
 
         // Load converted image to get dimensions and run SmartCrop
         const tempUrl = URL.createObjectURL(jpegFile);
@@ -446,6 +465,10 @@ const ImageUploadStep = ({
         await new Promise(resolve => setTimeout(resolve, 100));
       } catch (error) {
         console.error(`Failed to convert HEIC ${fileId}:`, error);
+        
+        // Track HEIC conversion failure
+        uploadMonitoring.heicConversionFailed(uploadSessionRef.current, fileId, file.name, error);
+        
         toast.error(`Failed to convert HEIC: ${error.message}`);
         setUploadState((prev) => ({
           ...prev,
@@ -467,38 +490,55 @@ const ImageUploadStep = ({
   };
 
   // Get presigned URL for direct R2 upload
-  const getPresignedUrl = async (fileName, fileType) => {
-    const response = await fetch('/api/r2/presigned-url', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fileName,
-        fileType,
-        studioId: uploadState.currentUUID,
-      }),
-    });
+  const getPresignedUrl = async (fileName, fileType, fileId) => {
+    const startTime = Date.now();
+    uploadMonitoring.presignedUrlRequested(uploadSessionRef.current, fileId, fileName);
+    
+    let response;
+    try {
+      response = await fetch('/api/r2/presigned-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName,
+          fileType,
+          studioId: uploadState.currentUUID,
+        }),
+      });
+    } catch (fetchError) {
+      // Network error (offline, DNS failure, etc.)
+      uploadMonitoring.presignedUrlFailed(uploadSessionRef.current, fileId, fileName, fetchError, 'NETWORK_ERROR');
+      throw new Error(`Network error getting presigned URL: ${fetchError.message}`);
+    }
 
     // Session expiry detection
     if (response.status === 401) {
+      uploadMonitoring.presignedUrlFailed(uploadSessionRef.current, fileId, fileName, new Error('Session expired'), 401);
       toast.error("Your session has expired. Please login again.");
-      const currentPath = window.location.pathname;
       router.push(`/auth`);
       throw new Error('Session expired');
     }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to get presigned URL');
+      const error = new Error(errorData.error || 'Failed to get presigned URL');
+      uploadMonitoring.presignedUrlFailed(uploadSessionRef.current, fileId, fileName, error, response.status);
+      throw error;
     }
 
     const data = await response.json();
+    uploadMonitoring.presignedUrlReceived(uploadSessionRef.current, fileId, fileName, Date.now() - startTime);
     return data;
   };
 
   // Upload file directly to R2 using presigned URL
   const uploadDirectToR2 = async (presignedUrl, file, fileId) => {
+    const startTime = Date.now();
+    uploadMonitoring.r2UploadStarted(uploadSessionRef.current, fileId, file.name, file.size);
+    
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
+      let lastLoggedProgress = 0;
 
       xhr.upload.addEventListener('progress', (e) => {
         if (e.lengthComputable) {
@@ -510,19 +550,46 @@ const ImageUploadStep = ({
               [fileId]: { status: 'uploading', progress },
             },
           }));
+          
+          // Log progress at 50% milestone
+          if (progress >= 50 && lastLoggedProgress < 50) {
+            uploadMonitoring.r2UploadProgress(uploadSessionRef.current, fileId, file.name, 50);
+            lastLoggedProgress = 50;
+          }
         }
       });
 
       xhr.addEventListener('load', () => {
+        const durationMs = Date.now() - startTime;
         if (xhr.status === 200) {
+          uploadMonitoring.r2UploadCompleted(uploadSessionRef.current, fileId, file.name, file.size, durationMs);
           resolve();
         } else {
-          reject(new Error(`Upload failed with status ${xhr.status}`));
+          const error = new Error(`Upload failed with status ${xhr.status}`);
+          uploadMonitoring.r2UploadFailed(uploadSessionRef.current, fileId, file.name, file.size, error, xhr.status, xhr.statusText, durationMs);
+          reject(error);
         }
       });
 
       xhr.addEventListener('error', () => {
-        reject(new Error('Upload failed'));
+        const durationMs = Date.now() - startTime;
+        const error = new Error('Upload failed - network error');
+        uploadMonitoring.r2UploadFailed(uploadSessionRef.current, fileId, file.name, file.size, error, 0, 'Network Error', durationMs);
+        reject(error);
+      });
+
+      xhr.addEventListener('abort', () => {
+        const durationMs = Date.now() - startTime;
+        const error = new Error('Upload aborted');
+        uploadMonitoring.r2UploadFailed(uploadSessionRef.current, fileId, file.name, file.size, error, 0, 'Aborted', durationMs);
+        reject(error);
+      });
+
+      xhr.addEventListener('timeout', () => {
+        const durationMs = Date.now() - startTime;
+        const error = new Error('Upload timed out');
+        uploadMonitoring.r2UploadFailed(uploadSessionRef.current, fileId, file.name, file.size, error, 0, 'Timeout', durationMs);
+        reject(error);
       });
 
       xhr.open('PUT', presignedUrl);
@@ -660,7 +727,18 @@ const ImageUploadStep = ({
   };
 
   // Upload file directly to R2 using presigned URL
-  const processAndUploadFile = async (file, fileId) => {
+  const processAndUploadFile = async (file, fileId, isRetry = false) => {
+    // Track retry attempts
+    if (isRetry) {
+      const retryCount = (uploadStartTimeRef.current[`${fileId}_retries`] || 0) + 1;
+      uploadStartTimeRef.current[`${fileId}_retries`] = retryCount;
+      uploadMonitoring.retryAttempted(uploadSessionRef.current, fileId, file.name, retryCount);
+    }
+    
+    // Track start time for this file
+    uploadStartTimeRef.current[fileId] = Date.now();
+    uploadMonitoring.processingStarted(uploadSessionRef.current, fileId, file.name, file.size, file.type);
+    
     try {
       setUploadState((prev) => ({
         ...prev,
@@ -670,10 +748,11 @@ const ImageUploadStep = ({
         },
       }));
 
-      // Get presigned URL
+      // Get presigned URL (now with fileId for tracking)
       const { presignedUrl, objectKey, sanitizedFileName } = await getPresignedUrl(
         file.name,
-        file.type
+        file.type,
+        fileId
       );
 
       setUploadState((prev) => ({
@@ -723,6 +802,9 @@ const ImageUploadStep = ({
         };
       });
     } catch (error) {
+      // Track the failure - ensures we capture errors even when caught locally
+      uploadMonitoring.uploadFailed(uploadSessionRef.current, fileId, file.name, error, 'upload-process');
+      
       setUploadState((prev) => {
         // Check if file still exists before setting error state
         const fileStillExists = prev.files.some(f => f.id === fileId);
@@ -848,6 +930,9 @@ const ImageUploadStep = ({
 
   // Drop zone handlers
   const handleDropRejected = useCallback((rejectedFiles) => {
+    // Track rejected files in monitoring
+    uploadMonitoring.filesRejected(uploadSessionRef.current, rejectedFiles);
+    
     const errors = rejectedFiles.map(({ file, errors }) => {
       const errorMessages = errors.map((error) => {
         switch (error.code) {
@@ -869,6 +954,17 @@ const ImageUploadStep = ({
 
   const handleFileDrop = useCallback(
     async (acceptedFiles) => {
+      // Create or reuse upload session for monitoring
+      if (!uploadSessionRef.current) {
+        uploadSessionRef.current = uploadMonitoring.createUploadSession(
+          uploadState.currentUUID, 
+          acceptedFiles.length
+        );
+      }
+      
+      // Track files dropped
+      uploadMonitoring.filesDropped(uploadSessionRef.current, acceptedFiles);
+      
       // Filter out duplicate files using hash-based detection
       const uniqueFiles = [];
       const duplicateFiles = [];
@@ -895,6 +991,8 @@ const ImageUploadStep = ({
       }
 
       if (duplicateFiles.length > 0) {
+        // Track duplicates detected
+        uploadMonitoring.duplicatesDetected(uploadSessionRef.current, duplicateFiles, uniqueFiles.length);
         toast.warning(`${duplicateFiles.length} duplicate file(s) were skipped.`);
       }
 
@@ -1100,6 +1198,20 @@ const ImageUploadStep = ({
       const failedUploads = Object.entries(uploadState.uploadProgress).filter(
         ([_, progress]) => progress.status === "failed"
       );
+      
+      // Track upload session completion with stats
+      const validStartTimes = Object.values(uploadStartTimeRef.current).filter(t => typeof t === 'number' && t > 0);
+      const sessionStartTime = validStartTimes.length > 0 ? Math.min(...validStartTimes) : Date.now();
+      uploadMonitoring.uploadSessionCompleted(
+        uploadSessionRef.current,
+        uploadState.currentUUID,
+        {
+          totalFiles: uploadState.files.length,
+          successCount: uploadState.uploadedFiles.length,
+          failedCount: failedUploads.length,
+          totalDurationMs: Date.now() - sessionStartTime,
+        }
+      );
 
       if (failedUploads.length > 0) {
         studioMonitoring.uploadIssue("Failed uploads blocking studio creation", {
@@ -1250,8 +1362,8 @@ const ImageUploadStep = ({
           imageCount: uploadState.files.length
         });
         
-        // Reset form without reload before redirecting
-        resetFormWithoutReload();
+        // Reset form before redirecting
+        resetStore();
         
         toast.success("Studio created successfully!");
         router.push(`/studio/${result.studioId}`);
@@ -1342,8 +1454,8 @@ const ImageUploadStep = ({
         
         if (status === "PROCESSING" || status === "COMPLETED" || status === "ACCEPTED") {
           // Studio is already being processed or completed - redirect to studio page
-          // Reset form without reload before redirecting
-          resetFormWithoutReload();
+          // Reset form before redirecting
+          resetStore();
           
           toast.success("Studio already created! Redirecting...");
           studioMonitoring.stepCompleted("studio-already-exists", { 
@@ -1729,10 +1841,11 @@ const ImageUploadStep = ({
                             size="sm"
                             variant="default"
                             onClick={() =>
-                              processAndUploadFile(fileData.file, fileData.id)
+                              processAndUploadFile(fileData.file, fileData.id, true)
                             }
                             className="text-xs"
                             disabled={isUploading || isSubmitting}
+                            aria-label={`Retry upload for ${fileData.file?.name || 'file'}`}
                           >
                             <RefreshCw className="h-3 w-3 mr-1" />
                             Retry

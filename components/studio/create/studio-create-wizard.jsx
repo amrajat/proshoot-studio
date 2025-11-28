@@ -5,7 +5,7 @@
 
 "use client";
 
-import React, { useEffect, useMemo, useCallback } from "react";
+import React, { useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAccountContext } from "@/context/AccountContext";
 import useStudioCreateStore from "@/stores/studioCreateStore";
@@ -35,7 +35,10 @@ import {
 
 const StudioCreateWizard = () => {
   const router = useRouter();
-  const { userId, selectedContext, userEmail } = useAccountContext();
+  const { userId, selectedContext } = useAccountContext();
+  
+  // Track previous context to detect changes
+  const prevContextRef = useRef(null);
 
   // Store state
   const {
@@ -66,7 +69,6 @@ const StudioCreateWizard = () => {
     fetchOrgSettings,
     setCurrentStep,
     resetStore,
-    checkAndHandleContextChange,
     updateFormField,
   } = useStudioCreateStore();
   const { isStepValid } = useStudioForm();
@@ -176,21 +178,24 @@ const StudioCreateWizard = () => {
     }
   }, [selectedContext, fetchOrgSettings]);
 
-  // Handle context changes - reset form and step when context changes
+  // Reset store when account context changes (e.g., user switches from Personal to Organization)
   useEffect(() => {
-    if (selectedContext) {
-      const contextId = selectedContext.id;
-      const contextType = selectedContext.type;
-
-      // Check if context changed and handle reset if needed
-      const wasReset = checkAndHandleContextChange(contextId, contextType);
-
-      if (wasReset) {
-        // Optionally show a message to user about the reset
-        // setStudioMessage("Form reset due to account context change");
-      }
+    if (!selectedContext) return;
+    
+    const prevContext = prevContextRef.current;
+    const contextChanged = prevContext && (
+      prevContext.id !== selectedContext.id || 
+      prevContext.type !== selectedContext.type
+    );
+    
+    if (contextChanged) {
+      // Reset the entire wizard when context changes
+      resetStore();
     }
-  }, [selectedContext, checkAndHandleContextChange]);
+    
+    // Update ref with current context
+    prevContextRef.current = { id: selectedContext.id, type: selectedContext.type };
+  }, [selectedContext, resetStore]);
 
   // Handle organization account logic
   useEffect(() => {
@@ -204,37 +209,21 @@ const StudioCreateWizard = () => {
       const hasTeamCredits = credits?.team > 0;
 
       if (hasTeamCredits) {
-        // Auto-select team plan and skip to next step
+        // Auto-select team plan
         if (!formData.plan || formData.plan !== "team") {
           updateFormField("plan", "team");
         }
-        // Since PlanSelectionStep is filtered out for orgs, we don't need to change step
-        // The user will automatically be on AttributesStep (which becomes step 0)
       } else {
         // Redirect to buy page if no team credits
         router.push("/buy");
-        return;
       }
-    } else if (selectedContext?.type === "organization") {
     }
-  }, [
-    selectedContext,
-    credits,
-    creditsLoading,
-    formData.plan,
-    currentStep,
-    updateFormField,
-    setCurrentStep,
-    router,
-  ]);
+  }, [selectedContext, credits, creditsLoading, formData.plan, updateFormField, router]);
 
-  // Reset store when component unmounts or context changes significantly
+  // Reset store when component unmounts (navigating away from wizard)
   useEffect(() => {
     return () => {
-      // Only reset if we're navigating away from the create flow
-      if (!window.location.pathname.includes("/studio/create")) {
-        resetStore();
-      }
+      resetStore();
     };
   }, [resetStore]);
 
@@ -252,7 +241,6 @@ const StudioCreateWizard = () => {
       credits,
       isOrgWithTeamCredits,
       selectedContext,
-      accountContext: selectedContext,
     };
 
     switch (currentStepData.component) {

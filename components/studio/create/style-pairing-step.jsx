@@ -3,7 +3,7 @@
  * Allows users to create clothing and background combinations
  */
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import OptimizedImage from "@/components/shared/optimized-image";
 import Masonry from "react-masonry-css";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,14 +41,10 @@ import {
   ALL_BACKGROUND_OPTIONS,
   getGenderBasedBackgroundPath,
 } from "@/utils/styleOptions";
-import { useStudioForm } from "@/components/studio/create/studio-form-provider";
 import StepNavigation from "@/components/studio/create/step-navigation";
 import config from "@/config";
 
 const StylePairingStep = ({
-  formData,
-  errors,
-  accountContext,
   clothingOptions,
   backgroundOptions,
 }) => {
@@ -61,8 +57,6 @@ const StylePairingStep = ({
     formData: storeFormData,
     isSubmitting,
   } = useStudioCreateStore();
-
-  const { validateCurrentStep } = useStudioForm();
   const [selectedClothing, setSelectedClothing] = useState("");
   const [selectedBackground, setSelectedBackground] = useState("");
   const [selectedClothingItem, setSelectedClothingItem] = useState(null);
@@ -71,35 +65,14 @@ const StylePairingStep = ({
   const [clothingThemeFilter, setClothingThemeFilter] = useState("All");
   const [backgroundThemeFilter, setBackgroundThemeFilter] = useState("All");
 
-  // Store previous values in localStorage for persistence across component mounts
-  const PREV_VALUES_KEY = "style-pairing-prev-values";
-
-  const getPrevValues = () => {
-    if (typeof window === "undefined") return { plan: null, gender: null };
-    try {
-      const stored = localStorage.getItem(PREV_VALUES_KEY);
-      return stored ? JSON.parse(stored) : { plan: null, gender: null };
-    } catch {
-      return { plan: null, gender: null };
-    }
-  };
-
-  const setPrevValues = (values) => {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.setItem(PREV_VALUES_KEY, JSON.stringify(values));
-    } catch (error) {}
-  };
-
   // Use store data as source of truth
   const currentPlan = storeFormData.plan;
   const currentGender = storeFormData.gender;
   const currentPairs = storeFormData.style_pairs || [];
-
-  // Keep prop data for compatibility
-  const stylePairs = formData.style_pairs || [];
-  const selectedPlan = formData.plan;
-  const selectedGender = formData.gender;
+  
+  // Track what plan/gender was used when style pairs were created (stored in Zustand, persists across mounts)
+  const stylePairsCreatedWithPlan = storeFormData.stylePairsCreatedWithPlan;
+  const stylePairsCreatedWithGender = storeFormData.stylePairsCreatedWithGender;
 
   // Get plan configuration from config using store data
   const planConfig = useMemo(() => {
@@ -166,24 +139,29 @@ const StylePairingStep = ({
     }));
   }, [backgroundThemeFilter, backgroundOptions, currentGender]);
 
-  // Clear style pairs when plan or gender changes - USING STORE DATA WITH PERSISTENCE
+  // Clear style pairs when plan or gender changes from what they were created with
   useEffect(() => {
-    const prevValues = getPrevValues();
-
-    // If this is the first time we see these values, just store them
-    if (prevValues.plan === null || prevValues.gender === null) {
-      setPrevValues({ plan: currentPlan, gender: currentGender });
+    // If no style pairs exist, nothing to clear
+    if (currentPairs.length === 0) return;
+    
+    // If we don't know what plan/gender the pairs were created with, they're from before this fix
+    // In this case, store the current values and don't clear (backward compatibility)
+    if (stylePairsCreatedWithPlan === null || stylePairsCreatedWithGender === null) {
+      updateFormField("stylePairsCreatedWithPlan", currentPlan);
+      updateFormField("stylePairsCreatedWithGender", currentGender);
       return;
     }
 
-    // Check for actual changes using stored previous values
-    const planChanged = prevValues.plan !== currentPlan;
-    const genderChanged = prevValues.gender !== currentGender;
+    // Check if current plan/gender differs from what pairs were created with
+    const planChanged = stylePairsCreatedWithPlan !== currentPlan;
+    const genderChanged = stylePairsCreatedWithGender !== currentGender;
 
-    // If plan or gender changed and we have pairs, clear them
-    if ((planChanged || genderChanged) && currentPairs.length > 0) {
-      // Clear the pairs immediately
+    // If plan or gender changed, clear the pairs
+    if (planChanged || genderChanged) {
+      // Clear the pairs and reset tracking
       updateFormField("style_pairs", []);
+      updateFormField("stylePairsCreatedWithPlan", null);
+      updateFormField("stylePairsCreatedWithGender", null);
 
       // Show message
       const changeType =
@@ -196,13 +174,12 @@ const StylePairingStep = ({
         style_pairs: `Style pairs cleared due to ${changeType} change. Please select new combinations.`,
       });
     }
-
-    // Always update the stored previous values
-    setPrevValues({ plan: currentPlan, gender: currentGender });
   }, [
     currentPlan,
     currentGender,
     currentPairs.length,
+    stylePairsCreatedWithPlan,
+    stylePairsCreatedWithGender,
     updateFormField,
     setErrors,
   ]);
@@ -217,13 +194,7 @@ const StylePairingStep = ({
         style_pairs: `Reduced to ${planConfig.stylesLimit} combinations due to plan limit`,
       });
     }
-  }, [
-    planConfig.stylesLimit,
-    currentPairs.length,
-    currentPlan,
-    updateFormField,
-    setErrors,
-  ]);
+  }, [planConfig.stylesLimit, currentPairs, updateFormField, setErrors]);
 
   const addStylePair = () => {
     if (!selectedClothing || !selectedBackground) {
@@ -259,6 +230,15 @@ const StylePairingStep = ({
     const newPairs = [...currentPairs, optimizedPair];
 
     updateFormField("style_pairs", newPairs);
+    
+    // Track what plan/gender these pairs were created with (for change detection)
+    if (stylePairsCreatedWithPlan === null) {
+      updateFormField("stylePairsCreatedWithPlan", currentPlan);
+    }
+    if (stylePairsCreatedWithGender === null) {
+      updateFormField("stylePairsCreatedWithGender", currentGender);
+    }
+    
     setSelectedClothing("");
     setSelectedBackground("");
     setSelectedClothingItem(null);
@@ -328,11 +308,21 @@ const StylePairingStep = ({
     }
 
     updateFormField("style_pairs", newPairs);
+    
+    // Track what plan/gender these pairs were created with (for change detection)
+    if (newPairs.length > 0) {
+      updateFormField("stylePairsCreatedWithPlan", currentPlan);
+      updateFormField("stylePairsCreatedWithGender", currentGender);
+    }
+    
     setErrors({});
   };
 
   const handleClearAll = () => {
     updateFormField("style_pairs", []);
+    // Reset tracking when all pairs are cleared
+    updateFormField("stylePairsCreatedWithPlan", null);
+    updateFormField("stylePairsCreatedWithGender", null);
     setShowClearDialog(false);
     setErrors({});
   };
@@ -340,6 +330,12 @@ const StylePairingStep = ({
   const removeStylePair = (index) => {
     const newPairs = currentPairs.filter((_, i) => i !== index);
     updateFormField("style_pairs", newPairs);
+    
+    // Reset tracking when all pairs are removed
+    if (newPairs.length === 0) {
+      updateFormField("stylePairsCreatedWithPlan", null);
+      updateFormField("stylePairsCreatedWithGender", null);
+    }
   };
 
   const handleNext = () => {
@@ -508,11 +504,7 @@ const StylePairingStep = ({
               </Button>
               <Button
                 variant="destructive"
-                onClick={() => {
-                  updateFormField("style_pairs", []);
-                  setShowClearDialog(false);
-                  setErrors({});
-                }}
+                onClick={handleClearAll}
               >
                 Clear all
               </Button>
@@ -898,7 +890,7 @@ const StylePairingStep = ({
       <StepNavigation
         onNext={handleNext}
         onPrevious={prevStep}
-        nextDisabled={stylePairs.length === 0}
+        nextDisabled={currentPairs.length === 0}
         isSubmitting={isSubmitting}
       />
     </div>

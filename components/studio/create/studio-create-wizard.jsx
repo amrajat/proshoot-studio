@@ -39,6 +39,9 @@ const StudioCreateWizard = () => {
   
   // Track previous context to detect changes
   const prevContextRef = useRef(null);
+  
+  // Track if we've already set the team plan to prevent infinite loops
+  const hasSetTeamPlanRef = useRef(false);
 
   // Store state
   const {
@@ -191,6 +194,8 @@ const StudioCreateWizard = () => {
     if (contextChanged) {
       // Reset the entire wizard when context changes
       resetStore();
+      // Also reset the team plan ref so it can be set again for new context
+      hasSetTeamPlanRef.current = false;
     }
     
     // Update ref with current context
@@ -209,14 +214,20 @@ const StudioCreateWizard = () => {
       const hasTeamCredits = credits?.team > 0;
 
       if (hasTeamCredits) {
-        // Auto-select team plan
-        if (!formData.plan || formData.plan !== "team") {
+        // Auto-select team plan (only once to prevent infinite loop)
+        if (!hasSetTeamPlanRef.current && formData.plan !== "team") {
+          hasSetTeamPlanRef.current = true;
           updateFormField("plan", "team");
         }
       } else {
         // Redirect to buy page if no team credits
         router.push("/buy");
       }
+    }
+    
+    // Reset the flag when context changes
+    if (selectedContext?.type !== "organization") {
+      hasSetTeamPlanRef.current = false;
     }
   }, [selectedContext, credits, creditsLoading, formData.plan, updateFormField, router]);
 

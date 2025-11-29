@@ -19,7 +19,10 @@ export const PostHogProvider = ({ children }) => {
     if (!isClient || typeof window === "undefined") return;
 
     // Disable PostHog in development mode
-    if (process.env.NEXT_PUBLIC_NODE_ENV === "development") {
+    const isDevelopment = process.env.NEXT_PUBLIC_NODE_ENV === "development" ||
+                          window.location.hostname === "localhost";
+    
+    if (isDevelopment) {
       console.log("[PostHog] Disabled in development mode");
       return;
     }
@@ -41,6 +44,7 @@ export const PostHogProvider = ({ children }) => {
         // ============ SESSION REPLAYS ============
         session_recording: {
           maskAllInputs: true, // Privacy: mask all inputs by default
+          maskAllImages: false, // Add this line to show images
           maskTextSelector: "[data-sensitive]", // Custom masking for sensitive elements
           maskInputOptions: {
             password: true,
@@ -48,6 +52,16 @@ export const PostHogProvider = ({ children }) => {
             tel: true,
           },
           recordCrossOriginIframes: false, // Don't record iframes for privacy
+          // Record canvas elements (for cropping previews)
+          recordCanvas: true,
+          // Inline stylesheets for proper rendering
+          inlineStylesheet: true,
+          // Collect fonts for proper text rendering
+          collectFonts: true,
+          // Sample canvas at lower rate to reduce data
+          sampling: {
+            canvas: 2, // fps for canvas recording
+          },
         },
 
         // ============ PRODUCT ANALYTICS ============
@@ -92,7 +106,9 @@ const PostHogPageView = () => {
     if (!isClient || typeof window === "undefined") return;
     
     // Skip pageview tracking in development mode
-    if (process.env.NEXT_PUBLIC_NODE_ENV === "development") return;
+    const isDevelopment = process.env.NEXT_PUBLIC_NODE_ENV === "development" ||
+                          window.location.hostname === "localhost";
+    if (isDevelopment) return;
 
     if (pathname && posthog) {
       let url = window.origin + pathname;

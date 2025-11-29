@@ -1,6 +1,5 @@
 import { LoginForm } from "@/components/services/login-form";
 import Image from "next/image";
-import { Star } from "lucide-react";
 
 export default function LoginPage() {
   return (

@@ -14,10 +14,12 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { Loader2, CheckCircle, XCircle, ArrowRight, Home } from "lucide-react";
+import { useAccountContext } from "@/context/AccountContext";
 
 function AcceptInvitePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { refreshContext } = useAccountContext();
   const [state, setState] = useState({
     status: "loading",
     message: null,
@@ -28,10 +30,17 @@ function AcceptInvitePageContent() {
   const hasProcessed = useRef(false);
   const token = searchParams.get("token");
 
-  const handleRedirectToDashboard = useCallback(() => {
+  const handleRedirectToDashboard = useCallback(async () => {
     setState((prev) => ({ ...prev, isRedirecting: true }));
+    // Refresh account context to load new organization before redirecting
+    try {
+      await refreshContext();
+    } catch (error) {
+      console.error("Failed to refresh context:", error);
+    }
     router.push("/");
-  }, [router]);
+    router.refresh();
+  }, [router, refreshContext]);
 
   const processInvitation = useCallback(
     async (inviteToken) => {
@@ -114,7 +123,19 @@ function AcceptInvitePageContent() {
       return;
     }
 
-    processInvitation(token);
+    // Basic token format validation (UUID format expected)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(token.trim())) {
+      setState({
+        status: "invalid-token",
+        message:
+          "The invitation token format is invalid. Please check the link and try again.",
+        isRedirecting: false,
+      });
+      return;
+    }
+
+    processInvitation(token.trim());
   }, [token, processInvitation]);
 
   const renderContent = () => {

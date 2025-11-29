@@ -56,6 +56,9 @@ export async function GET(request) {
                    next.startsWith("/") && 
                    !next.startsWith("//") && 
                    !next.includes(":") &&
+                   !next.includes("\\") &&
+                   !next.includes("@") &&
+                   !/[<>"'&]/.test(next) &&
                    next.length < 200) ? next : "/";
   console.log(`Redirecting to: ${origin}${safeNext}`);
   return NextResponse.redirect(`${origin}${safeNext}`);

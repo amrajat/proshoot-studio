@@ -38,14 +38,16 @@ export async function middleware(request) {
     }
   );
 
-  let session = null;
+  let user = null;
   try {
-    const { data } = await supabase.auth.getSession();
-    session = data.session;
+    const { data, error } = await supabase.auth.getUser();
+    if (!error && data?.user) {
+      user = data.user;
+    }
   } catch (error) {
-    console.error('Middleware: Failed to get session:', error);
+    console.error('Middleware: Failed to get user:', error);
     Sentry.captureException(error);
-    // Continue without session - will be treated as unauthenticated
+    // Continue without user - will be treated as unauthenticated
   }
 
   // Define public and auth routes
@@ -60,7 +62,7 @@ export async function middleware(request) {
     ) || publicApiRoutes.some(route => pathname.startsWith(route));
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
-  if (!session && !isPublicRoute && !isAuthRoute) {
+  if (!user && !isPublicRoute && !isAuthRoute) {
     // User is not logged in and trying to access a protected route
     // Store the intended URL to redirect after login
     const redirectTo = `${origin}/auth?next=${encodeURIComponent(pathname)}${
@@ -69,7 +71,7 @@ export async function middleware(request) {
     return NextResponse.redirect(redirectTo);
   }
 
-  if (session && isAuthRoute && pathname !== "/auth/callback") {
+  if (user && isAuthRoute && pathname !== "/auth/callback") {
     // User is logged in but trying to access /auth page (not callback)
     // Redirect them to root or their intended 'next' page if available
     const nextUrl = request.nextUrl.searchParams.get("next") || "/";

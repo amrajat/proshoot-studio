@@ -1,11 +1,8 @@
-import React, { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useMemo, useCallback, useState, useEffect } from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Check, Info, TrendingUp } from "lucide-react";
+import { Check, ShieldCheck } from "lucide-react";
 import useStudioCreateStore from "@/stores/studioCreateStore";
-import { hasSufficientCredits } from "@/services/creditService";
-import StepNavigation from "@/components/studio/create/step-navigation";
 import config from "@/config";
 
 const planIcons = {
@@ -109,206 +106,261 @@ const planIcons = {
   ),
 };
 
-const PlanSelectionStep = ({ credits, formData, errors, selectedContext }) => {
-  const { updateFormField, nextStep, setErrors } = useStudioCreateStore();
-  const [selectedPlan, setSelectedPlan] = useState(formData.plan || "");
+// Reusable Plan Card Component
+const PlanCard = ({ plan, configPlan, isSelected, onSelect }) => {
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onSelect(plan.id);
+      }
+    },
+    [onSelect, plan.id]
+  );
 
-  // Plan definitions from config
-  const plansWithAvailability = useMemo(() => {
+  const handleClick = useCallback(() => {
+    onSelect(plan.id);
+  }, [onSelect, plan.id]);
+
+  const handleButtonClick = useCallback(
+    (e) => {
+      e.stopPropagation();
+      onSelect(plan.id);
+    },
+    [onSelect, plan.id]
+  );
+
+  return (
+    <div
+      className="flex flex-col rounded-xl sm:rounded-2xl relative z-1 h-full group max-w-lg"
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      aria-label={`Select ${plan.name} plan`}
+    >
+      <div
+        className={`min-h-full bg-white rounded-xl sm:rounded-2xl cursor-pointer flex flex-col group-focus:ring-2 group-focus:ring-primary/20 overflow-hidden border border-border/50`}
+      >
+        {/* Card Content */}
+        <div className="p-5 sm:p-6 lg:p-7 flex flex-col flex-1">
+          {/* Header - Plan name, badge, and icon */}
+          <div className="flex justify-between items-center mb-3 sm:mb-4">
+            <h3 className="font-semibold text-primary">{plan.name}</h3>
+            <div className="flex items-center gap-2">
+              {/* Most Popular Badge - inline with icon */}
+              {plan.popular && (
+                <span className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
+                  </span>
+                  67% pick this
+                </span>
+              )}
+              <div className="flex-shrink-0">{planIcons[plan.id]}</div>
+            </div>
+          </div>
+
+          {/* Price */}
+          <div className="text-foreground mb-2">
+            <h4 className="inline-flex text-4xl sm:text-5xl font-semibold">
+              <div className="inline-flex flex-wrap items-center">
+                <span className="text-xl sm:text-2xl self-start me-0.5">$</span>
+                {configPlan?.displayPrice || 0}
+              </div>
+            </h4>
+            <p className="text-xs sm:text-sm text-muted-foreground">one time cost</p>
+          </div>
+
+          {/* Description */}
+          <div className="mb-4 sm:mb-5">
+            <p className="min-h-[36px] sm:min-h-[40px] text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              {configPlan?.description}
+            </p>
+          </div>
+
+          {/* Select Button - Destructive for studio plan, Primary for popular */}
+          <button
+            className={`py-2.5 sm:py-3 px-4 w-full inline-flex justify-center items-center gap-x-1 text-sm font-semibold rounded-lg border transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+              isSelected
+                ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+                : plan.id === "studio"
+                  ? "bg-destructive text-destructive-foreground border-destructive hover:bg-destructive/90"
+                  : plan.popular
+                    ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90"
+                    : "bg-secondary text-secondary-foreground border-transparent hover:bg-secondary/80"
+            }`}
+            onClick={handleButtonClick}
+            aria-label={
+              isSelected
+                ? `${plan.name} plan selected`
+                : `Choose ${configPlan?.stylesLimit} styles`
+            }
+          >
+            {isSelected ? (
+              <>
+                <Check className="h-4 w-4 mr-2" />
+                Selected
+              </>
+            ) : (
+              `Choose ${configPlan?.stylesLimit} styles`
+            )}
+          </button>
+
+          {/* Features List */}
+          <ul className="mt-4 sm:mt-5 space-y-2.5 sm:space-y-3 flex-1">
+            {plan.features.map((feature, index) => (
+              <li key={index} className="flex space-x-3">
+                <Check className="flex-shrink-0 mt-0.5 h-4 w-4 text-success" />
+                <span className="text-xs sm:text-sm text-foreground leading-relaxed">{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Money Back Guarantee - Full width at bottom */}
+        <div className="bg-success/10 px-4 py-2 mt-auto">
+          <p className="flex items-center justify-center gap-1.5 text-[10px] sm:text-xs font-medium text-success">
+            <ShieldCheck className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={2.5} />
+            100% MONEY BACK GUARANTEE
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PlanSelectionStep = ({ formData, selectedContext }) => {
+  const { updateFormField, nextStep } = useStudioCreateStore();
+
+  // Embla carousel for mobile - start at most popular plan (index 1)
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "center",
+    containScroll: "trimSnaps",
+    startIndex: 1, // Start at "Professional" (most popular)
+  });
+
+  // Track current slide for dots
+  const [selectedIndex, setSelectedIndex] = useState(1);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    const onSelect = () => {
+      setSelectedIndex(emblaApi.selectedScrollSnap());
+    };
+
+    emblaApi.on("select", onSelect);
+    onSelect(); // Set initial state
+
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi]);
+
+  // Plan definitions from config - filter by account context
+  const plans = useMemo(() => {
     const configPlans = config.PLANS;
     const contextType = selectedContext?.type || "personal";
 
-    // Filter and map plans based on account context
     return Object.entries(configPlans)
       .filter(([, plan]) => {
-        if (contextType === "personal") {
-          return plan.accountContext === "personal";
-        } else {
-          return plan.accountContext === "team";
-        }
+        return contextType === "personal"
+          ? plan.accountContext === "personal"
+          : plan.accountContext === "team";
       })
       .map(([key, plan]) => ({
         id: key,
         name: key.charAt(0).toUpperCase() + key.slice(1),
         popular: plan.mostPopular || false,
         features: plan.features,
-        // For personal accounts, always allow selection regardless of credits
-        // For organization accounts, check actual credit availability
-        available:
-          contextType === "personal"
-            ? true
-            : hasSufficientCredits(credits, key, 1),
-        userCredits: credits?.[key] || 0,
       }));
-  }, [selectedContext, credits]);
+  }, [selectedContext]);
 
-  const handlePlanSelect = (planId) => {
-    const plan = plansWithAvailability.find((p) => p.id === planId);
-    const contextType = selectedContext?.type || "personal";
-
-    // For organization accounts, still check credit availability
-    if (contextType !== "personal" && !plan?.available) {
-      setErrors({ plan: `You don't have enough ${planId} credits` });
-      return;
-    }
-
-    setSelectedPlan(planId);
-    updateFormField("plan", planId);
-    setErrors({});
-  };
-
-  const handleNext = () => {
-    if (!selectedPlan) {
-      setErrors({ plan: "Please select a plan to continue" });
-      return;
-    }
-
-    const plan = plansWithAvailability.find((p) => p.id === selectedPlan);
-    const contextType = selectedContext?.type || "personal";
-
-    // For organization accounts, still check credit availability
-    if (contextType !== "personal" && !plan?.available) {
-      setErrors({ plan: `You don't have enough ${selectedPlan} credits` });
-      return;
-    }
-
-    nextStep();
-  };
+  const handlePlanSelect = useCallback(
+    (planId) => {
+      updateFormField("plan", planId);
+      // Immediately advance to next step
+      nextStep();
+    },
+    [updateFormField, nextStep]
+  );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold">Select your plan</h2>
-        <p className="text-muted-foreground">
+      <div className="text-center space-y-1 sm:space-y-2">
+        <h2 className="text-xl sm:text-2xl font-semibold">Select your plan</h2>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Select the plan that best fits your needs.
         </p>
       </div>
 
-      {/* Error Display */}
-      {errors.plan && (
-        <Alert variant="destructive">
-          <Info className="h-4 w-4" />
-          <AlertDescription>{errors.plan}</AlertDescription>
-        </Alert>
-      )}
+      {/* Mobile Carousel - visible only on small screens */}
+      <div className="sm:hidden -mx-4">
+        <div className="overflow-hidden px-4" ref={emblaRef}>
+          <div className="flex">
+            {plans.map((plan, index) => {
+              const isSelected = formData.plan === plan.id;
+              const configPlan = config.PLANS[plan.id];
 
-      {/* Plans Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5">
-        {plansWithAvailability.map((plan) => {
-          const isSelected = selectedPlan === plan.id;
+              return (
+                <div
+                  key={plan.id}
+                  className={`flex-[0_0_88%] min-w-0 ${index === 0 ? '' : 'pl-3'}`}
+                >
+                  <PlanCard
+                    plan={plan}
+                    configPlan={configPlan}
+                    isSelected={isSelected}
+                    onSelect={handlePlanSelect}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Carousel Dots */}
+        <div className="flex justify-center gap-2.5 mt-4 px-4">
+          {plans.map((plan, index) => (
+            <button
+              key={plan.id}
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
+                index === selectedIndex
+                  ? "bg-primary scale-110"
+                  : "bg-muted-foreground/25 hover:bg-muted-foreground/40"
+              }`}
+              onClick={() => emblaApi?.scrollTo(index)}
+              aria-label={`Go to ${plan.name} plan`}
+            />
+          ))}
+        </div>
+
+        {/* Swipe hint */}
+        <p className="text-center text-xs text-muted-foreground mt-2 px-4">
+          Swipe to see more plans
+        </p>
+      </div>
+
+      {/* Desktop/Tablet Grid - hidden on small screens */}
+      <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+        {plans.map((plan) => {
+          const isSelected = formData.plan === plan.id;
           const configPlan = config.PLANS[plan.id];
 
           return (
-            <div
+            <PlanCard
               key={plan.id}
-              className="flex flex-col rounded-2xl relative z-1"
-              onClick={() => handlePlanSelect(plan.id)}
-            >
-              <div className="min-h-full p-6 md:p-7 bg-white rounded-[14px] cursor-pointer">
-                {/* Most Popular Badge */}
-                {plan.popular && (
-                  <div className="absolute -top-0 left-6 md:left-7 transform">
-                    <Badge
-                      variant="secondary"
-                      className="bg-primary/10 text-primary text-xs font-semibold"
-                    >
-                      <TrendingUp className="mr-1 size-3" strokeWidth={2.5} />
-                      Most Popular
-                    </Badge>
-                  </div>
-                )}
-
-                {/* Unavailable Overlay */}
-                {!plan.available && (
-                  <div className="absolute inset-0 bg-background/80 rounded-lg flex items-center justify-center z-10">
-                    <div className="text-center space-y-2">
-                      <p className="text-sm font-medium text-muted-foreground">
-                        Insufficient Credits
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        You have {plan.userCredits} {plan.creditType} credits
-                      </p>
-                      <Button variant="outline" size="sm" asChild>
-                        <a href="/billing">Buy Credits</a>
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Header */}
-                <div className="flex justify-between items-center mb-3 sm:mb-5">
-                  <h3 className={`font-semibold text-primary`}>{plan.name}</h3>
-                  <div className="flex-shrink-0">{planIcons[plan.id]}</div>
-                </div>
-
-                {/* Price */}
-                <div className="text-foreground mb-2">
-                  <h4 className="inline-flex text-5xl font-semibold">
-                    <div className="inline-flex flex-wrap items-center gap-3">
-                      <div className="inline-flex flex-wrap items-center">
-                        <span className="text-2xl self-start me-1">$</span>
-                        {configPlan?.displayPrice || 0}
-                      </div>
-                    </div>
-                  </h4>
-                  <p className="text-sm text-muted-foreground">one time cost</p>
-                </div>
-
-                {/* Description */}
-                <div className="mb-5">
-                  <p className="sm:min-h-[40px] text-sm text-muted-foreground">
-                    {configPlan?.description || plan.description}
-                  </p>
-                </div>
-
-                {/* Select Button */}
-                <button
-                  className={`py-3 px-4 w-full inline-flex justify-center items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent ${
-                    isSelected
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  } disabled:opacity-50 disabled:pointer-events-none focus:outline-none`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePlanSelect(plan.id);
-                  }}
-                  disabled={!plan.available}
-                >
-                  {isSelected ? (
-                    <>
-                      <Check className="h-4 w-4 mr-2" />
-                      Selected
-                    </>
-                  ) : plan.available ? (
-                    "Select Plan"
-                  ) : (
-                    "Insufficient Credits"
-                  )}
-                </button>
-
-                {/* Features List */}
-                <ul className="mt-6 space-y-4">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex space-x-4">
-                      <Check className="flex-shrink-0 mt-0.5 h-4 w-4 text-success" />
-                      <span className="text-sm text-foreground">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+              plan={plan}
+              configPlan={configPlan}
+              isSelected={isSelected}
+              onSelect={handlePlanSelect}
+            />
           );
         })}
       </div>
-
-      {/* Navigation */}
-      <StepNavigation
-        onNext={handleNext}
-        nextDisabled={!selectedPlan}
-        showPrevious={false}
-        showReset={false}
-      />
     </div>
   );
 };

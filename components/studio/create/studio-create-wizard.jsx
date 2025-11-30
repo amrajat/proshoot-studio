@@ -23,7 +23,6 @@ import StylePairingStep from "./style-pairing-step";
 import AttributesStep from "./attributes-step";
 
 // UI Components
-import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
@@ -299,33 +298,19 @@ const StudioCreateWizard = () => {
   }
   return (
     <ErrorBoundary>
-      <div className="space-y-8">
-        {/* Step Progress */}
-        <div className="flex justify-between items-center">
-          <div className="flex-1">
-            <StudioWizardNavigation
-              steps={steps}
-              currentStep={currentStep}
-              onStepClick={setCurrentStep}
-              disabled={isSubmitting}
-              isStepValid={isStepValid}
-            />
-          </div>
+      <div className="mx-auto">
+        {/* Studio Message Alert */}
+        {studioMessage && (
+          <Alert className="mb-4 sm:mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{studioMessage}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Main Content - Clean wrapper with responsive padding */}
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-border/40 p-4 sm:p-6 md:p-8 lg:p-10">
+          {renderCurrentStep()}
         </div>
-
-        {/* Main Content */}
-        <Card>
-          <CardContent className="p-6">
-            {studioMessage && (
-              <Alert className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{studioMessage}</AlertDescription>
-              </Alert>
-            )}
-
-            {renderCurrentStep()}
-          </CardContent>
-        </Card>
       </div>
     </ErrorBoundary>
   );

@@ -1643,12 +1643,12 @@ const ImageUploadStep = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">Upload photos</h2>
-        <p className="text-muted-foreground">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="text-center space-y-1 sm:space-y-2">
+        <h2 className="text-xl sm:text-2xl font-bold">Upload photos</h2>
+        <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
           Upload at least {MIN_IMAGES} photos with good variation in outfits,
-          lighting, and backgrounds. When cropping after upload, keep waist-up photo in selection area.
+          lighting, and backgrounds. Keep waist-up in crop area.
         </p>
       </div>
 

@@ -75,7 +75,7 @@ const StepNavigation = ({
             className={resetClassName}
           >
             <RotateCw className="size-3" />
-            <span>Click here if you face any issues.</span>
+            <span>Start Over</span>
           </button>
         )}
       </div>

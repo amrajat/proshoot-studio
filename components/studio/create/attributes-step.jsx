@@ -373,11 +373,11 @@ const AttributesStep = ({ formData, errors }) => {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold">Your attributes</h2>
-        <p className="text-muted-foreground">
+      <div className="text-center space-y-1 sm:space-y-2">
+        <h2 className="text-xl sm:text-2xl font-semibold">Your attributes</h2>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Inputs are used solely to improve AI accuracy and kept private.
         </p>
       </div>

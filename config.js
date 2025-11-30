@@ -36,7 +36,7 @@ const config = {
       accountContext: "personal",
       mostPopular: true,
       description:
-        "Most popular choice for professionals who need variety and quality for their personal brand.",
+        "Popular choice for professionals who need variety and quality for their personal brand.",
       features: [
         "100 HD Professional Headshots",
         "5 Unique Styles",

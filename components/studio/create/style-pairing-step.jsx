@@ -34,6 +34,7 @@ import {
   Images as ImagesIcon,
   RotateCw,
   Check,
+  Play,
 } from "lucide-react";
 import useStudioCreateStore from "@/stores/studioCreateStore";
 import {
@@ -62,6 +63,7 @@ const StylePairingStep = ({
   const [selectedClothingItem, setSelectedClothingItem] = useState(null);
   const [selectedBackgroundItem, setSelectedBackgroundItem] = useState(null);
   const [showClearDialog, setShowClearDialog] = useState(false);
+  const [showHowItWorksDialog, setShowHowItWorksDialog] = useState(false);
   const [clothingThemeFilter, setClothingThemeFilter] = useState("All");
   const [backgroundThemeFilter, setBackgroundThemeFilter] = useState("All");
 
@@ -442,11 +444,11 @@ const StylePairingStep = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       {/* Header */}
-      <div className="text-center space-y-3">
-        <h2 className="text-2xl font-semibold">Create style combinations</h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
+      <div className="text-center space-y-2 sm:space-y-3">
+        <h2 className="text-xl sm:text-2xl font-semibold">Create style combinations</h2>
+        <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
           Create combinations of clothing and backgrounds for your headshots.
         </p>
         <div className="flex items-center justify-center gap-2">
@@ -509,6 +511,39 @@ const StylePairingStep = ({
                 Clear all
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* How it works video dialog */}
+        <Dialog open={showHowItWorksDialog} onOpenChange={setShowHowItWorksDialog}>
+          <DialogTrigger asChild>
+            <Button
+              variant="default"
+              className="flex items-center gap-2 rounded-full"
+              aria-label="Watch how to create style combinations"
+            >
+              <Play className="h-4 w-4" />
+              How it works
+            </Button>
+          </DialogTrigger>
+          <DialogContent 
+            className="sm:max-w-3xl w-[calc(100vw-2rem)] max-h-[90vh] p-0 overflow-hidden"
+            aria-describedby="how-it-works-description"
+          >
+              <div className="relative w-full bg-muted rounded-lg overflow-hidden">
+                {showHowItWorksDialog && (
+                  <video
+                    className="w-full h-auto object-cover"
+                    src="https://cdn.proshoot.co/demo-videos/final-style-selection.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls
+                    poster="https://cdn.proshoot.co/demo-videos/final-style-selection-poster.jpg"
+                  />
+                )}
+              </div>
           </DialogContent>
         </Dialog>
       </div>

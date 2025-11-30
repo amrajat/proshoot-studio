@@ -15,17 +15,15 @@ import { useIsClient } from "@/hooks/useIsClient";
 export const PostHogProvider = ({ children }) => {
   const isClient = useIsClient();
 
+  // Check if we're in development mode
+  const isDevelopment =
+    process.env.NEXT_PUBLIC_NODE_ENV === "development" ||
+    (typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1"));
+
   useEffect(() => {
     if (!isClient || typeof window === "undefined") return;
-
-    // Disable PostHog in development mode
-    const isDevelopment = process.env.NEXT_PUBLIC_NODE_ENV === "development" ||
-                          window.location.hostname === "localhost";
-    
-    if (isDevelopment) {
-      console.log("[PostHog] Disabled in development mode");
-      return;
-    }
 
     // Only initialize if we have the key
     if (process.env.NEXT_PUBLIC_POSTHOG_KEY) {
@@ -79,14 +77,25 @@ export const PostHogProvider = ({ children }) => {
         secure_cookie: true, // Use secure cookies in production
         respect_dnt: true, // Respect Do Not Track browser setting
         opt_out_capturing_by_default: false, // Users are opted in by default
+
+        // ============ DISABLE IN DEVELOPMENT ============
+        // Use loaded callback to opt out after initialization
+        loaded: (posthogInstance) => {
+          if (isDevelopment) {
+            posthogInstance.opt_out_capturing();
+            posthogInstance.set_config({ disable_session_recording: true });
+          }
+        },
       });
 
-      // Add app site context to all events
-      posthog.register({
-        site_type: "app",
-      });
+      // Add app site context to all events (only in production)
+      if (!isDevelopment) {
+        posthog.register({
+          site_type: "app",
+        });
+      }
     }
-  }, [isClient]);
+  }, [isClient, isDevelopment]);
 
   return (
     <PHProvider client={posthog}>
@@ -104,11 +113,6 @@ const PostHogPageView = () => {
 
   useEffect(() => {
     if (!isClient || typeof window === "undefined") return;
-    
-    // Skip pageview tracking in development mode
-    const isDevelopment = process.env.NEXT_PUBLIC_NODE_ENV === "development" ||
-                          window.location.hostname === "localhost";
-    if (isDevelopment) return;
 
     if (pathname && posthog) {
       let url = window.origin + pathname;

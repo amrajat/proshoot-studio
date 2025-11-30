@@ -34,7 +34,7 @@ import {
   Images as ImagesIcon,
   RotateCw,
   Check,
-  Play,
+  HelpCircle,
 } from "lucide-react";
 import useStudioCreateStore from "@/stores/studioCreateStore";
 import {
@@ -522,7 +522,7 @@ const StylePairingStep = ({
               className="flex items-center gap-2 rounded-full"
               aria-label="Watch how to create style combinations"
             >
-              <Play className="h-4 w-4" />
+              <HelpCircle className="h-4 w-4" />
               How it works
             </Button>
           </DialogTrigger>

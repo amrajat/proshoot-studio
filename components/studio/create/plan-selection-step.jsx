@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback, useState, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { Badge } from "@/components/ui/badge";
 import { Check, ShieldCheck } from "lucide-react";
 import useStudioCreateStore from "@/stores/studioCreateStore";
 import config from "@/config";

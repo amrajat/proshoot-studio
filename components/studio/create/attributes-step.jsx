@@ -175,6 +175,13 @@ const HAIR_TYPE = {
   ],
 };
 
+// Body Type options by gender (man/non-binary share same options)
+const BODY_TYPE = {
+  man: ["slim", "regular", "athletic", "broad", "large", "plus size"],
+  woman: ["slim", "regular", "curvy", "full figured", "plus size"],
+  "non-binary": ["slim", "regular", "athletic", "broad", "large", "plus size"],
+};
+
 const AttributesStep = ({ formData, errors }) => {
   const { updateFormField, nextStep, prevStep, setErrors, isSubmitting } =
     useStudioCreateStore();
@@ -208,11 +215,12 @@ const AttributesStep = ({ formData, errors }) => {
   const handleGenderChange = (value) => {
     updateFormField("gender", value);
 
-    // Always reset all hair attributes when gender changes
-    // This forces user to reselect hair options for the new gender
+    // Always reset all hair attributes and body type when gender changes
+    // This forces user to reselect options for the new gender
     updateFormField("hairLength", "");
     updateFormField("hairColor", "");
     updateFormField("hairType", "");
+    updateFormField("bodyType", "");
   };
 
   const handleGlassesChange = (value) => {
@@ -260,6 +268,18 @@ const AttributesStep = ({ formData, errors }) => {
       if (!validHairLengths.includes(formData.hairLength)) {
         newErrors.hairLength =
           "Please select a valid hair length for the selected gender";
+      }
+    }
+
+    // Body type is always required
+    if (!formData.bodyType) {
+      newErrors.bodyType = "Body type is required";
+    } else {
+      // Validate body type is valid for current gender
+      const validBodyTypes = BODY_TYPE[currentGender] || BODY_TYPE.man;
+      if (!validBodyTypes.includes(formData.bodyType)) {
+        newErrors.bodyType =
+          "Please select a valid body type for the selected gender";
       }
     }
 
@@ -391,7 +411,7 @@ const AttributesStep = ({ formData, errors }) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="studioName">
                 Studio Name
@@ -443,6 +463,7 @@ const AttributesStep = ({ formData, errors }) => {
               placeholder="Select ethnicity"
               required={true}
             />
+            <GlassesField />
           </div>
         </CardContent>
       </Card>
@@ -489,7 +510,13 @@ const AttributesStep = ({ formData, errors }) => {
               required={!isHairDisabled}
               disabled={isHairDisabled}
             />
-            <GlassesField />
+            <SelectField
+              field="bodyType"
+              label="Body Type"
+              options={BODY_TYPE[currentGender] || BODY_TYPE.man}
+              placeholder="Select body type"
+              required={true}
+            />
           </div>
         </CardContent>
       </Card>

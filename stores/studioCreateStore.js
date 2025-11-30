@@ -17,6 +17,7 @@ const initialFormData = {
   context: "personal", // 'personal' | 'organization'
   gender: "",
   ethnicity: "",
+  bodyType: "",
   hairLength: "",
   hairColor: "",
   hairType: "",

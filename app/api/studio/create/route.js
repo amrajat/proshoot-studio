@@ -78,16 +78,17 @@ const validateCredits = (creditsRecord, plan) => {
 
 // Data transformation helpers
 const getUserAttributes = (formData) => {
-  const { gender, ethnicity, hairLength, hairColor, hairType, glasses } =
+  const { gender, ethnicity, bodyType, hairLength, hairColor, hairType, glasses } =
     formData;
 
   return {
     trigger_word: "ohwx",
     gender,
     ethnicity,
-    hairLength,
-    hairColor,
-    hairType,
+    body_type: bodyType,
+    hair_length: hairLength,
+    hair_color: hairColor,
+    hair_type: hairType,
     glasses,
   };
 };

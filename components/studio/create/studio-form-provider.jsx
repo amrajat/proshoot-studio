@@ -43,6 +43,7 @@ const attributesSchema = z.object({
     .max(50, "Studio name must be less than 50 characters"),
   gender: z.string().min(1, "Gender is required"),
   ethnicity: z.string().min(1, "Ethnicity is required"),
+  bodyType: z.string().min(1, "Body type is required"),
   hairLength: z.string().min(1, "Hair length is required"),
   hairColor: z.string().optional(), // Optional when hair is bald/hijab
   hairType: z.string().optional(), // Optional when hair is bald/hijab

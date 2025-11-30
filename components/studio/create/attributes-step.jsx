@@ -3,7 +3,8 @@
  * Collects user physical attributes for better AI generation
  */
 
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, useRef } from "react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +16,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info, WandSparkles, SmilePlus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Info, WandSparkles, SmilePlus, HelpCircle } from "lucide-react";
 import { useAccountContext } from "@/context/AccountContext";
 import StepNavigation from "@/components/studio/create/step-navigation";
 import useStudioCreateStore from "@/stores/studioCreateStore";
@@ -175,10 +181,41 @@ const HAIR_TYPE = {
   ],
 };
 
+// Body Type options by gender (man/non-binary share same options)
+const BODY_TYPE = {
+  man: ["slim", "regular", "athletic", "broad", "large", "plus size"],
+  woman: ["slim", "regular", "curvy", "full figured", "plus size"],
+  "non-binary": ["slim", "regular", "athletic", "broad", "large", "plus size"],
+};
+
+// Help images configuration for appearance fields
+// Images are stored in /images/attributes-guideline/{gender}/{imageName}.png
+const HELP_IMAGES = {
+  hairLength: {
+    imageName: "hair-length-guide.png",
+    alt: "Hair length examples showing different styles",
+  },
+  hairColor: {
+    imageName: "hair-color-guide.png",
+    alt: "Hair color examples showing different shades",
+  },
+  hairType: {
+    imageName: "hair-type-guide.png",
+    alt: "Hair type examples showing straight, wavy, curly styles",
+  },
+  bodyType: {
+    imageName: "body-type-guide.png",
+    alt: "Body type examples showing different builds",
+  },
+};
+
 const AttributesStep = ({ formData, errors }) => {
   const { updateFormField, nextStep, prevStep, setErrors, isSubmitting } =
     useStudioCreateStore();
   const { selectedContext } = useAccountContext();
+
+  // Track if studio name has been manually edited
+  const hasUserEditedName = useRef(false);
 
   // Get current gender for conditional rendering
   const currentGender = formData.gender || "man";
@@ -194,9 +231,7 @@ const AttributesStep = ({ formData, errors }) => {
   }, [formData.hairLength]);
 
   const handleFieldChange = (field, value) => {
-    // Trim studioName input
-    const processedValue = field === "studioName" ? value.trim() : value;
-    updateFormField(field, processedValue);
+    updateFormField(field, value);
 
     // Clear hair color and type if hair length is bald or hijab
     if (field === "hairLength" && (value === "bald" || value === "hijab")) {
@@ -208,11 +243,12 @@ const AttributesStep = ({ formData, errors }) => {
   const handleGenderChange = (value) => {
     updateFormField("gender", value);
 
-    // Always reset all hair attributes when gender changes
-    // This forces user to reselect hair options for the new gender
+    // Always reset all hair attributes and body type when gender changes
+    // This forces user to reselect options for the new gender
     updateFormField("hairLength", "");
     updateFormField("hairColor", "");
     updateFormField("hairType", "");
+    updateFormField("bodyType", "");
   };
 
   const handleGlassesChange = (value) => {
@@ -221,13 +257,19 @@ const AttributesStep = ({ formData, errors }) => {
     updateFormField("glasses", booleanValue);
   };
 
-  // Prepopulate studio name with selectedContext name
+  // Handle studio name change separately to track user edits
+  const handleStudioNameChange = (value) => {
+    hasUserEditedName.current = true;
+    updateFormField("studioName", value);
+  };
+
+  // Prepopulate studio name with selectedContext name (only once on mount)
   useEffect(() => {
-    if (selectedContext?.name && !formData.studioName) {
-      const defaultStudioName = `${selectedContext.name}'s Headshots`;
-      updateFormField("studioName", defaultStudioName);
+    if (selectedContext?.name && !formData.studioName && !hasUserEditedName.current) {
+      updateFormField("studioName", selectedContext.name);
     }
-  }, [selectedContext, formData.studioName, updateFormField]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedContext?.name]);
 
   const handleNext = () => {
     const newErrors = {};
@@ -260,6 +302,18 @@ const AttributesStep = ({ formData, errors }) => {
       if (!validHairLengths.includes(formData.hairLength)) {
         newErrors.hairLength =
           "Please select a valid hair length for the selected gender";
+      }
+    }
+
+    // Body type is always required
+    if (!formData.bodyType) {
+      newErrors.bodyType = "Body type is required";
+    } else {
+      // Validate body type is valid for current gender
+      const validBodyTypes = BODY_TYPE[currentGender] || BODY_TYPE.man;
+      if (!validBodyTypes.includes(formData.bodyType)) {
+        newErrors.bodyType =
+          "Please select a valid body type for the selected gender";
       }
     }
 
@@ -298,6 +352,46 @@ const AttributesStep = ({ formData, errors }) => {
     nextStep();
   };
 
+  // Determine which gender folder to use for help images
+  // Default to "man" if no gender selected or if non-binary
+  const helpImageGender = currentGender === "woman" ? "woman" : "man";
+
+  // Help dialog component for appearance fields - renders large centered image
+  const HelpDialog = ({ field }) => {
+    const helpConfig = HELP_IMAGES[field];
+    if (!helpConfig) return null;
+
+    const imageSrc = `/images/attributes-guideline/${helpImageGender}/${helpConfig.imageName}`;
+
+    return (
+      <Dialog>
+        <DialogTrigger asChild>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-full p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+            aria-label={`View ${field} guide`}
+            tabIndex={0}
+          >
+            <HelpCircle className="h-4 w-4" />
+          </button>
+        </DialogTrigger>
+        <DialogContent className="max-w-4xl w-[95vw] p-2 sm:p-4 flex items-center justify-center">
+          <div className="relative w-full aspect-auto">
+            <Image
+            src={imageSrc}
+            alt={helpConfig.alt}
+              width={1200}
+              height={800}
+              className="w-full h-auto rounded-md object-contain"
+              priority
+              sizes="(max-width: 768px) 95vw, (max-width: 1200px) 80vw, 900px"
+          />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   const SelectField = ({
     field,
     label,
@@ -305,14 +399,15 @@ const AttributesStep = ({ formData, errors }) => {
     placeholder = "Select...",
     required = false,
     disabled = false,
+    showHelp = false,
   }) => (
     <div className="space-y-2">
       <Label
         htmlFor={field}
-        className={disabled ? "text-muted-foreground" : ""}
+        className={`flex items-center gap-1.5 ${disabled ? "text-muted-foreground" : ""}`}
       >
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {showHelp && <HelpDialog field={field} />}
       </Label>
       <Select
         value={formData[field] || ""}
@@ -344,9 +439,8 @@ const AttributesStep = ({ formData, errors }) => {
 
   const GlassesField = () => (
     <div className="space-y-2">
-      <Label htmlFor="glasses">
-        Glasses?
-        <span className="text-red-500 ml-1">*</span>
+      <Label htmlFor="glasses" className="flex items-center gap-1.5">
+        Glasses
       </Label>
       <Select
         value={
@@ -373,11 +467,11 @@ const AttributesStep = ({ formData, errors }) => {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold">Your attributes</h2>
-        <p className="text-muted-foreground">
+      <div className="text-center space-y-1 sm:space-y-2">
+        <h2 className="text-xl sm:text-2xl font-semibold">Your attributes</h2>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Inputs are used solely to improve AI accuracy and kept private.
         </p>
       </div>
@@ -391,19 +485,16 @@ const AttributesStep = ({ formData, errors }) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="studioName">
-                Studio Name
-                <span className="text-red-500 ml-1">*</span>
+              <Label htmlFor="studioName" className="flex items-center gap-1.5">
+                Your Name
               </Label>
               <Input
                 id="studioName"
                 placeholder="e.g., Your name"
                 value={formData.studioName || ""}
-                onChange={(e) =>
-                  handleFieldChange("studioName", e.target.value)
-                }
+                onChange={(e) => handleStudioNameChange(e.target.value)}
                 className={errors.studioName ? "border-destructive" : ""}
               />
               {errors.studioName && (
@@ -411,9 +502,8 @@ const AttributesStep = ({ formData, errors }) => {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="gender">
+              <Label htmlFor="gender" className="flex items-center gap-1.5">
                 Gender
-                <span className="text-red-500 ml-1">*</span>
               </Label>
               <Select
                 value={formData.gender || ""}
@@ -443,6 +533,7 @@ const AttributesStep = ({ formData, errors }) => {
               placeholder="Select ethnicity"
               required={true}
             />
+            <GlassesField />
           </div>
         </CardContent>
       </Card>
@@ -472,6 +563,7 @@ const AttributesStep = ({ formData, errors }) => {
               options={HAIR_LENGTH[genderForAttributes] || HAIR_LENGTH.man}
               placeholder="Select length"
               required={true}
+              // showHelp={true}
             />
             <SelectField
               field="hairColor"
@@ -480,6 +572,7 @@ const AttributesStep = ({ formData, errors }) => {
               placeholder="Select color"
               required={!isHairDisabled}
               disabled={isHairDisabled}
+              // showHelp={true}
             />
             <SelectField
               field="hairType"
@@ -488,8 +581,16 @@ const AttributesStep = ({ formData, errors }) => {
               placeholder="Select type"
               required={!isHairDisabled}
               disabled={isHairDisabled}
+              // showHelp={true}
             />
-            <GlassesField />
+            <SelectField
+              field="bodyType"
+              label="Body Type"
+              options={BODY_TYPE[currentGender] || BODY_TYPE.man}
+              placeholder="Select body type"
+              required={true}
+              // showHelp={true}
+            />
           </div>
         </CardContent>
       </Card>

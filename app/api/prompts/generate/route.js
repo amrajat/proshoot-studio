@@ -61,6 +61,15 @@ const glasses = (character) => {
   return "";
 };
 
+// Body type helper - safely handles missing body_type for backward compatibility
+const bodyType = (character) => {
+  // Return empty string if body_type is not set (for older studios without this field)
+  if (!character.body_type || !character.body_type.trim()) {
+    return "";
+  }
+  return `, ${character.body_type} build`;
+};
+
 // Helper function to normalize gender for AI image generation
 const normalizeGender = (gender) => {
   if (gender === "man" || gender === "woman") {
@@ -78,7 +87,7 @@ const PROMPT_TEMPLATES = [
     promptFunction: (character, clothingName, backgroundName) =>
       `a sleek and professional headshot of ohwx, ${character.ethnicity} ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, positioned in a ${backgroundName}. Captured with Canon EOS R5, 85mm lens, ISO 200, even professional lighting illuminates the subject naturally. Subject is in sharp focus with a clean depth of field, background softly blurred for a scholarly yet approachable atmosphere. Expression conveys expertise, credibility, and warmth. Centered composition with professional framing ensures a polished, trustworthy, and accessible academic presence, ideal for faculty directories, university websites, conference presentations, and scholarly publications.`,
+      }${bodyType(character)}${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, positioned in a ${backgroundName}. Captured with Canon EOS R5, 85mm lens, ISO 200, even professional lighting illuminates the subject naturally. Subject is in sharp focus with a clean depth of field, background softly blurred for a scholarly yet approachable atmosphere. Expression conveys expertise, credibility, and warmth. Centered composition with professional framing ensures a polished, trustworthy, and accessible academic presence, ideal for faculty directories, university websites, conference presentations, and scholarly publications.`,
   }, 
   {
     id: "cityscape_02",
@@ -87,7 +96,7 @@ const PROMPT_TEMPLATES = [
     promptFunction: (character, clothingName, backgroundName) =>
       `a sleek and professional headshot of ohwx, ${character.ethnicity} ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, positioned in a ${backgroundName}. Captured with Sony Alpha 7R IV, 85mm lens, ISO 200. Soft, even natural lighting with gentle highlights ensures a polished and flattering look that blends seamlessly with urban environments. Subject is in sharp focus with shallow depth of field, background softly blurred to suggest city energy and sophistication. Centered composition with clean framing, expression confident yet approachable, conveying professionalism and modern metropolitan presence. Ideal for executive profiles, LinkedIn branding, corporate communications, and professional networking in urban contexts.`,
+      }${bodyType(character)}${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, positioned in a ${backgroundName}. Captured with Sony Alpha 7R IV, 85mm lens, ISO 200. Soft, even natural lighting with gentle highlights ensures a polished and flattering look that blends seamlessly with urban environments. Subject is in sharp focus with shallow depth of field, background softly blurred to suggest city energy and sophistication. Centered composition with clean framing, expression confident yet approachable, conveying professionalism and modern metropolitan presence. Ideal for executive profiles, LinkedIn branding, corporate communications, and professional networking in urban contexts.`,
   },
   {
     id: "creative_03",
@@ -96,7 +105,7 @@ const PROMPT_TEMPLATES = [
     promptFunction: (character, clothingName, backgroundName) =>
       `a sleek and professional headshot of ohwx, ${character.ethnicity} ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, confident and approachable expression, suitable for creative professionals, designers, artists, and entrepreneurs. Positioned in a ${backgroundName}. Captured with Hasselblad H6D-400c, 85mm lens, ISO 200. Soft, even lighting with gentle shadows emphasizes facial features and harmonizes with the artistic environment. Realistic skin textures, minimal makeup, and relaxed yet professional posture. Centered composition with clean focus conveys creativity, professionalism, and inspiration, adaptable across all creative workspaces.`,
+      }${bodyType(character)}${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, confident and approachable expression, suitable for creative professionals, designers, artists, and entrepreneurs. Positioned in a ${backgroundName}. Captured with Hasselblad H6D-400c, 85mm lens, ISO 200. Soft, even lighting with gentle shadows emphasizes facial features and harmonizes with the artistic environment. Realistic skin textures, minimal makeup, and relaxed yet professional posture. Centered composition with clean focus conveys creativity, professionalism, and inspiration, adaptable across all creative workspaces.`,
   },
   {
     id: "conference_speaker_04",
@@ -105,7 +114,7 @@ const PROMPT_TEMPLATES = [
     promptFunction: (character, clothingName, backgroundName) =>
       `a sleek and professional keynote speaker headshot of ohwx, ${character.ethnicity} ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, positioned in a ${backgroundName}. Captured with Canon EOS R6, 50mm f/1.4 lens, ISO 200, dramatic professional stage lighting that emphasizes authority and commanding presence. The speaker has a confident, engaging, and authoritative expression with approachable charisma, conveying thought leadership and expertise. Sharp focus, centered composition, and polished presentation suitable for high-profile conferences, corporate summits, and keynote introductions.`,
+      }${bodyType(character)}${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, positioned in a ${backgroundName}. Captured with Canon EOS R6, 50mm f/1.4 lens, ISO 200, dramatic professional stage lighting that emphasizes authority and commanding presence. The speaker has a confident, engaging, and authoritative expression with approachable charisma, conveying thought leadership and expertise. Sharp focus, centered composition, and polished presentation suitable for high-profile conferences, corporate summits, and keynote introductions.`,
   },
   {
     id: "home_office_05",
@@ -114,7 +123,7 @@ const PROMPT_TEMPLATES = [
     promptFunction: (character, clothingName, backgroundName) =>
       `a sleek and professional portrait of a ohwx, ${character.ethnicity} ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, natural and approachable tone, suitable for corporate profiles, LinkedIn, and professional remote work. Positioned in a ${backgroundName}. Captured with Canon EOS R5, 85mm lens, ISO 200. Soft, even indoor lighting with gentle highlights and shadows creates a flattering, consistent look across all home office environments. Realistic skin textures, minimal makeup, and a relaxed yet professional pose. Centered composition with clean focus emphasizes warmth, professionalism, and authenticity.`,
+      }${bodyType(character)}${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, natural and approachable tone, suitable for corporate profiles, LinkedIn, and professional remote work. Positioned in a ${backgroundName}. Captured with Canon EOS R5, 85mm lens, ISO 200. Soft, even indoor lighting with gentle highlights and shadows creates a flattering, consistent look across all home office environments. Realistic skin textures, minimal makeup, and a relaxed yet professional pose. Centered composition with clean focus emphasizes warmth, professionalism, and authenticity.`,
   },
   {
     id: "office_06",
@@ -123,7 +132,7 @@ const PROMPT_TEMPLATES = [
     promptFunction: (character, clothingName, backgroundName) =>
       `a sleek and professional portrait of ohwx, confident and approachable tone, suitable for LinkedIn, executive profiles and corporate branding. Featuring a poised ${character.ethnicity} ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(character)}, standing in a ${backgroundName}. Captured with Canon EOS R5, 85mm lens, ISO 320, with soft natural lighting and balanced shadows. The subject wears ${clothingName}, exuding professionalism, realistic skin textures with minimal makeup, a composed expression, and clean, centered composition ensure a polished finish.`,
+      }${bodyType(character)}${hairStyle(character)}${glasses(character)}, standing in a ${backgroundName}. Captured with Canon EOS R5, 85mm lens, ISO 320, with soft natural lighting and balanced shadows. The subject wears ${clothingName}, exuding professionalism, realistic skin textures with minimal makeup, a composed expression, and clean, centered composition ensure a polished finish.`,
   },
   {
     id: "medical_08",
@@ -132,7 +141,7 @@ const PROMPT_TEMPLATES = [
     promptFunction: (character, clothingName, backgroundName) =>
       `a sleek and professional headshot of a ohwx, ${character.ethnicity} ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(character)}. The subject wears a clinical ${clothingName}, photographed in a ${backgroundName}. Captured with Canon EOS R6, 85mm f/1.8 lens, ISO 200, using soft clinical lighting to emphasize professionalism and warmth. Expression should be compassionate yet authoritative, conveying trust, medical expertise, and patient care. Perfect for hospital directories, medical websites, healthcare leadership profiles, and professional practice branding.`,
+      }${bodyType(character)}${hairStyle(character)}${glasses(character)}. The subject wears a clinical ${clothingName}, photographed in a ${backgroundName}. Captured with Canon EOS R6, 85mm f/1.8 lens, ISO 200, using soft clinical lighting to emphasize professionalism and warmth. Expression should be compassionate yet authoritative, conveying trust, medical expertise, and patient care. Perfect for hospital directories, medical websites, healthcare leadership profiles, and professional practice branding.`,
   },
   {
     id: "monochrome_09",
@@ -140,7 +149,7 @@ const PROMPT_TEMPLATES = [
     compatibleBackgroundThemes: ["Monochrome"],
     // We intentially don't use clothingName here since it's monochrome so we want same color for clothing and background
     promptFunction: (character, clothingName, backgroundName) => {
-      return `a photorealistic studio portrait of ohwx, ${character.ethnicity} ${normalizeGender(character.gender)}${hairStyle(character)}${glasses(
+      return `a photorealistic studio portrait of ohwx, ${character.ethnicity} ${normalizeGender(character.gender)}${bodyType(character)}${hairStyle(character)}${glasses(
         character
       )}. The subject wears a professional monochromatic ${backgroundName} blazer over a ${backgroundName} ${character.gender=== "woman" ? "blouse": "dress shirt"}, front view half body shot, neutral facial expression, on a plain solid ${backgroundName} background. Captured with Canon EOS R6, 85mm f/1.4 lens, 24k resolution, RAW format, professional studio lighting.`;
     },
@@ -152,14 +161,14 @@ const PROMPT_TEMPLATES = [
     promptFunction: (character, clothingName, backgroundName) =>
       `a photorealistic professional portrait of ohwx, natural and approachable tone, suitable for corporate profiles and LinkedIn. Featuring poised ${character.ethnicity} ${
         normalizeGender(character.gender)
-      }${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, captured in a ${backgroundName}. Shot with a Canon EOS R6, 50mm lens, ISO 200. Soft, natural outdoor lighting creates flattering highlights and gentle shadows that complement the natural environment. Realistic skin textures, minimal makeup, and a relaxed yet professional pose. Centered composition with clean focus emphasizes authenticity and warmth, making it versatile across diverse natural environments.`,
+      }${bodyType(character)}${hairStyle(character)}${glasses(character)}. The subject wears a ${clothingName}, captured in a ${backgroundName}. Shot with a Canon EOS R6, 50mm lens, ISO 200. Soft, natural outdoor lighting creates flattering highlights and gentle shadows that complement the natural environment. Realistic skin textures, minimal makeup, and a relaxed yet professional pose. Centered composition with clean focus emphasizes authenticity and warmth, making it versatile across diverse natural environments.`,
   },
   {
     id: "studio_11",
     name: "Studio Headshots",
     compatibleBackgroundThemes: ["Studio"],
     promptFunction: (character, clothingName, backgroundName) => {
-      return `a photorealistic studio portrait of ohwx, neutral and professional tone, suitable for various business uses, most popular on Shutterstock, featuring a professional ${character.ethnicity} ${normalizeGender(character.gender)}${hairStyle(character)}${glasses(character)}, photorealistic, captured using Canon 7D mirrorless camera, 50mm lens, ISO 250, half body portrait, RAW format, on a ${backgroundName} background. The subject wears a ${clothingName}, realistic skin textures with minimal makeup, confident pose, soft lighting with soft reflections and shadows, centered composition`
+      return `a photorealistic studio portrait of ohwx, neutral and professional tone, suitable for various business uses, most popular on Shutterstock, featuring a professional ${character.ethnicity} ${normalizeGender(character.gender)}${bodyType(character)}${hairStyle(character)}${glasses(character)}, photorealistic, captured using Canon 7D mirrorless camera, 50mm lens, ISO 250, half body portrait, RAW format, on a ${backgroundName} background. The subject wears a ${clothingName}, realistic skin textures with minimal makeup, confident pose, soft lighting with soft reflections and shadows, centered composition`
     }
   },
 ];

@@ -43,10 +43,11 @@ const attributesSchema = z.object({
     .max(50, "Studio name must be less than 50 characters"),
   gender: z.string().min(1, "Gender is required"),
   ethnicity: z.string().min(1, "Ethnicity is required"),
+  bodyType: z.string().min(1, "Body type is required"),
   hairLength: z.string().min(1, "Hair length is required"),
-  hairColor: z.string().min(1, "Hair color is required"),
-  hairType: z.string().min(1, "Hair type is required"),
-  glasses: z.string().min(1, "Glasses preference is required"),
+  hairColor: z.string().optional(), // Optional when hair is bald/hijab
+  hairType: z.string().optional(), // Optional when hair is bald/hijab
+  glasses: z.boolean({ required_error: "Glasses preference is required" }).nullable().refine((val) => val !== null, { message: "Glasses preference is required" }),
 });
 
 // Combined schema for final validation
@@ -55,12 +56,12 @@ const completeFormSchema = planSelectionSchema
   .merge(stylePairingSchema)
   .merge(attributesSchema);
 
-// Step schemas mapping
-const stepSchemas = {
-  0: planSelectionSchema, // Plan Selection
-  1: attributesSchema, // Attributes (includes studio name)
-  2: stylePairingSchema, // Style Pairing
-  3: imageUploadSchema, // Image Upload
+// Step schemas mapping by step ID (not index) to handle dynamic step ordering
+const stepSchemasById = {
+  'plan-selection': planSelectionSchema,
+  'attributes': attributesSchema,
+  'style-pairing': stylePairingSchema,
+  'image-upload': imageUploadSchema,
 };
 
 const FormContext = createContext(null);
@@ -73,9 +74,15 @@ export const useStudioForm = () => {
   return context;
 };
 
+// Step ID mapping by index (for when we only have the step index)
+const stepIdsByIndex = ['plan-selection', 'attributes', 'style-pairing', 'image-upload'];
+
 const StudioFormProvider = ({ children }) => {
-  const { formData, setFormData, currentStep, setErrors } =
+  const { formData, setFormData, setErrors, currentStep } =
     useStudioCreateStore();
+  
+  // Get current step ID from index
+  const currentStepId = stepIdsByIndex[currentStep] || null;
 
   // Initialize form with current data
   const form = useForm({
@@ -84,9 +91,14 @@ const StudioFormProvider = ({ children }) => {
     mode: "onChange",
   });
 
+  // Get schema for current step by ID
+  const getSchemaForStep = useCallback((stepId) => {
+    return stepSchemasById[stepId] || null;
+  }, []);
+
   // Validate current step
-  const validateCurrentStep = useCallback(async () => {
-    const schema = stepSchemas[currentStep];
+  const validateCurrentStep = useCallback(async (stepId = currentStepId) => {
+    const schema = getSchemaForStep(stepId);
     if (!schema) return true;
 
     try {
@@ -116,13 +128,13 @@ const StudioFormProvider = ({ children }) => {
       setErrors({ general: "Validation failed. Please check your inputs." });
       return false;
     }
-  }, [currentStep, form, setErrors]);
+  }, [currentStepId, form, setErrors, getSchemaForStep]);
 
   // Validate specific field
   const validateField = useCallback(
-    async (fieldName, value) => {
+    async (fieldName, value, stepId = currentStepId) => {
       try {
-        const schema = stepSchemas[currentStep];
+        const schema = getSchemaForStep(stepId);
         if (!schema) return true;
 
         // Create a partial object with just this field
@@ -134,27 +146,28 @@ const StudioFormProvider = ({ children }) => {
         // Validate the field
         await fieldSchema.parseAsync(fieldData);
 
-        // Clear error for this field
-        setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[fieldName];
-          return newErrors;
-        });
+        // Clear error for this field - get current state first (Zustand doesn't support callback pattern)
+        const currentErrors = useStudioCreateStore.getState().errors;
+        const newErrors = { ...currentErrors };
+        delete newErrors[fieldName];
+        setErrors(newErrors);
 
         return true;
       } catch (error) {
         if (error instanceof z.ZodError) {
           const fieldError = error.errors[0]?.message || "Invalid value";
-          setErrors((prev) => ({
-            ...prev,
+          // Get current state first (Zustand doesn't support callback pattern)
+          const currentErrors = useStudioCreateStore.getState().errors;
+          setErrors({
+            ...currentErrors,
             [fieldName]: fieldError,
-          }));
+          });
           return false;
         }
         return true;
       }
     },
-    [currentStep, setErrors]
+    [currentStepId, setErrors, getSchemaForStep]
   );
 
   // Update form data and validate
@@ -185,8 +198,8 @@ const StudioFormProvider = ({ children }) => {
   );
 
   // Check if form is valid for current step
-  const isStepValid = useCallback(() => {
-    const schema = stepSchemas[currentStep];
+  const isStepValid = useCallback((stepId = currentStepId) => {
+    const schema = getSchemaForStep(stepId);
     if (!schema) return true;
 
     try {
@@ -196,7 +209,7 @@ const StudioFormProvider = ({ children }) => {
     } catch {
       return false;
     }
-  }, [currentStep, form]);
+  }, [currentStepId, form, getSchemaForStep]);
 
   const contextValue = {
     form,
@@ -206,7 +219,7 @@ const StudioFormProvider = ({ children }) => {
     validateField,
     getFieldError,
     isStepValid,
-    currentStep,
+    currentStepId,
   };
 
   return (

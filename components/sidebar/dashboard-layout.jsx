@@ -40,37 +40,14 @@ export default function DashboardLayout({ children }) {
       {/* Main Content Area */}
       <main
         className={cn(
-          "min-h-[calc(100vh_-_56px)] bg-zinc-50 transition-[margin-left] ease-in-out duration-300",
+          "min-h-screen bg-zinc-50 transition-[margin-left] ease-in-out duration-300",
           getMainMargin()
         )}
       >
-        <div className="mx-auto container pt-20 pb-20 px-4 sm:px-6 md:pb-8 lg:px-8 lg:py-16">
+        <div className="pt-16 pb-8 px-4 sm:px-6 sm:pt-8 md:pb-10 lg:px-8 lg:pt-10 lg:pb-12">
           {children}
         </div>
       </main>
-
-      {/* Footer */}
-      {/* <footer
-        className={cn(
-          "transition-[margin-left] ease-in-out duration-300",
-          getMainMargin()
-        )}
-      >
-        <div className="z-20 w-full bg-background/95 shadow backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="mx-4 md:mx-8 flex h-14 items-center">
-            <p className="text-xs md:text-sm leading-loose text-muted-foreground text-left">
-              Need help please email us at{" "}
-              <Link 
-                href="mailto:support@proshoot.co"
-                className="underline hover:text-foreground transition-colors"
-              >
-                support@proshoot.co
-              </Link>
-              .
-            </p>
-          </div>
-        </div>
-      </footer> */}
     </>
   );
 }

@@ -97,20 +97,20 @@ const nextConfig = {
               // Styles: Allow inline for Tailwind and components
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com https://*.intercom.io https://*.intercomcdn.com",
               // Images: Secure image sources
-              "img-src 'self' data: blob: https://secure.proshoot.co https://delivery.proshoot.co https://*.supabase.co https://*.r2.cloudflarestorage.com https://*.googleusercontent.com https://*.intercom.io https://*.intercomcdn.com https://*.google.com https://*.fal.media",
+              "img-src 'self' data: blob: https://secure.proshoot.co https://cdn.proshoot.co https://*.supabase.co https://*.r2.cloudflarestorage.com https://*.googleusercontent.com https://*.intercom.io https://*.intercomcdn.com https://*.google.com https://*.fal.media",
               // Fonts: Google Fonts and Intercom
               "font-src 'self' data: https://fonts.gstatic.com https://*.intercomcdn.com",
               // Connect: API calls and websockets
-              "connect-src 'self' http://127.0.0.1:* http://localhost:* https://secure.proshoot.co https://delivery.proshoot.co https://*.supabase.co https://challenges.cloudflare.com https://*.sentry.io https://*.intercom.io wss://*.intercom.io https://accounts.google.com https://apis.google.com https://*.googleapis.com https://oauth2.googleapis.com https://www.googleapis.com https://*.r2.cloudflarestorage.com https://*.posthog.com",
+              "connect-src 'self' http://127.0.0.1:* http://localhost:* https://secure.proshoot.co https://*.supabase.co https://challenges.cloudflare.com https://*.sentry.io https://*.intercom.io wss://*.intercom.io https://accounts.google.com https://apis.google.com https://*.googleapis.com https://oauth2.googleapis.com https://www.googleapis.com https://*.r2.cloudflarestorage.com https://*.posthog.com",
               // Frame ancestors: Prevent embedding
               "frame-ancestors 'none'",
               // Form actions: Only allow same origin
               "form-action 'self'",
-              // Media: Intercom support
-              "media-src 'self' https://*.intercom.io https://*.intercomcdn.com",
+              // Media: Intercom and Cloudflare Stream
+              "media-src 'self' https://cdn.proshoot.co https://*.intercom.io https://*.intercomcdn.com",
               // Object: Block all plugins
               "object-src 'none'",
-              // Frame: Google OAuth and Intercom
+              // Frame: Google OAuth, Intercom, and Cloudflare Stream
               "frame-src 'self' https://accounts.google.com https://challenges.cloudflare.com https://*.intercom.io",
               // Worker: Service workers and Intercom
               "worker-src 'self' blob: https://*.intercom.io",

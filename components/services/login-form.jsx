@@ -141,6 +141,7 @@ export function LoginForm({ className, ...props }) {
   const [otpSentTime, setOtpSentTime] = useState(null);
   const [isLocked, setIsLocked] = useState(false);
   const [turnstileError, setTurnstileError] = useState(false);
+  const [otpTimeRemaining, setOtpTimeRemaining] = useState(null);
 
   const captchaRef = useRef(null);
 
@@ -165,7 +166,7 @@ export function LoginForm({ className, ...props }) {
     return "/";
   };
 
-  // Check for rate limiting on component mount
+  // Check for rate limiting and error messages on component mount
   useEffect(() => {
     const clientId = `${navigator.userAgent}_${window.location.hostname}`;
     setIsLocked(rateLimiter.isLocked(clientId));
@@ -174,36 +175,68 @@ export function LoginForm({ className, ...props }) {
     if (storedLastLoginMethod) {
       setLastLoginMethod(storedLastLoginMethod);
     }
-  }, []);
 
-  // OTP expiry timer
+    // Show error message from URL if present (e.g., from failed OAuth callback)
+    const errorMessage = searchParams.get("error");
+    if (errorMessage) {
+      toast.error(decodeURIComponent(errorMessage));
+      // Clean up URL without triggering navigation
+      const url = new URL(window.location.href);
+      url.searchParams.delete("error");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [searchParams]);
+
+  // OTP expiry timer with real-time countdown
   useEffect(() => {
-    if (otpSentTime) {
-      const timer = setTimeout(() => {
+    if (!otpSentTime) {
+      setOtpTimeRemaining(null);
+      return;
+    }
+
+    // Calculate initial remaining time
+    const calculateRemaining = () => {
+      const elapsed = Date.now() - otpSentTime;
+      const remaining = Math.max(0, OTP_EXPIRY_TIME - elapsed);
+      return Math.ceil(remaining / 1000); // seconds
+    };
+
+    setOtpTimeRemaining(calculateRemaining());
+
+    // Update every second
+    const interval = setInterval(() => {
+      const remaining = calculateRemaining();
+      setOtpTimeRemaining(remaining);
+
+      if (remaining <= 0) {
+        clearInterval(interval);
         setShowOtpInput(false);
         setOtp("");
         toast.error("OTP expired. Please request a new one.");
         setOtpSentTime(null);
-      }, OTP_EXPIRY_TIME);
+      }
+    }, 1000);
 
-      return () => clearTimeout(timer);
-    }
+    return () => clearInterval(interval);
   }, [otpSentTime]);
 
   const resetFormState = (clearEmail = false) => {
-    if (captchaRef.current) {
-      try {
-        captchaRef.current.reset();
-      } catch (error) {
-        console.error("Failed to reset Turnstile:", error);
-      }
-    }
-    setCaptchaToken(null);
-    setTurnstileError(false); // Reset error state
+    // Note: Turnstile reset is handled separately in handleEmailOtpLogin
+    // to preserve token for Supabase call
+    setTurnstileError(false);
     if (clearEmail) {
       setEmail("");
       setOtp("");
       setOtpSentTime(null);
+      // Only reset Turnstile when clearing email (switching methods)
+      if (captchaRef.current) {
+        try {
+          captchaRef.current.reset();
+        } catch (error) {
+          console.error("Failed to reset Turnstile:", error);
+        }
+      }
+      setCaptchaToken(null);
     }
   };
 
@@ -323,45 +356,24 @@ export function LoginForm({ className, ...props }) {
       return;
     }
 
-    // Server-side CAPTCHA verification for enhanced security
-    // Skip CAPTCHA if Turnstile had an error (graceful degradation)
-    if (captchaToken && TURNSTILE_SITE_KEY && !turnstileError) {
-      setLoading(true); // Show loading during CAPTCHA verification
-      try {
-        const verifyResponse = await fetch("/api/auth/verify-turnstile", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: captchaToken }),
-        });
-
-        const verifyResult = await verifyResponse.json();
-
-        if (!verifyResult.success) {
-          setLoading(false);
-          console.warn("[Turnstile] Server verification failed:", verifyResult.error);
-          
-          // Graceful degradation: Allow login without CAPTCHA if verification fails
-          setTurnstileError(true);
-          toast.warning("Security check failed. Proceeding without verification.");
-          
-          // Don't return - continue with login
-        }
-      } catch (error) {
-        console.error("[Turnstile] Verification API error:", error);
-        setLoading(false);
-        
-        // Graceful degradation: Allow login if API is down
-        setTurnstileError(true);
-        toast.warning("Security check unavailable. Proceeding without verification.");
-        
-        // Don't return - continue with login
-      }
-    } else if (TURNSTILE_SITE_KEY && !captchaToken && !turnstileError) {
-      toast.error("Please complete the CAPTCHA challenge.");
+    // Check if CAPTCHA is required but not completed
+    if (TURNSTILE_SITE_KEY && !captchaToken && !turnstileError) {
+      toast.error("Please complete the security check.");
       return;
     }
 
-    resetFormState();
+    // Store token before resetting (tokens are single-use)
+    const currentCaptchaToken = captchaToken;
+    
+    // Reset Turnstile for next attempt (get fresh token)
+    if (captchaRef.current) {
+      try {
+        captchaRef.current.reset();
+      } catch (error) {
+        console.error("Failed to reset Turnstile:", error);
+      }
+    }
+    setCaptchaToken(null);
     setLoading(true);
 
     try {
@@ -372,14 +384,15 @@ export function LoginForm({ className, ...props }) {
           ? `${redirectTo}?method=otp&next=${encodeURIComponent(nextUrl)}`
           : `${redirectTo}?method=otp`;
 
-      // Use hybrid approach: server-verified token + Supabase CAPTCHA support
+      // Pass CAPTCHA token to Supabase for server-side validation
+      // Note: Supabase validates with Cloudflare directly - no need for separate verification
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: sanitizedEmail,
         options: {
           shouldCreateUser: true,
           emailRedirectTo: emailRedirectFinal,
-          // Pass token to Supabase for additional validation
-          captchaToken: captchaToken || undefined,
+          // Pass stored token (before reset) to Supabase
+          captchaToken: currentCaptchaToken || undefined,
         },
       });
 
@@ -600,22 +613,33 @@ export function LoginForm({ className, ...props }) {
                     setTurnstileError(true);
                   }}
                   onExpire={() => {
-                    console.warn("[Turnstile] Token expired - user needs to solve again");
+                    // Token expired - auto-refresh by resetting widget
+                    console.warn("[Turnstile] Token expired - refreshing widget");
                     setCaptchaToken(null);
-                    setTurnstileError(true);
+                    // Don't set error - widget will auto-refresh
+                    if (captchaRef.current) {
+                      try {
+                        captchaRef.current.reset();
+                      } catch (e) {
+                        console.error("[Turnstile] Failed to reset on expire:", e);
+                        setTurnstileError(true);
+                      }
+                    }
                   }}
                   ref={captchaRef}
                   options={{ 
                     theme: "light",
-                    retry: "never",
-                    execution: "render",
-                    appearance: "always",
-                    size: "normal"
+                    retry: "auto",           // Auto-retry on failure
+                    retryInterval: 3000,     // Retry every 3 seconds
+                    execution: "render",     // Execute immediately on render
+                    appearance: "always",    // Always show widget
+                    size: "normal",
+                    refreshExpired: "auto"   // Auto-refresh when token expires
                   }}
                 />
                 {turnstileError && (
                   <p className="text-xs text-muted-foreground">
-                    Security check unavailable. You can still proceed.
+                    CAPTCHA verified automatically. You can proceed with login.
                   </p>
                 )}
               </div>
@@ -633,13 +657,13 @@ export function LoginForm({ className, ...props }) {
           <p className="text-center text-sm text-muted-foreground -mt-2">
             Sent to <strong>{email}</strong>
           </p>
-          {otpSentTime && (
-            <p className="text-center text-xs text-orange-600">
+          {otpTimeRemaining !== null && otpTimeRemaining > 0 && (
+            <p className={`text-center text-xs ${otpTimeRemaining <= 60 ? 'text-red-600 font-medium' : 'text-orange-600'}`}>
               OTP expires in{" "}
-              {Math.ceil(
-                (OTP_EXPIRY_TIME - (Date.now() - otpSentTime)) / 60000
-              )}{" "}
-              minutes
+              {otpTimeRemaining >= 60 
+                ? `${Math.floor(otpTimeRemaining / 60)}:${String(otpTimeRemaining % 60).padStart(2, '0')}`
+                : `${otpTimeRemaining} seconds`
+              }
             </p>
           )}
 
@@ -647,6 +671,12 @@ export function LoginForm({ className, ...props }) {
             maxLength={6}
             value={otp}
             onChange={(value) => setOtp(value)}
+            onComplete={(value) => {
+              // Auto-submit when OTP is complete
+              if (validateOTP(value) && !loading) {
+                handleVerifyOtp();
+              }
+            }}
             disabled={loading}
             name="otp"
             aria-label="One-time password"
@@ -678,18 +708,60 @@ export function LoginForm({ className, ...props }) {
             )}
           </Button>
 
-          <Button
-            variant="link"
-            className="text-sm"
-            onClick={() => {
-              setShowOtpInput(false);
-              setOtp("");
-              setOtpSentTime(null);
-            }}
-            disabled={loading}
-          >
-            Use a different email
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button
+              variant="outline"
+              className="text-sm"
+              onClick={async () => {
+                // Resend OTP using the same email
+                if (!handleRateLimitCheck("OTP request")) return;
+                setLoading(true);
+                try {
+                  const redirectTo = `${window.location.origin}/auth/callback`;
+                  const nextUrl = getRedirectPath();
+                  const emailRedirectFinal =
+                    nextUrl !== "/"
+                      ? `${redirectTo}?method=otp&next=${encodeURIComponent(nextUrl)}`
+                      : `${redirectTo}?method=otp`;
+
+                  const { error: otpError } = await supabase.auth.signInWithOtp({
+                    email: sanitizeInput(email),
+                    options: {
+                      shouldCreateUser: true,
+                      emailRedirectTo: emailRedirectFinal,
+                    },
+                  });
+
+                  if (otpError) {
+                    handleAuthError(otpError, "OTP request");
+                  } else {
+                    toast.success("New OTP sent! Check your inbox.");
+                    setOtpSentTime(Date.now());
+                    setOtp("");
+                  }
+                } catch (error) {
+                  handleAuthError(error, "OTP request");
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
+            >
+              Resend OTP
+            </Button>
+            <Button
+              variant="link"
+              className="text-sm"
+              onClick={() => {
+                setShowOtpInput(false);
+                setOtp("");
+                setOtpSentTime(null);
+              }}
+              disabled={loading}
+            >
+              Use a different email
+            </Button>
+          </div>
         </div>
       )}
 

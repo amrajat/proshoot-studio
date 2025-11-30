@@ -31,11 +31,11 @@ const StepNavigation = ({
   resetClassName = "flex items-center space-x-1 text-destructive hover:text-destructive/80 underline text-sm disabled:opacity-50",
   resetConfirmMessage = "Are you sure? This will clear all your progress.",
 }) => {
-  const { resetFormCompletely } = useStudioCreateStore();
+  const { resetStore } = useStudioCreateStore();
 
   const handleReset = () => {
     if (confirm(resetConfirmMessage)) {
-      resetFormCompletely();
+      resetStore();
     }
   };
 
@@ -75,7 +75,7 @@ const StepNavigation = ({
             className={resetClassName}
           >
             <RotateCw className="size-3" />
-            <span>Click here if you face any issues.</span>
+            <span>Start Over</span>
           </button>
         )}
       </div>

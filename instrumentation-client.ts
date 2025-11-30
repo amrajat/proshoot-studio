@@ -10,10 +10,31 @@ Sentry.init({
   
   // Tunnel to bypass ad-blockers - ALL requests go through our API
   tunnel: "/api/monitoring",
+
+  // Ignore errors from browser extensions and third-party scripts
+  ignoreErrors: [
+    // Wallet/Web3 extension errors (MetaMask, Coinbase Wallet, etc.)
+    /Internal JSON-RPC error/,
+    /-32603/,
+    /JSON-RPC/,
+    // Browser extension injection errors
+    /Extension context invalidated/,
+    /message channel closed/,
+    // Safari-specific errors that are not actionable
+    /null is not an object \(evaluating 't\.parallelRoutes/,
+    // Network errors that are expected (user offline, etc.)
+    /Failed to fetch/,
+    /NetworkError/,
+    /Load failed/,
+    // ResizeObserver errors (browser quirk, not a real error)
+    /ResizeObserver loop/,
+  ],
   
   // Add optional integrations for additional features
   integrations: [
     Sentry.replayIntegration(),
+    // Send console.log, console.warn, and console.error calls as logs to Sentry
+    Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
   ],
 
   // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.

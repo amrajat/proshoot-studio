@@ -38,8 +38,9 @@ import { createCheckoutUrl } from "@/lib/checkout";
 import { hasSufficientCredits } from "@/services/creditService";
 import ImageUploadGuidelines from "@/components/studio/create/image-upload-guidelines";
 import StepNavigation from "@/components/studio/create/step-navigation";
+import UniversalLoader from "@/components/shared/universal-loader";
 import { Separator } from "@/components/ui/separator";
-import { studioMonitoring, uxMonitoring } from "@/lib/monitoring";
+import { studioMonitoring, uxMonitoring, uploadMonitoring } from "@/lib/monitoring";
 
 // Constants
 
@@ -61,32 +62,6 @@ const ACCEPTED_TYPES = {
   "image/heif": [".heif"],
 };
 
-const mapEntriesToFileIds = (files = [], source = {}) => {
-  if (!source || typeof source !== "object") {
-    return {};
-  }
-
-  const result = {};
-
-  Object.entries(source).forEach(([key, value]) => {
-    const fileById = files.find((file) => file.id === key);
-    if (fileById) {
-      result[key] = value;
-      return;
-    }
-
-    const numericIndex = Number(key);
-    if (!Number.isNaN(numericIndex) && files[numericIndex]) {
-      result[files[numericIndex].id] = value;
-      return;
-    }
-
-    result[key] = value;
-  });
-
-  return result;
-};
-
 const getRelativeObjectKey = (objectKey, fallbackName = "") => {
   if (!objectKey) {
     return fallbackName;
@@ -100,8 +75,8 @@ const getRelativeObjectKey = (objectKey, fallbackName = "") => {
   return objectKey;
 };
 
-// Helper functions - exact copy from working ImageUploader
-const normalizeCropData = (crop, imageWidth, imageHeight) => {
+// Helper function to normalize crop data
+const normalizeCropData = (crop) => {
   if (!crop) return null;
 
   // Ensure crop values are within 0-100 range
@@ -119,34 +94,6 @@ const normalizeCropData = (crop, imageWidth, imageHeight) => {
     width,
     height,
   };
-};
-
-// Calculate SHA-256 hash of file content
-const calculateFileHash = async (file) => {
-  try {
-    const arrayBuffer = await file.arrayBuffer();
-    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    return hashHex;
-  } catch (error) {
-    console.error('Error calculating file hash:', error);
-    // Fallback to name+size if hash calculation fails
-    return `${file.name}-${file.size}`;
-  }
-};
-
-// Function to check for duplicate files using content hash
-const isDuplicateFile = async (newFile, existingFiles) => {
-  // Quick size check first (optimization)
-  const sameSizeFiles = existingFiles.filter(f => f.file.size === newFile.size);
-  if (sameSizeFiles.length === 0) return false;
-
-  // Calculate hash for new file
-  const newFileHash = await calculateFileHash(newFile);
-
-  // Check if hash already exists
-  return sameSizeFiles.some(existingFile => existingFile.hash === newFileHash);
 };
 
 const createImagePromise = (src) => {
@@ -218,7 +165,7 @@ const ImageUploadStep = ({
   isOrgWithTeamCredits,
 }) => {
   const router = useRouter();
-  const { formData, isSubmitting, setIsSubmitting, prevStep, updateFormField, resetFormWithoutReload } =
+  const { formData, isSubmitting, setIsSubmitting, prevStep, resetStore } =
     useStudioCreateStore();
 
   // Initialize upload state - always starts fresh (no persistence)
@@ -233,6 +180,9 @@ const ImageUploadStep = ({
   });
   const heicConversionQueueRef = useRef([]);
   const isMountedRef = useRef(true);
+  const uploadSessionRef = useRef(null); // Track current upload session for monitoring
+  const uploadStartTimeRef = useRef({}); // Track start times for each file upload
+  const isRedirectingToPaymentRef = useRef(false); // Track if we're redirecting to payment (prevents button reset)
 
   // Check if there are active uploads
   const hasActiveUploads = useCallback(() => {
@@ -246,43 +196,6 @@ const ImageUploadStep = ({
     return uploadState.files.length > 0 && 
            uploadState.uploadedFiles.length === uploadState.files.length;
   }, [uploadState.files.length, uploadState.uploadedFiles.length]);
-
-  // Browser/tab close warning during upload
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (hasActiveUploads()) {
-        e.preventDefault();
-        e.returnValue = "Uploads in progress will be lost. Are you sure you want to leave?";
-        return e.returnValue;
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasActiveUploads]);
-
-  // Browser back button handling during upload
-  useEffect(() => {
-    const handlePopState = (e) => {
-      if (hasActiveUploads()) {
-        e.preventDefault();
-        const confirmLeave = window.confirm(
-          "Uploads in progress will be lost. Are you sure you want to go back?"
-        );
-        if (!confirmLeave) {
-          window.history.pushState(null, "", window.location.href);
-        }
-      }
-    };
-
-    // Push initial state to enable back button interception
-    window.history.pushState(null, "", window.location.href);
-    window.addEventListener("popstate", handlePopState);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, [hasActiveUploads]);
 
   // Cleanup blob URLs on component unmount
   useEffect(() => {
@@ -371,8 +284,10 @@ const ImageUploadStep = ({
     setPendingNavigation(null);
   }, []);
 
-  // Convert HEIC to JPEG (on main thread, but sequential with delays)
-  const convertHeicToJpeg = async (file) => {
+  // Convert HEIC to JPEG with auto-retry (on main thread, but sequential with delays)
+  const convertHeicToJpeg = async (file, retryCount = 0) => {
+    const MAX_RETRIES = 2;
+    
     try {
       const heic2any = (await import("heic2any")).default;
 
@@ -394,7 +309,21 @@ const ImageUploadStep = ({
 
       return convertedFile;
     } catch (error) {
-      throw new Error(`HEIC conversion failed: ${error.message}`);
+      // Auto-retry on failure (helps with dynamic import issues and memory pressure)
+      if (retryCount < MAX_RETRIES) {
+        // Log retry attempt to Sentry
+        uploadMonitoring.heicConversionRetry(
+          uploadSessionRef.current,
+          file.name,
+          retryCount + 1,
+          MAX_RETRIES,
+          error.message
+        );
+        // Wait before retry (exponential backoff: 500ms, 1000ms)
+        await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1)));
+        return convertHeicToJpeg(file, retryCount + 1);
+      }
+      throw new Error(`HEIC conversion failed after ${MAX_RETRIES + 1} attempts: ${error.message}`);
     }
   };
 
@@ -408,10 +337,22 @@ const ImageUploadStep = ({
 
     while (heicConversionQueueRef.current.length > 0) {
       const { file, fileId } = heicConversionQueueRef.current.shift();
+      const conversionStartTime = Date.now();
+      
+      // Track HEIC conversion start
+      uploadMonitoring.heicConversionStarted(uploadSessionRef.current, fileId, file.name);
 
       try {
         // Convert HEIC to JPEG
         const jpegFile = await convertHeicToJpeg(file);
+        
+        // Track HEIC conversion completed
+        uploadMonitoring.heicConversionCompleted(
+          uploadSessionRef.current, 
+          fileId, 
+          file.name, 
+          Date.now() - conversionStartTime
+        );
 
         // Load converted image to get dimensions and run SmartCrop
         const tempUrl = URL.createObjectURL(jpegFile);
@@ -446,6 +387,10 @@ const ImageUploadStep = ({
         await new Promise(resolve => setTimeout(resolve, 100));
       } catch (error) {
         console.error(`Failed to convert HEIC ${fileId}:`, error);
+        
+        // Track HEIC conversion failure
+        uploadMonitoring.heicConversionFailed(uploadSessionRef.current, fileId, file.name, error);
+        
         toast.error(`Failed to convert HEIC: ${error.message}`);
         setUploadState((prev) => ({
           ...prev,
@@ -467,38 +412,55 @@ const ImageUploadStep = ({
   };
 
   // Get presigned URL for direct R2 upload
-  const getPresignedUrl = async (fileName, fileType) => {
-    const response = await fetch('/api/r2/presigned-url', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fileName,
-        fileType,
-        studioId: uploadState.currentUUID,
-      }),
-    });
+  const getPresignedUrl = async (fileName, fileType, fileId) => {
+    const startTime = Date.now();
+    uploadMonitoring.presignedUrlRequested(uploadSessionRef.current, fileId, fileName);
+    
+    let response;
+    try {
+      response = await fetch('/api/r2/presigned-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName,
+          fileType,
+          studioId: uploadState.currentUUID,
+        }),
+      });
+    } catch (fetchError) {
+      // Network error (offline, DNS failure, etc.)
+      uploadMonitoring.presignedUrlFailed(uploadSessionRef.current, fileId, fileName, fetchError, 'NETWORK_ERROR');
+      throw new Error(`Network error getting presigned URL: ${fetchError.message}`);
+    }
 
     // Session expiry detection
     if (response.status === 401) {
+      uploadMonitoring.presignedUrlFailed(uploadSessionRef.current, fileId, fileName, new Error('Session expired'), 401);
       toast.error("Your session has expired. Please login again.");
-      const currentPath = window.location.pathname;
       router.push(`/auth`);
       throw new Error('Session expired');
     }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to get presigned URL');
+      const error = new Error(errorData.error || 'Failed to get presigned URL');
+      uploadMonitoring.presignedUrlFailed(uploadSessionRef.current, fileId, fileName, error, response.status);
+      throw error;
     }
 
     const data = await response.json();
+    uploadMonitoring.presignedUrlReceived(uploadSessionRef.current, fileId, fileName, Date.now() - startTime);
     return data;
   };
 
   // Upload file directly to R2 using presigned URL
   const uploadDirectToR2 = async (presignedUrl, file, fileId) => {
+    const startTime = Date.now();
+    uploadMonitoring.r2UploadStarted(uploadSessionRef.current, fileId, file.name, file.size);
+    
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
+      let lastLoggedProgress = 0;
 
       xhr.upload.addEventListener('progress', (e) => {
         if (e.lengthComputable) {
@@ -510,19 +472,46 @@ const ImageUploadStep = ({
               [fileId]: { status: 'uploading', progress },
             },
           }));
+          
+          // Log progress at 50% milestone
+          if (progress >= 50 && lastLoggedProgress < 50) {
+            uploadMonitoring.r2UploadProgress(uploadSessionRef.current, fileId, file.name, 50);
+            lastLoggedProgress = 50;
+          }
         }
       });
 
       xhr.addEventListener('load', () => {
+        const durationMs = Date.now() - startTime;
         if (xhr.status === 200) {
+          uploadMonitoring.r2UploadCompleted(uploadSessionRef.current, fileId, file.name, file.size, durationMs);
           resolve();
         } else {
-          reject(new Error(`Upload failed with status ${xhr.status}`));
+          const error = new Error(`Upload failed with status ${xhr.status}`);
+          uploadMonitoring.r2UploadFailed(uploadSessionRef.current, fileId, file.name, file.size, error, xhr.status, xhr.statusText, durationMs);
+          reject(error);
         }
       });
 
       xhr.addEventListener('error', () => {
-        reject(new Error('Upload failed'));
+        const durationMs = Date.now() - startTime;
+        const error = new Error('Upload failed - network error');
+        uploadMonitoring.r2UploadFailed(uploadSessionRef.current, fileId, file.name, file.size, error, 0, 'Network Error', durationMs);
+        reject(error);
+      });
+
+      xhr.addEventListener('abort', () => {
+        const durationMs = Date.now() - startTime;
+        const error = new Error('Upload aborted');
+        uploadMonitoring.r2UploadFailed(uploadSessionRef.current, fileId, file.name, file.size, error, 0, 'Aborted', durationMs);
+        reject(error);
+      });
+
+      xhr.addEventListener('timeout', () => {
+        const durationMs = Date.now() - startTime;
+        const error = new Error('Upload timed out');
+        uploadMonitoring.r2UploadFailed(uploadSessionRef.current, fileId, file.name, file.size, error, 0, 'Timeout', durationMs);
+        reject(error);
       });
 
       xhr.open('PUT', presignedUrl);
@@ -531,48 +520,50 @@ const ImageUploadStep = ({
     });
   };
 
-  // Exact copy of applySmartCrop from working ImageUploader
+  // Apply SmartCrop to find best crop area
   const applySmartCrop = async (file) => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const objectUrl = URL.createObjectURL(file);
-        const img = await createImagePromise(objectUrl).catch((err) => {
-          throw new Error(
-            `Failed to load image for smart crop: ${err.message}`
-          );
-        });
+    let objectUrl = null;
+    try {
+      objectUrl = URL.createObjectURL(file);
+      const img = await createImagePromise(objectUrl);
 
-        const cropPromise = SmartCrop.crop(img, {
-          width: CROP_DIMENSION,
-          height: CROP_DIMENSION,
-          minScale: 1.0,
-          ruleOfThirds: true,
-          samples: 8,
-        });
-        const timeoutPromise = new Promise((_, rej) =>
-          setTimeout(
-            () => rej(new Error("Smart crop timed out")),
-            SMART_CROP_TIMEOUT
-          )
-        );
-        const result = await Promise.race([cropPromise, timeoutPromise]);
+      const cropPromise = SmartCrop.crop(img, {
+        width: CROP_DIMENSION,
+        height: CROP_DIMENSION,
+        minScale: 1.0,
+        ruleOfThirds: true,
+        samples: 8,
+      });
+      const timeoutPromise = new Promise((_, rej) =>
+        setTimeout(
+          () => rej(new Error("Smart crop timed out")),
+          SMART_CROP_TIMEOUT
+        )
+      );
+      const result = await Promise.race([cropPromise, timeoutPromise]);
 
-        if (!result || !result.topCrop)
-          throw new Error("Smart crop failed to generate valid crop data");
-
-        const crop = {
-          x: (result.topCrop.x / img.width) * 100,
-          y: (result.topCrop.y / img.height) * 100,
-          width: (result.topCrop.width / img.width) * 100,
-          height: (result.topCrop.height / img.height) * 100,
-          unit: "%",
-        };
-        URL.revokeObjectURL(objectUrl);
-        resolve(crop);
-      } catch (error) {
-        resolve({ unit: "%", x: 25, y: 25, width: 50, height: 50 }); // Fallback
+      if (!result || !result.topCrop) {
+        throw new Error("Smart crop failed to generate valid crop data");
       }
-    });
+
+      const crop = {
+        x: (result.topCrop.x / img.width) * 100,
+        y: (result.topCrop.y / img.height) * 100,
+        width: (result.topCrop.width / img.width) * 100,
+        height: (result.topCrop.height / img.height) * 100,
+        unit: "%",
+      };
+      
+      return crop;
+    } catch (error) {
+      // Return fallback crop on any error
+      return { unit: "%", x: 25, y: 25, width: 50, height: 50 };
+    } finally {
+      // Always clean up blob URL
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    }
   };
 
   const deleteFromR2 = async (objectKey) => {
@@ -633,8 +624,11 @@ const ImageUploadStep = ({
     }
   };
 
-  // Legacy uploadToR2 for focus_data.json only
-  const uploadToR2 = async (file, fileName) => {
+  // Upload to R2 via API route (used for focus_data.json) with retry logic
+  const uploadToR2 = async (file, fileName, retryCount = 0) => {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000; // 1 second base delay
+    
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -655,12 +649,44 @@ const ImageUploadStep = ({
 
       return { objectKey, sanitizedFileName, originalFileName };
     } catch (error) {
+      // Check if we should retry (network errors)
+      const isNetworkError = 
+        error.message?.includes('Failed to fetch') ||
+        error.message?.includes('Network') ||
+        error.message?.includes('network') ||
+        error.message?.includes('timeout') ||
+        (typeof navigator !== 'undefined' && !navigator.onLine);
+      
+      if (isNetworkError && retryCount < MAX_RETRIES) {
+        // Log retry attempt
+        console.warn(`[uploadToR2] Retry ${retryCount + 1}/${MAX_RETRIES} for ${fileName}:`, error.message);
+        
+        // Wait with exponential backoff before retry
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (retryCount + 1)));
+        
+        // Recursive retry
+        return uploadToR2(file, fileName, retryCount + 1);
+      }
+      
       throw new Error(`Upload failed: ${error.message}`);
     }
   };
 
-  // Upload file directly to R2 using presigned URL
-  const processAndUploadFile = async (file, fileId) => {
+  // Upload file directly to R2 using presigned URL with auto-retry
+  const processAndUploadFile = async (file, fileId, isManualRetry = false, autoRetryCount = 0) => {
+    const MAX_AUTO_RETRIES = 2;
+    
+    // Track retry attempts
+    if (isManualRetry || autoRetryCount > 0) {
+      const totalRetries = (uploadStartTimeRef.current[`${fileId}_retries`] || 0) + 1;
+      uploadStartTimeRef.current[`${fileId}_retries`] = totalRetries;
+      uploadMonitoring.retryAttempted(uploadSessionRef.current, fileId, file.name, totalRetries);
+    }
+    
+    // Track start time for this file
+    uploadStartTimeRef.current[fileId] = Date.now();
+    uploadMonitoring.processingStarted(uploadSessionRef.current, fileId, file.name, file.size, file.type);
+    
     try {
       setUploadState((prev) => ({
         ...prev,
@@ -670,10 +696,11 @@ const ImageUploadStep = ({
         },
       }));
 
-      // Get presigned URL
+      // Get presigned URL (now with fileId for tracking)
       const { presignedUrl, objectKey, sanitizedFileName } = await getPresignedUrl(
         file.name,
-        file.type
+        file.type,
+        fileId
       );
 
       setUploadState((prev) => ({
@@ -693,7 +720,7 @@ const ImageUploadStep = ({
         
         if (!fileStillExists) {
           // File was removed during upload, clean up uploadProgress and don't add to uploadedFiles
-          const { [fileId]: removed, ...remainingProgress } = prev.uploadProgress;
+          const { [fileId]: _removed, ...remainingProgress } = prev.uploadProgress;
           return {
             ...prev,
             uploadProgress: remainingProgress,
@@ -723,13 +750,43 @@ const ImageUploadStep = ({
         };
       });
     } catch (error) {
+      // Check if we should auto-retry (only for network-related errors)
+      const isNetworkError = 
+        error.message?.includes('Failed to fetch') ||
+        error.message?.includes('Network') ||
+        error.message?.includes('network') ||
+        error.message?.includes('timeout') ||
+        error.message?.includes('aborted') ||
+        (typeof navigator !== 'undefined' && !navigator.onLine);
+      
+      if (isNetworkError && autoRetryCount < MAX_AUTO_RETRIES) {
+        // Log auto-retry attempt
+        uploadMonitoring.uploadAutoRetry(
+          uploadSessionRef.current,
+          fileId,
+          file.name,
+          autoRetryCount + 1,
+          MAX_AUTO_RETRIES,
+          error.message
+        );
+        
+        // Wait before retry (exponential backoff: 1s, 2s)
+        await new Promise(resolve => setTimeout(resolve, 1000 * (autoRetryCount + 1)));
+        
+        // Recursive retry
+        return processAndUploadFile(file, fileId, false, autoRetryCount + 1);
+      }
+      
+      // Track the failure - ensures we capture errors even when caught locally
+      uploadMonitoring.uploadFailed(uploadSessionRef.current, fileId, file.name, error, 'upload-process');
+      
       setUploadState((prev) => {
         // Check if file still exists before setting error state
         const fileStillExists = prev.files.some(f => f.id === fileId);
         
         if (!fileStillExists) {
           // File was removed, clean up uploadProgress
-          const { [fileId]: removed, ...remainingProgress } = prev.uploadProgress;
+          const { [fileId]: _removed, ...remainingProgress } = prev.uploadProgress;
           return {
             ...prev,
             uploadProgress: remainingProgress,
@@ -753,11 +810,11 @@ const ImageUploadStep = ({
       try {
         const isHeic = file.type === "image/heic" || file.type === "image/heif";
 
-        // For HEIC files, show placeholder and queue for conversion
+        // For HEIC files, show loader and queue for conversion
         if (isHeic) {
           resolve({
             file,
-            preview: "/images/processing-heic.svg", // Placeholder
+            preview: null, // Will show UniversalLoader
             accepted: true,
             declineReason: "",
             initialCrop: { unit: "%", x: 25, y: 25, width: 50, height: 50 },
@@ -827,12 +884,7 @@ const ImageUploadStep = ({
         const file = prev.files.find((f) => f.id === fileId);
         if (!file) return prev; // File might have been removed
         
-        const dimensions = file.dimensions || { width: 1024, height: 1024 };
-        const normalizedCrop = normalizeCropData(
-          percentCrop,
-          dimensions.width,
-          dimensions.height
-        );
+        const normalizedCrop = normalizeCropData(percentCrop);
         
         return {
           ...prev,
@@ -848,6 +900,9 @@ const ImageUploadStep = ({
 
   // Drop zone handlers
   const handleDropRejected = useCallback((rejectedFiles) => {
+    // Track rejected files in monitoring
+    uploadMonitoring.filesRejected(uploadSessionRef.current, rejectedFiles);
+    
     const errors = rejectedFiles.map(({ file, errors }) => {
       const errorMessages = errors.map((error) => {
         switch (error.code) {
@@ -869,15 +924,30 @@ const ImageUploadStep = ({
 
   const handleFileDrop = useCallback(
     async (acceptedFiles) => {
-      // Filter out duplicate files using hash-based detection
+      // Create or reuse upload session for monitoring
+      if (!uploadSessionRef.current) {
+        uploadSessionRef.current = uploadMonitoring.createUploadSession(
+          uploadState.currentUUID, 
+          acceptedFiles.length
+        );
+      }
+      
+      // Track files dropped
+      uploadMonitoring.filesDropped(uploadSessionRef.current, acceptedFiles);
+      
+      // Filter out duplicate files using fast name+size check (instant, no file reading)
       const uniqueFiles = [];
       const duplicateFiles = [];
+      const existingFileKeys = new Set(
+        uploadState.files.map(f => `${f.file.name}-${f.file.size}-${f.file.lastModified}`)
+      );
 
       for (const file of acceptedFiles) {
-        const isDuplicate = await isDuplicateFile(file, uploadState.files);
-        if (isDuplicate) {
+        const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
+        if (existingFileKeys.has(fileKey)) {
           duplicateFiles.push(file.name);
         } else {
+          existingFileKeys.add(fileKey); // Prevent duplicates within the same drop
           uniqueFiles.push(file);
         }
       }
@@ -895,38 +965,133 @@ const ImageUploadStep = ({
       }
 
       if (duplicateFiles.length > 0) {
+        // Track duplicates detected
+        uploadMonitoring.duplicatesDetected(uploadSessionRef.current, duplicateFiles, uniqueFiles.length);
         toast.warning(`${duplicateFiles.length} duplicate file(s) were skipped.`);
       }
 
-      setUploadState((prev) => ({ ...prev, processing: true }));
-      toast.success("Processing images...");
-
-      const processedFiles = [];
-      for (let i = 0; i < uniqueFiles.length; i++) {
-        const file = uniqueFiles[i];
-
-        // Calculate hash for the file
-        const fileHash = await calculateFileHash(file);
-
-        const processedFile = await processImage(file);
-        const fileWithId = {
-          ...processedFile,
-          id: processedFile.id || crypto.randomUUID?.() || `${Date.now()}-${i}`,
-          hash: fileHash, // Store hash for future duplicate detection
+      // STEP 1: Immediately add placeholder files to show instant feedback
+      const placeholderFiles = uniqueFiles.map((file, i) => {
+        const isHeic = file.type === "image/heic" || file.type === "image/heif";
+        return {
+          file,
+          id: uuidv4(),
+          preview: null, // No preview yet - will show loader
+          accepted: true,
+          declineReason: "",
+          initialCrop: { unit: "%", x: 25, y: 25, width: 50, height: 50 },
+          dimensions: { width: 1024, height: 1024 },
+          isConverting: isHeic,
+          isProcessingPreview: !isHeic, // Flag for non-HEIC files being processed
+          hash: null, // Will be calculated during upload
         };
-        processedFiles.push(fileWithId);
-      }
+      });
 
-      // Add files to state first using functional update
+      // Add placeholders to state immediately - user sees cards right away
       setUploadState((prev) => ({
         ...prev,
-        files: [...prev.files, ...processedFiles],
-        processing: false,
+        files: [...prev.files, ...placeholderFiles],
+        processing: true,
       }));
-      toast.dismiss(); // Dismiss the processing toast
+      
+      toast.success(`Processing ${uniqueFiles.length} images...`);
 
-      // Process files immediately (no setTimeout to avoid race conditions)
-      for (const fileData of processedFiles) {
+      // STEP 2: Process previews in parallel batches (3 at a time to avoid memory issues)
+      const BATCH_SIZE = 3;
+      const processPreviewBatch = async (batch) => {
+        return Promise.all(
+          batch.map(async (placeholderFile) => {
+            const file = placeholderFile.file;
+            const fileId = placeholderFile.id;
+            const isHeic = file.type === "image/heic" || file.type === "image/heif";
+
+            // Skip HEIC files - they're handled by the conversion queue
+            if (isHeic) return;
+
+            try {
+              // Create blob URL for immediate preview (fast)
+              const quickPreview = URL.createObjectURL(file);
+              
+              // Load image to get dimensions
+              const img = await createImagePromise(quickPreview).catch(() => null);
+              
+              if (!img) {
+                // Failed to load, keep placeholder
+                return;
+              }
+
+              // Check dimensions
+              let accepted = true;
+              let declineReason = "";
+              if (img.width < MIN_IMAGE_DIMENSION || img.height < MIN_IMAGE_DIMENSION) {
+                declineReason = `This image is smaller than ${MIN_IMAGE_DIMENSION}x${MIN_IMAGE_DIMENSION} pixels, but we will still use it.`;
+              }
+
+              // Run SmartCrop (can be slow, but now in parallel)
+              const smartCropResult = await applySmartCrop(file).catch(() => ({
+                unit: "%", x: 25, y: 25, width: 50, height: 50
+              }));
+
+              // Create compressed preview in background (optional, for memory optimization)
+              const compressedPreview = await createCompressedPreview(file).catch(() => quickPreview);
+              
+              // Revoke quick preview if we got a compressed one
+              if (compressedPreview !== quickPreview) {
+                URL.revokeObjectURL(quickPreview);
+              }
+
+              // Update this specific file in state
+              if (isMountedRef.current) {
+                setUploadState((prev) => ({
+                  ...prev,
+                  files: prev.files.map((f) =>
+                    f.id === fileId
+                      ? {
+                          ...f,
+                          preview: compressedPreview,
+                          accepted,
+                          declineReason,
+                          initialCrop: smartCropResult,
+                          dimensions: { width: img.width, height: img.height },
+                          isProcessingPreview: false,
+                        }
+                      : f
+                  ),
+                }));
+              }
+            } catch (error) {
+              console.error(`Failed to process preview for ${file.name}:`, error);
+              // Keep placeholder on error
+              if (isMountedRef.current) {
+                setUploadState((prev) => ({
+                  ...prev,
+                  files: prev.files.map((f) =>
+                    f.id === fileId
+                      ? { ...f, isProcessingPreview: false, declineReason: "Failed to process preview" }
+                      : f
+                  ),
+                }));
+              }
+            }
+          })
+        );
+      };
+
+      // Process in batches
+      for (let i = 0; i < placeholderFiles.length; i += BATCH_SIZE) {
+        if (!isMountedRef.current) break;
+        const batch = placeholderFiles.slice(i, i + BATCH_SIZE);
+        await processPreviewBatch(batch);
+        // Small delay between batches to let UI breathe
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+
+      // Mark processing as complete
+      setUploadState((prev) => ({ ...prev, processing: false }));
+      toast.dismiss();
+
+      // STEP 3: Start uploads for all files (use placeholderFiles which have IDs)
+      for (const fileData of placeholderFiles) {
         // Check if component is still mounted
         if (!isMountedRef.current) {
           console.warn('Component unmounted, stopping file processing');
@@ -972,7 +1137,7 @@ const ImageUploadStep = ({
         }
       }
     },
-    [processAndUploadFile, queueHeicConversion, uploadState.files]
+    [processAndUploadFile, queueHeicConversion, uploadState.files, uploadState.currentUUID]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -1043,23 +1208,26 @@ const ImageUploadStep = ({
     setIsRemovingAll(true);
 
     try {
-      // Revoke all blob URLs to prevent memory leak
-      uploadState.files.forEach((file) => {
-        if (file.preview && file.preview.startsWith('blob:')) {
-          URL.revokeObjectURL(file.preview);
-        }
+      // Revoke all blob URLs to prevent memory leak - use functional update to get latest state
+      setUploadState((prev) => {
+        prev.files.forEach((file) => {
+          if (file.preview && file.preview.startsWith('blob:')) {
+            URL.revokeObjectURL(file.preview);
+          }
+        });
+        return prev; // Return unchanged for now
       });
 
       await deleteAllFromR2();
 
-      const newUploadState = {
-        ...uploadState,
+      // Use functional update to avoid stale closure
+      setUploadState((prev) => ({
+        ...prev,
         files: [],
         uploadedFiles: [],
         completedCrops: {},
         uploadProgress: {},
-      };
-      setUploadState(newUploadState);
+      }));
 
       toast.success("All files removed successfully!");
     } catch (error) {
@@ -1099,6 +1267,20 @@ const ImageUploadStep = ({
       // Check if all files are uploaded
       const failedUploads = Object.entries(uploadState.uploadProgress).filter(
         ([_, progress]) => progress.status === "failed"
+      );
+      
+      // Track upload session completion with stats
+      const validStartTimes = Object.values(uploadStartTimeRef.current).filter(t => typeof t === 'number' && t > 0);
+      const sessionStartTime = validStartTimes.length > 0 ? Math.min(...validStartTimes) : Date.now();
+      uploadMonitoring.uploadSessionCompleted(
+        uploadSessionRef.current,
+        uploadState.currentUUID,
+        {
+          totalFiles: uploadState.files.length,
+          successCount: uploadState.uploadedFiles.length,
+          failedCount: failedUploads.length,
+          totalDurationMs: Date.now() - sessionStartTime,
+        }
       );
 
       if (failedUploads.length > 0) {
@@ -1250,8 +1432,8 @@ const ImageUploadStep = ({
           imageCount: uploadState.files.length
         });
         
-        // Reset form without reload before redirecting
-        resetFormWithoutReload();
+        // Reset form before redirecting
+        resetStore();
         
         toast.success("Studio created successfully!");
         router.push(`/studio/${result.studioId}`);
@@ -1261,13 +1443,17 @@ const ImageUploadStep = ({
     } catch (error) {
       studioMonitoring.paymentIssue(error.message, {
         plan: formData.plan,
-        hasCredits: hasCreditsForPlan(),
+        hasCredits: hasSufficientCredits(credits, formData.plan, 1),
         step: "studio-creation"
       });
       toast.error(`Error: ${error.message}`);
     } finally {
-      setLocalSubmitting(false);
-      setIsSubmitting(false);
+      // Don't reset submitting state if we're redirecting to payment
+      // (window.location.href doesn't block, so finally runs before redirect)
+      if (!isRedirectingToPaymentRef.current) {
+        setLocalSubmitting(false);
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -1342,14 +1528,16 @@ const ImageUploadStep = ({
         
         if (status === "PROCESSING" || status === "COMPLETED" || status === "ACCEPTED") {
           // Studio is already being processed or completed - redirect to studio page
-          // Reset form without reload before redirecting
-          resetFormWithoutReload();
+          // Reset form before redirecting
+          resetStore();
           
           toast.success("Studio already created! Redirecting...");
           studioMonitoring.stepCompleted("studio-already-exists", { 
             studioId: uploadState.currentUUID,
             status 
           });
+          // Mark as redirecting to prevent button reset
+          isRedirectingToPaymentRef.current = true;
           router.push(`/studio/${uploadState.currentUUID}`);
           return;
         } else if (status === "FAILED") {
@@ -1382,6 +1570,8 @@ const ImageUploadStep = ({
           studioId: uploadState.currentUUID,
           isRetry: result.isUpdate || false
         });
+        // Mark as redirecting to prevent button reset in finally block
+        isRedirectingToPaymentRef.current = true;
         // Redirect to checkout
         window.location.href = checkoutUrl;
       } else {
@@ -1409,11 +1599,15 @@ const ImageUploadStep = ({
         );
         
         if (checkoutUrl) {
+          // Mark as redirecting to prevent button reset
+          isRedirectingToPaymentRef.current = true;
           window.location.href = checkoutUrl;
         } else {
           throw new Error("Failed to create checkout URL");
         }
       } catch (checkoutError) {
+        // Reset ref since redirect failed
+        isRedirectingToPaymentRef.current = false;
         toast.error("Unable to proceed to payment. Please try again or contact support.");
         setLocalSubmitting(false);
         setIsSubmitting(false);
@@ -1462,12 +1656,12 @@ const ImageUploadStep = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">Upload photos</h2>
-        <p className="text-muted-foreground">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="text-center space-y-1 sm:space-y-2">
+        <h2 className="text-xl sm:text-2xl font-bold">Upload photos</h2>
+        <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
           Upload at least {MIN_IMAGES} photos with good variation in outfits,
-          lighting, and backgrounds. When cropping after upload, keep waist-up photo in selection area.
+          lighting, and backgrounds. Keep waist-up in crop area.
         </p>
       </div>
 
@@ -1595,7 +1789,9 @@ const ImageUploadStep = ({
               {/* File Info */}
               <div className="text-sm text-muted-foreground/80 space-y-1 pt-2">
                 <p>Supported formats: JPG, JPEG, PNG, HEIC, HEIF</p>
-                <p>Maximum file size: 4MB per image</p>
+                <p>Maximum file size: {(
+              MAX_FILE_SIZE / MB
+            ).toFixed(0)} MB per image</p>
                 <p>Upload at least {MIN_IMAGES} photos for best results</p>
               </div>
             </div>
@@ -1619,11 +1815,13 @@ const ImageUploadStep = ({
                 ? true
                 : progress?.status === "completed";
               const isFailed = progress?.status === "failed";
-              const isConverting = progress?.status === "converting";
+              const isConverting = progress?.status === "converting" || fileData.isConverting;
+              const isProcessingPreview = fileData.isProcessingPreview;
               const isUploading =
                 !isUploaded &&
                 !isFailed &&
                 !isConverting &&
+                !isProcessingPreview &&
                 (progress?.status === "uploading" ||
                   progress?.status === "processing" ||
                   progress?.status === "preparing");
@@ -1639,7 +1837,7 @@ const ImageUploadStep = ({
                   <CardContent className="p-0">
                     <div className="relative">
                       {/* Upload Status Badge */}
-                      {(isConverting || isUploading || isUploaded || isFailed) && (
+                      {(isProcessingPreview || isConverting || isUploading || isUploaded || isFailed) && (
                         <div className="absolute top-2 left-2 z-10">
                           {isFailed && (
                             <div className="bg-destructive text-white px-2 py-1 rounded-xl text-xs flex items-center gap-1">
@@ -1652,7 +1850,13 @@ const ImageUploadStep = ({
                               <CheckCircle2 className="h-3 w-3" />
                             </div>
                           )}
-                          {isConverting && (
+                          {isProcessingPreview && !isUploaded && !isFailed && (
+                            <div className="bg-slate-500 text-white px-2 py-1 rounded-xl text-xs flex items-center gap-1">
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                              Loading
+                            </div>
+                          )}
+                          {isConverting && !isProcessingPreview && (
                             <div className="bg-amber-500 text-white px-2 py-1 rounded-xl text-xs flex items-center gap-1">
                               <Loader2 className="h-3 w-3 animate-spin" />
                               Converting
@@ -1674,6 +1878,7 @@ const ImageUploadStep = ({
                         className="absolute rounded-full top-0 right-0 translate-x-1/2 -translate-y-1/2 z-10 size-5 p-0"
                         onClick={() => removeFile(fileData.id)}
                         disabled={isRemoving || isUploading || isSubmitting}
+                        aria-label={`Remove ${fileData.file?.name || 'image'}`}
                       >
                         {isRemoving ? (
                           <Loader2 className="size-4 text-white" />
@@ -1682,45 +1887,55 @@ const ImageUploadStep = ({
                         )}
                       </Button>
 
-                      {/* ReactCrop - now unobstructed */}
-                      <ReactCrop
-                        crop={
-                          uploadState.completedCrops[fileData.id] ||
-                          fileData.initialCrop || {
-                            unit: "%",
-                            x: 25,
-                            y: 25,
-                            width: 50,
-                            height: 50,
+                      {/* Show loader while preview is loading, otherwise show ReactCrop */}
+                      {!fileData.preview ? (
+                        <div className="w-full aspect-square bg-muted flex items-center justify-center rounded-lg">
+                          <UniversalLoader 
+                            size="lg" 
+                            variant="centered"
+                            text={isConverting ? "Converting HEIC..." : "Loading preview..."}
+                          />
+                        </div>
+                      ) : (
+                        <ReactCrop
+                          crop={
+                            uploadState.completedCrops[fileData.id] ||
+                            fileData.initialCrop || {
+                              unit: "%",
+                              x: 25,
+                              y: 25,
+                              width: 50,
+                              height: 50,
+                            }
                           }
-                        }
-                        onChange={(c, pc) => handleCropComplete(c, pc, fileData.id)}
-                        onComplete={(c, pc) => handleCropComplete(c, pc, fileData.id)}
-                        aspect={CROP_ASPECT}
-                        className="max-w-full h-auto"
-                        minWidth={100}
-                        minHeight={100}
-                        keepSelection={true}
-                        ruleOfThirds={true}
-                        disabled={isUploading} // Disable cropping while uploading
-                        locked={false}
-                        aria-label="Crop image"
-                      >
-                        <Image
-                          src={fileData.preview}
-                          alt={`Preview ${index + 1}`}
-                          width={400}
-                          height={400}
-                          className={`w-full h-auto object-cover ${
-                            isUploading ? "opacity-70" : ""
-                          }`}
-                          unoptimized={true}
-                          onError={(e) => {
-                            // Fallback if blob URL is revoked
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      </ReactCrop>
+                          onChange={(c, pc) => handleCropComplete(c, pc, fileData.id)}
+                          onComplete={(c, pc) => handleCropComplete(c, pc, fileData.id)}
+                          aspect={CROP_ASPECT}
+                          className="max-w-full h-auto"
+                          minWidth={100}
+                          minHeight={100}
+                          keepSelection={true}
+                          ruleOfThirds={true}
+                          disabled={isUploading} // Disable cropping while uploading
+                          locked={false}
+                          aria-label="Crop image"
+                        >
+                          <Image
+                            src={fileData.preview}
+                            alt={`Preview ${index + 1}`}
+                            width={400}
+                            height={400}
+                            className={`w-full h-auto object-cover ${
+                              isUploading ? "opacity-70" : ""
+                            }`}
+                            unoptimized={true}
+                            onError={(e) => {
+                              // Fallback if blob URL is revoked
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </ReactCrop>
+                      )}
 
                       {/* Retry Button for Failed Uploads */}
                       {isFailed && (
@@ -1729,10 +1944,11 @@ const ImageUploadStep = ({
                             size="sm"
                             variant="default"
                             onClick={() =>
-                              processAndUploadFile(fileData.file, fileData.id)
+                              processAndUploadFile(fileData.file, fileData.id, true)
                             }
                             className="text-xs"
                             disabled={isUploading || isSubmitting}
+                            aria-label={`Retry upload for ${fileData.file?.name || 'file'}`}
                           >
                             <RefreshCw className="h-3 w-3 mr-1" />
                             Retry

@@ -35,12 +35,13 @@ const validateRequiredFields = (studioFormData) => {
 
 // Data transformation helpers
 const getUserAttributes = (studioFormData) => {
-  const { gender, ethnicity, hairColor, hairLength, hairType, glasses } = studioFormData;
+  const { gender, ethnicity, bodyType, hairColor, hairLength, hairType, glasses } = studioFormData;
 
   return {
     trigger_word: "ohwx",
     gender,
     ethnicity,
+    body_type: bodyType,
     hair_length: hairLength,
     hair_color: hairColor,
     hair_type: hairType,

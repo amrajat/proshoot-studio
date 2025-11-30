@@ -182,6 +182,7 @@ const ImageUploadStep = ({
   const isMountedRef = useRef(true);
   const uploadSessionRef = useRef(null); // Track current upload session for monitoring
   const uploadStartTimeRef = useRef({}); // Track start times for each file upload
+  const isRedirectingToPaymentRef = useRef(false); // Track if we're redirecting to payment (prevents button reset)
 
   // Check if there are active uploads
   const hasActiveUploads = useCallback(() => {
@@ -1447,8 +1448,12 @@ const ImageUploadStep = ({
       });
       toast.error(`Error: ${error.message}`);
     } finally {
-      setLocalSubmitting(false);
-      setIsSubmitting(false);
+      // Don't reset submitting state if we're redirecting to payment
+      // (window.location.href doesn't block, so finally runs before redirect)
+      if (!isRedirectingToPaymentRef.current) {
+        setLocalSubmitting(false);
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -1531,6 +1536,8 @@ const ImageUploadStep = ({
             studioId: uploadState.currentUUID,
             status 
           });
+          // Mark as redirecting to prevent button reset
+          isRedirectingToPaymentRef.current = true;
           router.push(`/studio/${uploadState.currentUUID}`);
           return;
         } else if (status === "FAILED") {
@@ -1563,6 +1570,8 @@ const ImageUploadStep = ({
           studioId: uploadState.currentUUID,
           isRetry: result.isUpdate || false
         });
+        // Mark as redirecting to prevent button reset in finally block
+        isRedirectingToPaymentRef.current = true;
         // Redirect to checkout
         window.location.href = checkoutUrl;
       } else {
@@ -1590,11 +1599,15 @@ const ImageUploadStep = ({
         );
         
         if (checkoutUrl) {
+          // Mark as redirecting to prevent button reset
+          isRedirectingToPaymentRef.current = true;
           window.location.href = checkoutUrl;
         } else {
           throw new Error("Failed to create checkout URL");
         }
       } catch (checkoutError) {
+        // Reset ref since redirect failed
+        isRedirectingToPaymentRef.current = false;
         toast.error("Unable to proceed to payment. Please try again or contact support.");
         setLocalSubmitting(false);
         setIsSubmitting(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
@@ -804,77 +804,6 @@ const ImageUploadStep = ({
     }
   };
 
-  // Process image - lightweight preview generation only
-  const processImage = async (file) => {
-    return new Promise(async (resolve) => {
-      try {
-        const isHeic = file.type === "image/heic" || file.type === "image/heif";
-
-        // For HEIC files, show loader and queue for conversion
-        if (isHeic) {
-          resolve({
-            file,
-            preview: null, // Will show UniversalLoader
-            accepted: true,
-            declineReason: "",
-            initialCrop: { unit: "%", x: 25, y: 25, width: 50, height: 50 },
-            dimensions: { width: 1024, height: 1024 },
-            isConverting: true,
-          });
-          return;
-        }
-
-        // For JPEG/PNG, create compressed preview and run SmartCrop
-        const objectUrl = URL.createObjectURL(file);
-        const img = await createImagePromise(objectUrl).catch((err) => {
-          URL.revokeObjectURL(objectUrl); // Clean up on error
-          throw new Error(
-            `Failed to load image for processing: ${err.message}`
-          );
-        });
-
-        let accepted = true;
-        let declineReason = "";
-        if (
-          img.width < MIN_IMAGE_DIMENSION ||
-          img.height < MIN_IMAGE_DIMENSION
-        ) {
-          declineReason = `This image is smaller than ${MIN_IMAGE_DIMENSION}x${MIN_IMAGE_DIMENSION} pixels, but we will still use it, it may not be perfect.`;
-        }
-
-        // SmartCrop for preview
-        const smartCropResult = await applySmartCrop(file);
-
-        // Create compressed thumbnail for preview (reduces memory by ~80%)
-        const compressedPreview = await createCompressedPreview(file).catch(() => objectUrl);
-        
-        // Revoke original objectUrl if compression succeeded
-        if (compressedPreview !== objectUrl) {
-          URL.revokeObjectURL(objectUrl);
-        }
-
-        resolve({
-          file,
-          preview: compressedPreview,
-          accepted,
-          declineReason,
-          initialCrop: smartCropResult,
-          dimensions: { width: img.width, height: img.height },
-        });
-      } catch (error) {
-        const objectUrl = URL.createObjectURL(file);
-        resolve({
-          file,
-          preview: objectUrl,
-          accepted: false,
-          declineReason: "Failed to process image: " + error.message,
-          initialCrop: { unit: "%", x: 25, y: 25, width: 50, height: 50 },
-          error: true,
-        });
-      }
-    });
-  };
-
   // Handle crop completion - keyed by fileId
   const handleCropComplete = useCallback(
     (crop, percentCrop, fileId) => {
@@ -1265,8 +1194,8 @@ const ImageUploadStep = ({
       const hasCredits = hasSufficientCredits(credits, selectedPlan, 1);
 
       // Check if all files are uploaded
-      const failedUploads = Object.entries(uploadState.uploadProgress).filter(
-        ([_, progress]) => progress.status === "failed"
+      const failedUploads = Object.values(uploadState.uploadProgress).filter(
+        (progress) => progress.status === "failed"
       );
       
       // Track upload session completion with stats
@@ -1638,8 +1567,8 @@ const ImageUploadStep = ({
     );
   }, [uploadState.uploadProgress]);
 
-  // Get minimum images feedback
-  const getMinImagesInfo = () => {
+  // Get minimum images feedback - memoized to avoid recalculating on every render
+  const minImagesInfo = useMemo(() => {
     const currentCount = uploadState.files.length;
     const needed = Math.max(0, MIN_IMAGES - currentCount);
     return {
@@ -1647,7 +1576,7 @@ const ImageUploadStep = ({
       needed,
       hasMinimum: currentCount >= MIN_IMAGES
     };
-  };
+  }, [uploadState.files.length]);
 
   const breakpointColumns = {
     default: 3,
@@ -2022,12 +1951,12 @@ const ImageUploadStep = ({
       )}
 
       {/* Minimum Images Feedback */}
-      {!getMinImagesInfo().hasMinimum && (
+      {!minImagesInfo.hasMinimum && (
         <Alert className="mb-4">
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Please upload {getMinImagesInfo().needed} more image{getMinImagesInfo().needed !== 1 ? 's' : ''} to proceed. 
-            You currently have {getMinImagesInfo().current} of {MIN_IMAGES} required images.
+            Please upload {minImagesInfo.needed} more image{minImagesInfo.needed !== 1 ? 's' : ''} to proceed. 
+            You currently have {minImagesInfo.current} of {MIN_IMAGES} required images.
           </AlertDescription>
         </Alert>
       )}
